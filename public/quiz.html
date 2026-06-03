@@ -991,6 +991,23 @@ function showResult(){
     console.error("Erro ao enviar quiz para o Make:", error);
   });
 
+  // CAPI — disparo independente pro servidor Railway.
+  // Usa o mesmo payload do Make. Erros são silenciosos: não afetam
+  // o fluxo da usuária nem o disparo pro Make acima.
+  fetch("https://estrutura-table-production.up.railway.app/api/capi", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(response => {
+    console.log("[CAPI] Enviado para o Railway:", response.status);
+  })
+  .catch(error => {
+    console.error("[CAPI] Erro ao enviar para o Railway (não crítico):", error);
+  });
+
   // Pixel: Quiz completado
   fbq('trackCustom','QuizCompleted',{
     profile: top,
