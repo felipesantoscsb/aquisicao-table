@@ -1,0 +1,15 @@
+{
+  "name": "capi-server",
+  "version": "1.0.0",
+  "description": "Servidor Express com integração Meta CAPI para deploy no Railway",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
