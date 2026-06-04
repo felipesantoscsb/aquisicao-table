@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin · Table Clinic CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--moss:#3D4A35;--moss2:#4E5E42;--terra:#B97040;--cream:#F8F4EE;--brown:#2C2018;--muted:#7A6E64;--line:#DDD4C4;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--cream);font-family:'Jost',sans-serif;font-weight:300;color:var(--brown);min-height:100vh}
+    .topbar{background:var(--moss);color:var(--cream);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px}
+    .topbar__brand{font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:500}
+    .topbar__links a{color:var(--cream);opacity:.7;font-size:.78rem;text-decoration:none;letter-spacing:.08em;text-transform:uppercase;margin-left:16px}
+    .topbar__links a:hover{opacity:1}
+    .btn-logout{background:none;border:1px solid rgba(248,244,238,.3);color:var(--cream);cursor:pointer;padding:4px 12px;border-radius:2px;font-family:'Jost',sans-serif;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;margin-left:16px}
+    .page{max-width:900px;margin:0 auto;padding:32px 20px}
+    h1{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:500;color:var(--moss);margin-bottom:4px}
+    .page-sub{font-size:.78rem;color:var(--muted);letter-spacing:.06em;margin-bottom:32px}
+    .divider{height:1px;background:var(--terra);opacity:.3;margin-bottom:32px}
+    .section-title{font-size:.65rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--terra);margin-bottom:16px}
+    table{width:100%;border-collapse:collapse;font-size:.85rem;background:#fff;border-radius:4px;overflow:hidden}
+    th{background:var(--moss);color:var(--cream);text-align:left;padding:10px 14px;font-size:.68rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase}
+    td{padding:10px 14px;border-bottom:1px solid var(--line)}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:#faf7f3}
+    .role-badge{font-size:.62rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:2px}
+    .role-admin{background:var(--moss);color:#fff}
+    .role-nutri{background:var(--terra);color:#fff}
+    .role-sdr{background:#8a9ba8;color:#fff}
+    .btn-sm{font-size:.7rem;padding:4px 10px;border-radius:2px;cursor:pointer;font-family:'Jost',sans-serif;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);background:none;color:var(--muted);transition:all .2s}
+    .btn-sm:hover{border-color:var(--moss);color:var(--moss)}
+    .card-form{background:#fff;border-radius:4px;padding:24px;margin-bottom:32px;border:1px solid var(--line)}
+    .field-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px}
+    @media(max-width:600px){.field-grid{grid-template-columns:1fr}}
+    label{display:block;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+    input,select{width:100%;border:1px solid var(--line);border-radius:3px;padding:8px 10px;font-family:'Jost',sans-serif;font-size:.85rem;color:var(--brown);background:var(--cream);outline:none}
+    input:focus,select:focus{border-color:var(--moss)}
+    .btn-primary{background:var(--moss);color:var(--cream);border:none;border-radius:3px;padding:10px 20px;font-family:'Jost',sans-serif;font-size:.82rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+    .btn-primary:hover{background:var(--moss2)}
+    .msg{font-size:.82rem;margin-top:10px;color:var(--moss);display:none}
+    .jornadas-section{margin-top:40px}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar__brand">Table Clinic · Admin</div>
+  <div style="display:flex;align-items:center">
+    <div class="topbar__links">
+      <a href="/pipeline">Pipeline</a>
+      <a href="/leads">Leads</a>
+    </div>
+    <button class="btn-logout" id="btnLogout">Sair</button>
+  </div>
+</div>
+
+<div class="page">
+  <h1>Painel de Administração</h1>
+  <div class="page-sub">Gerenciamento de usuários e jornadas geradas</div>
+  <div class="divider"></div>
+
+  <div class="section-title">Criar novo usuário</div>
+  <div class="card-form">
+    <div class="field-grid">
+      <div><label>Nome</label><input id="uName" placeholder="Nome completo"/></div>
+      <div><label>E-mail</label><input id="uEmail" type="email" placeholder="email@tableclinic.com.br"/></div>
+      <div><label>Senha inicial</label><input id="uPass" type="password" placeholder="table2026"/></div>
+      <div>
+        <label>Função</label>
+        <select id="uRole">
+          <option value="sdr">SDR</option>
+          <option value="nutri">Nutri</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div>
+        <label>Nutri name (se nutri)</label>
+        <select id="uNutriName">
+          <option value="">—</option>
+          <option value="Juliana">Juliana</option>
+          <option value="Natalia">Natalia</option>
+        </select>
+      </div>
+      <div>
+        <label>WhatsApp (DDI+número, ex: 5511999999999)</label>
+        <input id="uWhatsapp" type="text" placeholder="5511999999999"/>
+      </div>
+    </div>
+    <button class="btn-primary" id="btnCreateUser">Criar usuário</button>
+    <div class="msg" id="createMsg"></div>
+  </div>
+
+  <div class="section-title">Usuários cadastrados</div>
+  <table id="usersTable">
+    <thead><tr><th>ID</th><th>Nome</th><th>E-mail</th><th>Função</th><th>Nutri</th><th>WhatsApp</th><th>Criado em</th><th></th></tr></thead>
+    <tbody id="usersTbody"></tbody>
+  </table>
+
+  <div class="jornadas-section">
+    <div class="section-title" style="margin-top:32px">Jornadas geradas</div>
+    <table id="propsTable">
+      <thead><tr><th>Lead</th><th>Gerado por</th><th>Data</th><th>Link</th></tr></thead>
+      <tbody id="propsTbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+async function loadUsers() {
+  const r = await fetch('/api/admin/users');
+  const users = await r.json();
+  const tbody = document.getElementById('usersTbody');
+  tbody.innerHTML = '';
+  users.forEach(u => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${u.id}</td>
+      <td>${u.name}</td>
+      <td>${u.email}</td>
+      <td><span class="role-badge role-${u.role}">${u.role}</span></td>
+      <td>${u.nutri_name || '—'}</td>
+      <td><span style="font-size:.78rem">${u.whatsapp || '—'}</span>
+          <button class="btn-sm" style="margin-left:4px" onclick="editWhatsapp(${u.id}, '${u.whatsapp || ''}')">✏</button></td>
+      <td>${new Date(u.created_at).toLocaleDateString('pt-BR')}</td>
+      <td><button class="btn-sm" onclick="resetPwd(${u.id})">Resetar senha</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+async function loadProposals() {
+  const r = await fetch('/api/jornadas');
+  const props = await r.json();
+  const tbody = document.getElementById('propsTbody');
+  tbody.innerHTML = '';
+  props.forEach(p => {
+    const tr = document.createElement('tr');
+    const url = `https://crm.tableclinic.com.br/jornada/${p.url_slug}`;
+    tr.innerHTML = `
+      <td>${p.lead_name}</td>
+      <td>${p.generated_by_name || '—'}</td>
+      <td>${new Date(p.generated_at).toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
+      <td><a href="${url}" target="_blank" style="color:var(--moss);font-size:.78rem">${p.url_slug}</a></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById('btnCreateUser').addEventListener('click', async () => {
+  const btn = document.getElementById('btnCreateUser');
+  const msg = document.getElementById('createMsg');
+  btn.textContent = 'Criando...';
+  const r = await fetch('/api/admin/users', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      name: document.getElementById('uName').value,
+      email: document.getElementById('uEmail').value,
+      password: document.getElementById('uPass').value || 'table2026',
+      role: document.getElementById('uRole').value,
+      nutri_name: document.getElementById('uNutriName').value || null,
+      whatsapp: document.getElementById('uWhatsapp').value || null,
+    })
+  });
+  const data = await r.json();
+  msg.style.display = 'block';
+  if (r.ok) {
+    msg.style.color = 'var(--moss)';
+    msg.textContent = `Usuário ${data.name} criado com sucesso.`;
+    loadUsers();
+  } else {
+    msg.style.color = '#c0392b';
+    msg.textContent = data.error || 'Erro ao criar usuário.';
+  }
+  btn.textContent = 'Criar usuário';
+});
+
+async function editWhatsapp(id, current) {
+  const val = prompt('WhatsApp (DDI+número, ex: 5511999999999):', current);
+  if (val === null) return;
+  const r = await fetch(`/api/admin/users/${id}`, {
+    method:'PATCH', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ whatsapp: val || null })
+  });
+  if (r.ok) loadUsers();
+  else alert('Erro ao salvar WhatsApp.');
+}
+
+async function resetPwd(id) {
+  const pwd = prompt('Nova senha para o usuário:');
+  if (!pwd) return;
+  const r = await fetch(`/api/admin/users/${id}/reset-password`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ password: pwd })
+  });
+  if (r.ok) alert('Senha resetada com sucesso.');
+  else alert('Erro ao resetar senha.');
+}
+
+document.getElementById('btnLogout').addEventListener('click', async () => {
+  await fetch('/auth/logout', { method:'POST' });
+  window.location.href = '/login';
+});
+
+loadUsers();
+loadProposals();
+</script>
+</body>
+</html>

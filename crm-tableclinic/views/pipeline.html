@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pipeline · Table Clinic CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --moss:#3D4A35; --moss2:#4E5E42; --terra:#B97040; --cream:#F8F4EE;
+      --warm:#EDE5D8; --brown:#2C2018; --muted:#7A6E64; --line:#DDD4C4;
+      --hot:#B97040; --warm-badge:#C8972A; --cold:#8A9BA8;
+      --juliana:#3D4A35; --natalia:#B97040;
+      --danger:#C0392B;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--cream);font-family:'Jost',sans-serif;font-weight:300;color:var(--brown);min-height:100vh;overflow-x:hidden}
+    /* TOPBAR */
+    .topbar{background:var(--moss);color:var(--cream);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px;position:sticky;top:0;z-index:100}
+    .topbar__brand{font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:500;letter-spacing:.04em}
+    .topbar__right{display:flex;align-items:center;gap:16px}
+    .topbar__user{font-size:.78rem;opacity:.75}
+    .topbar__links{display:flex;gap:12px}
+    .topbar__links a{color:var(--cream);opacity:.7;font-size:.78rem;text-decoration:none;letter-spacing:.08em;text-transform:uppercase;transition:opacity .2s}
+    .topbar__links a:hover{opacity:1}
+    .btn-logout{background:none;border:1px solid rgba(248,244,238,.3);color:var(--cream);cursor:pointer;padding:4px 12px;border-radius:2px;font-family:'Jost',sans-serif;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;transition:border-color .2s}
+    .btn-logout:hover{border-color:var(--cream)}
+    /* FILTERS */
+    .filters{background:#fff;border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .filters select,.filters input{border:1px solid var(--line);border-radius:3px;padding:7px 12px;font-family:'Jost',sans-serif;font-size:.82rem;color:var(--brown);background:var(--cream);outline:none}
+    .filters select:focus,.filters input:focus{border-color:var(--moss)}
+    .filters input[type=text]{width:220px}
+    .filters label{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    .funnel-tabs{display:flex;gap:4px;margin-left:auto}
+    .funnel-tab{padding:6px 14px;border-radius:2px;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border:1px solid var(--line);background:none;font-family:'Jost',sans-serif;color:var(--muted);transition:all .2s}
+    .funnel-tab.active{background:var(--moss);color:var(--cream);border-color:var(--moss)}
+    /* BOARD */
+    .board-wrap{overflow-x:auto;padding:20px;min-height:calc(100vh - 104px)}
+    .board{display:flex;gap:14px;min-width:max-content;align-items:flex-start}
+    .column{background:#fff;border-radius:4px;width:230px;flex-shrink:0;border-top:3px solid var(--line)}
+    .column--hot{border-top-color:var(--hot)}
+    .column__head{padding:12px 14px 10px;border-bottom:1px solid var(--line)}
+    .column__title{font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+    .column__count{display:inline-block;background:var(--line);color:var(--muted);font-size:.65rem;padding:1px 7px;border-radius:10px;margin-left:6px}
+    .column__body{min-height:80px;padding:8px;display:flex;flex-direction:column;gap:8px}
+    .column__body.drag-over{background:rgba(61,74,53,.06)}
+    /* CARD */
+    .card{background:var(--cream);border-radius:3px;padding:12px 12px 10px;cursor:pointer;border-left:3px solid var(--line);transition:box-shadow .15s,transform .1s;position:relative}
+    .card:hover{box-shadow:0 2px 12px rgba(44,32,24,.12);transform:translateY(-1px)}
+    .card.drag-source{opacity:.4}
+    .card--juliana{border-left-color:var(--juliana)}
+    .card--natalia{border-left-color:var(--natalia)}
+    .card--overdue{outline:2px solid var(--danger)}
+    .card__name{font-size:.88rem;font-weight:500;color:var(--brown);margin-bottom:4px}
+    .card__nutri{font-size:.7rem;color:var(--muted);margin-bottom:6px}
+    .card__date{font-size:.7rem;color:var(--muted)}
+    .card__footer{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+    .tier-badge{font-size:.6rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:2px}
+    .tier-hot{background:var(--hot);color:#fff}
+    .tier-warm{background:var(--warm-badge);color:#fff}
+    .tier-cold{background:var(--cold);color:#fff}
+    .product-badge{font-size:.6rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--terra);background:rgba(185,112,64,.12);padding:2px 8px;border-radius:2px}
+    /* MODAL */
+    .overlay{position:fixed;inset:0;background:rgba(44,32,24,.45);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto}
+    .overlay.open{display:flex}
+    .modal{background:#fff;border-radius:4px;width:100%;max-width:680px;box-shadow:0 8px 48px rgba(44,32,24,.18);margin:auto}
+    .modal__head{background:var(--moss);color:var(--cream);padding:20px 24px;display:flex;justify-content:space-between;align-items:flex-start;border-radius:4px 4px 0 0}
+    .modal__title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:500}
+    .modal__sub{font-size:.72rem;opacity:.7;margin-top:3px;letter-spacing:.06em}
+    .modal__close{background:none;border:none;color:var(--cream);font-size:1.4rem;cursor:pointer;opacity:.7;line-height:1}
+    .modal__close:hover{opacity:1}
+    .modal__body{padding:24px}
+    .modal-section{margin-bottom:20px}
+    .modal-section__title{font-size:.65rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--terra);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+    .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:520px){.field-grid{grid-template-columns:1fr}}
+    .field label{display:block;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+    .field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:3px;padding:8px 10px;font-family:'Jost',sans-serif;font-size:.85rem;color:var(--brown);background:var(--cream);outline:none;transition:border-color .2s}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--moss)}
+    .field textarea{resize:vertical;min-height:80px}
+    .field--readonly input,.field--readonly textarea{background:#f0ede8;cursor:default}
+    .links-box{background:var(--cream);border:1px solid var(--line);border-radius:3px;padding:14px}
+    .link-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+    .link-row:last-child{margin-bottom:0}
+    .link-label{font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);min-width:72px}
+    .link-url{font-size:.78rem;color:var(--moss);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .btn-copy{background:none;border:1px solid var(--line);border-radius:2px;padding:3px 10px;font-size:.68rem;cursor:pointer;font-family:'Jost',sans-serif;color:var(--muted);transition:all .2s}
+    .btn-copy:hover{border-color:var(--moss);color:var(--moss)}
+    .btn-copy.copied{border-color:var(--moss);color:var(--moss);background:rgba(61,74,53,.08)}
+    .modal__actions{display:flex;gap:10px;padding:16px 24px 20px;border-top:1px solid var(--line);flex-wrap:wrap}
+    .btn-save{background:var(--moss);color:var(--cream);border:none;border-radius:3px;padding:10px 20px;font-family:'Jost',sans-serif;font-size:.82rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .2s}
+    .btn-save:hover{background:var(--moss2)}
+    .btn-jornada{background:var(--terra);color:#fff;border:none;border-radius:3px;padding:10px 20px;font-family:'Jost',sans-serif;font-size:.82rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .2s}
+    .btn-jornada:hover{background:#9E5E30}
+    .btn-jornada:disabled{opacity:.5;cursor:default}
+    .jornada-url-row{display:flex;align-items:center;gap:8px;width:100%}
+    .jornada-url-link{font-size:.78rem;color:var(--moss);text-decoration:underline}
+    /* Spinner */
+    .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin-right:6px;vertical-align:middle}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    /* Empty state */
+    .empty{color:var(--muted);font-size:.78rem;text-align:center;padding:20px 0}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar__brand">Table Clinic</div>
+  <div class="topbar__right">
+    <div class="topbar__links">
+      <a href="/pipeline">Pipeline</a>
+      <a href="/leads">Leads</a>
+      <span id="adminLink" style="display:none"><a href="/admin">Admin</a></span>
+    </div>
+    <span class="topbar__user" id="userName"></span>
+    <button class="btn-logout" id="btnLogout">Sair</button>
+  </div>
+</div>
+
+<div class="filters">
+  <label>Nutri</label>
+  <select id="fNutri">
+    <option value="all">Todas</option>
+    <option value="Juliana">Juliana</option>
+    <option value="Natalia">Natalia</option>
+  </select>
+  <label>De</label>
+  <input type="date" id="fFrom"/>
+  <label>Até</label>
+  <input type="date" id="fTo"/>
+  <input type="text" id="fSearch" placeholder="Buscar por nome ou telefone..."/>
+  <div class="funnel-tabs">
+    <button class="funnel-tab active" data-funnel="">Todos</button>
+    <button class="funnel-tab" data-funnel="pre_consulta">Pré-consulta</button>
+    <button class="funnel-tab" data-funnel="captacao">Captação</button>
+    <button class="funnel-tab" data-funnel="reativacao">Reativação</button>
+    <button class="funnel-tab" data-funnel="pos_venda">Pós-venda</button>
+  </div>
+</div>
+
+<div class="board-wrap">
+  <div class="board" id="board"></div>
+</div>
+
+<!-- MODAL FICHA -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <div class="modal__head">
+      <div>
+        <div class="modal__title" id="mTitle">—</div>
+        <div class="modal__sub" id="mSub"></div>
+      </div>
+      <button class="modal__close" id="btnClose">×</button>
+    </div>
+    <div class="modal__body">
+
+      <div class="modal-section">
+        <div class="modal-section__title">Dados da Lead</div>
+        <div class="field-grid">
+          <div class="field"><label>Nome</label><input id="mName" type="text"/></div>
+          <div class="field"><label>Telefone</label><input id="mPhone" type="text"/></div>
+          <div class="field"><label>E-mail</label><input id="mEmail" type="email"/></div>
+          <div class="field"><label>Origem</label><input id="mOrigin" type="text"/></div>
+          <div class="field">
+            <label>Tier</label>
+            <select id="mTier">
+              <option value="hot">Hot</option>
+              <option value="warm">Warm</option>
+              <option value="cold">Cold</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Perfil</label>
+            <select id="mProfile">
+              <option value="">—</option>
+              <option value="E">E</option>
+              <option value="R">R</option>
+              <option value="S">S</option>
+              <option value="A">A</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section__title">Pipeline</div>
+        <div class="field-grid">
+          <div class="field">
+            <label>Etapa</label>
+            <select id="mStage">
+              <option>Agendada</option><option>Confirmada</option><option>Reagendar</option>
+              <option>Reagendada</option><option>Executada</option><option>Oferta D+0</option>
+              <option>Follow Up D+1</option><option>Follow Up D+3</option>
+              <option>Venda Confirmada</option><option>Venda Perdida</option><option>Cancelada</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Nutri</label>
+            <select id="mNutri">
+              <option value="">—</option>
+              <option value="Juliana">Juliana</option>
+              <option value="Natalia">Natalia</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Funil</label>
+            <select id="mFunnel">
+              <option value="pre_consulta">Pré-consulta</option>
+              <option value="captacao">Captação</option>
+              <option value="reativacao">Reativação</option>
+              <option value="pos_venda">Pós-venda</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Data da pré-consulta</label>
+            <input id="mApptDate" type="date"/>
+          </div>
+          <div class="field">
+            <label>Produto indicado</label>
+            <select id="mProduct">
+              <option value="">—</option>
+              <option value="Essential">Essential</option>
+              <option value="Premium">Premium</option>
+              <option value="Elite">Elite</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Próxima ação — responsável</label>
+            <input id="mNextResp" type="text"/>
+          </div>
+          <div class="field">
+            <label>Prazo da próxima ação</label>
+            <input id="mNextDeadline" type="date"/>
+          </div>
+          <div class="field" id="lossReasonField" style="display:none">
+            <label>Motivo de perda</label>
+            <input id="mLossReason" type="text"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section__title">Observações</div>
+        <div class="field field--readonly" style="margin-bottom:10px">
+          <label>Obs. Formulário (quiz)</label>
+          <textarea id="mObsForm" readonly></textarea>
+        </div>
+        <div class="field">
+          <label>Obs. Nutri</label>
+          <textarea id="mObsNutri"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-section" id="linksSection">
+        <div class="modal-section__title">Links de Oferta</div>
+        <div class="links-box" id="linksBox"></div>
+      </div>
+
+    </div>
+    <div class="modal__actions">
+      <button class="btn-save" id="btnSave">Salvar alterações</button>
+      <button class="btn-jornada" id="btnJornada" style="display:none">Gerar Jornada</button>
+      <div class="jornada-url-row" id="jornadaUrlRow" style="display:none">
+        <span style="font-size:.7rem;color:var(--muted)">Jornada:</span>
+        <a class="jornada-url-link" id="jornadaUrlLink" href="#" target="_blank">—</a>
+        <button class="btn-copy" id="btnCopyJornada">Copiar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const STAGES = ['Agendada','Confirmada','Reagendar','Reagendada','Executada',
+  'Oferta D+0','Follow Up D+1','Follow Up D+3','Venda Confirmada','Venda Perdida','Cancelada'];
+const OFFER_STAGES = ['Oferta D+0','Follow Up D+1','Follow Up D+3','Venda Confirmada'];
+const STAGE_HOT = ['Oferta D+0','Follow Up D+1','Follow Up D+3','Venda Confirmada'];
+
+let cards = [];
+let currentCard = null;
+let filters = { nutri:'all', funnel:'', search:'', from:'', to:'' };
+
+async function loadCards() {
+  const params = new URLSearchParams();
+  if (filters.nutri !== 'all') params.set('nutri', filters.nutri);
+  if (filters.funnel) params.set('funnel', filters.funnel);
+  if (filters.search) params.set('search', filters.search);
+  if (filters.from) params.set('date_from', filters.from);
+  if (filters.to) params.set('date_to', filters.to);
+  const r = await fetch('/api/pipeline/cards?' + params.toString());
+  cards = await r.json();
+  renderBoard();
+}
+
+function renderBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  STAGES.forEach(stage => {
+    const stageCards = cards.filter(c => c.stage === stage);
+    const col = document.createElement('div');
+    col.className = 'column' + (STAGE_HOT.includes(stage) ? ' column--hot' : '');
+    col.dataset.stage = stage;
+    col.innerHTML = `
+      <div class="column__head">
+        <span class="column__title">${stage}</span>
+        <span class="column__count">${stageCards.length}</span>
+      </div>
+      <div class="column__body" data-stage="${stage}"></div>
+    `;
+    const body = col.querySelector('.column__body');
+    stageCards.forEach(c => body.appendChild(buildCard(c)));
+
+    // drag over
+    body.addEventListener('dragover', e => { e.preventDefault(); body.classList.add('drag-over'); });
+    body.addEventListener('dragleave', () => body.classList.remove('drag-over'));
+    body.addEventListener('drop', async e => {
+      e.preventDefault();
+      body.classList.remove('drag-over');
+      const id = e.dataTransfer.getData('card_id');
+      if (!id) return;
+      await fetch(`/api/pipeline/cards/${id}`, {
+        method:'PATCH',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ stage })
+      });
+      loadCards();
+    });
+
+    board.appendChild(col);
+  });
+}
+
+function buildCard(c) {
+  const el = document.createElement('div');
+  const nutriClass = c.nutri ? `card--${c.nutri.toLowerCase()}` : '';
+  const overdue = c.next_action_deadline && new Date(c.next_action_deadline) < new Date() ? 'card--overdue' : '';
+  el.className = `card ${nutriClass} ${overdue}`;
+  el.draggable = true;
+  el.dataset.id = c.id;
+  el.innerHTML = `
+    <div class="card__name">${c.lead_name}</div>
+    <div class="card__nutri">${c.nutri || '—'}</div>
+    <div class="card__date">${c.appointment_date ? fmtDate(c.appointment_date) : '—'}</div>
+    <div class="card__footer">
+      <span class="tier-badge tier-${c.tier || 'cold'}">${c.tier || '—'}</span>
+      ${c.product_indicated ? `<span class="product-badge">${c.product_indicated}</span>` : ''}
+    </div>
+  `;
+  el.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('card_id', c.id);
+    el.classList.add('drag-source');
+  });
+  el.addEventListener('dragend', () => el.classList.remove('drag-source'));
+  el.addEventListener('click', () => openModal(c.id));
+  return el;
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d + 'T12:00:00');
+  return dt.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' });
+}
+
+async function openModal(id) {
+  const r = await fetch(`/api/pipeline/cards/${id}`);
+  currentCard = await r.json();
+  const c = currentCard;
+
+  document.getElementById('mTitle').textContent = c.lead_name;
+  document.getElementById('mSub').textContent = `${c.stage} · ${c.nutri || '—'} · ${c.funnel || '—'}`;
+  document.getElementById('mName').value = c.lead_name || '';
+  document.getElementById('mPhone').value = c.phone || '';
+  document.getElementById('mEmail').value = c.email || '';
+  document.getElementById('mOrigin').value = c.origin || '';
+  document.getElementById('mTier').value = c.tier || 'warm';
+  document.getElementById('mProfile').value = c.profile || '';
+  document.getElementById('mStage').value = c.stage || 'Agendada';
+  document.getElementById('mNutri').value = c.nutri || '';
+  document.getElementById('mFunnel').value = c.funnel || 'pre_consulta';
+  document.getElementById('mApptDate').value = c.appointment_date ? c.appointment_date.substring(0,10) : '';
+  document.getElementById('mProduct').value = c.product_indicated || '';
+  document.getElementById('mNextResp').value = c.next_action_responsible || '';
+  document.getElementById('mNextDeadline').value = c.next_action_deadline ? c.next_action_deadline.substring(0,10) : '';
+  document.getElementById('mLossReason').value = c.loss_reason || '';
+  document.getElementById('mObsForm').value = c.obs_form || '';
+  document.getElementById('mObsNutri').value = c.obs_nutri || '';
+
+  // loss reason visibility
+  document.getElementById('lossReasonField').style.display = c.stage === 'Venda Perdida' ? '' : 'none';
+  document.getElementById('mStage').addEventListener('change', () => {
+    document.getElementById('lossReasonField').style.display =
+      document.getElementById('mStage').value === 'Venda Perdida' ? '' : 'none';
+  }, { once: true });
+
+  // Links de oferta
+  renderLinks(c);
+
+  // Botão gerar jornada
+  const btnJornada = document.getElementById('btnJornada');
+  btnJornada.style.display = OFFER_STAGES.includes(c.stage) ? '' : 'none';
+
+  // Jornada URL
+  const jornadaUrlRow = document.getElementById('jornadaUrlRow');
+  if (c.plan_url) {
+    jornadaUrlRow.style.display = '';
+    document.getElementById('jornadaUrlLink').href = c.plan_url;
+    document.getElementById('jornadaUrlLink').textContent = c.plan_url;
+  } else {
+    jornadaUrlRow.style.display = 'none';
+  }
+
+  document.getElementById('overlay').classList.add('open');
+}
+
+function renderLinks(c) {
+  const nutri = c.nutri;
+  const nutriKey = nutri && nutri.toLowerCase().startsWith('nat') ? 'nati' : 'ju';
+  const origin = (c.origin || '').toLowerCase();
+  const isPR = origin.includes('pr');
+
+  const products = ['essential','premium','elite'];
+  let html = '';
+  products.forEach(p => {
+    const url = isPR
+      ? `https://www.evelynliu.com.br/oferta-${p}-pr-${nutriKey}`
+      : `https://www.evelynliu.com.br/oferta-${p}-${nutriKey}`;
+    html += `
+      <div class="link-row">
+        <span class="link-label">${p.charAt(0).toUpperCase()+p.slice(1)}</span>
+        <span class="link-url" title="${url}">${url}</span>
+        <button class="btn-copy" onclick="copyText('${url}', this)">Copiar</button>
+      </div>`;
+  });
+  document.getElementById('linksBox').innerHTML = html;
+}
+
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copiado!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+
+document.getElementById('btnClose').addEventListener('click', () => {
+  document.getElementById('overlay').classList.remove('open');
+  currentCard = null;
+});
+document.getElementById('overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('overlay')) {
+    document.getElementById('overlay').classList.remove('open');
+  }
+});
+
+document.getElementById('btnSave').addEventListener('click', async () => {
+  if (!currentCard) return;
+  const btn = document.getElementById('btnSave');
+  btn.textContent = 'Salvando...';
+  try {
+    // update lead
+    await fetch(`/api/leads/${currentCard.lead_id}`, {
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        name: document.getElementById('mName').value,
+        phone: document.getElementById('mPhone').value,
+        email: document.getElementById('mEmail').value,
+        origin: document.getElementById('mOrigin').value,
+        tier: document.getElementById('mTier').value,
+        profile: document.getElementById('mProfile').value,
+      })
+    });
+    // update card
+    await fetch(`/api/pipeline/cards/${currentCard.id}`, {
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        stage: document.getElementById('mStage').value,
+        nutri: document.getElementById('mNutri').value || null,
+        funnel: document.getElementById('mFunnel').value,
+        appointment_date: document.getElementById('mApptDate').value || null,
+        product_indicated: document.getElementById('mProduct').value || null,
+        next_action_responsible: document.getElementById('mNextResp').value || null,
+        next_action_deadline: document.getElementById('mNextDeadline').value || null,
+        loss_reason: document.getElementById('mLossReason').value || null,
+        obs_nutri: document.getElementById('mObsNutri').value || null,
+      })
+    });
+    btn.textContent = 'Salvo!';
+    setTimeout(() => { btn.textContent = 'Salvar alterações'; }, 1200);
+    loadCards();
+  } catch {
+    btn.textContent = 'Erro — tente novamente';
+    setTimeout(() => { btn.textContent = 'Salvar alterações'; }, 2000);
+  }
+});
+
+document.getElementById('btnJornada').addEventListener('click', async () => {
+  if (!currentCard) return;
+  const btn = document.getElementById('btnJornada');
+  btn.innerHTML = '<span class="spinner"></span> Gerando jornada...';
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/generate-jornada', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ card_id: currentCard.id })
+    });
+    const data = await r.json();
+    if (r.ok) {
+      const jornadaUrlRow = document.getElementById('jornadaUrlRow');
+      jornadaUrlRow.style.display = '';
+      document.getElementById('jornadaUrlLink').href = data.url;
+      document.getElementById('jornadaUrlLink').textContent = data.url;
+      currentCard.plan_url = data.url;
+      loadCards();
+    } else {
+      alert('Erro: ' + (data.error || 'Falha ao gerar jornada'));
+    }
+  } catch {
+    alert('Erro de conexão ao gerar jornada');
+  }
+  btn.innerHTML = 'Gerar Jornada';
+  btn.disabled = false;
+});
+
+document.getElementById('btnCopyJornada').addEventListener('click', () => {
+  const url = document.getElementById('jornadaUrlLink').href;
+  copyText(url, document.getElementById('btnCopyJornada'));
+});
+
+// Filters
+let searchTimer;
+document.getElementById('fNutri').addEventListener('change', e => { filters.nutri = e.target.value; loadCards(); });
+document.getElementById('fFrom').addEventListener('change', e => { filters.from = e.target.value; loadCards(); });
+document.getElementById('fTo').addEventListener('change', e => { filters.to = e.target.value; loadCards(); });
+document.getElementById('fSearch').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { filters.search = e.target.value; loadCards(); }, 350);
+});
+document.querySelectorAll('.funnel-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.funnel-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filters.funnel = btn.dataset.funnel;
+    loadCards();
+  });
+});
+
+document.getElementById('btnLogout').addEventListener('click', async () => {
+  await fetch('/auth/logout', { method:'POST' });
+  window.location.href = '/login';
+});
+
+// init
+(async () => {
+  const me = await (await fetch('/api/me')).json();
+  document.getElementById('userName').textContent = me.name;
+  if (me.role === 'admin') document.getElementById('adminLink').style.display = '';
+  loadCards();
+})();
+</script>
+</body>
+</html>

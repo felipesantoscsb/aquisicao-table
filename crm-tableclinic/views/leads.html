@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leads · Table Clinic CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--moss:#3D4A35;--moss2:#4E5E42;--terra:#B97040;--cream:#F8F4EE;--brown:#2C2018;--muted:#7A6E64;--line:#DDD4C4;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--cream);font-family:'Jost',sans-serif;font-weight:300;color:var(--brown);min-height:100vh}
+    .topbar{background:var(--moss);color:var(--cream);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px;position:sticky;top:0;z-index:100}
+    .topbar__brand{font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:500}
+    .topbar__links a{color:var(--cream);opacity:.7;font-size:.78rem;text-decoration:none;letter-spacing:.08em;text-transform:uppercase;margin-left:16px}
+    .topbar__links a:hover{opacity:1}
+    .btn-logout{background:none;border:1px solid rgba(248,244,238,.3);color:var(--cream);cursor:pointer;padding:4px 12px;border-radius:2px;font-family:'Jost',sans-serif;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;margin-left:16px}
+    .filters{background:#fff;border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .filters select,.filters input{border:1px solid var(--line);border-radius:3px;padding:7px 12px;font-family:'Jost',sans-serif;font-size:.82rem;color:var(--brown);background:var(--cream);outline:none}
+    .filters input[type=text]{width:240px}
+    .filters label{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    .page{padding:24px 20px;max-width:1100px;margin:0 auto}
+    table{width:100%;border-collapse:collapse;font-size:.84rem;background:#fff;border-radius:4px;overflow:hidden}
+    th{background:var(--moss);color:var(--cream);text-align:left;padding:10px 14px;font-size:.68rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase}
+    td{padding:10px 14px;border-bottom:1px solid var(--line)}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:#faf7f3;cursor:pointer}
+    .tier-badge{font-size:.6rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:2px}
+    .tier-hot{background:#B97040;color:#fff}
+    .tier-warm{background:#C8972A;color:#fff}
+    .tier-cold{background:#8A9BA8;color:#fff}
+    .empty{text-align:center;color:var(--muted);padding:40px;font-size:.85rem}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar__brand">Table Clinic</div>
+  <div style="display:flex;align-items:center">
+    <div class="topbar__links">
+      <a href="/pipeline">Pipeline</a>
+      <a href="/leads">Leads</a>
+      <span id="adminLink" style="display:none"><a href="/admin">Admin</a></span>
+    </div>
+    <span style="font-size:.78rem;opacity:.7;margin-left:16px" id="userName"></span>
+    <button class="btn-logout" id="btnLogout">Sair</button>
+  </div>
+</div>
+
+<div class="filters">
+  <label>Busca</label>
+  <input type="text" id="fSearch" placeholder="Nome, telefone ou e-mail..."/>
+  <label>Tier</label>
+  <select id="fTier">
+    <option value="">Todos</option>
+    <option value="hot">Hot</option>
+    <option value="warm">Warm</option>
+    <option value="cold">Cold</option>
+  </select>
+  <label>Origem</label>
+  <select id="fOrigin">
+    <option value="">Todas</option>
+    <option value="Formulário">Formulário</option>
+    <option value="Instagram orgânico">Instagram orgânico</option>
+    <option value="PR">PR</option>
+    <option value="quiz">Quiz</option>
+  </select>
+</div>
+
+<div class="page">
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Telefone</th>
+        <th>E-mail</th>
+        <th>Origem</th>
+        <th>Tier</th>
+        <th>Perfil</th>
+        <th>Etapa</th>
+        <th>Nutri</th>
+        <th>Cadastro</th>
+      </tr>
+    </thead>
+    <tbody id="leadsBody"></tbody>
+  </table>
+</div>
+
+<script>
+let timer;
+async function load() {
+  const params = new URLSearchParams();
+  const s = document.getElementById('fSearch').value;
+  const t = document.getElementById('fTier').value;
+  const o = document.getElementById('fOrigin').value;
+  if (s) params.set('search', s);
+  if (t) params.set('tier', t);
+  if (o) params.set('origin', o);
+  const r = await fetch('/api/leads?' + params.toString());
+  const leads = await r.json();
+  const tbody = document.getElementById('leadsBody');
+  tbody.innerHTML = '';
+  if (!leads.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty">Nenhum lead encontrado</td></tr>';
+    return;
+  }
+  leads.forEach(l => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${l.name}</td>
+      <td>${l.phone || '—'}</td>
+      <td>${l.email || '—'}</td>
+      <td>${l.origin || '—'}</td>
+      <td><span class="tier-badge tier-${l.tier || 'cold'}">${l.tier || '—'}</span></td>
+      <td>${l.profile || '—'}</td>
+      <td>${l.stage || '—'}</td>
+      <td>${l.nutri || '—'}</td>
+      <td>${new Date(l.created_at).toLocaleDateString('pt-BR')}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById('fSearch').addEventListener('input', () => {
+  clearTimeout(timer); timer = setTimeout(load, 350);
+});
+document.getElementById('fTier').addEventListener('change', load);
+document.getElementById('fOrigin').addEventListener('change', load);
+
+document.getElementById('btnLogout').addEventListener('click', async () => {
+  await fetch('/auth/logout', { method:'POST' });
+  window.location.href = '/login';
+});
+
+(async () => {
+  const me = await (await fetch('/api/me')).json();
+  document.getElementById('userName').textContent = me.name;
+  if (me.role === 'admin') document.getElementById('adminLink').style.display = '';
+  load();
+})();
+</script>
+</body>
+</html>
