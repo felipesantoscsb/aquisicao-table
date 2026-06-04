@@ -9,9 +9,14 @@ const PORT = process.env.PORT || 3000;
 // ─── Middlewares ───────────────────────────────────────────────────────────────
 
 // Redirect non-www → www (301)
+// Usa setHeader direto para evitar que o Express processe/modifique a URL
 app.use((req, res, next) => {
-  if (req.headers.host === 'evelynliu.com.br') {
-    return res.redirect(301, `https://www.evelynliu.com.br${req.originalUrl}`);
+  const host = req.headers['x-forwarded-host'] || req.headers.host || '';
+  if (host === 'evelynliu.com.br') {
+    const location = 'https://www.evelynliu.com.br' + req.originalUrl;
+    res.setHeader('Location', location);
+    res.statusCode = 301;
+    return res.end();
   }
   next();
 });
