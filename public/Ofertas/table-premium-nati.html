@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Table Premium · Table Clinic</title>
+
+  <!-- Meta Pixel -->
+  <script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window,document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init','989971718548782');
+    fbq('track','PageView');
+    fbq('track','ViewContent',{content_name:'Table Premium'});
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=989971718548782&ev=PageView&noscript=1"/></noscript>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --moss:      #3D4A35;
+      --moss-mid:  #4E5E42;
+      --moss-pale: #E8EDE4;
+      --cream:     #F8F4EE;
+      --warm:      #EDE5D8;
+      --sand:      #D8CCBA;
+      --terra:     #B97040;
+      --terra-dk:  #8A4F28;
+      --brown:     #2C2018;
+      --muted:     #7A6E64;
+      --white:     #FFFFFF;
+      --line:      #DDD4C4;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--brown); overflow-x: hidden; }
+
+    nav {
+      background: var(--moss);
+      padding: 18px 40px;
+      text-align: center;
+    }
+    nav span {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--cream);
+      font-weight: 400;
+      opacity: 0.85;
+    }
+
+    .hero {
+      background: var(--moss);
+      color: var(--cream);
+      text-align: center;
+      padding: 80px 40px 72px;
+    }
+    .hero-eyebrow {
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--sand);
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3.2rem, 9vw, 6rem);
+      font-weight: 300;
+      line-height: 1;
+      letter-spacing: -0.01em;
+      margin-bottom: 28px;
+    }
+    .hero h1 em { font-style: italic; color: var(--terra); }
+    .hero-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 16px;
+      justify-content: center;
+      align-items: center;
+    }
+    .hero-pills span {
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(248,244,238,0.45);
+    }
+    .hero-pills span.dot { color: rgba(248,244,238,0.2); font-size: 1rem; line-height: 1; }
+
+    .fade {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .fade.visible { opacity: 1; transform: translateY(0); }
+
+    .wrap-wide { max-width: 100%; }
+    .wrap-wide .inner {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 72px 40px;
+    }
+    .bg-warm  { background: var(--warm); }
+    .bg-white { background: var(--white); }
+    .bg-cream { background: var(--cream); }
+
+    .section-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--terra);
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.9rem, 4vw, 2.8rem);
+      font-weight: 400;
+      line-height: 1.15;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    h2 em { font-style: italic; color: var(--terra); }
+    p {
+      font-size: 1rem;
+      line-height: 1.85;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    p:last-child { margin-bottom: 0; }
+
+    /* includes */
+    .includes { display: flex; flex-direction: column; }
+    .include-row {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      padding: 26px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .include-row:first-child { border-top: 1px solid var(--line); }
+    .inc-icon {
+      flex-shrink: 0;
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--moss-pale);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem;
+      margin-top: 3px;
+    }
+    .inc-body h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: var(--brown);
+      margin-bottom: 5px;
+    }
+    .inc-body p { font-size: 0.9rem; margin: 0; }
+    .inc-badge {
+      display: inline-block;
+      margin-top: 8px;
+      background: var(--moss-pale);
+      color: var(--moss);
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 2px;
+      font-weight: 600;
+    }
+
+    /* pricing */
+    .price-card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 52px 40px;
+      text-align: center;
+    }
+    .price-parcel-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .price-parcel-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.6rem, 7vw, 4.2rem);
+      font-weight: 600;
+      color: var(--moss);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .price-parcel-note { font-size: 0.82rem; color: var(--muted); margin-bottom: 6px; }
+    .price-or {
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--sand);
+      margin: 16px 0;
+    }
+    .price-cash {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 500;
+      color: var(--moss);
+      margin-bottom: 4px;
+    }
+    .price-cash-label {
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 36px;
+    }
+    .btn {
+      display: block;
+      background: var(--moss);
+      color: var(--white);
+      text-decoration: none;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 16px 40px;
+      border-radius: 3px;
+      max-width: 340px;
+      margin: 0 auto;
+      text-align: center;
+      transition: background 0.2s, transform 0.18s;
+    }
+    .btn:hover { background: var(--moss-mid); transform: translateY(-2px); }
+    .price-footnote {
+      font-size: 0.84rem;
+      line-height: 1.75;
+      color: var(--muted);
+      text-align: center;
+      font-style: italic;
+      margin-top: 32px;
+    }
+
+    /* quote */
+    .quote-section {
+      text-align: center;
+      padding: 72px 40px;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .quote-glyph {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 5rem;
+      line-height: 0.4;
+      color: var(--sand);
+      display: block;
+      margin-bottom: 28px;
+    }
+    blockquote {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.25rem, 3vw, 1.7rem);
+      font-style: italic;
+      font-weight: 300;
+      line-height: 1.65;
+      color: var(--brown);
+      margin-bottom: 28px;
+    }
+    .quote-author {
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--terra);
+      font-weight: 500;
+    }
+
+    footer {
+      background: var(--brown);
+      color: rgba(248,244,238,0.35);
+      text-align: center;
+      padding: 26px 40px;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+    }
+
+    @media (max-width: 560px) {
+      nav { padding: 16px 24px; }
+      .hero { padding: 56px 24px 52px; }
+      .wrap-wide .inner { padding: 52px 24px; }
+      .quote-section { padding: 52px 24px; }
+      .price-card { padding: 40px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav><span>Table Clinic</span></nav>
+
+<section class="hero">
+  <p class="hero-eyebrow">Acompanhamento presencial ou online · 3 meses</p>
+  <h1>Table <em>Premium</em></h1>
+  <div class="hero-pills">
+    <span>O problema nunca foi a comida</span>
+    <span class="dot">·</span>
+    <span>Garantia de 7 dias</span>
+  </div>
+</section>
+
+<!-- INCLUSO -->
+<div class="wrap-wide bg-white fade">
+  <div class="inner">
+    <p class="section-label">O que está incluso</p>
+    <h2>Presença real, <em>em cada etapa</em></h2>
+    <div class="includes">
+      <div class="include-row">
+        <div class="inc-icon">🗓️</div>
+        <div class="inc-body">
+          <h3>1 encontro mensal presencial ou online</h3>
+          <p>Uma vez por mês, uma sessão completa com sua nutricionista — presencial em Moema ou online, no formato que funciona para você. É o espaço de aprofundamento do processo: revisão dos padrões, ajustes no plano alimentar e trabalho psicoemocional com foco no que emergiu ao longo do mês.</p>
+        </div>
+      </div>
+      <div class="include-row">
+        <div class="inc-icon">📋</div>
+        <div class="inc-body">
+          <h3>Check-up semanal por WhatsApp</h3>
+          <p>Toda semana sua nutricionista entra em contato para entender como você está, o que funcionou e o que travou. A partir disso, faz ajustes no plano e dá direcionamentos estratégicos para a semana seguinte. Você nunca chega ao encontro mensal sem ter evoluído.</p>
+        </div>
+      </div>
+      <div class="include-row">
+        <div class="inc-icon">💬</div>
+        <div class="inc-body">
+          <h3>Suporte por WhatsApp por 90 dias</h3>
+          <p>Para as dúvidas do dia a dia — uma refeição fora da rotina, uma situação que surgiu, uma insegurança rápida. Acesso direto à sua nutricionista durante toda a jornada, de onde você estiver.</p>
+        </div>
+      </div>
+      <div class="include-row">
+        <div class="inc-icon">🥗</div>
+        <div class="inc-body">
+          <h3>Plano alimentar personalizado e trabalho psicoemocional</h3>
+          <p>As duas dimensões juntas: o que você come e o que move você emocionalmente. Construído para a sua rotina, seu histórico e seus objetivos, com ajustes contínuos ao longo dos 3 meses. Separar as duas é o que faz tantos processos não funcionarem.</p>
+        </div>
+      </div>
+      <div class="include-row">
+        <div class="inc-icon">👥</div>
+        <div class="inc-body">
+          <h3>Comunidade Ativa com Evelyn Liu</h3>
+          <p>Grupo exclusivo com acesso direto à Evelyn, conteúdos aprofundados e encontros online periódicos.</p>
+        </div>
+      </div>
+      <div class="include-row">
+        <div class="inc-icon">📖</div>
+        <div class="inc-body">
+          <h3>Livro com dedicatória da Evelyn</h3>
+          <p>"Gordura Não Existe: O que Existe é Dor" entregue na sua casa ou retirado na clínica, com dedicatória pessoal da Evelyn.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JORNADA -->
+<div class="wrap-wide bg-cream fade">
+  <div class="inner">
+    <p class="section-label">O que acontece quando você fecha</p>
+    <h2>Sua jornada, <em>semana a semana</em></h2>
+
+    <div style="position:relative; padding-left:32px; margin-top:8px;">
+      <div style="position:absolute; left:9px; top:8px; bottom:8px; width:1px; background:linear-gradient(to bottom, var(--terra), var(--moss-mid));"></div>
+
+      <div style="position:relative; margin-bottom:32px;">
+        <div style="position:absolute; left:-32px; top:3px; width:18px; height:18px; border-radius:50%; background:var(--terra); border:2px solid var(--warm);"></div>
+        <p style="font-size:0.68rem; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--terra); margin-bottom:4px;">Dia 1</p>
+        <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:500; color:var(--brown); margin-bottom:4px;">Você agenda o primeiro encontro</h3>
+        <p style="font-size:0.88rem; color:var(--muted); margin:0; line-height:1.7;">Pelo WhatsApp, diretamente com a equipe, no horário que for mais conveniente para você.</p>
+      </div>
+
+      <div style="position:relative; margin-bottom:32px;">
+        <div style="position:absolute; left:-32px; top:3px; width:18px; height:18px; border-radius:50%; background:var(--terra); border:2px solid var(--warm);"></div>
+        <p style="font-size:0.68rem; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--terra); margin-bottom:4px;">Encontro inicial</p>
+        <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:500; color:var(--brown); margin-bottom:4px;">Sessão de imersão</h3>
+        <p style="font-size:0.88rem; color:var(--muted); margin:0; line-height:1.7;">Sua nutricionista mergulha no seu histórico, seus padrões emocionais e suas rotinas. Juntas, montam o primeiro plano alimentar e definem os focos do trabalho psicoemocional.</p>
+      </div>
+
+      <div style="position:relative; margin-bottom:32px;">
+        <div style="position:absolute; left:-32px; top:3px; width:18px; height:18px; border-radius:50%; background:var(--moss-mid); border:2px solid var(--warm);"></div>
+        <p style="font-size:0.68rem; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--moss-mid); margin-bottom:4px;">Semanas 2 a 4</p>
+        <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:500; color:var(--brown); margin-bottom:4px;">Acompanhamento semanal por WhatsApp</h3>
+        <p style="font-size:0.88rem; color:var(--muted); margin:0; line-height:1.7;">Toda semana, check-up com ajustes no plano e direcionamentos estratégicos. O processo já está em movimento.</p>
+      </div>
+
+      <div style="position:relative; margin-bottom:32px;">
+        <div style="position:absolute; left:-32px; top:3px; width:18px; height:18px; border-radius:50%; background:var(--terra); border:2px solid var(--warm);"></div>
+        <p style="font-size:0.68rem; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--terra); margin-bottom:4px;">Dia 30</p>
+        <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:500; color:var(--brown); margin-bottom:4px;">Segundo encontro</h3>
+        <p style="font-size:0.88rem; color:var(--muted); margin:0; line-height:1.7;">Sessão completa de aprofundamento. Revisão do que evoluiu, ajustes no plano alimentar e mergulho nos padrões que foram aparecendo ao longo do mês.</p>
+      </div>
+
+      <div style="position:relative; margin-bottom:32px;">
+        <div style="position:absolute; left:-32px; top:3px; width:18px; height:18px; border-radius:50%; background:var(--moss-mid); border:2px solid var(--warm);"></div>
+        <p style="font-size:0.68rem; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--moss-mid); margin-bottom:4px;">Semanas 5 a 8</p>
+        <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:500; color:var(--brown); margin-bottom:4px;">Acompanhamento semanal por WhatsApp</h3>
+        <p style="font-size:0.88rem; color:var(--muted); margin:0; line-height:1.7;">O processo se aprofunda. Novos comportamentos sendo instalados, gatilhos trabalhados, plano alimentar refinado semana a semana.</p>
+      </div>
+
+      <div style="position:relative; margin-bottom:32px;">
+        <div style="position:absolute; left:-32px; top:3px; width:18px; height:18px; border-radius:50%; background:var(--terra); border:2px solid var(--warm);"></div>
+        <p style="font-size:0.68rem; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--terra); margin-bottom:4px;">Dia 60</p>
+        <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:500; color:var(--brown); margin-bottom:4px;">Terceiro encontro</h3>
+        <p style="font-size:0.88rem; color:var(--muted); margin:0; line-height:1.7;">Consolidação do processo. Ajustes finos no plano alimentar e preparação para o fechamento de ciclo.</p>
+      </div>
+
+      <div style="position:relative; margin-bottom:32px;">
+        <div style="position:absolute; left:-32px; top:3px; width:18px; height:18px; border-radius:50%; background:var(--moss-mid); border:2px solid var(--warm);"></div>
+        <p style="font-size:0.68rem; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--moss-mid); margin-bottom:4px;">Semanas 9 a 12</p>
+        <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:500; color:var(--brown); margin-bottom:4px;">Acompanhamento semanal por WhatsApp</h3>
+        <p style="font-size:0.88rem; color:var(--muted); margin:0; line-height:1.7;">Autonomia sendo construída semana a semana. Você chega ao final do processo com consistência real, não com mais uma dieta para abandonar.</p>
+      </div>
+
+      <div style="position:relative;">
+        <div style="position:absolute; left:-32px; top:3px; width:18px; height:18px; border-radius:50%; background:var(--moss); border:2px solid var(--warm);"></div>
+        <p style="font-size:0.68rem; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--moss); margin-bottom:4px;">Dia 90</p>
+        <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:500; color:var(--brown); margin-bottom:4px;">Resultado</h3>
+        <p style="font-size:0.88rem; color:var(--muted); margin:0; line-height:1.7;">Uma relação diferente com a comida, com o corpo e com você mesma. Mais energia, mais paz, mais consistência — sem violência e sem culpa.</p>
+      </div>
+    </div>
+
+    <!-- Gráfico bem-estar -->
+    <div style="margin-top:48px; background:var(--white); border:1px solid var(--line); border-radius:8px; padding:28px 24px 20px;">
+      <p style="font-size:0.68rem; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-bottom:16px;">Curva de consistência e bem-estar ao longo dos 3 meses</p>
+      <svg width="100%" height="120" viewBox="0 0 680 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="wg2" x1="0" y1="0" x2="680" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#4E5E42"/>
+            <stop offset="50%" stop-color="#B97040"/>
+            <stop offset="100%" stop-color="#3D4A35"/>
+          </linearGradient>
+          <linearGradient id="fg2" x1="0" y1="0" x2="0" y2="120" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#B97040" stop-opacity="0.15"/>
+            <stop offset="100%" stop-color="#B97040" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M 20 100 C 80 95, 120 88, 180 80 C 240 72, 270 68, 320 58 C 370 48, 420 35, 480 25 C 530 17, 580 14, 660 10 L 660 115 L 20 115 Z" fill="url(#fg2)"/>
+        <path d="M 20 100 C 80 95, 120 88, 180 80 C 240 72, 270 68, 320 58 C 370 48, 420 35, 480 25 C 530 17, 580 14, 660 10" stroke="url(#wg2)" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="20"  cy="100" r="5" fill="#4E5E42"/>
+        <circle cx="227" cy="70"  r="5" fill="#B97040"/>
+        <circle cx="660" cy="10"  r="5" fill="#3D4A35"/>
+        <text x="14"  y="116" font-family="Jost,sans-serif" font-size="9" fill="#7A6E64" text-anchor="middle">Início</text>
+        <text x="227" y="116" font-family="Jost,sans-serif" font-size="9" fill="#7A6E64" text-anchor="middle">Mês 2</text>
+        <text x="660" y="116" font-family="Jost,sans-serif" font-size="9" fill="#7A6E64" text-anchor="middle">Mês 3</text>
+      </svg>
+    </div>
+
+  </div>
+</div>
+
+<!-- PRICING -->
+<div class="wrap-wide bg-warm fade">
+  <div class="inner">
+    <p class="section-label">Investimento na sua transformação</p>
+    <h2>Comece <em>hoje</em></h2>
+    <p style="font-size:1rem; color:var(--muted); line-height:1.85; text-align:center; margin-bottom:8px; text-decoration:line-through; text-decoration-color:var(--terra);">R$ 1.798</p>
+    <p style="font-size:0.92rem; color:var(--muted); line-height:1.75; text-align:center; margin-bottom:32px; max-width:480px; margin-left:auto; margin-right:auto;">R$1.798 é o valor do acompanhamento direto da Table. Porque você dedicou tempo para conhecer o nosso método e chegou até aqui com intenção real, o seu investimento é de R$1.498.</p>
+    <div class="price-card">
+      <p class="price-parcel-label">12 vezes de</p>
+      <div class="price-parcel-value">R$154,92</div>
+      <div class="price-or">ou</div>
+      <div class="price-cash">R$ 1.498</div>
+      <p class="price-cash-label">à vista</p>
+      <a class="btn" href="https://checkout.infinitepay.io/tableclinic/mLkXxmouk4" target="_blank" rel="noopener">Quero iniciar meu processo</a>
+    </div>
+    <p class="price-footnote">Este valor reflete o momento atual da Table Clinic. À medida que novas histórias se somam ao nosso método, o investimento será ajustado. <strong style="color:var(--terra-dk); font-style:normal;">O que está disponível agora é o ponto de entrada mais acessível que teremos.</strong></p>
+  </div>
+</div>
+
+<!-- QUOTE -->
+<div class="quote-section fade">
+  <span class="quote-glyph">"</span>
+  <blockquote>O problema nunca foi a comida. Foi sempre a dor que não encontrou outro lugar para existir. Estamos aqui para mudar isso.</blockquote>
+  <p class="quote-author">Com carinho, Evelyn e equipe Table Clinic</p>
+</div>
+
+<footer>Table Clinic &nbsp;·&nbsp; Moema, São Paulo &nbsp;·&nbsp; tableclinic.com.br</footer>
+
+<script>
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.07 });
+  document.querySelectorAll('.fade').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

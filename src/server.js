@@ -36,6 +36,23 @@ app.get('/obrigado-essential',    (req, res) => res.sendFile(path.join(funil, 'o
 app.get('/obrigado-premium',      (req, res) => res.sendFile(path.join(funil, 'obrigado-premium.html')));
 app.get('/obrigado-elite',        (req, res) => res.sendFile(path.join(funil, 'obrigado-elite.html')));
 app.get('/obrigado-essential-pr', (req, res) => res.sendFile(path.join(funil, 'obrigado-essential-pr.html')));
+
+// ─── Rotas de ofertas ─────────────────────────────────────────────────────────
+
+const ofertas = path.join(__dirname, '..', 'public', 'Ofertas');
+
+app.get('/oferta-essential-ju',      (req, res) => res.sendFile(path.join(ofertas, 'table-essential-ju.html')));
+app.get('/oferta-essential-nati',    (req, res) => res.sendFile(path.join(ofertas, 'table-essential-nati.html')));
+app.get('/oferta-essential-pr-ju',   (req, res) => res.sendFile(path.join(ofertas, 'table-essential-pr-ju.html')));
+app.get('/oferta-essential-pr-nati', (req, res) => res.sendFile(path.join(ofertas, 'table-essential-pr-nati.html')));
+app.get('/oferta-premium-ju',        (req, res) => res.sendFile(path.join(ofertas, 'table-premium-ju.html')));
+app.get('/oferta-premium-nati',      (req, res) => res.sendFile(path.join(ofertas, 'table-premium-nati.html')));
+app.get('/oferta-premium-pr-ju',     (req, res) => res.sendFile(path.join(ofertas, 'table-premium-pr-ju.html')));
+app.get('/oferta-premium-pr-nati',   (req, res) => res.sendFile(path.join(ofertas, 'table-premium-pr-nati.html')));
+app.get('/oferta-elite-ju',          (req, res) => res.sendFile(path.join(ofertas, 'table-elite-ju.html')));
+app.get('/oferta-elite-nati',        (req, res) => res.sendFile(path.join(ofertas, 'table-elite-nati.html')));
+app.get('/oferta-elite-pr-ju',       (req, res) => res.sendFile(path.join(ofertas, 'table-elite-pr-ju.html')));
+app.get('/oferta-elite-pr-nati',     (req, res) => res.sendFile(path.join(ofertas, 'table-elite-pr-nati.html')));
 app.get('/obrigado-premium-pr',   (req, res) => res.sendFile(path.join(funil, 'obrigado-premium-pr.html')));
 app.get('/obrigado-elite-pr',     (req, res) => res.sendFile(path.join(funil, 'obrigado-elite-pr.html')));
 app.get('/forms',      (req, res) => res.sendFile(path.join(funil, 'formulario-pre-sessao.html')));

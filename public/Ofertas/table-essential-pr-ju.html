@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Table Essential · Table Clinic</title>
+
+  <!-- Meta Pixel -->
+  <script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window,document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init','989971718548782');
+    fbq('track','PageView');
+    fbq('track','ViewContent',{content_name:'Table Essential'});
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=989971718548782&ev=PageView&noscript=1"/></noscript>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --moss:      #3D4A35;
+      --moss-mid:  #4E5E42;
+      --moss-pale: #E8EDE4;
+      --cream:     #F8F4EE;
+      --warm:      #EDE5D8;
+      --sand:      #D8CCBA;
+      --terra:     #B97040;
+      --terra-dk:  #8A4F28;
+      --brown:     #2C2018;
+      --muted:     #7A6E64;
+      --white:     #FFFFFF;
+      --line:      #DDD4C4;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--brown); overflow-x: hidden; }
+
+    nav {
+      background: var(--moss);
+      padding: 18px 40px;
+      text-align: center;
+    }
+    nav span {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--cream);
+      font-weight: 400;
+      opacity: 0.85;
+    }
+
+    .hero {
+      background: var(--moss);
+      color: var(--cream);
+      text-align: center;
+      padding: 80px 40px 72px;
+    }
+    .hero-eyebrow {
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--sand);
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3.2rem, 9vw, 6rem);
+      font-weight: 300;
+      line-height: 1;
+      letter-spacing: -0.01em;
+      margin-bottom: 28px;
+    }
+    .hero h1 em { font-style: italic; color: var(--terra); }
+    .hero-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 16px;
+      justify-content: center;
+      align-items: center;
+    }
+    .hero-pills span {
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(248,244,238,0.45);
+      font-weight: 400;
+    }
+    .hero-pills span.dot { color: rgba(248,244,238,0.2); font-size: 1rem; line-height: 1; }
+
+    /* fade-in sections */
+    .fade {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .fade.visible { opacity: 1; transform: translateY(0); }
+
+    /* wrappers */
+    .wrap {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 72px 40px;
+    }
+    .wrap-wide {
+      max-width: 100%;
+    }
+    .wrap-wide .inner {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 72px 40px;
+    }
+    .bg-warm { background: var(--warm); }
+    .bg-white { background: var(--white); }
+
+    .section-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--terra);
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.9rem, 4vw, 2.8rem);
+      font-weight: 400;
+      line-height: 1.15;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    h2 em { font-style: italic; color: var(--terra); }
+
+    p {
+      font-size: 1rem;
+      line-height: 1.85;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    p:last-child { margin-bottom: 0; }
+
+    /* includes list */
+    .includes { display: flex; flex-direction: column; }
+    .include-row {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      padding: 26px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .include-row:first-child { border-top: 1px solid var(--line); }
+    .inc-icon {
+      flex-shrink: 0;
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--moss-pale);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem;
+      margin-top: 3px;
+    }
+    .inc-body h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: var(--brown);
+      margin-bottom: 5px;
+    }
+    .inc-body p { font-size: 0.9rem; margin: 0; }
+
+    /* pricing */
+    .price-card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 52px 40px;
+      text-align: center;
+      margin-top: 0;
+    }
+    .price-parcel-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .price-parcel-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.6rem, 7vw, 4.2rem);
+      font-weight: 600;
+      color: var(--moss);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .price-parcel-note {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+    .price-or {
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--sand);
+      margin: 16px 0;
+    }
+    .price-cash {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 500;
+      color: var(--moss);
+      margin-bottom: 4px;
+    }
+    .price-cash-label {
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 36px;
+    }
+    .btn {
+      display: block;
+      background: var(--moss);
+      color: var(--white);
+      text-decoration: none;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 16px 40px;
+      border-radius: 3px;
+      max-width: 340px;
+      margin: 0 auto;
+      text-align: center;
+      transition: background 0.2s, transform 0.18s;
+    }
+    .btn:hover { background: var(--moss-mid); transform: translateY(-2px); }
+    .price-footnote {
+      font-size: 0.84rem;
+      line-height: 1.75;
+      color: var(--muted);
+      text-align: center;
+      font-style: italic;
+      margin-top: 32px;
+    }
+
+    /* quote */
+    .quote-section {
+      text-align: center;
+      padding: 72px 40px;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .quote-glyph {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 5rem;
+      line-height: 0.4;
+      color: var(--sand);
+      display: block;
+      margin-bottom: 28px;
+    }
+    blockquote {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.25rem, 3vw, 1.7rem);
+      font-style: italic;
+      font-weight: 300;
+      line-height: 1.65;
+      color: var(--brown);
+      margin-bottom: 28px;
+    }
+    .quote-author {
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--terra);
+      font-weight: 500;
+    }
+
+    footer {
+      background: var(--brown);
+      color: rgba(248,244,238,0.35);
+      text-align: center;
+      padding: 26px 40px;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+    }
+
+    @media (max-width: 560px) {
+      nav { padding: 16px 24px; }
+      .hero { padding: 56px 24px 52px; }
+      .wrap { padding: 52px 24px; }
+      .wrap-wide .inner { padding: 52px 24px; }
+      .quote-section { padding: 52px 24px; }
+      .price-card { padding: 40px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav><span>Table Clinic</span></nav>
+
+<section class="hero">
+  <p class="hero-eyebrow">Acompanhamento por WhatsApp · 3 meses</p>
+  <h1>Table <em>Essential</em></h1>
+  <div class="hero-pills">
+    <span>O problema nunca foi a comida</span>
+    <span class="dot">·</span>
+    <span>Garantia de 7 dias</span>
+  </div>
+</section>
+
+<!-- INCLUSO -->
+<div class="wrap-wide bg-white fade">
+  <div class="inner">
+    <p class="section-label">O que está incluído</p>
+    <h2>Suporte real, <em>semana a semana</em></h2>
+    <div class="includes">
+      <div class="include-row">
+        <div class="inc-icon">💬</div>
+        <div class="inc-body">
+          <h3>Acompanhamento semanal por WhatsApp e formulários</h3>
+          <p>3 meses de suporte real, semana a semana, cobrindo o trabalho psicoemocional e o plano alimentar personalizado. Você não fica sozinha no meio do caminho.</p>
+        </div>
+      </div>
+      <div class="include-row">
+        <div class="inc-icon">🥗</div>
+        <div class="inc-body">
+          <h3>Plano alimentar personalizado</h3>
+          <p>Construído para a sua rotina, seu histórico e seus objetivos. Com ajustes ao longo dos 3 meses conforme sua evolução real.</p>
+        </div>
+      </div>
+      <div class="include-row">
+        <div class="inc-icon">🧠</div>
+        <div class="inc-body">
+          <h3>Trabalho psicoemocional integrado</h3>
+          <p>Identificação dos padrões e gatilhos emocionais que moldam suas escolhas alimentares. Porque é aí que a mudança real começa.</p>
+        </div>
+      </div>
+      <div class="include-row">
+        <div class="inc-icon">🌿</div>
+        <div class="inc-body">
+          <h3>Comunidade Ativa com Evelyn Liu</h3>
+          <p>Grupo exclusivo com acesso à Evelyn e conteúdos aprofundados. Um espaço de troca com mulheres no mesmo caminho que você.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<div class="wrap-wide bg-warm fade">
+  <div class="inner">
+    <p class="section-label">Investimento</p>
+    <h2>Comece <em>hoje</em></h2>
+    <div class="price-card">
+      <p class="price-parcel-label">12 vezes de</p>
+      <div class="price-parcel-value">R$87,85</div>
+      <div class="price-or">ou</div>
+      <div class="price-cash">R$ 849,50</div>
+      <p class="price-cash-label">à vista</p>
+      <a class="btn" href="https://checkout.infinitepay.io/tableclinic/BdoR8QYrv3" target="_blank" rel="noopener">Quero iniciar meu processo</a>
+    </div>
+
+    <div style="background:rgba(185,112,64,0.1); border:1px solid rgba(185,112,64,0.3); border-radius:4px; padding:20px 24px; margin-top:24px;">
+      <p style="font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--terra); margin-bottom:8px;">Cashback Protocolo Raiz</p>
+      <p style="font-size:0.92rem; color:var(--muted); line-height:1.75; margin:0;">Você já deu o primeiro passo. 50% do valor que investiu no Protocolo Raiz, R$48,50, volta para você ao iniciar o Table Essential hoje.</p>
+    </div>
+
+    <p class="price-footnote">Este valor reflete o momento atual da Table Clinic. À medida que novas histórias se somam ao nosso método, o investimento será ajustado. <strong style="color:var(--terra-dk); font-style:normal;">O que está disponível agora é o ponto de entrada mais acessível que teremos.</strong></p>
+  </div>
+</div>
+
+<!-- QUOTE -->
+<div class="quote-section fade">
+  <span class="quote-glyph">"</span>
+  <blockquote>O problema nunca foi a comida. Foi sempre a dor que não encontrou outro lugar para existir. Estamos aqui para mudar isso.</blockquote>
+  <p class="quote-author">Com carinho, Evelyn e equipe Table Clinic</p>
+</div>
+
+<footer>Table Clinic &nbsp;·&nbsp; Moema, São Paulo &nbsp;·&nbsp; tableclinic.com.br</footer>
+
+<script>
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.07 });
+  document.querySelectorAll('.fade').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

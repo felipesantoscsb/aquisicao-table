@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Table Elite · Table Clinic</title>
+
+  <script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+    document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init','989971718548782');
+    fbq('track','PageView');
+    fbq('track','ViewContent',{content_name:'Table Elite'});
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=989971718548782&ev=PageView&noscript=1"/></noscript>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --moss: #3D4A35;
+      --moss-mid: #4E5E42;
+      --moss-pale: #E8EDE4;
+      --cream: #F8F4EE;
+      --warm: #EDE5D8;
+      --sand: #D8CCBA;
+      --terra: #B97040;
+      --terra-dk: #8A4F28;
+      --brown: #2C2018;
+      --muted: #7A6E64;
+      --white: #FFFFFF;
+      --line: #DDD4C4;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--moss);
+      color: var(--cream);
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.75s ease, transform 0.75s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* HEADER */
+    .header-strip {
+      background: rgba(0,0,0,0.2);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .logo-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--moss-pale);
+      letter-spacing: 0.08em;
+    }
+    .header-badge {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--terra);
+      border: 1px solid rgba(185,112,64,0.4);
+      padding: 4px 12px;
+      border-radius: 2px;
+    }
+
+    /* HERO */
+    .hero {
+      flex: 1;
+      max-width: 740px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 80px 24px 64px;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--terra);
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .produto-nome {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(52px, 11vw, 92px);
+      font-weight: 300;
+      color: var(--cream);
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+
+    .produto-sub {
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      color: rgba(232,237,228,0.38);
+      margin-bottom: 64px;
+      display: block;
+    }
+    .produto-sub span { margin: 0 6px; opacity: 0.5; }
+
+    .ornament {
+      width: 48px;
+      height: 1px;
+      background: var(--terra);
+      margin-bottom: 40px;
+      opacity: 0.6;
+    }
+
+    /* INCLUSOS */
+    .inclusos-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(232,237,228,0.4);
+      margin-bottom: 24px;
+      display: block;
+    }
+
+    .includes-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 56px; }
+
+    .include-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(232,237,228,0.08);
+      border-radius: 4px;
+      padding: 20px 24px;
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+    }
+    .include-icon {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(185,112,64,0.15);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+    .include-icon svg { width: 16px; height: 16px; }
+    .include-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 19px;
+      color: var(--cream);
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+    .include-desc { font-size: 13.5px; line-height: 1.7; color: rgba(232,237,228,0.55); }
+
+    /* PREÇO */
+    .price-section {
+      border-top: 1px solid rgba(232,237,228,0.1);
+      padding-top: 48px;
+      margin-bottom: 40px;
+    }
+
+    .price-anchor {
+      font-size: 15px;
+      color: rgba(232,237,228,0.35);
+      text-decoration: line-through;
+      text-decoration-color: var(--terra);
+      font-weight: 300;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .price-installment-label {
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(232,237,228,0.38);
+      margin-bottom: 2px;
+      display: block;
+    }
+
+    .price-main {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(60px, 12vw, 96px);
+      font-weight: 300;
+      color: var(--cream);
+      line-height: 1;
+      display: flex;
+      align-items: flex-start;
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+    .price-main .currency {
+      font-size: 0.34em;
+      padding-top: 18px;
+      color: rgba(232,237,228,0.55);
+    }
+
+    .price-sep {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .price-sep-line { flex: 1; height: 1px; background: rgba(232,237,228,0.08); }
+    .price-sep-text { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(232,237,228,0.25); }
+
+    .price-vista { font-size: 17px; color: rgba(232,237,228,0.48); font-weight: 300; }
+
+    .urgency-line {
+      font-size: 13px;
+      color: rgba(232,237,228,0.45);
+      font-style: italic;
+      line-height: 1.7;
+      margin: 28px 0 40px;
+      max-width: 480px;
+    }
+
+    /* CTA */
+    .cta-btn {
+      display: inline-block;
+      background: var(--terra);
+      color: var(--white);
+      font-family: 'Jost', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 18px 56px;
+      border-radius: 2px;
+      transition: background 0.25s ease, transform 0.2s ease;
+    }
+    .cta-btn:hover { background: var(--terra-dk); transform: translateY(-1px); }
+
+    .pix-line {
+      display: block;
+      margin-top: 16px;
+      font-size: 13px;
+      color: rgba(232,237,228,0.35);
+    }
+    .pix-line a {
+      color: rgba(232,237,228,0.55);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: color 0.2s;
+    }
+    .pix-line a:hover { color: var(--moss-pale); }
+
+    /* ASSINATURA */
+    .sign-block {
+      margin-top: 64px;
+      padding-top: 32px;
+      border-top: 1px solid rgba(232,237,228,0.08);
+    }
+    .sign-evelyn {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-style: italic;
+      color: rgba(232,237,228,0.65);
+      line-height: 1.55;
+      margin-bottom: 10px;
+    }
+    .sign-name {
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(232,237,228,0.3);
+    }
+
+    /* FOOTER */
+    .footer {
+      background: rgba(0,0,0,0.2);
+      padding: 24px;
+      text-align: center;
+    }
+    .footer p { font-size: 12px; color: rgba(232,237,228,0.18); line-height: 1.6; }
+
+    .mt-16 { margin-top: 16px; }
+    .mt-32 { margin-top: 32px; }
+  </style>
+</head>
+<body>
+
+  <div class="header-strip">
+    <span class="logo-text">Table Clinic</span>
+    <span class="header-badge">Acompanhamento Completo</span>
+  </div>
+
+  <div class="hero">
+
+    <div class="reveal">
+      <span class="eyebrow">Acompanhamento completo · 3 meses</span>
+      <h1 class="produto-nome">Table<br>Elite</h1>
+      <span class="produto-sub">
+        O problema nunca foi a comida
+        <span>·</span>
+        Acesso imediato e vitalício
+        <span>·</span>
+        Garantia de 7 dias
+      </span>
+    </div>
+
+    <div class="ornament reveal"></div>
+
+    <span class="inclusos-label reveal">O que está incluso</span>
+
+    <div class="includes-grid">
+
+      <div class="include-card reveal">
+        <div class="include-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--terra)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div>
+          <div class="include-title">12 encontros presenciais ou online em 3 meses</div>
+          <p class="include-desc">Acompanhamento semanal com a nutricionista ao longo de toda a jornada. Você escolhe o formato que funciona melhor para a sua rotina.</p>
+        </div>
+      </div>
+
+      <div class="include-card reveal">
+        <div class="include-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--terra)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a7 7 0 017 7c0 5-7 13-7 13S5 14 5 9a7 7 0 017-7z"/>
+            <circle cx="12" cy="9" r="2.5"/>
+          </svg>
+        </div>
+        <div>
+          <div class="include-title">Plano alimentar personalizado e trabalho psicoemocional</div>
+          <p class="include-desc">As duas dimensões juntas: o que você come e o que move você emocionalmente. Construído para a sua rotina, seu histórico e seus objetivos, com ajustes ao longo dos 3 meses conforme sua evolução. Separar as duas é o que faz tantos processos não funcionarem.</p>
+        </div>
+      </div>
+
+      <div class="include-card reveal">
+        <div class="include-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--terra)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="include-title">Suporte via WhatsApp por 90 dias</div>
+          <p class="include-desc">Dúvidas, ajustes rápidos e suporte contínuo durante toda a jornada. Você não fica sozinha entre as sessões.</p>
+        </div>
+      </div>
+
+      <div class="include-card reveal">
+        <div class="include-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--terra)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+        </div>
+        <div>
+          <div class="include-title">Comunidade Ativa com Evelyn Liu</div>
+          <p class="include-desc">Grupo exclusivo com acesso direto à Evelyn, conteúdos aprofundados, encontros online e eventos presenciais periódicos.</p>
+        </div>
+      </div>
+
+      <div class="include-card reveal">
+        <div class="include-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--terra)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="include-title">Livro com dedicatória, entregue na sua casa</div>
+          <p class="include-desc">"Gordura Não Existe: O que Existe é Dor", de Evelyn Liu, com dedicatória personalizada. Entregue em casa ou retirado na clínica.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="price-section reveal">
+      <h2 style="font-family:'Cormorant Garamond',serif; font-size:clamp(28px,5vw,38px); font-weight:400; color:var(--cream); line-height:1.2; margin-bottom:32px;">Investimento na sua transformação</h2>
+      <span class="price-anchor" style="font-size:22px;">R$ 3.100</span>
+      <p style="font-size:14px; color:rgba(232,237,228,0.5); line-height:1.7; margin-bottom:32px; max-width:480px;">R$3.100 é o valor do acompanhamento direto da Table. Porque você dedicou tempo para conhecer o nosso método e chegou até aqui com intenção real, o seu investimento é de R$2.400.</p>
+
+      <div style="background:rgba(185,112,64,0.12); border:1px solid rgba(185,112,64,0.25); border-radius:4px; padding:24px; margin-bottom:28px;">
+        <p style="font-size:11px; font-weight:500; letter-spacing:0.18em; text-transform:uppercase; color:var(--terra); margin-bottom:16px;">Cashback Protocolo Raiz</p>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; color:rgba(232,237,228,0.6);">
+            <span>Table Elite à vista</span>
+            <span>R$ 2.400,00</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px; color:rgba(185,112,64,0.9);">
+            <span>Cashback Protocolo Raiz</span>
+            <span>- R$ 97,00</span>
+          </div>
+          <div style="height:1px; background:rgba(185,112,64,0.2);"></div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:13px; font-weight:500; letter-spacing:0.06em; color:rgba(232,237,228,0.5); text-transform:uppercase;">Você paga hoje</span>
+            <span style="font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; color:var(--cream);">R$ 2.303,00</span>
+          </div>
+          <div style="display:flex; justify-content:flex-end;">
+            <span style="font-size:13px; color:rgba(232,237,228,0.35);">ou em 12x de R$ 238,18</span>
+          </div>
+        </div>
+        <p style="font-size:13px; color:rgba(232,237,228,0.55); line-height:1.7; margin:0; font-style:italic;">Você já deu o primeiro passo. O valor que investiu no Protocolo Raiz volta integralmente para você ao iniciar o Table Elite hoje.</p>
+      </div>
+    </div>
+
+    <p class="urgency-line reveal">
+      Este valor reflete o momento atual da Table Clinic. À medida que novas histórias se somam ao nosso método, o investimento será ajustado. <strong style="color:rgba(185,112,64,0.85); font-style:normal;">O que está disponível agora é o ponto de entrada mais acessível que teremos.</strong>
+    </p>
+
+    <div class="reveal">
+      <a href="https://checkout.infinitepay.io/tableclinic/qRSdjUOgma" target="_blank" rel="noopener" class="cta-btn">
+        Quero iniciar meu processo
+      </a>
+    </div>
+
+    <div class="sign-block reveal">
+      <p class="sign-evelyn">
+        "O problema nunca foi a comida. Foi sempre a dor que não encontrou outro lugar para existir. Estamos aqui para mudar isso."
+      </p>
+      <span class="sign-name">Com carinho, Evelyn e equipe Table Clinic</span>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <p>Table Clinic &nbsp;·&nbsp; Moema, São Paulo &nbsp;·&nbsp; tableclinic.com.br</p>
+  </div>
+
+  <script>
+    const reveals = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 80);
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.08 });
+    reveals.forEach(el => obs.observe(el));
+  </script>
+</body>
+</html>
