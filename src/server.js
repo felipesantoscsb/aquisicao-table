@@ -8,6 +8,14 @@ const PORT = process.env.PORT || 3000;
 
 // ─── Middlewares ───────────────────────────────────────────────────────────────
 
+// Redirect non-www → www (301)
+app.use((req, res, next) => {
+  if (req.headers.host === 'evelynliu.com.br') {
+    return res.redirect(301, `https://www.evelynliu.com.br${req.originalUrl}`);
+  }
+  next();
+});
+
 // Lê o body das requisições JSON
 app.use(express.json());
 
