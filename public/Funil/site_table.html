@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<!-- SEO básico -->
+<title>Table — Evelyn Liu · Moema, SP</title>
+<meta name="description" content="A Table é o espaço de Evelyn Liu, autora de 'Gordura Não Existe', para repensar a relação com a comida a partir das emoções. Em Moema, São Paulo, e online para todo o Brasil."/>
+<meta name="keywords" content="relação com a comida, comer com consciência, bem-estar emocional, Evelyn Liu, Table, Moema"/>
+<meta name="author" content="Evelyn Liu — Table"/>
+<link rel="canonical" href="https://www.evelynliu.com.br/"/>
+
+<!-- Open Graph (Facebook, Instagram, WhatsApp) -->
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://www.evelynliu.com.br/"/>
+<meta property="og:title" content="Table — O problema nunca foi a comida"/>
+<meta property="og:description" content="A Table é o espaço de Evelyn Liu para repensar a relação com a comida a partir das emoções. Moema, SP e online."/>
+<meta property="og:image" content="https://www.evelynliu.com.br/images/evelyn-liu.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:locale" content="pt_BR"/>
+<meta property="og:site_name" content="Table"/>
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Table — O problema nunca foi a comida"/>
+<meta name="twitter:description" content="A Table é o espaço de Evelyn Liu para repensar a relação com a comida."/>
+<meta name="twitter:image" content="https://www.evelynliu.com.br/images/evelyn-liu.png"/>
+
+<!-- Schema Markup — Local Business -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "Table",
+  "description": "Espaço de nutrição comportamental dedicado à relação emocional com a comida.",
+  "url": "https://www.evelynliu.com.br",
+  "logo": "https://www.evelynliu.com.br/images/Mockup 1.png",
+  "image": "https://www.evelynliu.com.br/images/evelyn-liu.png",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Moema",
+    "addressRegion": "SP",
+    "addressCountry": "BR"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": "-23.5997",
+    "longitude": "-46.6639"
+  },
+  "founder": {
+    "@type": "Person",
+    "name": "Evelyn Liu",
+    "jobTitle": "Nutricionista Comportamental",
+    "sameAs": "https://www.instagram.com/nutrievelynliu"
+  },
+  "sameAs": [
+    "https://www.instagram.com/nutrievelynliu"
+  ],
+  "priceRange": "$$",
+  "areaServed": "Brasil"
+}
+</script>
+
+<!-- Schema Markup — Person (Evelyn Liu) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Evelyn Liu",
+  "jobTitle": "Nutricionista Comportamental",
+  "worksFor": {
+    "@type": "Organization",
+    "name": "Table"
+  },
+  "url": "https://www.evelynliu.com.br",
+  "sameAs": [
+    "https://www.instagram.com/nutrievelynliu"
+  ]
+}
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --moss:#3D4A35;--moss-mid:#4E5E42;--moss-lt:#6B7D5C;--moss-pale:#E8EDE4;--moss-deep:#2A3324;
+  --cream:#F8F4EE;--warm:#EDE5D8;--sand:#D8CCBA;
+  --terra:#B97040;--terra-dk:#8A4F28;--terra-lt:#F5EAE0;
+  --brown:#2C2018;--muted:#7A6E64;--soft:#A89E94;
+  --white:#FFFFFF;--line:#DDD4C4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Jost',sans-serif;
+  background:var(--cream);
+  color:var(--brown);
+  overflow-x:hidden;
+}
+
+/* NOISE */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:999;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.022'/%3E%3C/svg%3E");
+}
+
+/* ═══════════════════════════════
+   NAV
+═══════════════════════════════ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:0 40px;
+  display:flex;align-items:center;justify-content:space-between;
+  height:64px;
+  transition:background .4s,box-shadow .4s;
+}
+nav.scrolled{
+  background:rgba(61,74,53,.97);
+  box-shadow:0 2px 20px rgba(0,0,0,.15);
+  backdrop-filter:blur(8px);
+}
+.nav-logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:13px;letter-spacing:.35em;text-transform:uppercase;
+  color:var(--white);text-decoration:none;
+  opacity:.9;transition:opacity .2s;
+}
+.nav-logo:hover{opacity:1}
+.nav-links{
+  display:flex;align-items:center;gap:32px;
+}
+.nav-links a{
+  font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(255,255,255,.65);text-decoration:none;
+  transition:color .2s;
+}
+.nav-links a:hover{color:var(--white)}
+.nav-cta{
+  font-size:12px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;
+  background:var(--terra);color:var(--white);
+  padding:9px 22px;border-radius:2px;text-decoration:none;
+  transition:all .2s;
+}
+.nav-cta:hover{background:var(--terra-dk)}
+.nav-mobile-btn{display:none;background:none;border:none;cursor:pointer;color:var(--white)}
+@media(max-width:768px){
+  nav{padding:0 20px}
+  .nav-links{display:none}
+  .nav-mobile-btn{display:block}
+}
+
+/* ═══════════════════════════════
+   HERO
+═══════════════════════════════ */
+#hero{
+  min-height:100vh;
+  background:var(--moss-deep);
+  display:flex;align-items:center;
+  position:relative;overflow:hidden;
+  padding:100px 40px 80px;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 60% 80% at 70% 50%, rgba(78,94,66,.4) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 20% 80%, rgba(185,112,64,.12) 0%, transparent 60%);
+}
+.hero-grid{
+  position:relative;z-index:1;
+  max-width:1100px;margin:0 auto;width:100%;
+  display:grid;grid-template-columns:1fr 400px;gap:80px;align-items:center;
+}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:48px}}
+
+.hero-eyebrow{
+  font-size:11px;letter-spacing:.25em;text-transform:uppercase;
+  color:var(--terra);font-weight:500;margin-bottom:24px;
+  opacity:0;animation:fadeUp .8s ease .2s forwards;
+}
+.hero-h1{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(40px,6vw,72px);
+  line-height:1.05;
+  color:var(--white);
+  margin-bottom:28px;
+  font-weight:300;
+  opacity:0;animation:fadeUp .8s ease .35s forwards;
+}
+.hero-h1 em{color:var(--terra);font-style:italic}
+.hero-h1 .line2{display:block;padding-left:60px}
+@media(max-width:600px){.hero-h1 .line2{padding-left:0}}
+.hero-sub{
+  font-size:17px;line-height:1.8;
+  color:rgba(255,255,255,.6);
+  max-width:480px;margin-bottom:44px;
+  opacity:0;animation:fadeUp .8s ease .5s forwards;
+}
+.hero-sub strong{color:rgba(255,255,255,.9);font-weight:500}
+.hero-actions{
+  display:flex;gap:14px;flex-wrap:wrap;
+  opacity:0;animation:fadeUp .8s ease .65s forwards;
+}
+.btn-hero-primary{
+  display:inline-block;background:var(--terra);color:var(--white);
+  font-family:'Jost',sans-serif;font-size:14px;font-weight:500;
+  letter-spacing:.06em;padding:16px 40px;border-radius:2px;
+  text-decoration:none;transition:all .25s;
+}
+.btn-hero-primary:hover{background:var(--terra-dk);transform:translateY(-2px);box-shadow:0 8px 28px rgba(185,112,64,.35)}
+.btn-hero-ghost{
+  display:inline-block;color:rgba(255,255,255,.7);
+  font-size:14px;letter-spacing:.06em;padding:16px 32px;
+  border:1px solid rgba(255,255,255,.2);border-radius:2px;
+  text-decoration:none;transition:all .25s;
+}
+.btn-hero-ghost:hover{color:var(--white);border-color:rgba(255,255,255,.5)}
+
+.hero-photo{
+  position:relative;opacity:0;animation:fadeUp .8s ease .4s forwards;
+}
+.hero-photo-frame{
+  width:100%;aspect-ratio:3/4;border-radius:4px;overflow:hidden;
+  background:var(--moss);
+  position:relative;
+}
+.hero-photo-frame img{width:100%;height:100%;object-fit:cover;object-position:center top}
+.hero-photo-ph{
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:18px;color:rgba(255,255,255,.3);
+  font-style:italic;
+}
+.hero-photo-caption{
+  position:absolute;bottom:-16px;left:20px;right:-20px;
+  background:var(--terra);color:var(--white);
+  padding:14px 18px;border-radius:2px;
+  font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;
+}
+.hero-photo-caption strong{display:block;font-style:normal;font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-family:'Jost',sans-serif;opacity:.8;margin-bottom:3px}
+.hero-scroll{
+  position:absolute;bottom:40px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  opacity:0;animation:fadeUp .8s ease 1.2s forwards;
+}
+.hero-scroll span{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+.scroll-line{width:1px;height:48px;background:linear-gradient(to bottom,rgba(255,255,255,.3),transparent);animation:scrollPulse 2s ease infinite}
+
+/* ═══════════════════════════════
+   TESE
+═══════════════════════════════ */
+#tese{
+  background:var(--cream);
+  padding:120px 40px;
+  position:relative;
+}
+.tese-inner{max-width:820px;margin:0 auto;text-align:center}
+.section-eyebrow{
+  font-size:11px;letter-spacing:.25em;text-transform:uppercase;
+  color:var(--terra);font-weight:500;margin-bottom:20px;
+}
+.tese-h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(30px,5vw,56px);
+  line-height:1.15;font-weight:300;
+  color:var(--brown);margin-bottom:32px;
+}
+.tese-h2 em{color:var(--moss);font-style:italic}
+.tese-body{
+  font-size:18px;line-height:1.9;color:var(--muted);
+  max-width:620px;margin:0 auto 56px;
+}
+.tese-body strong{color:var(--brown);font-weight:500}
+.tese-pillars{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:2px;
+  background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden;
+}
+@media(max-width:600px){.tese-pillars{grid-template-columns:1fr}}
+.pillar{
+  background:var(--white);padding:32px 28px;text-align:left;
+  transition:background .2s;
+}
+.pillar:hover{background:var(--moss-pale)}
+.pillar-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:40px;color:var(--moss);opacity:.3;
+  line-height:1;margin-bottom:16px;font-weight:300;
+}
+.pillar-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px;color:var(--brown);margin-bottom:8px;
+}
+.pillar-desc{font-size:13px;color:var(--muted);line-height:1.7}
+
+/* ═══════════════════════════════
+   EVELYN
+═══════════════════════════════ */
+#evelyn{
+  background:var(--moss);
+  padding:120px 40px;
+  position:relative;overflow:hidden;
+}
+#evelyn::before{
+  content:'';position:absolute;top:-100px;right:-100px;
+  width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.05) 0%,transparent 65%);
+  pointer-events:none;
+}
+.evelyn-inner{
+  max-width:1100px;margin:0 auto;
+  display:grid;grid-template-columns:380px 1fr;gap:80px;align-items:start;
+}
+@media(max-width:900px){.evelyn-inner{grid-template-columns:1fr;gap:48px}}
+.evelyn-photo-wrap{position:relative}
+.evelyn-photo{
+  width:100%;aspect-ratio:3/4;border-radius:4px;overflow:hidden;
+  background:var(--moss-mid);
+}
+.evelyn-photo img{width:100%;height:100%;object-fit:cover;object-position:center top}
+.evelyn-photo-ph{
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:18px;color:rgba(255,255,255,.3);
+  font-style:italic;
+}
+.evelyn-badge{
+  position:absolute;bottom:-14px;right:-14px;
+  background:var(--terra);color:var(--white);
+  padding:14px 18px;border-radius:2px;
+  font-size:12px;line-height:1.5;
+}
+.evelyn-badge strong{display:block;font-size:18px;font-family:'Cormorant Garamond',serif;font-weight:400}
+
+.evelyn-content{padding-top:8px}
+.evelyn-eyebrow{margin-bottom:20px}
+.evelyn-name{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(36px,5vw,56px);font-weight:300;
+  color:var(--white);line-height:1.1;margin-bottom:6px;
+}
+.evelyn-title{
+  font-size:13px;color:rgba(255,255,255,.5);
+  letter-spacing:.08em;margin-bottom:32px;
+}
+.evelyn-pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:32px}
+.evelyn-pill{
+  font-size:11px;padding:5px 14px;border-radius:20px;
+  background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);
+  border:1px solid rgba(255,255,255,.12);
+}
+.evelyn-bio{
+  font-size:16px;line-height:1.85;color:rgba(255,255,255,.65);
+  margin-bottom:32px;
+}
+.evelyn-bio strong{color:rgba(255,255,255,.9);font-weight:500}
+.evelyn-quote{
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px;font-style:italic;line-height:1.5;
+  color:var(--terra);border-left:2px solid var(--terra);
+  padding-left:20px;
+}
+
+/* ═══════════════════════════════
+   METODOLOGIA
+═══════════════════════════════ */
+#metodologia{
+  background:var(--warm);
+  padding:120px 40px;
+  border-top:1px solid var(--line);
+}
+.metod-inner{max-width:1100px;margin:0 auto}
+.metod-header{margin-bottom:64px}
+.metod-h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(30px,4vw,50px);font-weight:300;
+  color:var(--brown);margin-bottom:12px;line-height:1.2;
+}
+.metod-h2 em{color:var(--moss);font-style:italic}
+.metod-sub{font-size:16px;color:var(--muted);max-width:480px;line-height:1.7}
+.metod-steps{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:2px;
+  background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden;
+}
+@media(max-width:800px){.metod-steps{grid-template-columns:1fr 1fr}}
+@media(max-width:500px){.metod-steps{grid-template-columns:1fr}}
+.metod-step{
+  background:var(--white);padding:36px 28px;
+  position:relative;transition:background .2s;
+}
+.metod-step:hover{background:var(--moss-pale)}
+.step-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:64px;font-weight:300;color:var(--moss);
+  opacity:.12;line-height:1;margin-bottom:20px;
+  position:absolute;top:20px;right:20px;
+}
+.step-icon{font-size:28px;margin-bottom:14px}
+.step-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:21px;color:var(--brown);margin-bottom:10px;
+}
+.step-desc{font-size:13px;color:var(--muted);line-height:1.7}
+
+/* ═══════════════════════════════
+   LIVRO
+═══════════════════════════════ */
+#livro{
+  background:var(--moss-deep);
+  padding:120px 40px;
+  position:relative;overflow:hidden;
+}
+#livro::after{
+  content:'';position:absolute;bottom:-80px;right:-80px;
+  width:400px;height:400px;border-radius:50%;
+  background:radial-gradient(circle,rgba(185,112,64,.15) 0%,transparent 65%);
+}
+.livro-inner{
+  max-width:1100px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 360px;gap:80px;align-items:center;
+}
+@media(max-width:900px){.livro-inner{grid-template-columns:1fr;gap:48px}}
+.livro-content{position:relative;z-index:1}
+.livro-eyebrow{margin-bottom:20px}
+.livro-h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(32px,5vw,56px);font-weight:300;
+  color:var(--white);line-height:1.1;margin-bottom:20px;
+}
+.livro-h2 em{color:var(--terra);font-style:italic}
+.livro-sub{
+  font-size:16px;line-height:1.85;color:rgba(255,255,255,.6);
+  margin-bottom:36px;max-width:520px;
+}
+.livro-sub strong{color:rgba(255,255,255,.9);font-weight:500}
+.livro-tese{
+  font-family:'Cormorant Garamond',serif;
+  font-size:24px;font-style:italic;
+  color:var(--terra);line-height:1.4;
+  border-left:2px solid var(--terra);padding-left:20px;
+  margin-bottom:40px;
+}
+.btn-livro{
+  display:inline-block;background:var(--terra);color:var(--white);
+  font-size:13px;font-weight:500;letter-spacing:.08em;
+  padding:14px 36px;border-radius:2px;text-decoration:none;
+  transition:all .25s;
+}
+.btn-livro:hover{background:var(--terra-dk);transform:translateY(-2px)}
+
+.livro-cover{
+  position:relative;z-index:1;
+}
+.livro-cover-img{
+  width:100%;aspect-ratio:3/4;border-radius:4px;overflow:hidden;
+  background:var(--moss);
+  box-shadow:0 32px 64px rgba(0,0,0,.4);
+}
+.livro-cover-img img{width:100%;height:100%;object-fit:cover}
+.livro-cover-ph{
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:20px;color:rgba(255,255,255,.3);
+  font-style:italic;padding:32px;text-align:center;line-height:1.6;
+}
+
+/* ═══════════════════════════════
+   GRACINHA
+═══════════════════════════════ */
+#gracinha{
+  background:var(--cream);
+  padding:120px 40px;
+  border-top:1px solid var(--line);
+}
+.gracinha-inner{max-width:1100px;margin:0 auto}
+.gracinha-header{margin-bottom:64px;max-width:600px}
+.gracinha-h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(28px,4vw,48px);font-weight:300;
+  color:var(--brown);margin-bottom:12px;line-height:1.2;
+}
+.gracinha-h2 em{color:var(--moss);font-style:italic}
+.gracinha-sub{font-size:16px;color:var(--muted);line-height:1.75}
+.gracinha-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px;
+  margin-bottom:48px;
+}
+@media(max-width:900px){.gracinha-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.gracinha-grid{grid-template-columns:1fr 1fr}}
+.gracinha-card{border-radius:4px;overflow:hidden;background:var(--white);border:1px solid var(--line)}
+.gracinha-photo{
+  width:100%;aspect-ratio:3/4;background:var(--warm);
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.gracinha-photo img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.gracinha-photo-ph{font-size:11px;color:var(--muted);text-align:center;padding:8px;line-height:1.5}
+.gracinha-kg{
+  position:absolute;bottom:8px;left:8px;
+  background:var(--moss);color:var(--white);
+  font-size:11px;font-weight:500;padding:4px 10px;border-radius:2px;
+  letter-spacing:.04em;
+}
+.gracinha-body{padding:14px}
+.gracinha-name{font-size:12px;font-weight:500;color:var(--brown);margin-bottom:4px}
+.gracinha-quote{font-size:11px;color:var(--muted);line-height:1.6;font-style:italic}
+.gracinha-note{
+  font-size:13px;color:var(--muted);line-height:1.7;
+  border-top:1px solid var(--line);padding-top:24px;
+  max-width:560px;
+}
+
+/* ═══════════════════════════════
+   FAQ
+═══════════════════════════════ */
+#faq{
+  background:var(--warm);
+  padding:120px 40px;
+  border-top:1px solid var(--line);
+}
+.faq-inner{max-width:720px;margin:0 auto}
+.faq-h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(28px,4vw,44px);font-weight:300;
+  color:var(--brown);margin-bottom:52px;line-height:1.2;
+}
+.faq-h2 em{color:var(--moss);font-style:italic}
+.faq-item{
+  border-bottom:1px solid var(--line);cursor:pointer;
+  padding:22px 0;
+}
+.faq-item:first-of-type{border-top:1px solid var(--line)}
+.faq-q{
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  font-size:16px;font-weight:500;color:var(--brown);line-height:1.4;
+}
+.faq-arrow{
+  font-size:20px;color:var(--moss);flex-shrink:0;
+  transition:transform .3s;
+}
+.faq-item.open .faq-arrow{transform:rotate(45deg)}
+.faq-a{
+  font-size:15px;color:var(--muted);line-height:1.8;
+  max-height:0;overflow:hidden;
+  transition:max-height .4s ease,padding .3s;
+}
+.faq-item.open .faq-a{max-height:400px;padding-top:16px}
+
+/* ═══════════════════════════════
+   CTA FINAL
+═══════════════════════════════ */
+#cta{
+  background:var(--moss);
+  padding:120px 40px;
+  text-align:center;
+  position:relative;overflow:hidden;
+}
+#cta::before{
+  content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.05) 0%,transparent 65%);
+  pointer-events:none;
+}
+.cta-inner{position:relative;z-index:1;max-width:640px;margin:0 auto}
+.cta-eyebrow{margin-bottom:20px}
+.cta-h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(32px,5vw,58px);font-weight:300;
+  color:var(--white);line-height:1.1;margin-bottom:20px;
+}
+.cta-h2 em{color:var(--terra);font-style:italic}
+.cta-sub{
+  font-size:17px;line-height:1.8;color:rgba(255,255,255,.6);
+  margin-bottom:44px;
+}
+.cta-sub strong{color:rgba(255,255,255,.9);font-weight:500}
+.cta-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn-cta-primary{
+  display:inline-block;background:var(--terra);color:var(--white);
+  font-size:14px;font-weight:500;letter-spacing:.06em;
+  padding:16px 44px;border-radius:2px;text-decoration:none;
+  transition:all .25s;
+}
+.btn-cta-primary:hover{background:var(--terra-dk);transform:translateY(-2px);box-shadow:0 8px 28px rgba(185,112,64,.35)}
+.btn-cta-ghost{
+  display:inline-block;color:rgba(255,255,255,.7);
+  font-size:14px;letter-spacing:.06em;
+  padding:16px 36px;border:1px solid rgba(255,255,255,.2);border-radius:2px;
+  text-decoration:none;transition:all .25s;
+}
+.btn-cta-ghost:hover{color:var(--white);border-color:rgba(255,255,255,.5)}
+.cta-sign{
+  font-family:'Cormorant Garamond',serif;
+  font-size:18px;font-style:italic;color:var(--terra);
+  margin-top:52px;
+}
+
+/* ═══════════════════════════════
+   FOOTER
+═══════════════════════════════ */
+footer{
+  background:var(--moss-deep);
+  padding:48px 40px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:20px;flex-wrap:wrap;
+}
+.footer-logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:12px;letter-spacing:.35em;text-transform:uppercase;
+  color:rgba(255,255,255,.4);text-decoration:none;
+}
+.footer-links{display:flex;gap:24px}
+.footer-links a{font-size:12px;color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:rgba(255,255,255,.6)}
+.footer-fine{font-size:11px;color:rgba(255,255,255,.25)}
+@media(max-width:600px){footer{padding:32px 20px;flex-direction:column;gap:16px}}
+
+/* ═══════════════════════════════
+   SCROLL REVEAL
+═══════════════════════════════ */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s ease}
+.reveal.visible{opacity:1;transform:none}
+.reveal-delay-1{transition-delay:.1s}
+.reveal-delay-2{transition-delay:.2s}
+.reveal-delay-3{transition-delay:.3s}
+.reveal-delay-4{transition-delay:.4s}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes scrollPulse{0%,100%{opacity:.3}50%{opacity:.8}}
+
+@media(max-width:600px){
+  #hero,#tese,#evelyn,#metodologia,#livro,#gracinha,#faq,#cta{padding-left:20px;padding-right:20px}
+  .evelyn-badge{bottom:-10px;right:-10px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#hero" class="nav-logo">Table</a>
+  <div class="nav-links">
+    <a href="#tese">Método</a>
+    <a href="#evelyn">Evelyn Liu</a>
+    <a href="#livro">O Livro</a>
+    <a href="/conversa" class="nav-cta">Quero uma conversa</a>
+  </div>
+  <button class="nav-mobile-btn" onclick="toggleMenu()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid">
+    <div>
+      <p class="hero-eyebrow">Table · Moema, São Paulo</p>
+      <h1 class="hero-h1">
+        O problema<br>
+        nunca foi<br>
+        <span class="line2"><em>a comida.</em></span>
+      </h1>
+      <p class="hero-sub">
+        <strong>Foi sempre o que veio antes da primeira garfada.</strong><br>
+        Aqui a gente olha para o que está por trás da relação com a comida — as emoções, não a comida em si.
+      </p>
+      <div class="hero-actions">
+        <a href="/conversa" class="btn-hero-primary">Quero uma conversa →</a>
+        <a href="/protocolo-raiz" class="btn-hero-ghost">Conhecer o Protocolo Raiz</a>
+      </div>
+    </div>
+    <div class="hero-photo">
+      <div class="hero-photo-frame">
+        <!--
+          SUBSTITUIR: <img src="/images/evelyn-liu.png" alt="Evelyn Liu"/>
+        -->
+        <img src="/images/evelyn-liu.png" alt="Evelyn Liu — Table"/>
+      </div>
+      <div class="hero-photo-caption">
+        <strong>Evelyn Liu</strong>
+        Nutricionista comportamental · Autora · Fundadora
+      </div>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <span>Role para baixo</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- TESE -->
+<section id="tese">
+  <div class="tese-inner">
+    <p class="section-eyebrow reveal">A virada que muda tudo</p>
+    <h2 class="tese-h2 reveal">Gordura não existe.<br><em>O que existe é dor.</em></h2>
+    <p class="tese-body reveal">
+      Depois de anos atendendo mulheres que faziam tudo certo e mesmo assim não conseguiam manter, chegamos a uma conclusão que virou livro:<br><br>
+      <strong>Nenhuma delas tinha um problema com comida. Elas tinham uma dor que não encontrou outro lugar para existir.</strong>
+    </p>
+    <div class="tese-pillars reveal">
+      <div class="pillar">
+        <div class="pillar-num">01</div>
+        <p class="pillar-title">Não é falta de disciplina</p>
+        <p class="pillar-desc">É uma resposta emocional que o corpo aprendeu como forma de sobreviver. Tratar isso como fraqueza é o erro central de toda dieta convencional.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">02</div>
+        <p class="pillar-title">O prato não é o problema</p>
+        <p class="pillar-desc">O que vai no prato é sintoma. O que vem antes da primeira garfada — a ansiedade, o esvaziamento, a exaustão — é a causa real.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">03</div>
+        <p class="pillar-title">Quando a dor é tratada</p>
+        <p class="pillar-desc">O corpo encontra o equilíbrio sozinho. Sem violência emocional, sem restrição extrema, sem aquela sensação de estar em guerra consigo mesma.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVELYN -->
+<section id="evelyn">
+  <div class="evelyn-inner">
+    <div class="reveal">
+      <div class="evelyn-photo-wrap">
+        <div class="evelyn-photo">
+          <!--
+            SUBSTITUIR: <img src="/images/No Palco.jpg" alt="Evelyn Liu palestrando"/>
+          -->
+          <img src="/images/evelyn-liu.png" alt="Evelyn Liu palestrando"/>
+        </div>
+        <div class="evelyn-badge">
+          <strong>127k</strong>
+          seguidores no Instagram
+        </div>
+      </div>
+    </div>
+    <div class="evelyn-content reveal reveal-delay-2">
+      <p class="evelyn-eyebrow section-eyebrow" style="color:var(--terra)">Quem está por trás do método</p>
+      <h2 class="evelyn-name">Evelyn Liu</h2>
+      <p class="evelyn-title">Nutricionista comportamental · Autora · Palestrante · Fundadora da Table</p>
+      <div class="evelyn-pills">
+        <span class="evelyn-pill">Autora: "Gordura Não Existe"</span>
+        <span class="evelyn-pill">Table · Moema, SP</span>
+        <span class="evelyn-pill">Palestrante para nutricionistas</span>
+        <span class="evelyn-pill">Nutrição comportamental</span>
+      </div>
+      <p class="evelyn-bio">
+        Depois de anos atendendo mulheres que sabiam exatamente o que precisavam fazer — e mesmo assim não conseguiam — Evelyn percebeu que o problema nunca estava no prato.<br><br>
+        <strong>Estava na história que cada uma carregava. Na dor que não tinha outro lugar para existir.</strong><br><br>
+        Essa descoberta virou método e virou livro. Hoje a Table acompanha centenas de mulheres nesse trabalho — e as histórias falam por elas mesmas.
+      </p>
+      <p class="evelyn-quote">
+        "O que eu aprendi é que ninguém que acompanho tinha de fato um problema com comida. Havia uma dor que eu precisava aprender a enxergar."
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- METODOLOGIA -->
+<section id="metodologia">
+  <div class="metod-inner">
+    <div class="metod-header">
+      <p class="section-eyebrow reveal">Como trabalhamos</p>
+      <h2 class="metod-h2 reveal">O método que trata<br><em>o que está por trás.</em></h2>
+      <p class="metod-sub reveal">Não começamos pelo cardápio. Começamos pela pergunta que ninguém nunca te fez direito.</p>
+    </div>
+    <div class="metod-steps">
+      <div class="metod-step reveal">
+        <div class="step-num">01</div>
+        <div class="step-icon">🔍</div>
+        <p class="step-title">Reconhecer a dor</p>
+        <p class="step-desc">Ajudamos você a reconhecer o padrão emocional que mais aparece na sua relação com a comida — e a entender de onde ele vem.</p>
+      </div>
+      <div class="metod-step reveal reveal-delay-1">
+        <div class="step-num">02</div>
+        <div class="step-icon">🧠</div>
+        <p class="step-title">Entender o comportamento</p>
+        <p class="step-desc">Não é falta de disciplina. É uma resposta emocional que o seu sistema nervoso criou para te proteger. Quando você entende isso, muda tudo.</p>
+      </div>
+      <div class="metod-step reveal reveal-delay-2">
+        <div class="step-num">03</div>
+        <div class="step-icon">🌱</div>
+        <p class="step-title">Ressignificar a relação</p>
+        <p class="step-desc">Sem culpa, sem restrição extrema, sem proibições. Construímos uma nova relação com a comida e com o seu corpo — com gentileza.</p>
+      </div>
+      <div class="metod-step reveal reveal-delay-3">
+        <div class="step-num">04</div>
+        <div class="step-icon">🦋</div>
+        <p class="step-title">Construir autonomia</p>
+        <p class="step-desc">O objetivo não é depender de nós para sempre. É te dar ferramentas para que você consiga se cuidar com consistência, no seu ritmo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LIVRO -->
+<section id="livro">
+  <div class="livro-inner">
+    <div class="livro-content">
+      <p class="livro-eyebrow section-eyebrow" style="color:var(--terra)">O livro que virou método</p>
+      <h2 class="livro-h2 reveal">Gordura Não Existe:<br><em>O que Existe é Dor</em></h2>
+      <p class="livro-sub reveal">
+        Não é um livro de dieta. Não tem cardápio, não tem contagem de calorias, não tem lista de alimentos proibidos.<br><br>
+        <strong>É a tese que fundamenta tudo o que fazemos na Table.</strong> O argumento central que muda como você enxerga o seu próprio corpo — e a sua história.
+      </p>
+      <p class="livro-tese reveal">"O problema nunca foi a comida. Foi sempre a dor que não encontrou outro lugar para existir."</p>
+      <a href="https://www.amazon.com.br/Gordura-N%C3%A3o-Existe-que-Dor/dp/6501455421/ref=sr_1_1?__mk_pt_BR=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=QQKIKJAE8R41&dib=eyJ2IjoiMSJ9.4hPiMzxqtgdfU94nt8_dae79uMnU0GGdumn2VnxgZVrGjHj071QN20LucGBJIEps.uJ2XHI2kEYAw0oG-YOYL8ubnqSaE6g1ZwxuNkbPJlBM&dib_tag=se&keywords=Gordura+N%C3%A3o+Existe&qid=1777901924&sprefix=gordura+n%C3%A3o+existe%2Caps%2C219&sr=8-1&ufe=app_do%3Aamzn1.fos.6d798eae-cadf-45de-946a-f477d47705b9" target="_blank" class="btn-livro reveal">Conhecer o livro →</a>
+    </div>
+    <div class="livro-cover reveal reveal-delay-2">
+      <div class="livro-cover-img">
+        <!--
+          SUBSTITUIR: <img src="/images/Mockup 3.jpg" alt="Gordura Não Existe — Evelyn Liu"/>
+        -->
+        <img src="/images/Mockup 1.png" alt="Gordura Não Existe — Evelyn Liu"/>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="faq-inner">
+    <h2 class="faq-h2 reveal">Perguntas <em>que chegam sempre.</em></h2>
+
+    <div class="faq-item reveal" onclick="toggleFaq(this)">
+      <div class="faq-q">A Table é sobre dieta? <span class="faq-arrow">+</span></div>
+      <p class="faq-a">Não. A Table não é dieta nem plano alimentar. O trabalho é sobre a relação emocional com a comida — o que se sente antes, durante e depois de comer. Quando essa relação muda, o bem-estar acompanha.</p>
+    </div>
+
+    <div class="faq-item reveal" onclick="toggleFaq(this)">
+      <div class="faq-q">Funciona para hipotireoidismo, SOP e menopausa? <span class="faq-arrow">+</span></div>
+      <p class="faq-a">O trabalho da Table é comportamental e emocional, e funciona junto com o acompanhamento de saúde que você já faz. Não substituímos orientação médica — somamos a camada emocional, que costuma ficar de fora.</p>
+    </div>
+
+    <div class="faq-item reveal" onclick="toggleFaq(this)">
+      <div class="faq-q">Como funciona o atendimento? <span class="faq-arrow">+</span></div>
+      <p class="faq-a">O primeiro passo é uma pré-consulta gratuita com nossa nutricionista comportamental — presencial em Moema ou por videochamada. Ali entendemos o seu histórico e definimos o melhor caminho. Não tem cardápio pronto na primeira consulta.</p>
+    </div>
+
+    <div class="faq-item reveal" onclick="toggleFaq(this)">
+      <div class="faq-q">O que é o Protocolo Raiz? <span class="faq-arrow">+</span></div>
+      <p class="faq-a">É o primeiro passo estruturado para quem quer entender melhor a própria relação com a comida. Inclui exercícios psicoemocionais, um e-book e uma sessão individual de direcionamento com a equipe. Por R$97, com garantia de 7 dias.</p>
+    </div>
+
+    <div class="faq-item reveal" onclick="toggleFaq(this)">
+      <div class="faq-q">Atende presencialmente ou online? <span class="faq-arrow">+</span></div>
+      <p class="faq-a">Os dois. Atendemos presencialmente em Moema, São Paulo, e em todo o Brasil por videochamada, com a mesma atenção.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section id="cta">
+  <div class="cta-inner">
+    <p class="cta-eyebrow section-eyebrow" style="color:var(--terra)">Por onde você quer começar?</p>
+    <h2 class="cta-h2 reveal">O problema nunca foi<br>a comida. <em>Nunca foi.</em></h2>
+    <p class="cta-sub reveal">
+      <strong>Você não precisa de mais uma dieta.</strong><br>
+      Você precisa de alguém que entenda o que está por trás — e que ajude a tratar isso de verdade.
+    </p>
+    <div class="cta-actions reveal">
+      <a href="/conversa" class="btn-cta-primary">Quero uma conversa →</a>
+      <a href="/protocolo-raiz" class="btn-cta-ghost">Conhecer o Protocolo Raiz</a>
+    </div>
+    <p class="cta-sign reveal">Com carinho, Evelyn.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#hero" class="footer-logo">Table</a>
+  <div class="footer-links">
+    <a href="/legal">Política de Privacidade</a>
+    <a href="/legal">Termos de Uso</a>
+    <a href="https://instagram.com/nutrievelynliu" target="_blank">Instagram</a>
+  </div>
+  <p class="footer-fine">© Table · Evelyn Liu · Moema, SP</p>
+</footer>
+
+<script>
+// ── NAV SCROLL ──
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// ── SCROLL REVEAL ──
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+  });
+}, { threshold: 0.1 });
+reveals.forEach(el => observer.observe(el));
+
+// ── FAQ ──
+function toggleFaq(el) {
+  const open = el.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!open) el.classList.add('open');
+}
+
+// ── MOBILE MENU ──
+function toggleMenu() {
+  const links = document.querySelector('.nav-links');
+  const isOpen = links.style.display === 'flex';
+  links.style.cssText = isOpen ? '' : 'display:flex;flex-direction:column;position:fixed;top:64px;left:0;right:0;background:var(--moss);padding:20px;gap:16px;z-index:99;box-shadow:0 8px 24px rgba(0,0,0,.2)';
+}
+</script>
+</body>
+</html>

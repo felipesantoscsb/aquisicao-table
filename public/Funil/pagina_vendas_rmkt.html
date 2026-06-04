@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Protocolo Raiz — Table · Evelyn Liu</title>
+<!-- Meta Pixel -->
+
+
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --moss:      #3D4A35;
+  --moss-mid:  #4E5E42;
+  --moss-lt:   #6B7D5C;
+  --moss-pale: #E8EDE4;
+  --cream:     #F8F4EE;
+  --warm:      #EDE5D8;
+  --sand:      #D8CCBA;
+  --terra:     #B97040;
+  --terra-dk:  #8A4F28;
+  --terra-lt:  #F5EAE0;
+  --brown:     #2C2018;
+  --muted:     #7A6E64;
+  --soft:      #A89E94;
+  --white:     #FFFFFF;
+  --line:      #DDD4C4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--brown);overflow-x:hidden}
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:999;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  opacity:.35;
+}
+.container{max-width:680px;margin:0 auto;padding:0 24px}
+.eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--terra);font-weight:500}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:none}
+
+/* HERO */
+#hero{background:var(--moss);padding:72px 0 64px;position:relative;overflow:hidden;text-align:center}
+#hero::before{content:'';position:absolute;top:-120px;right:-120px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.06) 0%,transparent 65%);pointer-events:none}
+#hero::after{content:'';position:absolute;bottom:-80px;left:-80px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(185,112,64,.15) 0%,transparent 65%);pointer-events:none}
+.hero-inner{position:relative;z-index:1}
+.hero-logo{font-family:'Cormorant Garamond',serif;font-size:12px;letter-spacing:.35em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:40px;animation:fadeUp .8s ease .1s both}
+.hero-eyebrow{margin-bottom:18px;animation:fadeUp .8s ease .2s both}
+.hero-h1{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,6vw,56px);line-height:1.1;color:var(--white);margin-bottom:20px;animation:fadeUp .8s ease .3s both}
+.hero-h1 em{color:var(--terra);font-style:italic}
+.hero-sub{font-size:16px;line-height:1.8;color:rgba(255,255,255,.6);max-width:480px;margin:0 auto 40px;animation:fadeUp .8s ease .45s both}
+.hero-sub strong{color:rgba(255,255,255,.9)}
+.btn-cta{display:inline-block;background:var(--terra);color:var(--white);font-family:'Jost',sans-serif;font-size:15px;font-weight:500;letter-spacing:.06em;padding:18px 52px;border-radius:3px;border:none;cursor:pointer;text-decoration:none;transition:all .25s;animation:fadeUp .8s ease .6s both}
+.btn-cta:hover{background:var(--terra-dk);transform:translateY(-2px);box-shadow:0 10px 36px rgba(185,112,64,.38)}
+.hero-fine{margin-top:14px;font-size:12px;color:rgba(255,255,255,.3);animation:fadeUp .8s ease .7s both}
+
+/* VÍDEO */
+#vsl{padding:72px 0 56px}
+.vsl-eyebrow{text-align:center;margin-bottom:12px}
+.vsl-h2{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,4vw,34px);line-height:1.3;text-align:center;margin-bottom:24px}
+.vsl-h2 em{color:var(--moss);font-style:italic}
+.vsl-frame{position:relative;width:100%;border-radius:24px;overflow:hidden;box-shadow:0 16px 60px rgba(61,74,53,.2)}
+.vsl-caption{text-align:center;font-size:13px;color:var(--muted);margin-top:16px}
+.vsl-tag{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px}
+.vsl-avatar{width:32px;height:32px;border-radius:50%;background:var(--moss-pale);border:2px solid var(--moss-lt);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--moss)}
+.vsl-name{font-size:13px;color:var(--muted)}
+.vsl-name strong{color:var(--brown);font-weight:500}
+
+/* REFRAME */
+#reframe{background:var(--warm);padding:64px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.reframe-h2{font-family:'Cormorant Garamond',serif;font-size:clamp(24px,4vw,38px);line-height:1.2;margin-bottom:20px}
+.reframe-h2 em{color:var(--moss);font-style:italic}
+.reframe-body{font-size:15px;line-height:1.85;color:var(--muted);margin-bottom:16px}
+.reframe-body strong{color:var(--brown)}
+.reframe-quote{font-family:'Cormorant Garamond',serif;font-size:clamp(17px,3vw,22px);font-style:italic;color:var(--brown);line-height:1.5;border-left:3px solid var(--moss);padding-left:20px;margin-top:28px}
+
+/* INCLUSO */
+#incluso{padding:64px 0}
+.inc-hdr{margin-bottom:36px}
+.inc-h2{font-family:'Cormorant Garamond',serif;font-size:clamp(24px,4vw,38px);line-height:1.2;margin-bottom:10px}
+.inc-h2 em{color:var(--moss);font-style:italic}
+.inc-sub{font-size:15px;color:var(--muted);line-height:1.7}
+.inc-items{display:flex;flex-direction:column;gap:14px}
+.inc-item{display:grid;grid-template-columns:52px 1fr;gap:18px;background:var(--white);border:1px solid var(--line);border-radius:8px;padding:22px;transition:border-color .2s}
+.inc-item:hover{border-color:var(--moss)}
+.inc-num{width:44px;height:44px;border-radius:50%;background:var(--moss-pale);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--moss);flex-shrink:0}
+.inc-t{font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--brown);margin-bottom:5px}
+.inc-d{font-size:14px;color:var(--muted);line-height:1.65}
+.inc-tag{display:inline-block;font-size:11px;background:var(--moss-pale);color:var(--moss);padding:3px 10px;border-radius:3px;margin-top:8px;font-weight:500}
+
+/* FAQ GLP1 */
+#faq-glp{background:var(--moss);padding:56px 0}
+.glp-inner{position:relative;z-index:1}
+.glp-h2{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,4vw,34px);color:var(--white);line-height:1.2;margin-bottom:16px}
+.glp-h2 em{color:var(--terra);font-style:italic}
+.glp-body{font-size:15px;color:rgba(255,255,255,.65);line-height:1.85;max-width:560px}
+.glp-body strong{color:var(--white)}
+
+/* GARANTIA */
+#garantia{background:var(--warm);padding:64px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center}
+.gar-icon{width:64px;height:64px;border-radius:50%;background:var(--moss-pale);border:2px solid var(--moss);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:26px}
+.gar-h2{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,4vw,34px);color:var(--brown);line-height:1.2;margin-bottom:14px}
+.gar-h2 em{color:var(--moss)}
+.gar-body{font-size:15px;color:var(--muted);line-height:1.8;max-width:460px;margin:0 auto 20px}
+.gar-quote{background:var(--white);border-radius:8px;padding:18px 22px;max-width:400px;margin:0 auto;border:1px solid var(--line)}
+.gar-quote p{font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:var(--brown);line-height:1.6}
+.gar-quote cite{display:block;font-size:12px;color:var(--muted);margin-top:8px;font-style:normal}
+
+/* OFERTA */
+#oferta{background:var(--moss);padding:80px 0;position:relative;overflow:hidden}
+#oferta::before{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.06) 0%,transparent 65%);pointer-events:none}
+.oferta-inner{position:relative;z-index:1}
+.oferta-eyebrow{margin-bottom:14px;color:var(--terra) !important}
+.oferta-h2{font-family:'Cormorant Garamond',serif;font-size:clamp(26px,5vw,44px);line-height:1.15;color:var(--white);margin-bottom:10px}
+.oferta-h2 em{color:var(--terra);font-style:italic}
+.oferta-sub{font-size:15px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:40px;max-width:480px}
+.oferta-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:36px}
+.oferta-includes{display:flex;flex-direction:column;gap:14px;margin-bottom:30px}
+.oferta-inc{display:flex;align-items:flex-start;gap:14px;font-size:15px;color:var(--white);line-height:1.5}
+.oferta-check{width:22px;height:22px;border-radius:50%;background:rgba(185,112,64,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:var(--terra)}
+hr.oferta-div{border:none;border-top:1px solid rgba(255,255,255,.08);margin:26px 0}
+.oferta-anchor{font-size:13px;color:rgba(255,255,255,.3);margin-bottom:5px}
+.oferta-anchor span{text-decoration:line-through}
+.oferta-price-row{display:flex;align-items:flex-end;gap:14px;margin-bottom:8px}
+.oferta-price{font-family:'Cormorant Garamond',serif;font-size:54px;color:var(--white);line-height:1}
+.oferta-price-note{font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;margin-bottom:6px}
+.oferta-urgency{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--terra);background:rgba(185,112,64,.1);border:1px solid rgba(185,112,64,.2);border-radius:4px;padding:10px 16px;margin-bottom:22px}
+.btn-oferta{display:block;width:100%;background:var(--terra);color:var(--white);font-family:'Jost',sans-serif;font-size:16px;font-weight:500;letter-spacing:.05em;padding:20px;border-radius:3px;border:none;cursor:pointer;text-align:center;text-decoration:none;transition:all .25s}
+.btn-oferta:hover{background:var(--terra-dk);transform:translateY(-2px);box-shadow:0 10px 36px rgba(185,112,64,.4)}
+.oferta-guarantee{text-align:center;font-size:12px;color:rgba(255,255,255,.3);margin-top:14px;line-height:1.6}
+.oferta-sessao-note{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:16px 18px;margin-top:20px;font-size:13px;color:rgba(255,255,255,.5);line-height:1.65}
+.oferta-sessao-note strong{color:var(--terra)}
+
+/* FAQ */
+#faq{padding:72px 0;border-top:1px solid var(--line)}
+.faq-h2{font-family:'Cormorant Garamond',serif;font-size:clamp(24px,4vw,38px);margin-bottom:36px}
+.faq-item{border-bottom:1px solid var(--line);padding:20px 0;cursor:pointer}
+.faq-item:first-of-type{border-top:1px solid var(--line)}
+.faq-q{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:16px;font-weight:500;color:var(--brown);line-height:1.4}
+.faq-arrow{font-size:18px;color:var(--moss);flex-shrink:0;transition:transform .25s}
+.faq-item.open .faq-arrow{transform:rotate(45deg)}
+.faq-a{font-size:14px;color:var(--muted);line-height:1.8;max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s}
+.faq-item.open .faq-a{max-height:400px;padding-top:14px}
+
+/* FECHAMENTO */
+#fechamento{background:var(--warm);padding:72px 0;border-top:1px solid var(--line);text-align:center}
+.fech-h2{font-family:'Cormorant Garamond',serif;font-size:clamp(24px,4vw,40px);line-height:1.2;margin-bottom:20px;max-width:520px;margin-left:auto;margin-right:auto}
+.fech-h2 em{color:var(--moss);font-style:italic}
+.fech-body{font-size:15px;line-height:1.85;color:var(--muted);max-width:480px;margin:0 auto 16px}
+.fech-body strong{color:var(--brown)}
+.fech-assinatura{font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;color:var(--moss);margin-bottom:40px}
+
+/* FOOTER */
+footer{background:var(--moss);padding:32px 24px;text-align:center}
+.footer-logo{font-family:'Cormorant Garamond',serif;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:8px}
+.footer-fine{font-size:12px;color:rgba(255,255,255,.3);line-height:1.8}
+.footer-fine a{color:rgba(255,255,255,.3)}
+
+/* STICKY BAR */
+.sticky-bar{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--moss);border-top:1px solid rgba(255,255,255,.08);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;transform:translateY(100%);transition:transform .4s ease}
+.sticky-bar.visible{transform:translateY(0)}
+.sticky-text{font-size:13px;color:rgba(255,255,255,.55)}
+.sticky-text strong{color:var(--white);font-weight:500}
+.btn-sticky{background:var(--terra);color:var(--white);font-family:'Jost',sans-serif;font-size:13px;font-weight:500;padding:11px 28px;border-radius:3px;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background .2s;text-decoration:none}
+.btn-sticky:hover{background:var(--terra-dk)}
+@media(max-width:480px){.sticky-text{display:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+</style>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-34037WLRRP"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-34037WLRRP');
+</script>
+<script type="text/javascript">
+  (function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+  })(window, document, "clarity", "script", "wmgpdfdmkw");
+</script>
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window,document,"script",
+"https://connect.facebook.net/en_US/fbevents.js");
+fbq('init', '989971718548782');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=989971718548782&ev=PageView&noscript=1"/></noscript>
+</head>
+<body>
+
+<!-- 1. HERO -->
+<section id="hero">
+  <div class="container hero-inner">
+    <p class="hero-logo">Table · Evelyn Liu</p>
+    <p class="eyebrow hero-eyebrow">Protocolo Raiz</p>
+    <h1 class="hero-h1">Você já reconheceu o seu padrão.<br><em>Agora é hora de trabalhar nele.</em></h1>
+    <p class="hero-sub">Você fez o quiz. Você se reconheceu. Essa clareza é o começo.<br><strong>O Protocolo Raiz é o primeiro passo concreto — para trabalhar o que está por trás, não a consequência.</strong></p>
+    <a href="#oferta" class="btn-cta" onclick="event.preventDefault();document.getElementById('oferta').scrollIntoView({behavior:'smooth'})">Quero começar pelo Protocolo Raiz →</a>
+    <p class="hero-fine">R$ 97 · Acesso imediato · Garantia de 7 dias</p>
+  </div>
+</section>
+
+<!-- 2. VÍDEO DA EVELYN — primeiro elemento após o hero -->
+<section id="vsl">
+  <div class="container">
+    <p class="eyebrow vsl-eyebrow reveal">Uma mensagem da Evelyn para você</p>
+    <h2 class="vsl-h2 reveal">Antes de continuar, quero<br>te falar <em>pessoalmente.</em></h2>
+    <div class="vsl-frame reveal">
+      <script src="https://fast.wistia.com/player.js" async></script>
+      <script src="https://fast.wistia.com/embed/xc4e7ykqti.js" async type="module"></script>
+      <style>
+        wistia-player[media-id='xc4e7ykqti']:not(:defined){background:center/cover no-repeat url('https://fast.wistia.com/embed/medias/xc4e7ykqti/swatch');display:block;filter:blur(5px);padding-top:177.78%;border-radius:24px;overflow:hidden}
+      </style>
+      <wistia-player media-id="xc4e7ykqti" aspect="0.5625"></wistia-player>
+    </div>
+    <p class="vsl-caption reveal">90 segundos · sem enrolação · direto ao ponto</p>
+    <div class="vsl-tag reveal">
+      <div class="vsl-avatar">E</div>
+      <p class="vsl-name"><strong>Evelyn Liu</strong> · Nutricionista comportamental · Fundadora da Table</p>
+    </div>
+  </div>
+</section>
+
+<!-- 3. REFRAME DA OBJEÇÃO — por que dessa vez é diferente -->
+<section id="reframe">
+  <div class="container">
+    <p class="eyebrow reveal" style="margin-bottom:14px">Por que o Protocolo Raiz é diferente</p>
+    <h2 class="reframe-h2 reveal">Você não falhou.<br><em>Faltou a camada certa.</em></h2>
+    <p class="reframe-body reveal">Dieta, jejum, nutricionista convencional, força de vontade. Você já tentou. Funcionou por um tempo — e parou. Não porque você é inconstante. Porque nenhuma dessas abordagens foi onde o problema realmente está.</p>
+    <p class="reframe-body reveal"><strong>A relação com a comida não muda só com regras.</strong> Ela muda quando se entende o que está por trás dela — o padrão emocional que o sistema nervoso criou como proteção. É exatamente isso que o Protocolo Raiz trabalha.</p>
+    <p class="reframe-body reveal">Não é mais uma dieta. Não é mais uma lista de alimentos proibidos. É o trabalho que deveria ter vindo junto com tudo que você já tentou — e que vai garantir que dessa vez, alguma coisa mude de verdade.</p>
+    <p class="reframe-quote reveal">"Quando a gente cuida do que se sente — e não fica preso à balança — tudo muda. Sem violência, sem restrição extrema."</p>
+  </div>
+</section>
+
+<!-- 4. O QUE ESTÁ INCLUSO -->
+<section id="incluso">
+  <div class="container">
+    <div class="inc-hdr reveal">
+      <p class="eyebrow" style="margin-bottom:12px">O que você recebe</p>
+      <h2 class="inc-h2">Três elementos que trabalham<br><em>juntos pela primeira vez.</em></h2>
+      <p class="inc-sub">Cada parte do Protocolo Raiz foi desenvolvida para ir onde nenhuma abordagem anterior foi.</p>
+    </div>
+    <div class="inc-items">
+      <div class="inc-item reveal">
+        <div class="inc-num">1</div>
+        <div>
+          <p class="inc-t">Exercícios Psicoemocionais Guiados</p>
+          <p class="inc-d">Desenvolvidos por Evelyn Liu a partir da experiência com centenas de mulheres. Trabalham o padrão emocional do seu perfil — não um conteúdo genérico. Aplicação imediata, sem precisar esperar a sessão.</p>
+          <span class="inc-tag">Acesso imediato após a compra</span>
+        </div>
+      </div>
+      <div class="inc-item reveal">
+        <div class="inc-num">2</div>
+        <div>
+          <p class="inc-t">Livro "Gordura Não Existe" em PDF</p>
+          <p class="inc-d">A obra completa de Evelyn Liu — a tese que fundamenta todo o método da Table. A leitura que faz com que tudo faça sentido pela primeira vez.</p>
+          <span class="inc-tag">PDF · Seu para sempre</span>
+        </div>
+      </div>
+      <div class="inc-item reveal">
+        <div class="inc-num">3</div>
+        <div>
+          <p class="inc-t">Sessão Individual de Direcionamento</p>
+          <p class="inc-d">Com a equipe da Table — olhar específico para o seu caso, seu perfil, sua história. Define os próximos passos de forma personalizada. Avulsa custa R$ 297.</p>
+          <span class="inc-tag">Agendamento por videochamada · Incluso no Protocolo Raiz</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. BLOCO de tratamento de objeção -->
+<section id="faq-glp">
+  <div class="container glp-inner">
+    <p class="eyebrow reveal" style="margin-bottom:14px;color:var(--terra)">Uma pergunta frequente</p>
+    <h2 class="glp-h2 reveal">Já tentei de tudo.<br><em>Por que isso seria diferente?</em></h2>
+    <p class="glp-body reveal">Porque a maioria das abordagens foca no que você come. O Protocolo Raiz começa antes disso: no que você sente quando come.</p>
+    <p class="glp-body reveal" style="margin-top:16px">Regras e listas de alimentos funcionam por um tempo e depois perdem força, porque o comportamento volta quando a emoção por trás dele continua ali. <strong>O trabalho emocional é a camada que costuma ficar de fora — e é exatamente onde o Protocolo Raiz começa.</strong></p>
+    <p class="glp-body reveal" style="margin-top:16px">Não é sobre recomeçar do zero mais uma vez. É sobre olhar, talvez pela primeira vez, para a parte que ninguém te ajudou a enxergar.</p>
+  </div>
+</section>
+
+<!-- 6. GARANTIA -->
+<section id="garantia">
+  <div class="container">
+    <div class="gar-icon reveal">🔒</div>
+    <p class="eyebrow reveal" style="margin-bottom:12px;color:var(--moss)">Sem risco para você</p>
+    <h2 class="gar-h2 reveal">Garantia incondicional<br><em>de 7 dias.</em></h2>
+    <p class="gar-body reveal">Você já investiu antes em coisas que prometiam e não entregaram. Por isso a garantia existe: se por qualquer motivo o Protocolo Raiz não fizer sentido nos primeiros 7 dias, devolvemos 100% do valor. Sem perguntas, sem burocracia, sem julgamento.</p>
+    <div class="gar-quote reveal">
+      <p>"Acreditamos tanto no que entregamos que o risco é todo nosso."</p>
+      <cite>— Equipe Table</cite>
+    </div>
+  </div>
+</section>
+
+<!-- 7. OFERTA -->
+<section id="oferta">
+  <div class="container oferta-inner">
+    <p class="eyebrow oferta-eyebrow reveal">Protocolo Raiz · Table</p>
+    <h2 class="oferta-h2 reveal">O primeiro passo que<br><em>trabalha o que está por trás.</em></h2>
+    <p class="oferta-sub reveal">Desenvolvido por Evelyn Liu a partir da experiência com centenas de mulheres e da mesma tese do seu livro.</p>
+    <div class="oferta-card reveal">
+      <div class="oferta-includes">
+        <div class="oferta-inc"><div class="oferta-check">✓</div><span><strong style="color:var(--white)">Exercícios psicoemocionais guiados</strong> — aplicação imediata, sem precisar esperar a sessão</span></div>
+        <div class="oferta-inc"><div class="oferta-check">✓</div><span><strong style="color:var(--white)">Livro "Gordura Não Existe" em PDF</strong> — obra completa de Evelyn Liu</span></div>
+        <div class="oferta-inc"><div class="oferta-check">✓</div><span><strong style="color:var(--white)">Sessão individual de direcionamento</strong> com a equipe Table</span></div>
+      </div>
+      <hr class="oferta-div"/>
+      <p class="oferta-anchor">Só a sessão individual avulsa custa <span>R$ 297</span></p>
+      <div class="oferta-price-row">
+        <p class="oferta-price">R$ 97</p>
+        <p class="oferta-price-note">pagamento único<br>acesso imediato</p>
+      </div>
+      <div class="oferta-urgency"><span style="flex-shrink:0;margin-top:1px">✦</span><span>Este valor reflete o momento atual da Table. À medida que novas histórias se somam ao método, o investimento será ajustado. O que está disponível agora é o ponto de entrada mais acessível que teremos.</span></div>
+      <a href="https://checkout.ticto.app/OBEF2D02E" class="btn-oferta" onclick="gtag('event','begin_checkout',{value:97,currency:'BRL'});">Quero começar pelo Protocolo Raiz →</a>
+      <p class="oferta-guarantee">🔒 Garantia de 7 dias — se não fizer sentido, devolvemos 100% do valor. Sem questionamentos.</p>
+      <div class="oferta-sessao-note"><strong>Sobre a sessão:</strong> após a compra você recebe o link para agendar por videochamada, em horário conveniente para você. Duração aproximada de 45 minutos.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 8. FAQ -->
+<section id="faq">
+  <div class="container">
+    <h2 class="faq-h2 reveal">Perguntas frequentes</h2>
+    <div class="faq-item reveal" onclick="toggleFaq(this)">
+      <div class="faq-q">Isso é mais uma dieta disfarçada? <span class="faq-arrow">+</span></div>
+      <p class="faq-a">Não. O Protocolo Raiz não tem cardápio, lista de alimentos proibidos ou metas de calorias. Ele trabalha os padrões emocionais por trás da relação com a comida. Antes de mudar o que se come, é preciso entender o que se sente ao comer.</p>
+    </div>
+    <div class="faq-item reveal" onclick="toggleFaq(this)">
+      <div class="faq-q">O trabalho combina com o acompanhamento de saúde que já faço? <span class="faq-arrow">+</span></div>
+      <p class="faq-a">Sim. O trabalho da Table é comportamental e emocional, e soma ao acompanhamento de saúde que você já faz. Não substitui orientação médica — trabalha a camada emocional, que costuma ficar de fora.</p>
+    </div>
+    <div class="faq-item reveal" onclick="toggleFaq(this)">
+      <div class="faq-q">Já tentei muita coisa antes. Por que o Protocolo Raiz seria diferente? <span class="faq-arrow">+</span></div>
+      <p class="faq-a">Porque a maioria das abordagens foca no que se come. O Protocolo Raiz começa antes: no padrão emocional por trás da relação com a comida — o trabalho que costuma ficar de fora de tudo que você já tentou.</p>
+    </div>
+    <div class="faq-item reveal" onclick="toggleFaq(this)">
+      <div class="faq-q">O que acontece depois do Protocolo Raiz? <span class="faq-arrow">+</span></div>
+      <p class="faq-a">A sessão individual de direcionamento existe para responder isso de forma personalizada. Depois de entender o seu padrão e trabalhar os primeiros exercícios, a sessão define os próximos passos — que podem incluir acompanhamento contínuo com a equipe da Table.</p>
+    </div>
+    <div class="faq-item reveal" onclick="toggleFaq(this)">
+      <div class="faq-q">Em quanto tempo recebo o acesso? <span class="faq-arrow">+</span></div>
+      <p class="faq-a">Imediatamente após a confirmação do pagamento. Você recebe o acesso ao material e o link para agendar sua sessão individual no horário que melhor funcionar para você.</p>
+    </div>
+    <div class="faq-item reveal" onclick="toggleFaq(this)">
+      <div class="faq-q">E se não funcionar para mim? <span class="faq-arrow">+</span></div>
+      <p class="faq-a">Você tem 7 dias de garantia total. Se por qualquer motivo o Protocolo Raiz não fizer sentido, basta entrar em contato e devolvemos 100% do valor investido — sem perguntas, sem burocracia.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 9. FECHAMENTO -->
+<section id="fechamento">
+  <div class="container">
+    <p class="eyebrow fech-eyebrow reveal" style="margin-bottom:18px">Uma última coisa</p>
+    <h2 class="fech-h2 reveal">Você fez o quiz porque algo em você<br>sabia que existia <em>uma resposta diferente.</em></h2>
+    <p class="fech-body reveal">Não vim te vender mais uma solução. Vim te oferecer o trabalho que deveria ter existido antes — o que trata a causa, não o sintoma.</p>
+    <p class="fech-body reveal"><strong>Você já deu o primeiro passo quando fez o quiz. O Protocolo Raiz é o segundo.</strong></p>
+    <p class="fech-assinatura reveal">Com carinho, Evelyn.</p>
+    <div class="reveal">
+      <a href="https://checkout.ticto.app/OBEF2D02E" class="btn-cta" onclick="gtag('event','begin_checkout',{value:97,currency:'BRL'})">Quero começar pelo Protocolo Raiz →</a>
+    </div>
+    <p class="hero-fine reveal" style="margin-top:14px;color:var(--muted)">R$ 97 · Acesso imediato · Garantia de 7 dias</p>
+  </div>
+</section>
+
+<footer>
+  <p class="footer-logo">Table</p>
+  <p class="footer-fine">© Table · Evelyn Liu · Moema, São Paulo<br>Nutrição Comportamental · <a href="/legal">Política de Privacidade</a> · <a href="/legal">Termos de Uso</a></p>
+</footer>
+
+<div class="sticky-bar" id="sticky-bar">
+  <p class="sticky-text"><strong>Protocolo Raiz</strong> · Evelyn Liu · Table</p>
+  <a href="https://checkout.ticto.app/OBEF2D02E" class="btn-sticky" onclick="void 0">Começar por R$ 97 →</a>
+</div>
+
+<script>
+const revealEls = document.querySelectorAll('.reveal');
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}
+  });
+},{threshold:.1});
+revealEls.forEach(el=>obs.observe(el));
+
+const ofertaSec = document.getElementById('oferta');
+const bar = document.getElementById('sticky-bar');
+new IntersectionObserver(entries=>{
+  entries.forEach(e=>bar.classList.toggle('visible',e.isIntersecting||ofertaSec.getBoundingClientRect().top<0));
+},{threshold:0}).observe(ofertaSec);
+
+function toggleFaq(el){
+  const open=el.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+  if(!open)el.classList.add('open');
+}
+</script>
+</body>
+</html>

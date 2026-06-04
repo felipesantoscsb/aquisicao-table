@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Formulário Pré-Sessão — Table · Protocolo Raiz</title>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --moss:#3D4A35;--moss-mid:#4E5E42;--moss-lt:#6B7D5C;
+  --moss-pale:#E8EDE4;--cream:#F8F4EE;--warm:#EDE5D8;
+  --sand:#D8CCBA;--terra:#B97040;--terra-dk:#8A4F28;
+  --brown:#2C2018;--muted:#7A6E64;--soft:#A89E94;
+  --white:#FFFFFF;--line:#DDD4C4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--brown);overflow-x:hidden;min-height:100vh}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");opacity:.35}
+.container{max-width:600px;margin:0 auto;padding:0 24px}
+.eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--terra);font-weight:500}
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:none}
+
+#hero{background:var(--moss);padding:72px 0 64px;text-align:center;position:relative;overflow:hidden}
+#hero::before{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.06) 0%,transparent 65%);pointer-events:none}
+#hero::after{content:'';position:absolute;bottom:-60px;left:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(185,112,64,.15) 0%,transparent 65%);pointer-events:none}
+.hero-inner{position:relative;z-index:1}
+.hero-logo{font-family:'Cormorant Garamond',serif;font-size:12px;letter-spacing:.35em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:44px;animation:fadeUp .8s ease .1s both}
+.hero-eyebrow{margin-bottom:16px;animation:fadeUp .8s ease .2s both}
+.hero-h1{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,5vw,44px);line-height:1.15;color:var(--white);margin-bottom:20px;animation:fadeUp .8s ease .3s both}
+.hero-h1 em{color:var(--terra);font-style:italic}
+.hero-sub{font-size:15px;line-height:1.75;color:rgba(255,255,255,.6);max-width:460px;margin:0 auto;animation:fadeUp .8s ease .45s both}
+.hero-sub strong{color:rgba(255,255,255,.9)}
+
+#formulario{background:var(--white);border-top:1px solid var(--line);padding:72px 0 80px}
+.form-header{margin-bottom:48px}
+.form-eyebrow{margin-bottom:14px}
+.form-h2{font-family:'Cormorant Garamond',serif;font-size:clamp(26px,5vw,40px);line-height:1.2;margin-bottom:12px}
+.form-h2 em{color:var(--moss);font-style:italic}
+.form-sub{font-size:15px;color:var(--muted);line-height:1.7;max-width:480px}
+
+.form-group{margin-bottom:28px}
+.form-label{display:block;font-size:13px;font-weight:500;color:var(--brown);margin-bottom:8px;line-height:1.4}
+.form-label span{display:block;font-size:12px;font-weight:400;color:var(--muted);margin-top:2px}
+.form-input,.form-textarea,.form-select{width:100%;background:var(--cream);border:1.5px solid var(--line);border-radius:4px;padding:14px 16px;font-family:'Jost',sans-serif;font-size:14px;color:var(--brown);transition:border-color .2s,background .2s;outline:none}
+.form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--moss);background:var(--white)}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--soft)}
+.form-textarea{resize:vertical;min-height:96px;line-height:1.6}
+.form-select{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237A6E64' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+
+.check-group{display:flex;flex-direction:column;gap:10px}
+.check-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:1.5px solid var(--line);border-radius:4px;cursor:pointer;transition:all .2s;background:var(--cream)}
+.check-item:hover{border-color:var(--moss);background:var(--moss-pale)}
+.check-item input{width:16px;height:16px;flex-shrink:0;margin-top:1px;accent-color:var(--moss);cursor:pointer}
+.check-item-text{font-size:14px;color:var(--brown);line-height:1.45}
+.check-item-sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+.radio-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:440px){.radio-row{grid-template-columns:1fr}}
+.radio-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--line);border-radius:4px;cursor:pointer;transition:all .2s;background:var(--cream)}
+.radio-item:hover{border-color:var(--moss);background:var(--moss-pale)}
+.radio-item input{accent-color:var(--moss);cursor:pointer;flex-shrink:0}
+.radio-item-text{font-size:14px;color:var(--brown)}
+
+.form-divider{border:none;border-top:1px solid var(--line);margin:36px 0}
+.form-section-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--brown);margin-bottom:24px}
+.form-section-title em{color:var(--moss);font-style:italic}
+
+.form-submit-wrap{margin-top:40px}
+.form-evelyn-note{background:var(--warm);border-radius:8px;padding:20px;border-left:3px solid var(--moss);margin-bottom:24px;font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;line-height:1.65;color:var(--brown)}
+.form-evelyn-note cite{display:block;font-style:normal;font-family:'Jost',sans-serif;font-size:12px;color:var(--muted);margin-top:8px}
+.btn-submit{width:100%;background:var(--terra);color:var(--white);font-family:'Jost',sans-serif;font-size:16px;font-weight:500;letter-spacing:.05em;padding:20px;border-radius:3px;border:none;cursor:pointer;transition:all .25s}
+.btn-submit:hover{background:var(--terra-dk);transform:translateY(-2px);box-shadow:0 8px 28px rgba(185,112,64,.38)}
+.form-fine{font-size:12px;color:var(--muted);margin-top:12px;text-align:center;line-height:1.6}
+
+#confirmacao{display:none;background:var(--moss);padding:88px 24px;text-align:center;min-height:60vh;align-items:center;justify-content:center;flex-direction:column}
+#confirmacao.visible{display:flex}
+.conf-check{width:72px;height:72px;border-radius:50%;background:rgba(185,112,64,.2);border:2px solid var(--terra);display:flex;align-items:center;justify-content:center;margin:0 auto 28px;font-size:28px}
+.conf-h2{font-family:'Cormorant Garamond',serif;font-size:clamp(26px,5vw,42px);line-height:1.2;color:var(--white);margin-bottom:16px}
+.conf-h2 em{color:var(--terra);font-style:italic}
+.conf-sub{font-size:16px;color:rgba(255,255,255,.6);line-height:1.75;max-width:440px;margin:0 auto 12px}
+.conf-sub strong{color:rgba(255,255,255,.9)}
+.conf-sign{font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;color:var(--terra);margin-top:32px}
+
+footer{background:var(--moss);padding:28px 24px;text-align:center}
+.footer-logo{font-family:'Cormorant Garamond',serif;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:6px}
+.footer-fine{font-size:12px;color:rgba(255,255,255,.28);line-height:1.8}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@media(max-width:480px){#formulario{padding:56px 0 64px}}
+</style>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-34037WLRRP"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-34037WLRRP');</script>
+</head>
+<body>
+
+<section id="hero">
+  <div class="container hero-inner">
+    <p class="hero-logo">Table</p>
+    <p class="eyebrow hero-eyebrow">Sessão de Direcionamento Individual</p>
+    <h1 class="hero-h1">Antes de nos encontrarmos,<br><em>deixa eu te conhecer.</em></h1>
+    <p class="hero-sub">Leva menos de 5 minutos. Suas respostas chegam para a equipe da Table antes da sessão — assim aproveitamos cada minuto do nosso tempo juntas.<br><strong>Não tem resposta certa ou errada.</strong></p>
+  </div>
+</section>
+
+<section id="formulario">
+  <div class="container" id="form-container">
+    <div class="form-header">
+      <p class="eyebrow form-eyebrow reveal">Formulário pré-sessão</p>
+      <h2 class="form-h2 reveal">Suas respostas chegam<br><em>antes de você.</em></h2>
+      <p class="form-sub reveal">Cada detalhe que você compartilha aqui orienta a condução da sua sessão. Seja honesta — esse espaço é completamente seguro.</p>
+    </div>
+
+    <form id="pre-form" onsubmit="submitForm(event)">
+
+      <!-- BLOCO 0: IDENTIFICAÇÃO -->
+      <p class="form-section-title reveal">Seus <em>dados</em></p>
+
+      <div class="form-group reveal">
+        <label class="form-label">Nome completo</label>
+        <input class="form-input" type="text" name="nome" placeholder="Seu nome" required/>
+      </div>
+
+      <div class="form-group reveal">
+        <label class="form-label">WhatsApp
+          <span>Com DDD — usaremos para confirmar o agendamento da sessão.</span>
+        </label>
+        <input class="form-input" type="tel" name="telefone" placeholder="(11) 99999-9999" required/>
+      </div>
+
+      <hr class="form-divider"/>
+
+      <!-- BLOCO 1: VOCÊ HOJE -->
+      <p class="form-section-title reveal">Você <em>hoje</em></p>
+
+      <div class="form-group reveal">
+        <label class="form-label">
+          Qual é a sua maior dificuldade com a alimentação hoje?
+          <span>Descreva com suas próprias palavras — sem filtro.</span>
+        </label>
+        <textarea class="form-textarea" name="dificuldade_hoje" placeholder="Ex: Não consigo parar de beliscar à noite, sempre que fico ansiosa como demais..." required></textarea>
+      </div>
+
+      <div class="form-group reveal">
+        <label class="form-label">
+          Quando você pensa em mudar sua relação com a comida, qual sentimento aparece primeiro?
+        </label>
+        <div class="check-group">
+          <label class="check-item"><input type="radio" name="sentimento_inicial" value="cansaco"/><div><p class="check-item-text">Cansaço</p><p class="check-item-sub">Já tentei tantas vezes, não aguento mais começar do zero</p></div></label>
+          <label class="check-item"><input type="radio" name="sentimento_inicial" value="culpa"/><div><p class="check-item-text">Culpa</p><p class="check-item-sub">Sinto que não tenho força de vontade suficiente</p></div></label>
+          <label class="check-item"><input type="radio" name="sentimento_inicial" value="medo"/><div><p class="check-item-text">Medo</p><p class="check-item-sub">Tenho medo de começar e fracassar de novo</p></div></label>
+          <label class="check-item"><input type="radio" name="sentimento_inicial" value="esperanca"/><div><p class="check-item-text">Esperança</p><p class="check-item-sub">Sinto que dessa vez pode ser diferente</p></div></label>
+          <label class="check-item"><input type="radio" name="sentimento_inicial" value="indiferenca"/><div><p class="check-item-text">Indiferença</p><p class="check-item-sub">Estou no automático, não sei nem o que sinto</p></div></label>
+        </div>
+      </div>
+
+      <hr class="form-divider"/>
+
+      <!-- BLOCO 2: HISTÓRICO -->
+      <p class="form-section-title reveal"><em>Histórico</em> de tentativas</p>
+
+      <div class="form-group reveal">
+        <label class="form-label">
+          Quais tratamentos ou dietas você já tentou?
+          <span>Marque tudo que se aplica.</span>
+        </label>
+        <div class="check-group">
+          <label class="check-item"><input type="checkbox" name="historico" value="dieta_calorias"/><p class="check-item-text">Dieta de restrição calórica</p></label>
+          <label class="check-item"><input type="checkbox" name="historico" value="low_carb"/><p class="check-item-text">Low carb / cetogênica</p></label>
+          <label class="check-item"><input type="checkbox" name="historico" value="jejum"/><p class="check-item-text">Jejum intermitente</p></label>
+          <label class="check-item"><input type="checkbox" name="historico" value="nutri_convencional"/><p class="check-item-text">Acompanhamento com nutricionista convencional</p></label>
+          <label class="check-item"><input type="checkbox" name="historico" value="psicologo"/><p class="check-item-text">Psicólogo / psiquiatra</p></label>
+          <label class="check-item"><input type="checkbox" name="historico" value="remedios"/><p class="check-item-text">Medicação prescrita</p></label>
+          <label class="check-item"><input type="checkbox" name="historico" value="cirurgia"/><p class="check-item-text">Cirurgia bariátrica</p></label>
+          <label class="check-item"><input type="checkbox" name="historico" value="nenhum"/><p class="check-item-text">Nunca fiz acompanhamento profissional</p></label>
+        </div>
+      </div>
+
+      <div class="form-group reveal">
+        <label class="form-label">
+          O que geralmente acontece quando você tenta mudar a alimentação?
+          <span>Seja honesta — isso é importante para a sessão.</span>
+        </label>
+        <textarea class="form-textarea" name="padrao_abandono" placeholder="Ex: Começo bem, mas na primeira semana difícil já abandono tudo..."></textarea>
+      </div>
+
+      <hr class="form-divider"/>
+
+      <!-- BLOCO 3: SAÚDE -->
+      <p class="form-section-title reveal">Condições de <em>saúde</em></p>
+
+      <div class="form-group reveal">
+        <label class="form-label">
+          Você tem alguma dessas condições diagnosticadas?
+          <span>Marque tudo que se aplica.</span>
+        </label>
+        <div class="check-group">
+          <label class="check-item"><input type="checkbox" name="saude" value="hipotireoidismo"/><p class="check-item-text">Hipotireoidismo</p></label>
+          <label class="check-item"><input type="checkbox" name="saude" value="sop"/><p class="check-item-text">SOP (Síndrome dos Ovários Policísticos)</p></label>
+          <label class="check-item"><input type="checkbox" name="saude" value="resistencia_insulina"/><p class="check-item-text">Resistência à insulina / pré-diabetes</p></label>
+          <label class="check-item"><input type="checkbox" name="saude" value="diabetes"/><p class="check-item-text">Diabetes tipo 2</p></label>
+          <label class="check-item"><input type="checkbox" name="saude" value="menopausa"/><p class="check-item-text">Menopausa / perimenopausa</p></label>
+          <label class="check-item"><input type="checkbox" name="saude" value="ansiedade"/><p class="check-item-text">Ansiedade / depressão</p></label>
+          <label class="check-item"><input type="checkbox" name="saude" value="colesterol"/><p class="check-item-text">Colesterol / triglicérides elevados</p></label>
+          <label class="check-item"><input type="checkbox" name="saude" value="nenhuma"/><p class="check-item-text">Nenhuma das acima</p></label>
+        </div>
+      </div>
+
+      <div class="form-group reveal">
+        <label class="form-label">Tem alguma outra condição de saúde relevante que queira mencionar?</label>
+        <input class="form-input" type="text" name="saude_outro" placeholder="Descreva brevemente se quiser"/>
+      </div>
+
+      <hr class="form-divider"/>
+
+      <!-- BLOCO 4: OBJETIVO -->
+      <p class="form-section-title reveal">Seu <em>objetivo</em></p>
+
+      <div class="form-group reveal">
+        <label class="form-label">
+          O que você quer transformar com o acompanhamento da Table?
+          <span>Pode ser mais de uma coisa. Escolha o que for verdadeiro para você.</span>
+        </label>
+        <div class="check-group">
+          <label class="check-item"><input type="checkbox" name="objetivo" value="cuidar_corpo"/><p class="check-item-text">Cuidar do meu corpo de forma sustentável</p></label>
+          <label class="check-item"><input type="checkbox" name="objetivo" value="compulsao"/><p class="check-item-text">Parar com a compulsão alimentar</p></label>
+          <label class="check-item"><input type="checkbox" name="objetivo" value="culpa"/><p class="check-item-text">Me libertar da culpa depois de comer</p></label>
+          <label class="check-item"><input type="checkbox" name="objetivo" value="energia"/><p class="check-item-text">Ter mais energia e disposição no dia a dia</p></label>
+          <label class="check-item"><input type="checkbox" name="objetivo" value="autoestima"/><p class="check-item-text">Me reconectar com o meu corpo e melhorar minha autoestima</p></label>
+          <label class="check-item"><input type="checkbox" name="objetivo" value="saude"/><p class="check-item-text">Melhorar meus exames e saúde em geral</p></label>
+          <label class="check-item"><input type="checkbox" name="objetivo" value="consistencia"/><p class="check-item-text">Finalmente ter consistência — começar e não largar</p></label>
+        </div>
+      </div>
+
+      <div class="form-group reveal">
+        <label class="form-label">Se a sua sessão pudesse resolver UMA coisa, qual seria?</label>
+        <textarea class="form-textarea" name="uma_coisa" placeholder="Escreva livremente..." required></textarea>
+      </div>
+
+      <hr class="form-divider"/>
+
+      <!-- BLOCO 5: ROTINA -->
+      <p class="form-section-title reveal"><em>Rotina</em> e disponibilidade</p>
+
+      <div class="form-group reveal">
+        <label class="form-label">Como você descreveria sua rotina hoje?</label>
+        <div class="check-group">
+          <label class="check-item"><input type="radio" name="rotina" value="muito_corrida"/><div><p class="check-item-text">Muito corrida</p><p class="check-item-sub">Mal tenho tempo para mim, vivo no automático</p></div></label>
+          <label class="check-item"><input type="radio" name="rotina" value="corrida"/><div><p class="check-item-text">Corrida, mas com alguns espaços</p><p class="check-item-sub">Consigo me organizar quando me planejo</p></div></label>
+          <label class="check-item"><input type="radio" name="rotina" value="equilibrada"/><div><p class="check-item-text">Razoavelmente equilibrada</p><p class="check-item-sub">Tenho tempo para cuidar de mim quando priorizo</p></div></label>
+          <label class="check-item"><input type="radio" name="rotina" value="flexivel"/><div><p class="check-item-text">Bastante flexível</p><p class="check-item-sub">Tenho disponibilidade para me dedicar ao tratamento</p></div></label>
+        </div>
+      </div>
+
+      <div class="form-group reveal">
+        <label class="form-label">
+          Qual o melhor período para a sua sessão?
+          <span>Selecione o horário de preferência — nossa equipe vai confirmar a disponibilidade.</span>
+        </label>
+        <div class="radio-row">
+          <label class="radio-item"><input type="radio" name="horario" value="manha"/><span class="radio-item-text">Manhã</span></label>
+          <label class="radio-item"><input type="radio" name="horario" value="tarde"/><span class="radio-item-text">Tarde</span></label>
+          <label class="radio-item"><input type="radio" name="horario" value="noite"/><span class="radio-item-text">Noite</span></label>
+          <label class="radio-item"><input type="radio" name="horario" value="qualquer"/><span class="radio-item-text">Qualquer horário</span></label>
+        </div>
+      </div>
+
+      <div class="form-group reveal">
+        <label class="form-label">
+          Algo mais que queira que a equipe saiba antes da sessão?
+          <span>Opcional — mas quanto mais contexto, melhor.</span>
+        </label>
+        <textarea class="form-textarea" name="observacoes" placeholder="Escreva à vontade..."></textarea>
+      </div>
+
+      <div class="form-submit-wrap reveal">
+        <div class="form-evelyn-note">
+          "Cada detalhe que você compartilha aqui chega para a nutricionista que vai te atender — e faz essa sessão valer muito mais do que uma hora de conversa."
+          <cite>— Equipe Table</cite>
+        </div>
+        <button type="submit" class="btn-submit">Agendar minha Sessão de Direcionamento →</button>
+        <p class="form-fine">Suas respostas são confidenciais e chegam apenas para a equipe da Table.</p>
+      </div>
+
+    </form>
+  </div>
+
+  <div id="confirmacao">
+    <div class="conf-check">✓</div>
+    <h2 class="conf-h2">Recebi suas respostas.<br><em>Até breve.</em></h2>
+    <p class="conf-sub">Nossa equipe vai entrar em contato pelo WhatsApp em até <strong>24 horas</strong> para confirmar o agendamento da sua sessão.</p>
+    <p class="conf-sub">Enquanto isso, aproveite para começar os exercícios do Protocolo Raiz — eles já estão com você.</p>
+    <p class="conf-sign">Com carinho, Evelyn.</p>
+  </div>
+</section>
+
+<footer>
+  <p class="footer-logo">Table</p>
+  <p class="footer-fine">© Table · Evelyn Liu · Moema, São Paulo</p>
+</footer>
+
+<script>
+const revealEls=document.querySelectorAll('.reveal');
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:.08});
+revealEls.forEach(el=>obs.observe(el));
+
+async function submitForm(e){
+  e.preventDefault();
+  const form=document.getElementById('pre-form');
+  const data=new FormData(form);
+  const payload={
+    nome: data.get('nome'),
+    telefone: data.get('telefone'),
+    dificuldade_hoje: data.get('dificuldade_hoje'),
+    sentimento_inicial: data.get('sentimento_inicial'),
+    historico: data.getAll('historico'),
+    padrao_abandono: data.get('padrao_abandono'),
+    saude: data.getAll('saude'),
+    saude_outro: data.get('saude_outro'),
+    objetivo: data.getAll('objetivo'),
+    uma_coisa: data.get('uma_coisa'),
+    rotina: data.get('rotina'),
+    horario: data.get('horario'),
+    observacoes: data.get('observacoes'),
+    origem: 'formulario_pre_sessao',
+    created_at: new Date().toISOString()
+  };
+  try{
+    await fetch('https://hook.us2.make.com/2dut7wf3cxv3k6e8qr43jm638jr5s3re',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+  }catch(err){console.error('Webhook error:',err)}
+  document.getElementById('form-container').style.display='none';
+  document.getElementById('confirmacao').classList.add('visible');
+  window.scrollTo({top:document.getElementById('formulario').offsetTop-20,behavior:'smooth'});
+}
+</script>
+</body>
+</html>

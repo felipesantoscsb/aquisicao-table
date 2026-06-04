@@ -23,6 +23,25 @@ app.use((req, res, next) => {
 // Serve os arquivos estáticos da pasta public/
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
+// ─── Rotas do funil ───────────────────────────────────────────────────────────
+
+const funil = path.join(__dirname, '..', 'public', 'Funil');
+const pub   = path.join(__dirname, '..', 'public');
+
+app.get('/raiz',       (req, res) => res.sendFile(path.join(pub,   'quiz.html')));
+app.get('/legal',      (req, res) => res.sendFile(path.join(funil, 'privacidade_termos_evelynliu.html')));
+app.get('/protocolo-raiz', (req, res) => res.sendFile(path.join(funil, 'protocolo_raiz_bio.html')));
+app.get('/obrigado',   (req, res) => res.sendFile(path.join(funil, 'obrigado-protocolo-raiz.html')));
+app.get('/forms',      (req, res) => res.sendFile(path.join(funil, 'formulario-pre-sessao.html')));
+app.get('/onboardinge',(req, res) => res.sendFile(path.join(funil, 'plano-acao-emocional.html')));
+app.get('/onboardings',(req, res) => res.sendFile(path.join(funil, 'plano-acao-sobrevivencia.html')));
+app.get('/onboardingr',(req, res) => res.sendFile(path.join(funil, 'plano-acao-restritiva.html')));
+app.get('/onboardingd',(req, res) => res.sendFile(path.join(funil, 'plano-acao-desconectada.html')));
+app.get('/rmkt',       (req, res) => res.sendFile(path.join(funil, 'pagina_vendas_rmkt.html')));
+app.get('/links',      (req, res) => res.sendFile(path.join(funil, 'links-bio.html')));
+app.get('/table',      (req, res) => res.sendFile(path.join(funil, 'site_table.html')));
+app.get('/conversa',   (req, res) => res.sendFile(path.join(funil, 'formulario_captacao_table.html')));
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
@@ -133,10 +152,6 @@ app.post('/api/capi', async (req, res) => {
     event_source_url:  event_source_url || 'https://evelynliu.com.br/quiz',
     event_id:          lead_event_id || null,            // deduplicação com pixel browser
     user_data,
-    custom_data: {
-      currency: 'BRL',
-      value:    97,
-    },
   };
 
   // Remove event_id se não veio (evita enviar null)
