@@ -31,7 +31,10 @@ const pub   = path.join(__dirname, '..', 'public');
 app.get('/raiz',       (req, res) => res.sendFile(path.join(pub,   'quiz.html')));
 app.get('/legal',      (req, res) => res.sendFile(path.join(funil, 'privacidade_termos_evelynliu.html')));
 app.get('/protocolo-raiz', (req, res) => res.sendFile(path.join(funil, 'protocolo_raiz_bio.html')));
-app.get('/obrigado',   (req, res) => res.sendFile(path.join(funil, 'obrigado-protocolo-raiz.html')));
+app.get('/obrigado',           (req, res) => res.sendFile(path.join(funil, 'obrigado-protocolo-raiz.html')));
+app.get('/obrigado-essential', (req, res) => res.sendFile(path.join(funil, 'obrigado-essential.html')));
+app.get('/obrigado-premium',   (req, res) => res.sendFile(path.join(funil, 'obrigado-premium.html')));
+app.get('/obrigado-elite',     (req, res) => res.sendFile(path.join(funil, 'obrigado-elite.html')));
 app.get('/forms',      (req, res) => res.sendFile(path.join(funil, 'formulario-pre-sessao.html')));
 app.get('/onboardinge',(req, res) => res.sendFile(path.join(funil, 'plano-acao-emocional.html')));
 app.get('/onboardings',(req, res) => res.sendFile(path.join(funil, 'plano-acao-sobrevivencia.html')));
@@ -193,6 +196,89 @@ app.post('/api/capi', async (req, res) => {
 
   } catch (err) {
     console.error('[CAPI] Erro de rede ao chamar a Meta:', err.message);
+    return res.status(500).json({ ok: false, error: 'Falha de conexão com a Meta CAPI.', detail: err.message });
+  }
+});
+
+// ─── Rota Purchase (webhook Infinitepay → Meta CAPI) ─────────────────────────
+
+app.post('/api/purchase', async (req, res) => {
+  console.log('[PURCHASE] Payload recebido:', JSON.stringify(req.body, null, 2));
+
+  const {
+    paid_amount,
+    transaction_nsu,
+    order_nsu,
+    capture_method,
+    items,
+  } = req.body || {};
+
+  const PIXEL_ID   = process.env.META_PIXEL_ID;
+  const CAPI_TOKEN = process.env.META_CAPI_TOKEN;
+
+  if (!PIXEL_ID || !CAPI_TOKEN) {
+    console.error('[PURCHASE] META_PIXEL_ID ou META_CAPI_TOKEN não configurados.');
+    return res.status(500).json({ ok: false, error: 'Credenciais da Meta não configuradas.' });
+  }
+
+  // value em reais — paid_amount vem em centavos (ex: 230300 → 2303.00)
+  const value = typeof paid_amount === 'number' ? paid_amount / 100 : null;
+
+  const user_data = {};
+  const clientIp = getClientIp(req);
+  const userAgent = req.headers['user-agent'] || null;
+  if (clientIp)  user_data.client_ip_address = clientIp;
+  if (userAgent) user_data.client_user_agent  = userAgent;
+
+  const custom_data = {
+    value,
+    currency:       'BRL',
+    capture_method: capture_method || null,
+    num_items:      Array.isArray(items) ? items.length : null,
+    order_id:       order_nsu       || null,
+  };
+  // Remove chaves null do custom_data
+  Object.keys(custom_data).forEach(k => {
+    if (custom_data[k] === null || custom_data[k] === undefined) delete custom_data[k];
+  });
+
+  const event = {
+    event_name:    'Purchase',
+    event_time:    Math.floor(Date.now() / 1000),
+    action_source: 'website',
+    event_id:      transaction_nsu || null,
+    user_data,
+    custom_data,
+  };
+  if (!event.event_id) delete event.event_id;
+
+  const metaPayload = { data: [event] };
+
+  const TEST_CODE = process.env.META_TEST_EVENT_CODE;
+  if (TEST_CODE) metaPayload.test_event_code = TEST_CODE;
+
+  console.log('[PURCHASE] Enviando para a Meta:', JSON.stringify(metaPayload, null, 2));
+
+  const url = `https://graph.facebook.com/v21.0/${PIXEL_ID}/events?access_token=${CAPI_TOKEN}`;
+
+  try {
+    const metaRes  = await fetch(url, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(metaPayload),
+    });
+    const metaJson = await metaRes.json();
+
+    if (!metaRes.ok) {
+      console.error('[PURCHASE] Erro da Meta:', JSON.stringify(metaJson, null, 2));
+      return res.status(500).json({ ok: false, error: 'Erro retornado pela Meta CAPI.', meta_response: metaJson });
+    }
+
+    console.log('[PURCHASE] Sucesso! fbtrace_id:', metaJson.fbtrace_id);
+    return res.json({ ok: true, meta_response: metaJson });
+
+  } catch (err) {
+    console.error('[PURCHASE] Erro de rede:', err.message);
     return res.status(500).json({ ok: false, error: 'Falha de conexão com a Meta CAPI.', detail: err.message });
   }
 });
