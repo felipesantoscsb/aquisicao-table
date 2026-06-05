@@ -574,7 +574,7 @@ app.post('/api/meta-duplicate', async (req, res) => {
 // ─── SDR Forward ─────────────────────────────────────────────────────────────
 
 async function forwardToSDR(body) {
-  const SDR_URL    = 'https://estrutura-table-production.up.railway.app/webhook/quiz';
+  const SDR_URL    = 'https://table-production-07c5.up.railway.app/webhook/quiz';
   const SDR_SECRET = process.env.SDR_WEBHOOK_SECRET;
 
   if (!SDR_SECRET) {
@@ -617,18 +617,21 @@ async function forwardToSDR(body) {
     perfil:                 body.profileName || body.profile || '',
     historico:              historico || '',
     'Perguntas e respostas': perguntasRespostas,
-    source:                 body.source || 'quiz-raiz',
+    source:                 'quiz_evelynliu',
   };
 
-  console.log('[SDR-forward] Payload enviado para o SDR:', JSON.stringify(payload, null, 2));
+  console.log('[SDR-forward] URL:', SDR_URL);
+  console.log('[SDR-forward] Payload:', JSON.stringify(payload, null, 2));
 
-  const res = await fetch(SDR_URL, {
+  const sdrRes = await fetch(SDR_URL, {
     method:  'POST',
     headers: { 'Content-Type': 'application/json', 'x-webhook-secret': SDR_SECRET },
     body:    JSON.stringify(payload),
   });
 
-  console.log(`[SDR-forward] ${res.status} — lead ${payload.nome} (${phone}) encaminhado ao SDR`);
+  const sdrBody = await sdrRes.text();
+  console.log(`[SDR-forward] Status: ${sdrRes.status} — lead ${payload.nome} (${phone})`);
+  console.log(`[SDR-forward] Resposta: ${sdrBody}`);
 }
 
 // ─── Helper CAPI genérico ─────────────────────────────────────────────────────
