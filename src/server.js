@@ -661,7 +661,7 @@ app.post('/api/capi/dossie-view', async (req, res) => {
     customData: {
       content_name: `dossie-${perfil || 'unknown'}`,
       currency: 'BRL',
-      value: 147,
+      value: 97,
     },
     eventSourceUrl: event_source_url,
   }).catch(() => {});
@@ -679,7 +679,7 @@ app.post('/api/capi/initiate-checkout', async (req, res) => {
     customData: {
       content_name: content_name || 'InitiateCheckout_Dossie',
       currency: 'BRL',
-      value: 147,
+      value: 97,
     },
     eventSourceUrl: event_source_url,
   }).catch(() => {});
@@ -736,7 +736,7 @@ app.get('/d/:slug', async (req, res) => {
     customData: {
       content_name: `dossie-${perfilNome}`,
       currency: 'BRL',
-      value: 147,
+      value: 97,
     },
     eventSourceUrl: `https://www.evelynliu.com.br/d/${slug}`,
   }).catch(() => {});
