@@ -585,19 +585,42 @@ async function forwardToSDR(body) {
   const phone = normalizePhone(body.whats || body.whatsapp || '');
   if (!phone) return;
 
-  const payload = {
-    nome:             body.nome             || body.Nome             || '',
-    whatsapp:         phone,
-    temperatura:      body.temperatura      || body.qualificacao?.tier || '',
-    score:            body.score            || body.qualificacao?.score || '',
-    qualificacao:     body.qualificacao     || null,
-    oqueMaisPesa:     body.oqueMaisPesa     || '',
-    historico:        body.historico        || '',
-    saude:            body.saude            || '',
-    comprometimento:  body.comprometimento  || '',
-    maiorDificuldade: body.maiorDificuldade || '',
-    source:           body.source           || 'quiz-raiz',
+  // Mapeia rótulos legíveis para os valores de qualificação do quiz
+  const QUAL_LABELS = {
+    nutri_convencional:   'nutricionista convencional',
+    low_carb:             'low carb',
+    jejum:                'jejum intermitente',
+    dieta_calorias:       'dieta restritiva',
+    psicologo:            'psicólogo ou psiquiatra',
+    remedios:             'medicação prescrita',
+    nutri_comportamental: 'nutrição comportamental',
+    cirurgia:             'cirurgia bariátrica',
+    coach:                'coach ou programa online',
   };
+
+  // Histórico: monta a partir dos itens de qualificação (tentativas anteriores)
+  const qualItems = body.qualification?.items || [];
+  const historico = qualItems
+    .filter(v => v !== 'nenhum' && QUAL_LABELS[v])
+    .map(v => QUAL_LABELS[v])
+    .join(', ');
+
+  // "Perguntas e respostas": formata array [{pergunta, resposta}] como string
+  const respostasArr = Array.isArray(body.respostas) ? body.respostas : [];
+  const perguntasRespostas = respostasArr
+    .map(r => `${r.pergunta}: ${r.resposta}`)
+    .join(', ');
+
+  const payload = {
+    nome:                   body.nome || body.Nome || '',
+    whatsapp:               phone,
+    perfil:                 body.profileName || body.profile || '',
+    historico:              historico || '',
+    'Perguntas e respostas': perguntasRespostas,
+    source:                 body.source || 'quiz-raiz',
+  };
+
+  console.log('[SDR-forward] Payload enviado para o SDR:', JSON.stringify(payload, null, 2));
 
   const res = await fetch(SDR_URL, {
     method:  'POST',
