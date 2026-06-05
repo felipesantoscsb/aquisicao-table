@@ -1043,11 +1043,11 @@ function goOffer(){
   fbq('track','InitiateCheckout',{
     content_name:'InitiateCheckout_Raiz',
     currency:'BRL',
-    value:147,
+    value:97,
     eventID:icEventId
   });
 
-  // InitiateCheckout — CAPI server-side
+  // InitiateCheckout — CAPI server-side (mesmo event_id do pixel p/ dedup)
   const phone = document.getElementById('user-phone')?.value || '';
   fetch('/api/capi/initiate-checkout',{
     method:'POST',
@@ -1056,6 +1056,7 @@ function goOffer(){
       phone: phone,
       content_name:'InitiateCheckout_Raiz',
       perfil:'raiz',
+      event_id: icEventId,
       event_source_url:window.location.href
     })
   }).catch(()=>{});

@@ -217,8 +217,23 @@ app.post('/api/capi', async (req, res) => {
 
   const url = `https://graph.facebook.com/v21.0/${PIXEL_ID}/events?access_token=${CAPI_TOKEN}`;
 
+  const dataEvents = [event];
+
+  // QuizCompleted (custom) pareado com o pixel — só no fluxo de conclusão
+  // real (event principal = Lead) e quando há id dedicado do browser.
+  if (quiz_completed_event_id && resolvedEventName === 'Lead') {
+    dataEvents.push({
+      event_name:       'QuizCompleted',
+      event_time:       Math.floor(Date.now() / 1000),
+      action_source:    'website',
+      event_source_url: event_source_url || 'https://www.evelynliu.com.br/raiz',
+      event_id:         quiz_completed_event_id,
+      user_data,
+    });
+  }
+
   const metaPayload = {
-    data: [event],
+    data: dataEvents,
   };
 
   // test_event_code — só incluído se a variável existir e não estiver vazia.
@@ -644,7 +659,7 @@ async function forwardToSDR(body) {
 
 // ─── Helper CAPI genérico ─────────────────────────────────────────────────────
 
-async function sendCapiEvent({ eventName, phone, fbclid, customData, eventSourceUrl }) {
+async function sendCapiEvent({ eventName, phone, fbclid, customData, eventSourceUrl, eventId, req }) {
   const PIXEL_ID   = process.env.META_PIXEL_ID;
   const CAPI_TOKEN = process.env.META_CAPI_TOKEN;
   if (!PIXEL_ID || !CAPI_TOKEN) return;
@@ -653,12 +668,19 @@ async function sendCapiEvent({ eventName, phone, fbclid, customData, eventSource
   const phoneHashed = sha256(phone);
   if (phoneHashed) user_data.ph = phoneHashed;
   if (fbclid)      user_data.fbc = fbclid;
+  // ip + user_agent quando a requisição original está disponível (melhora EMQ)
+  if (req) {
+    const ip = getClientIp(req);
+    const ua = req.headers['user-agent'];
+    if (ip) user_data.client_ip_address = ip;
+    if (ua) user_data.client_user_agent  = ua;
+  }
 
   const event = {
     event_name:       eventName,
     event_time:       Math.floor(Date.now() / 1000),
     action_source:    'website',
-    event_id:         crypto.randomUUID(),
+    event_id:         eventId || crypto.randomUUID(),   // pareia com pixel quando enviado
     event_source_url: eventSourceUrl || 'https://www.evelynliu.com.br/raiz',
     user_data,
     custom_data:      customData || {},
@@ -685,7 +707,7 @@ async function sendCapiEvent({ eventName, phone, fbclid, customData, eventSource
 // ─── CAPI Dossiê: DossieView ──────────────────────────────────────────────────
 
 app.post('/api/capi/dossie-view', async (req, res) => {
-  const { phone, fbclid, perfil, event_source_url } = req.body || {};
+  const { phone, fbclid, perfil, event_source_url, event_id } = req.body || {};
   res.json({ ok: true }); // responde imediatamente
 
   sendCapiEvent({
@@ -698,13 +720,15 @@ app.post('/api/capi/dossie-view', async (req, res) => {
       value: 97,
     },
     eventSourceUrl: event_source_url,
+    eventId: event_id,
+    req,
   }).catch(() => {});
 });
 
 // ─── CAPI Dossiê: InitiateCheckout ────────────────────────────────────────────
 
 app.post('/api/capi/initiate-checkout', async (req, res) => {
-  const { phone, content_name, perfil, event_source_url } = req.body || {};
+  const { phone, content_name, perfil, event_source_url, event_id } = req.body || {};
   res.json({ ok: true });
 
   sendCapiEvent({
@@ -716,6 +740,8 @@ app.post('/api/capi/initiate-checkout', async (req, res) => {
       value: 97,
     },
     eventSourceUrl: event_source_url,
+    eventId: event_id,
+    req,
   }).catch(() => {});
 });
 
