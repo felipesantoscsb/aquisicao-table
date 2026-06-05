@@ -695,6 +695,12 @@ const PERFIL_MAP = {
 };
 
 app.get('/d/:slug', async (req, res) => {
+  // Serve apenas para raiz.evelynliu.com.br
+  const host = req.hostname;
+  if (host !== 'raiz.evelynliu.com.br') {
+    return res.status(404).send('<h1>Not found.</h1>');
+  }
+
   const { slug } = req.params;
 
   const raw = await redisGet(`dossie:${slug}`);
@@ -738,7 +744,7 @@ app.get('/d/:slug', async (req, res) => {
       currency: 'BRL',
       value: 97,
     },
-    eventSourceUrl: `https://www.evelynliu.com.br/d/${slug}`,
+    eventSourceUrl: `https://raiz.evelynliu.com.br/d/${slug}`,
   }).catch(() => {});
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
