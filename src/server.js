@@ -440,10 +440,6 @@ app.get('/api/meta-insights', async (req, res) => {
   }
 });
 
-app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'dashboard.html'));
-});
-
 // ─── Ações de gestão ──────────────────────────────────────────────────────────
 
 const VALID_ENTITY_TYPES   = ['campaign', 'adset', 'ad'];
