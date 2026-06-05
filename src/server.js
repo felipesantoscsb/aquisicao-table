@@ -8,22 +8,6 @@ const PORT = process.env.PORT || 3000;
 
 // ─── Middlewares ───────────────────────────────────────────────────────────────
 
-// Redirect non-www → www (301)
-app.use((req, res, next) => {
-  // Pega o primeiro valor de x-forwarded-host (pode vir como "a.com, b.com")
-  // e cai para o host header se não existir. Remove porta e espaços.
-  const rawHost = req.headers['x-forwarded-host'] || req.headers.host || '';
-  const host = rawHost.split(',')[0].trim().replace(/:\d+$/, '');
-
-  if (host === 'evelynliu.com.br') {
-    // Constrói o destino manualmente — sem passar pelo Express
-    const target = 'https://www.evelynliu.com.br' + req.originalUrl;
-    console.log(`[redirect] ${host}${req.originalUrl} → ${target}`);
-    res.writeHead(301, { 'Location': target });
-    return res.end();
-  }
-  next();
-});
 
 // Lê o body das requisições JSON
 app.use(express.json());
