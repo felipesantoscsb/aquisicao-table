@@ -1,4 +1,16 @@
 require('dotenv').config();
+
+// Startup env check — visível nos logs do Railway
+const REQUIRED_VARS = ['DATABASE_URL','JWT_SECRET','ANTHROPIC_API_KEY'];
+REQUIRED_VARS.forEach(v => {
+  const val = process.env[v];
+  if (!val || val.includes('...') || val.includes('placeholder')) {
+    console.warn(`⚠️  ${v}: NÃO configurada ou ainda com valor placeholder`);
+  } else {
+    console.log(`✅  ${v}: OK (${val.substring(0,8)}...)`);
+  }
+});
+
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -45,10 +57,16 @@ app.get('/admin', authMiddleware, (req, res) => {
   res.sendFile(path.join(__dirname, '../views/admin.html'));
 });
 
+app.get('/admin/dashboard', authMiddleware, (req, res) => {
+  if (req.user.role !== 'admin') return res.redirect('/pipeline');
+  res.sendFile(path.join(__dirname, '../views/dashboard.html'));
+});
+
 // ── API ─────────────────────────────────────────────────────
 app.use('/api/pipeline', require('./routes/pipeline'));
 app.use('/api/leads', require('./routes/leads'));
 app.use('/api', require('./routes/jornadas'));
+app.use('/api', require('./routes/meta'));
 
 // ── USER INFO ────────────────────────────────────────────────
 app.get('/api/me', authApiMiddleware, (req, res) => res.json(req.user));
