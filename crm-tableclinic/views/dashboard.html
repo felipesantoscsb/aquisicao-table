@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Meta Ads · Table Clinic</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:     #F8F4EE;
+      --moss:   #3D4A35;
+      --terra:  #B97040;
+      --ink:    #1a1a1a;
+      --muted:  #7a7a7a;
+      --border: #e0d9d0;
+    }
+
+    body { background: var(--bg); color: var(--ink); font-family: 'Jost', sans-serif; font-size: 14px; line-height: 1.6; min-height: 100vh; }
+    .page { max-width: 1300px; margin: 0 auto; padding: 0 24px 64px; }
+
+    /* ── Header ── */
+    header { padding: 48px 0 28px; border-bottom: 1px solid var(--terra); margin-bottom: 40px; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .header-left h1 { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 52px; line-height: 1; letter-spacing: -0.5px; }
+    .header-left p { font-size: 14px; color: var(--muted); font-weight: 300; margin-top: 6px; }
+    .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+    .header-nav { display: flex; gap: 16px; }
+    .header-nav a { font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: 0.3px; }
+    .header-nav a:hover { color: var(--moss); }
+    #last-updated { font-size: 12px; color: var(--terra); }
+    #btn-refresh { background: none; border: 1px solid var(--terra); color: var(--terra); font-family: 'Jost', sans-serif; font-size: 12px; padding: 6px 16px; cursor: pointer; letter-spacing: 0.5px; transition: background .15s, color .15s; }
+    #btn-refresh:hover { background: var(--terra); color: #fff; }
+    #btn-refresh:disabled { opacity: .4; cursor: default; background: none; color: var(--terra); }
+
+    /* ── Toast ── */
+    #toast { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+    .toast-item { padding: 10px 18px; font-size: 13px; font-family: 'Jost', sans-serif; border-left: 3px solid; opacity: 0; transform: translateX(20px); transition: opacity .2s, transform .2s; pointer-events: none; max-width: 320px; }
+    .toast-item.show { opacity: 1; transform: translateX(0); pointer-events: auto; }
+    .toast-ok  { background: #fff; border-color: var(--moss); color: var(--moss); }
+    .toast-err { background: #fff8f5; border-color: var(--terra); color: var(--terra); }
+
+    /* ── Spinner ── */
+    .spinner-wrap { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; padding: 8px 0; }
+    .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--terra); border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-msg { background: #fff8f5; border-left: 3px solid var(--terra); padding: 14px 18px; font-size: 13px; color: var(--terra); margin-bottom: 24px; }
+
+    /* ── Section title ── */
+    .section-title { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 28px; margin-bottom: 24px; }
+    .divider { border: none; border-top: 1px solid var(--terra); margin: 48px 0; }
+
+    /* ── Comparison grid ── */
+    .comparison-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    @media (max-width: 860px) { .comparison-grid { grid-template-columns: 1fr; } }
+
+    .cmp-card { background: var(--moss); color: var(--bg); padding: 28px 24px 24px; }
+    .cmp-card .card-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; opacity: .6; margin-bottom: 20px; }
+    .cmp-row { margin-bottom: 16px; }
+    .cmp-row:last-child { margin-bottom: 0; }
+    .cmp-metric-name { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; opacity: .55; margin-bottom: 2px; }
+    .cmp-current { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 30px; line-height: 1.1; display: flex; align-items: baseline; gap: 10px; }
+    .cmp-delta { font-size: 12px; font-weight: 500; }
+    .delta-up { color: #8fba7a; } .delta-down { color: #e09070; } .delta-neu { color: rgba(248,244,238,.4); }
+    .cmp-prev { font-size: 12px; opacity: .45; margin-top: 2px; }
+
+    /* ── Toolbar ── */
+    .table-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+    .level-pills { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; }
+    .level-pills::-webkit-scrollbar { display: none; }
+    .pill { flex-shrink: 0; background: none; border: 1px solid var(--terra); color: var(--terra); font-family: 'Jost', sans-serif; font-size: 12px; font-weight: 500; padding: 6px 18px; cursor: pointer; border-radius: 999px; letter-spacing: 0.3px; transition: background .15s, color .15s; white-space: nowrap; }
+    .pill:hover { background: rgba(185,112,64,.1); }
+    .pill.active { background: var(--moss); border-color: var(--moss); color: var(--bg); }
+
+    .period-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .filter-btn { background: none; border: 1px solid var(--border); color: var(--muted); font-family: 'Jost', sans-serif; font-size: 12px; padding: 5px 14px; cursor: pointer; transition: all .15s; }
+    .filter-btn.active, .filter-btn:hover { border-color: var(--moss); color: var(--moss); background: rgba(61,74,53,.06); }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 1000px; }
+    thead th { text-align: left; padding: 10px 12px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); font-weight: 400; white-space: nowrap; }
+    thead th.num { text-align: right; }
+    tbody tr:nth-child(odd)  { background: #fff; }
+    tbody tr:nth-child(even) { background: var(--bg); }
+    tbody tr:hover { background: rgba(61,74,53,.05); }
+    tbody td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .td-name { font-size: 12px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .td-sub  { font-size: 11px; color: var(--muted); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .td-num  { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 500; text-align: right; white-space: nowrap; }
+
+    /* Status badge */
+    .badge { display: inline-block; font-size: 10px; letter-spacing: .8px; text-transform: uppercase; padding: 3px 8px; }
+    .badge-active { background: rgba(61,74,53,.12); color: var(--moss); }
+    .badge-paused { background: rgba(0,0,0,.06); color: var(--muted); }
+    .badge-other  { background: rgba(185,112,64,.1); color: var(--terra); }
+
+    /* Tfoot totals */
+    tfoot tr { background: var(--moss) !important; }
+    tfoot td { padding: 12px 12px; color: var(--bg); font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 16px; border-top: 2px solid var(--terra); }
+    tfoot td.tot-label { font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; font-family: 'Jost', sans-serif; font-weight: 500; opacity: .8; }
+    tfoot td.td-num { color: var(--bg); }
+
+    /* ── Action buttons ── */
+    .td-actions { white-space: nowrap; text-align: right; }
+    .act-btn { background: none; border: 1px solid; font-family: 'Jost', sans-serif; font-size: 11px; padding: 4px 9px; cursor: pointer; border-radius: 3px; transition: background .15s, color .15s; margin-left: 4px; }
+    .act-btn:first-child { margin-left: 0; }
+    .act-btn-pause  { border-color: var(--terra); color: var(--terra); }
+    .act-btn-pause:hover  { background: var(--terra); color: #fff; }
+    .act-btn-active { border-color: var(--moss); color: var(--moss); }
+    .act-btn-active:hover { background: var(--moss); color: #fff; }
+    .act-btn-neutral { border-color: var(--border); color: var(--muted); }
+    .act-btn-neutral:hover { border-color: var(--moss); color: var(--moss); }
+    .act-btn:disabled { opacity: .35; cursor: default; }
+
+    @media (max-width: 700px) { .act-label { display: none; } }
+
+    /* ── Modal overlay ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(26,26,26,.55); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
+    .modal-overlay.open { display: flex; }
+    .modal-card { background: var(--bg); border: 1px solid var(--terra); max-width: 440px; width: 100%; padding: 32px 28px 24px; }
+    .modal-title { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 24px; margin-bottom: 10px; }
+    .modal-sub   { font-size: 13px; color: var(--muted); margin-bottom: 24px; line-height: 1.5; }
+    .modal-note  { font-size: 12px; color: var(--terra); margin-top: -12px; margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .modal-btn-confirm { background: var(--moss); border: none; color: var(--bg); font-family: 'Jost', sans-serif; font-size: 13px; font-weight: 500; padding: 8px 22px; cursor: pointer; transition: opacity .15s; }
+    .modal-btn-confirm:hover   { opacity: .85; }
+    .modal-btn-confirm:disabled { opacity: .4; cursor: default; }
+    .modal-btn-cancel { background: none; border: 1px solid var(--terra); color: var(--terra); font-family: 'Jost', sans-serif; font-size: 13px; padding: 8px 22px; cursor: pointer; transition: background .15s; }
+    .modal-btn-cancel:hover { background: rgba(185,112,64,.08); }
+
+    /* Budget input */
+    .budget-field { margin-bottom: 20px; }
+    .budget-field label { display: block; font-size: 11px; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .budget-wrap { display: flex; align-items: center; border: 1px solid var(--border); background: #fff; }
+    .budget-prefix { padding: 8px 12px; font-size: 13px; color: var(--muted); border-right: 1px solid var(--border); user-select: none; }
+    .budget-wrap input { border: none; outline: none; background: none; padding: 8px 12px; font-family: 'Jost', sans-serif; font-size: 14px; width: 100%; }
+    .budget-type-row { display: flex; gap: 8px; margin-top: 10px; }
+    .budget-type-btn { flex: 1; background: none; border: 1px solid var(--border); color: var(--muted); font-family: 'Jost', sans-serif; font-size: 12px; padding: 6px; cursor: pointer; transition: all .15s; }
+    .budget-type-btn.active { border-color: var(--moss); color: var(--moss); background: rgba(61,74,53,.06); }
+
+    /* Mobile cards */
+    .camp-cards { display: none; }
+    @media (max-width: 700px) {
+      .table-wrap table { display: none; }
+      .camp-cards { display: block; }
+    }
+    .camp-card { background: #fff; border-bottom: 1px solid var(--border); padding: 16px; }
+    .camp-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .camp-card-title { font-size: 13px; font-weight: 500; flex: 1; padding-right: 10px; }
+    .camp-card-sub   { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .camp-card-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+    .m-label { font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); }
+    .m-value { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 500; }
+    .camp-card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    footer { border-top: 1px solid var(--terra); padding-top: 20px; margin-top: 64px; font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; }
+  </style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- Modal: status -->
+<div class="modal-overlay" id="modal-status">
+  <div class="modal-card">
+    <div class="modal-title" id="ms-title">Pausar campanha?</div>
+    <div class="modal-sub"   id="ms-sub">Esta ação pode ser revertida a qualquer momento.</div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel"  onclick="closeModal('modal-status')">Cancelar</button>
+      <button class="modal-btn-confirm" id="ms-confirm" onclick="confirmStatus()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: orçamento -->
+<div class="modal-overlay" id="modal-budget">
+  <div class="modal-card">
+    <div class="modal-title">Editar orçamento</div>
+    <div class="modal-sub" id="mb-sub">Campanha selecionada</div>
+    <div class="budget-field">
+      <label>Valor do orçamento</label>
+      <div class="budget-wrap">
+        <span class="budget-prefix">R$</span>
+        <input type="number" id="budget-input" placeholder="0,00" min="1" step="0.01" />
+      </div>
+      <div class="budget-type-row">
+        <button class="budget-type-btn active" data-type="daily"    onclick="setBudgetType(this)">Diário</button>
+        <button class="budget-type-btn"        data-type="lifetime" onclick="setBudgetType(this)">Vitalício</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel"  onclick="closeModal('modal-budget')">Cancelar</button>
+      <button class="modal-btn-confirm" id="mb-confirm" onclick="confirmBudget()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: duplicar -->
+<div class="modal-overlay" id="modal-dup">
+  <div class="modal-card">
+    <div class="modal-title" id="md-title">Duplicar campanha?</div>
+    <div class="modal-sub"   id="md-sub">Uma cópia será criada pausada.</div>
+    <div class="modal-note">A entidade duplicada será criada com status <strong>Pausado</strong>.</div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel"  onclick="closeModal('modal-dup')">Cancelar</button>
+      <button class="modal-btn-confirm" id="md-confirm" onclick="confirmDuplicate()">Duplicar</button>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <header>
+    <div class="header-left">
+      <h1>Meta Ads</h1>
+      <p>Table Clinic — Performance <em style="font-family:'Cormorant Garamond';font-style:italic;color:var(--terra)">Dashboard</em></p>
+    </div>
+    <div class="header-right">
+      <div class="header-nav">
+        <a href="/pipeline">← Pipeline</a>
+        <a href="/admin">Admin</a>
+      </div>
+      <span id="last-updated">—</span>
+      <button id="btn-refresh" onclick="loadOverview()">Atualizar</button>
+    </div>
+  </header>
+
+  <div id="status-area"></div>
+
+  <div class="section-title">Visão Geral</div>
+  <div class="comparison-grid" id="comparison-grid"></div>
+
+  <hr class="divider" />
+
+  <div class="table-toolbar">
+    <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;">
+      <div class="section-title" style="margin-bottom:0">Detalhamento</div>
+      <div class="level-pills">
+        <button class="pill active" data-level="campaign" onclick="setLevel(this)">Campanhas</button>
+        <button class="pill"        data-level="adset"    onclick="setLevel(this)">Conjuntos</button>
+        <button class="pill"        data-level="ad"       onclick="setLevel(this)">Anúncios</button>
+      </div>
+      <button id="btn-csv" onclick="exportCSV()" style="background:none;border:1px solid var(--terra);color:var(--terra);font-family:'Jost',sans-serif;font-size:12px;padding:6px 14px;cursor:pointer;border-radius:3px;white-space:nowrap;transition:background .15s,color .15s;" onmouseover="this.style.background='rgba(185,112,64,.1)'" onmouseout="this.style.background='none'">↓ Exportar CSV</button>
+    </div>
+    <div class="period-btns">
+      <button class="filter-btn active" data-period="this_month" onclick="setPeriod(this)">Este mês</button>
+      <button class="filter-btn"        data-period="last_month" onclick="setPeriod(this)">Mês passado</button>
+      <button class="filter-btn"        data-period="this_week"  onclick="setPeriod(this)">Esta semana</button>
+      <button class="filter-btn"        data-period="today"      onclick="setPeriod(this)">Hoje</button>
+    </div>
+  </div>
+
+  <div id="table-status"></div>
+  <div class="table-wrap" id="table-wrap"></div>
+  <div class="camp-cards"  id="camp-cards"></div>
+
+  <footer>
+    <span>Table Clinic · Meta Ads Dashboard</span>
+    <span id="footer-time">—</span>
+  </footer>
+</div>
+
+<script>
+// ── Formatters ────────────────────────────────────────────────────────────────
+const fmt = {
+  brl: v => v == null ? '—' : 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+  pct: v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%',
+  num: v => v == null ? '—' : Number(v).toLocaleString('pt-BR'),
+  x:   v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '×',
+};
+
+const lowerBetter = new Set(['cpl','cpa','cpm']);
+
+function calcDelta(curr, prev) {
+  if (curr == null || prev == null || prev === 0) return null;
+  return ((curr - prev) / prev) * 100;
+}
+
+function deltaHtml(metric, curr, prev) {
+  const d = calcDelta(curr, prev);
+  if (d === null) return '';
+  const improved = lowerBetter.has(metric) ? d < 0 : d > 0;
+  const cls   = Math.abs(d) < 0.5 ? 'delta-neu' : (improved ? 'delta-up' : 'delta-down');
+  const arrow = d > 0 ? '▲' : '▼';
+  return `<span class="cmp-delta ${cls}">${arrow} ${Math.abs(d).toFixed(1)}%</span>`;
+}
+
+function badgeHtml(status) {
+  if (status === 'ACTIVE') return `<span class="badge badge-active">Ativo</span>`;
+  if (status === 'PAUSED') return `<span class="badge badge-paused">Pausado</span>`;
+  return `<span class="badge badge-other">${status}</span>`;
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg, ok = true) {
+  const el = document.createElement('div');
+  el.className = `toast-item ${ok ? 'toast-ok' : 'toast-err'}`;
+  el.textContent = msg;
+  document.getElementById('toast').appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 250); }, 3500);
+}
+
+// ── Modal helpers ─────────────────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let overviewCache = {};
+let tableCache    = {};
+let tablePeriod   = 'this_month';
+let tableLevel    = 'campaign';
+let loadingTable  = false;
+
+let pendingStatus = null;
+let pendingBudget = null;
+let pendingDup    = null;
+
+// ── Fetch (envia cookie JWT automaticamente) ──────────────────────────────────
+async function apiFetch(url, opts = {}) {
+  const res = await fetch(url, { credentials: 'include', ...opts });
+  if (res.status === 401 || res.status === 403) {
+    window.location.href = '/login';
+    throw new Error('Sessão expirada');
+  }
+  return res;
+}
+
+async function fetchInsights(period, level) {
+  const key = `${period}_${level}`;
+  if (tableCache[key]) return tableCache[key];
+  const res  = await apiFetch(`/api/meta-insights?period=${period}&level=${level}`);
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Erro desconhecido');
+  tableCache[key] = json;
+  return json;
+}
+
+// ── Overview ──────────────────────────────────────────────────────────────────
+const COMPARISONS = [
+  { label: 'Hoje vs Ontem',               curr: 'today',      prev: 'yesterday'  },
+  { label: 'Esta semana vs Sem. passada', curr: 'this_week',  prev: 'last_week'  },
+  { label: 'Este mês vs Mês passado',     curr: 'this_month', prev: 'last_month' },
+];
+const METRICS = [
+  { key: 'spend',                 label: 'Gasto',               f: fmt.brl },
+  { key: 'leads',                 label: 'Leads',               f: fmt.num },
+  { key: 'cpl',                   label: 'CPL',                 f: fmt.brl },
+  { key: 'cpa',                   label: 'CPA',                 f: fmt.brl },
+  { key: 'roas',                  label: 'ROAS',                f: fmt.x   },
+  { key: 'purchaseValue',         label: 'Val. Purchase',       f: fmt.brl },
+  { key: 'initiateCheckoutValue', label: 'Val. Init. Checkout', f: fmt.brl },
+];
+
+function renderComparisons() {
+  document.getElementById('comparison-grid').innerHTML = COMPARISONS.map(({ label, curr, prev }) => {
+    const c = overviewCache[curr], p = overviewCache[prev];
+    return `<div class="cmp-card">
+      <div class="card-label">${label}</div>
+      ${METRICS.map(({ key, label: ml, f }) => {
+        const cv = c?.[key], pv = p?.[key];
+        return `<div class="cmp-row">
+          <div class="cmp-metric-name">${ml}</div>
+          <div class="cmp-current">
+            ${cv != null ? f(cv) : '<span style="opacity:.3">—</span>'}
+            ${deltaHtml(key, cv, pv)}
+          </div>
+          ${pv != null ? `<div class="cmp-prev">${f(pv)} anterior</div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
+async function loadOverview() {
+  overviewCache = {}; tableCache = {};
+  const btn = document.getElementById('btn-refresh');
+  btn.disabled = true;
+  document.getElementById('status-area').innerHTML =
+    `<div class="spinner-wrap"><div class="spinner"></div> Carregando dados…</div>`;
+  try {
+    await Promise.all(['today','yesterday','this_week','last_week','this_month','last_month'].map(async p => {
+      const d = await fetchInsights(p, 'campaign');
+      overviewCache[p] = d.overview;
+    }));
+    document.getElementById('status-area').innerHTML = '';
+    renderComparisons();
+    const now = new Date().toLocaleString('pt-BR', { hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit' });
+    document.getElementById('last-updated').textContent = `Atualizado ${now}`;
+    document.getElementById('footer-time').textContent  = `Atualizado ${now}`;
+  } catch (err) {
+    document.getElementById('status-area').innerHTML =
+      `<div class="error-msg">⚠ Erro: ${err.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    await loadTable();
+  }
+}
+
+// ── Table rendering ───────────────────────────────────────────────────────────
+function calcTotals(rows) {
+  let spend = 0, leads = 0, purchases = 0, imp = 0, clicks = 0, revenue = 0;
+  let purchaseValue = 0, initiateCheckoutValue = 0;
+  for (const r of rows) {
+    spend                 += r.spend                 || 0;
+    leads                 += r.leads                 || 0;
+    purchases             += r.purchases             || 0;
+    imp                   += r._impressions          || 0;
+    clicks                += r._clicks               || 0;
+    revenue               += r._revenue              || 0;
+    purchaseValue         += r.purchaseValue         || 0;
+    initiateCheckoutValue += r.initiateCheckoutValue || 0;
+  }
+  return {
+    spend, leads, purchases,
+    cpl:                  leads     > 0 ? spend / leads     : null,
+    cpa:                  purchases > 0 ? spend / purchases : null,
+    ctr:                  imp       > 0 ? (clicks / imp) * 100 : null,
+    cpm:                  imp       > 0 ? (spend / imp) * 1000  : null,
+    roas:                 spend     > 0 ? revenue / spend       : null,
+    purchaseValue:        purchaseValue         || null,
+    initiateCheckoutValue: initiateCheckoutValue || null,
+  };
+}
+
+function rowEntity(r, level) {
+  if (level === 'campaign') return { id: r.campaignId, type: 'campaign' };
+  if (level === 'adset')    return { id: r.adsetId,    type: 'adset'    };
+  return                          { id: r.adId,        type: 'ad'       };
+}
+
+function actionBtns(r, level) {
+  const { id, type } = rowEntity(r, level);
+  const isActive = r.status === 'ACTIVE';
+
+  const toggleBtn = isActive
+    ? `<button class="act-btn act-btn-pause"
+         onclick="openStatusModal('${type}','${id}','PAUSED','${escHtml(r.campaignName || r.adsetName || r.adName || '')}',this)"
+         title="Pausar">⏸ <span class="act-label">Pausar</span></button>`
+    : `<button class="act-btn act-btn-active"
+         onclick="openStatusModal('${type}','${id}','ACTIVE','${escHtml(r.campaignName || r.adsetName || r.adName || '')}',this)"
+         title="Ativar">▶ <span class="act-label">Ativar</span></button>`;
+
+  const budgetBtn = type !== 'ad'
+    ? `<button class="act-btn act-btn-neutral"
+         onclick="openBudgetModal('${type}','${id}','${escHtml(r.campaignName || r.adsetName || '')}',this)"
+         title="Editar orçamento">💰</button>`
+    : '';
+
+  const dupBtn = level !== 'ad'
+    ? `<button class="act-btn act-btn-neutral"
+         onclick="openDupModal('${type}','${id}','${escHtml(r.campaignName || r.adsetName || '')}',this)"
+         title="Duplicar">📋</button>`
+    : '';
+
+  return `<td class="td-actions">${toggleBtn}${budgetBtn}${dupBtn}</td>`;
+}
+
+function escHtml(s) { return s.replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+
+function colDefs(level) {
+  const nameCols = level === 'campaign'
+    ? [{ h: 'Campanha', td: r => `<td class="td-name" title="${r.campaignName}">${r.campaignName}</td>` }]
+    : level === 'adset'
+    ? [
+        { h: 'Campanha', td: r => `<td class="td-sub"  title="${r.campaignName}">${r.campaignName}</td>` },
+        { h: 'Conjunto', td: r => `<td class="td-name" title="${r.adsetName}">${r.adsetName}</td>` },
+      ]
+    : [
+        { h: 'Campanha', td: r => `<td class="td-sub"  title="${r.campaignName}">${r.campaignName}</td>` },
+        { h: 'Conjunto', td: r => `<td class="td-sub"  title="${r.adsetName}">${r.adsetName}</td>` },
+        { h: 'Anúncio',  td: r => `<td class="td-name" title="${r.adName}">${r.adName}</td>` },
+      ];
+
+  return [
+    ...nameCols,
+    { h: 'Status',          num: false, td: r => `<td>${badgeHtml(r.status)}</td>`,                              tot: () => `<td></td>` },
+    { h: 'Gasto',           num: true,  td: r => `<td class="td-num">${fmt.brl(r.spend)}</td>`,                  tot: t => `<td class="td-num">${fmt.brl(t.spend)}</td>` },
+    { h: 'Leads',           num: true,  td: r => `<td class="td-num">${fmt.num(r.leads)}</td>`,                  tot: t => `<td class="td-num">${fmt.num(t.leads)}</td>` },
+    { h: 'CPL',             num: true,  td: r => `<td class="td-num">${fmt.brl(r.cpl)}</td>`,                    tot: t => `<td class="td-num">${fmt.brl(t.cpl)}</td>` },
+    { h: 'CTR',             num: true,  td: r => `<td class="td-num">${fmt.pct(r.ctr)}</td>`,                    tot: t => `<td class="td-num">${fmt.pct(t.ctr)}</td>` },
+    { h: 'CPM',             num: true,  td: r => `<td class="td-num">${fmt.brl(r.cpm)}</td>`,                    tot: t => `<td class="td-num">${fmt.brl(t.cpm)}</td>` },
+    { h: 'Compras',         num: true,  td: r => `<td class="td-num">${fmt.num(r.purchases)}</td>`,              tot: t => `<td class="td-num">${fmt.num(t.purchases)}</td>` },
+    { h: 'Val. Purchase',   num: true,  td: r => `<td class="td-num">${fmt.brl(r.purchaseValue)}</td>`,          tot: t => `<td class="td-num">${fmt.brl(t.purchaseValue)}</td>` },
+    { h: 'Val. Init. Chk',  num: true,  td: r => `<td class="td-num">${fmt.brl(r.initiateCheckoutValue)}</td>`,  tot: t => `<td class="td-num">${fmt.brl(t.initiateCheckoutValue)}</td>` },
+    { h: 'CPA',             num: true,  td: r => `<td class="td-num">${fmt.brl(r.cpa)}</td>`,                    tot: t => `<td class="td-num">${fmt.brl(t.cpa)}</td>` },
+    { h: 'ROAS',            num: true,  td: r => `<td class="td-num">${fmt.x(r.roas)}</td>`,                     tot: t => `<td class="td-num">${fmt.x(t.roas)}</td>` },
+    { h: 'Ações',           num: false, td: r => actionBtns(r, level),                                           tot: () => `<td></td>` },
+  ];
+}
+
+function renderTable(rows, level) {
+  const wrap  = document.getElementById('table-wrap');
+  const cards = document.getElementById('camp-cards');
+
+  if (!rows || rows.length === 0) {
+    wrap.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:8px 0">Nenhum dado neste período.</p>';
+    cards.innerHTML = ''; return;
+  }
+
+  const cols    = colDefs(level);
+  const totals  = calcTotals(rows);
+  const nameCols = level === 'campaign' ? 1 : level === 'adset' ? 2 : 3;
+
+  const thead = `<thead><tr>${cols.map(c => `<th${c.num ? ' class="num"' : ''}>${c.h}</th>`).join('')}</tr></thead>`;
+  const tbody = `<tbody>${rows.map(r => `<tr data-id="${rowEntity(r,level).id}">${cols.map(c => c.td(r)).join('')}</tr>`).join('')}</tbody>`;
+  const tfootCells = cols.map((c, i) => {
+    if (i === 0) return `<td class="tot-label">TOTAL</td>`;
+    if (i < nameCols) return `<td></td>`;
+    return c.tot ? c.tot(totals) : `<td></td>`;
+  }).join('');
+  const tfoot = `<tfoot><tr>${tfootCells}</tr></tfoot>`;
+
+  wrap.innerHTML = `<table>${thead}${tbody}${tfoot}</table>`;
+
+  const mainKey = level === 'campaign' ? 'campaignName' : level === 'adset' ? 'adsetName' : 'adName';
+  const subKey  = level === 'adset' ? 'campaignName' : level === 'ad' ? 'adsetName' : null;
+
+  cards.innerHTML = rows.map(r => {
+    const { id, type } = rowEntity(r, level);
+    const isActive = r.status === 'ACTIVE';
+    return `<div class="camp-card" data-id="${id}">
+      <div class="camp-card-header">
+        <div>
+          <div class="camp-card-title">${r[mainKey]}</div>
+          ${subKey ? `<div class="camp-card-sub">${r[subKey]}</div>` : ''}
+        </div>
+        ${badgeHtml(r.status)}
+      </div>
+      <div class="camp-card-metrics">
+        <div><div class="m-label">Gasto</div><div class="m-value">${fmt.brl(r.spend)}</div></div>
+        <div><div class="m-label">Leads</div><div class="m-value">${fmt.num(r.leads)}</div></div>
+        <div><div class="m-label">CPL</div><div class="m-value">${fmt.brl(r.cpl)}</div></div>
+        <div><div class="m-label">Compras</div><div class="m-value">${fmt.num(r.purchases)}</div></div>
+        <div><div class="m-label">Val. Purchase</div><div class="m-value">${fmt.brl(r.purchaseValue)}</div></div>
+        <div><div class="m-label">Val. Init. Chk</div><div class="m-value">${fmt.brl(r.initiateCheckoutValue)}</div></div>
+      </div>
+      <div class="camp-card-actions">
+        ${isActive
+          ? `<button class="act-btn act-btn-pause" onclick="openStatusModal('${type}','${id}','PAUSED','${escHtml(r[mainKey])}',this)">⏸ Pausar</button>`
+          : `<button class="act-btn act-btn-active" onclick="openStatusModal('${type}','${id}','ACTIVE','${escHtml(r[mainKey])}',this)">▶ Ativar</button>`
+        }
+        ${type !== 'ad' ? `<button class="act-btn act-btn-neutral" onclick="openBudgetModal('${type}','${id}','${escHtml(r[mainKey])}',this)">💰 Orçamento</button>` : ''}
+        ${level !== 'ad' ? `<button class="act-btn act-btn-neutral" onclick="openDupModal('${type}','${id}','${escHtml(r[mainKey])}',this)">📋 Duplicar</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadTable() {
+  if (loadingTable) return;
+  loadingTable = true;
+  const ts = document.getElementById('table-status');
+  document.getElementById('table-wrap').innerHTML = '';
+  ts.innerHTML = `<div class="spinner-wrap"><div class="spinner"></div> Carregando…</div>`;
+  try {
+    const data = await fetchInsights(tablePeriod, tableLevel);
+    for (const r of data.rows || []) {
+      r._impressions = r.cpm   > 0    ? (r.spend * 1000 / r.cpm) : 0;
+      r._clicks      = r._impressions * (r.ctr / 100);
+      r._revenue     = r.roas != null ? r.roas * r.spend          : 0;
+    }
+    ts.innerHTML = '';
+    renderTable(data.rows, tableLevel);
+  } catch (err) {
+    ts.innerHTML = `<div class="error-msg">⚠ ${err.message}</div>`;
+  } finally {
+    loadingTable = false;
+  }
+}
+
+// ── Modal: Status ─────────────────────────────────────────────────────────────
+function openStatusModal(type, id, action, name, btn) {
+  pendingStatus = { entity_type: type, entity_id: id, action, btn };
+  const label     = action === 'PAUSED' ? 'Pausar' : 'Ativar';
+  const typeLabel = type === 'campaign' ? 'campanha' : type === 'adset' ? 'conjunto' : 'anúncio';
+  document.getElementById('ms-title').textContent = `${label} ${typeLabel}?`;
+  document.getElementById('ms-sub').textContent   = `"${name}" será ${action === 'PAUSED' ? 'pausado' : 'ativado'}. Você pode reverter a qualquer momento.`;
+  document.getElementById('ms-confirm').textContent = label;
+  openModal('modal-status');
+}
+
+async function confirmStatus() {
+  const { entity_type, entity_id, action, btn } = pendingStatus;
+  closeModal('modal-status');
+
+  const origHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span style="display:inline-block;width:10px;height:10px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite"></span>';
+
+  try {
+    const res  = await apiFetch('/api/meta-action', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ entity_type, entity_id, action }),
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
+
+    const cacheKey = `${tablePeriod}_${tableLevel}`;
+    if (tableCache[cacheKey]) {
+      const row = tableCache[cacheKey].rows?.find(r => {
+        if (tableLevel === 'campaign') return r.campaignId === entity_id;
+        if (tableLevel === 'adset')    return r.adsetId    === entity_id;
+        return r.adId === entity_id;
+      });
+      if (row) row.status = action;
+    }
+
+    updateRowStatus(entity_id, entity_type, action, btn);
+    toast(`Sucesso — ${action === 'ACTIVE' ? 'ativado' : 'pausado'}!`);
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = origHtml;
+    toast(`Erro: ${err.message}`, false);
+  }
+}
+
+function updateRowStatus(entityId, entityType, newStatus, btn) {
+  const tr = document.querySelector(`tr[data-id="${entityId}"]`);
+  if (tr) {
+    const statusCol = tr.querySelector('td:nth-child(' + (tableLevel === 'ad' ? 4 : tableLevel === 'adset' ? 3 : 2) + ')');
+    if (statusCol) statusCol.innerHTML = badgeHtml(newStatus);
+  }
+  const isNowActive = newStatus === 'ACTIVE';
+  btn.className = `act-btn ${isNowActive ? 'act-btn-pause' : 'act-btn-active'}`;
+  btn.innerHTML = isNowActive ? '⏸ <span class="act-label">Pausar</span>' : '▶ <span class="act-label">Ativar</span>';
+  btn.title     = isNowActive ? 'Pausar' : 'Ativar';
+  btn.disabled  = false;
+  const nextAction = isNowActive ? 'PAUSED' : 'ACTIVE';
+  const name = btn.closest('tr,div.camp-card')?.querySelector('.td-name,.camp-card-title')?.textContent?.trim() || '';
+  btn.onclick = () => openStatusModal(entityType, entityId, nextAction, name, btn);
+}
+
+// ── Modal: Budget ─────────────────────────────────────────────────────────────
+function openBudgetModal(type, id, name, btn) {
+  pendingBudget = { entity_type: type, entity_id: id, btn };
+  document.getElementById('mb-sub').textContent = `"${name}"`;
+  document.getElementById('budget-input').value = '';
+  document.querySelector('.budget-type-btn[data-type="daily"]').click();
+  openModal('modal-budget');
+}
+
+function setBudgetType(btn) {
+  document.querySelectorAll('.budget-type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (pendingBudget) pendingBudget.budget_type = btn.dataset.type;
+}
+
+async function confirmBudget() {
+  const raw = parseFloat(document.getElementById('budget-input').value);
+  if (!raw || raw <= 0) { toast('Digite um valor válido.', false); return; }
+  const amount     = Math.round(raw * 100);
+  const budgetType = document.querySelector('.budget-type-btn.active')?.dataset.type || 'daily';
+  const { entity_type, entity_id } = pendingBudget;
+  closeModal('modal-budget');
+
+  try {
+    const res  = await apiFetch('/api/meta-budget', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ entity_type, entity_id, budget_type: budgetType, amount }),
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
+    toast(`Orçamento atualizado — R$ ${raw.toFixed(2).replace('.',',')} / ${budgetType === 'daily' ? 'dia' : 'vitalício'}`);
+  } catch (err) {
+    toast(`Erro: ${err.message}`, false);
+  }
+}
+
+// ── Modal: Duplicate ──────────────────────────────────────────────────────────
+function openDupModal(type, id, name, btn) {
+  pendingDup = { entity_type: type, entity_id: id, btn };
+  const typeLabel = type === 'campaign' ? 'campanha' : 'conjunto';
+  document.getElementById('md-title').textContent = `Duplicar ${typeLabel}?`;
+  document.getElementById('md-sub').textContent   = `"${name}"`;
+  openModal('modal-dup');
+}
+
+async function confirmDuplicate() {
+  const { entity_type, entity_id } = pendingDup;
+  closeModal('modal-dup');
+
+  try {
+    const res  = await apiFetch('/api/meta-duplicate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ entity_type, entity_id }),
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
+    toast(`Duplicado com sucesso${json.new_id ? ` — novo ID: ${json.new_id}` : ''}. Criado pausado.`);
+    delete tableCache[`${tablePeriod}_${tableLevel}`];
+  } catch (err) {
+    toast(`Erro: ${err.message}`, false);
+  }
+}
+
+// ── CSV Export ────────────────────────────────────────────────────────────────
+function exportCSV() {
+  const key  = `${tablePeriod}_${tableLevel}`;
+  const data = tableCache[key];
+  if (!data || !data.rows || data.rows.length === 0) {
+    toast('Nenhum dado carregado para exportar.', false); return;
+  }
+
+  const rows   = data.rows;
+  const totals = calcTotals(rows);
+  const mainKey = tableLevel === 'campaign' ? 'campaignName' : tableLevel === 'adset' ? 'adsetName' : 'adName';
+  const csvVal = v => v == null ? '' : String(v).replace(/,/g, '.');
+
+  const csvRows = [];
+  csvRows.push(['Nome','Status','Gasto','Leads','CPL','CTR','CPM','Compras','Val. Purchase','Val. Init. Checkout','CPA','ROAS'].join(','));
+
+  for (const r of rows) {
+    csvRows.push([
+      `"${(r[mainKey] || '').replace(/"/g, '""')}"`,
+      r.status,
+      csvVal(r.spend?.toFixed(2)),
+      csvVal(r.leads),
+      csvVal(r.cpl?.toFixed(2)),
+      csvVal(r.ctr?.toFixed(2)),
+      csvVal(r.cpm?.toFixed(2)),
+      csvVal(r.purchases),
+      csvVal(r.purchaseValue?.toFixed(2)),
+      csvVal(r.initiateCheckoutValue?.toFixed(2)),
+      csvVal(r.cpa?.toFixed(2)),
+      csvVal(r.roas?.toFixed(2)),
+    ].join(','));
+  }
+
+  csvRows.push([
+    'TOTAL','',
+    csvVal(totals.spend?.toFixed(2)),
+    csvVal(totals.leads),
+    csvVal(totals.cpl?.toFixed(2)),
+    csvVal(totals.ctr?.toFixed(2)),
+    csvVal(totals.cpm?.toFixed(2)),
+    csvVal(totals.purchases),
+    csvVal(totals.purchaseValue?.toFixed(2)),
+    csvVal(totals.initiateCheckoutValue?.toFixed(2)),
+    csvVal(totals.cpa?.toFixed(2)),
+    csvVal(totals.roas?.toFixed(2)),
+  ].join(','));
+
+  const blob = new Blob(['﻿' + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const date = new Date().toISOString().slice(0, 10);
+  const periodLabel = { today:'hoje', yesterday:'ontem', this_week:'esta-semana', last_week:'semana-passada', this_month:'este-mes', last_month:'mes-passado' }[tablePeriod] || tablePeriod;
+  a.href     = url;
+  a.download = `dashboard-tableclinic-${periodLabel}-${date}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('CSV exportado!');
+}
+
+// ── Controls ──────────────────────────────────────────────────────────────────
+function setLevel(btn) {
+  document.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  tableLevel = btn.dataset.level;
+  loadTable();
+}
+
+function setPeriod(btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  tablePeriod = btn.dataset.period;
+  loadTable();
+}
+
+// Auto-refresh 30 min
+setInterval(loadOverview, 30 * 60 * 1000);
+
+loadOverview();
+</script>
+</body>
+</html>
