@@ -197,7 +197,7 @@ app.post('/api/capi', async (req, res) => {
     event_name:        'Lead',
     event_time:        Math.floor(Date.now() / 1000),   // timestamp unix em segundos
     action_source:     'website',
-    event_source_url:  event_source_url || 'https://evelynliu.com.br/quiz',
+    event_source_url:  event_source_url || req.headers['referer'] || 'https://www.evelynliu.com.br/raiz',
     event_id:          lead_event_id || null,            // deduplicação com pixel browser
     user_data,
   };
