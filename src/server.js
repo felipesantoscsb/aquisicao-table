@@ -197,7 +197,7 @@ app.post('/api/capi', async (req, res) => {
     event_name:        'Lead',
     event_time:        Math.floor(Date.now() / 1000),   // timestamp unix em segundos
     action_source:     'website',
-    event_source_url:  event_source_url || req.headers['referer'] || 'https://www.evelynliu.com.br/raiz',
+    event_source_url:  event_source_url || 'https://www.evelynliu.com.br/raiz',
     event_id:          lead_event_id || null,            // deduplicação com pixel browser
     user_data,
   };
@@ -651,7 +651,7 @@ async function sendCapiEvent({ eventName, phone, fbclid, customData, eventSource
     event_time:       Math.floor(Date.now() / 1000),
     action_source:    'website',
     event_id:         crypto.randomUUID(),
-    event_source_url: eventSourceUrl || 'https://www.evelynliu.com.br',
+    event_source_url: eventSourceUrl || 'https://www.evelynliu.com.br/raiz',
     user_data,
     custom_data:      customData || {},
   };
