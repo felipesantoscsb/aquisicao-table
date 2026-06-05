@@ -130,6 +130,11 @@ app.post('/api/capi', async (req, res) => {
     event_source_url,
   } = req.body;
 
+  // Encaminha lead ao SDR de forma assíncrona (não bloqueia resposta ao usuário)
+  forwardToSDR(req.body).catch(err =>
+    console.error('[SDR-forward] Erro ao encaminhar para o SDR:', err.message)
+  );
+
   // Credenciais via variáveis de ambiente
   const PIXEL_ID    = process.env.META_PIXEL_ID;
   const CAPI_TOKEN  = process.env.META_CAPI_TOKEN;
@@ -546,6 +551,43 @@ app.post('/api/meta-duplicate', async (req, res) => {
     return res.status(500).json({ ok: false, error: err.message });
   }
 });
+
+// ─── SDR Forward ─────────────────────────────────────────────────────────────
+
+async function forwardToSDR(body) {
+  const SDR_URL    = 'https://estrutura-table-production.up.railway.app/webhook/quiz';
+  const SDR_SECRET = process.env.SDR_WEBHOOK_SECRET;
+
+  if (!SDR_SECRET) {
+    console.warn('[SDR-forward] SDR_WEBHOOK_SECRET não configurado — forward ignorado');
+    return;
+  }
+
+  const phone = normalizePhone(body.whats || body.whatsapp || '');
+  if (!phone) return;
+
+  const payload = {
+    nome:             body.nome             || body.Nome             || '',
+    whatsapp:         phone,
+    temperatura:      body.temperatura      || body.qualificacao?.tier || '',
+    score:            body.score            || body.qualificacao?.score || '',
+    qualificacao:     body.qualificacao     || null,
+    oqueMaisPesa:     body.oqueMaisPesa     || '',
+    historico:        body.historico        || '',
+    saude:            body.saude            || '',
+    comprometimento:  body.comprometimento  || '',
+    maiorDificuldade: body.maiorDificuldade || '',
+    source:           body.source           || 'quiz-raiz',
+  };
+
+  const res = await fetch(SDR_URL, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json', 'x-webhook-secret': SDR_SECRET },
+    body:    JSON.stringify(payload),
+  });
+
+  console.log(`[SDR-forward] ${res.status} — lead ${payload.nome} (${phone}) encaminhado ao SDR`);
+}
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 
