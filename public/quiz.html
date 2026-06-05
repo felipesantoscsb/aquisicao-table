@@ -28,6 +28,23 @@ s.parentNode.insertBefore(t,s)}(window,document,"script",
 "https://connect.facebook.net/en_US/fbevents.js");
 fbq('init', '989971718548782');
 fbq('track', 'PageView');
+
+// QuizView — dispara ao carregar a página
+(async function(){
+  async function sha256q(str){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(String(str).toLowerCase().trim()));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+  const qvEventId = crypto.randomUUID();
+  fbq('track','ViewContent',{content_name:'QuizView',eventID:qvEventId});
+  fetch('/api/capi',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      event_name:'ViewContent',
+      content_name:'QuizView',
+      lead_event_id:qvEventId,
+      event_source_url:window.location.href
+    })
+  }).catch(()=>{});
+})();
 </script>
 <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=989971718548782&ev=PageView&noscript=1"/></noscript>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
@@ -1019,6 +1036,29 @@ function showResult(){
 
 function goOffer(){
   gtag('event', 'begin_checkout', {value: 97, currency: 'BRL'});
+
+  // InitiateCheckout — Pixel browser
+  const icEventId = crypto.randomUUID();
+  fbq('track','InitiateCheckout',{
+    content_name:'InitiateCheckout_Raiz',
+    currency:'BRL',
+    value:147,
+    eventID:icEventId
+  });
+
+  // InitiateCheckout — CAPI server-side
+  const phone = document.getElementById('user-phone')?.value || '';
+  fetch('/api/capi/initiate-checkout',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      phone: phone,
+      content_name:'InitiateCheckout_Raiz',
+      perfil:'raiz',
+      event_source_url:window.location.href
+    })
+  }).catch(()=>{});
+
   window.location.href = 'https://checkout.ticto.app/O3EB65FBD';
 }
 </script>

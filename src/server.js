@@ -2,6 +2,24 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
+const fs = require('fs');
+const Redis = require('ioredis');
+
+// ─── Redis (compartilhado com sdr-table) ──────────────────────────────────────
+let _redis;
+function getRedis() {
+  if (!_redis) {
+    _redis = new Redis(process.env.REDIS_URL, {
+      maxRetriesPerRequest: 1,
+      enableOfflineQueue: false,
+      lazyConnect: true,
+      retryStrategy: (t) => (t > 3 ? null : Math.min(t * 500, 2000)),
+    });
+    _redis.on('error', (e) => console.error('[Redis]', e.message));
+  }
+  return _redis;
+}
+async function redisGet(key) { try { return await getRedis().get(key); } catch { return null; } }
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -588,6 +606,143 @@ async function forwardToSDR(body) {
 
   console.log(`[SDR-forward] ${res.status} — lead ${payload.nome} (${phone}) encaminhado ao SDR`);
 }
+
+// ─── Helper CAPI genérico ─────────────────────────────────────────────────────
+
+async function sendCapiEvent({ eventName, phone, fbclid, customData, eventSourceUrl }) {
+  const PIXEL_ID   = process.env.META_PIXEL_ID;
+  const CAPI_TOKEN = process.env.META_CAPI_TOKEN;
+  if (!PIXEL_ID || !CAPI_TOKEN) return;
+
+  const user_data = {};
+  const phoneHashed = sha256(phone);
+  if (phoneHashed) user_data.ph = phoneHashed;
+  if (fbclid)      user_data.fbc = fbclid;
+
+  const event = {
+    event_name:       eventName,
+    event_time:       Math.floor(Date.now() / 1000),
+    action_source:    'website',
+    event_id:         crypto.randomUUID(),
+    event_source_url: eventSourceUrl || 'https://www.evelynliu.com.br',
+    user_data,
+    custom_data:      customData || {},
+  };
+
+  const metaPayload = { data: [event] };
+  const TEST_CODE = process.env.META_TEST_EVENT_CODE;
+  if (TEST_CODE) metaPayload.test_event_code = TEST_CODE;
+
+  const url = `https://graph.facebook.com/v21.0/${PIXEL_ID}/events?access_token=${CAPI_TOKEN}`;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(metaPayload),
+    });
+    const json = await res.json();
+    console.log(`[CAPI] ${eventName} — fbtrace_id: ${json.fbtrace_id}`);
+  } catch (err) {
+    console.error(`[CAPI] ${eventName} erro:`, err.message);
+  }
+}
+
+// ─── CAPI Dossiê: DossieView ──────────────────────────────────────────────────
+
+app.post('/api/capi/dossie-view', async (req, res) => {
+  const { phone, fbclid, perfil, event_source_url } = req.body || {};
+  res.json({ ok: true }); // responde imediatamente
+
+  sendCapiEvent({
+    eventName: 'DossieView',
+    phone,
+    fbclid,
+    customData: {
+      content_name: `dossie-${perfil || 'unknown'}`,
+      currency: 'BRL',
+      value: 147,
+    },
+    eventSourceUrl: event_source_url,
+  }).catch(() => {});
+});
+
+// ─── CAPI Dossiê: InitiateCheckout ────────────────────────────────────────────
+
+app.post('/api/capi/initiate-checkout', async (req, res) => {
+  const { phone, content_name, perfil, event_source_url } = req.body || {};
+  res.json({ ok: true });
+
+  sendCapiEvent({
+    eventName: 'InitiateCheckout',
+    phone,
+    customData: {
+      content_name: content_name || 'InitiateCheckout_Dossie',
+      currency: 'BRL',
+      value: 147,
+    },
+    eventSourceUrl: event_source_url,
+  }).catch(() => {});
+});
+
+// ─── Serve dossiê via /d/:slug ────────────────────────────────────────────────
+
+const DOSSIES_DIR_ATAB = path.join(__dirname, '..', 'public', 'dossies');
+const PERFIL_MAP = {
+  E: 'emocional', R: 'restritiva', S: 'sobrevivencia', A: 'desconectada',
+  emocional: 'emocional', restritiva: 'restritiva',
+  sobrevivencia: 'sobrevivencia', desconectada: 'desconectada',
+};
+
+app.get('/d/:slug', async (req, res) => {
+  const { slug } = req.params;
+
+  const raw = await redisGet(`dossie:${slug}`);
+  if (!raw) {
+    return res.status(404).send('<h1>Dossiê não encontrado ou expirado.</h1>');
+  }
+
+  let meta;
+  try { meta = JSON.parse(raw); } catch {
+    return res.status(500).send('<h1>Erro interno.</h1>');
+  }
+
+  const perfilNome = PERFIL_MAP[meta.perfil] || 'emocional';
+
+  // Serve o arquivo HTML do template correspondente
+  const templatePath = path.join(DOSSIES_DIR_ATAB, `template-${perfilNome}.html`);
+  let html;
+  try {
+    html = fs.readFileSync(templatePath, 'utf-8');
+  } catch {
+    // Fallback: tenta servir do sdr-table via redirect
+    return res.redirect(`https://estrutura-table-production.up.railway.app/${slug}.html`);
+  }
+
+  // Injeta ?ph={phone} na URL atual para o pixel capturar
+  if (meta.phone) {
+    html = html.replace(
+      "window.location.search).get('ph')||getCookie('tc_ph')||null",
+      `window.location.search).get('ph')||'${meta.phone}'||getCookie('tc_ph')||null`
+    );
+  }
+
+  console.log(`[/d/:slug] Servindo dossiê ${slug} (${perfilNome}) para ${meta.phone || 'anon'}`);
+
+  // Disparo CAPI server-side DossieView
+  sendCapiEvent({
+    eventName: 'DossieView',
+    phone: meta.phone,
+    customData: {
+      content_name: `dossie-${perfilNome}`,
+      currency: 'BRL',
+      value: 147,
+    },
+    eventSourceUrl: `https://www.evelynliu.com.br/d/${slug}`,
+  }).catch(() => {});
+
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  return res.send(html);
+});
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 
