@@ -146,6 +146,9 @@ app.post('/api/capi', async (req, res) => {
     fbc,
     fbp,
     lead_event_id,
+    quiz_completed_event_id,
+    event_name,
+    content_name,
     event_source_url,
   } = req.body;
 
@@ -193,14 +196,19 @@ app.post('/api/capi', async (req, res) => {
 
   // ── Monta o evento ───────────────────────────────────────────────────────────
 
+  // event_name vem do frontend (ViewContent no page-load, Lead no QuizCompleted).
+  // Default 'Lead' por retrocompatibilidade. Page-load não cria mais Lead espúrio.
+  const resolvedEventName = event_name || 'Lead';
+
   const event = {
-    event_name:        'Lead',
+    event_name:        resolvedEventName,
     event_time:        Math.floor(Date.now() / 1000),   // timestamp unix em segundos
     action_source:     'website',
     event_source_url:  event_source_url || 'https://www.evelynliu.com.br/raiz',
     event_id:          lead_event_id || null,            // deduplicação com pixel browser
     user_data,
   };
+  if (content_name) event.custom_data = { content_name };
 
   // Remove event_id se não veio (evita enviar null)
   if (!event.event_id) delete event.event_id;
