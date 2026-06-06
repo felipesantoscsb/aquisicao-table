@@ -766,6 +766,14 @@ function startQuiz(){
   document.cookie = "tc_ph=" + phone + "; path=/; max-age=604800; SameSite=Lax; domain=.evelynliu.com.br";
   goTo('page-quiz');
   renderQuestion();
+  // Advanced Matching: já temos nome/email/telefone — passa em/ph/fn ao pixel
+  // (Meta normaliza e hasheia no browser). Eleva o EMQ do Lead no lado browser
+  // para casar com o user_data completo enviado pelo CAPI.
+  fbq('init','989971718548782',{
+    em: email,
+    ph: phone,
+    fn: name.trim().split(/\s+/)[0]
+  });
   fbq('track','Lead',{
     content_name:'quiz-lead',
     eventID: window._leadEventId
@@ -979,7 +987,7 @@ function showResult(){
     nome: window._leadName,
     email: window._leadEmail,
     whats: phoneForHash(window._leadPhone),
-    fbc: window._leadFbc || null,
+    fbc: window._leadFbc || getCookie('_fbc') || null,
     fbp: window._leadFbp || getCookie('_fbp') || null,
     lead_event_id: window._leadEventId,
     quiz_completed_event_id: quizEventId,
