@@ -715,7 +715,7 @@ app.post('/api/capi/dossie-view', async (req, res) => {
     phone,
     fbclid,
     customData: {
-      content_name: `dossie-${perfil || 'unknown'}`,
+      content_name: 'dossie-view',
       currency: 'BRL',
       value: 97,
     },
