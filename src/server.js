@@ -659,7 +659,7 @@ async function forwardToSDR(body) {
 
 // ─── Helper CAPI genérico ─────────────────────────────────────────────────────
 
-async function sendCapiEvent({ eventName, phone, fbclid, customData, eventSourceUrl, eventId, req }) {
+async function sendCapiEvent({ eventName, phone, fbclid, fbc, fbp, em, fn, customData, eventSourceUrl, eventId, req }) {
   const PIXEL_ID   = process.env.META_PIXEL_ID;
   const CAPI_TOKEN = process.env.META_CAPI_TOKEN;
   if (!PIXEL_ID || !CAPI_TOKEN) return;
@@ -667,7 +667,13 @@ async function sendCapiEvent({ eventName, phone, fbclid, customData, eventSource
   const user_data = {};
   const phoneHashed = sha256(phone);
   if (phoneHashed) user_data.ph = phoneHashed;
-  if (fbclid)      user_data.fbc = fbclid;
+  const emHashed = sha256(em);                 // hash SHA-256 (lowercase+trim)
+  if (emHashed) user_data.em = emHashed;
+  const fnHashed = sha256(fn);                 // hash SHA-256 (lowercase+trim)
+  if (fnHashed) user_data.fn = fnHashed;
+  if (fbclid)      user_data.fbc = fbclid;     // compat: dossie-view envia fbclid
+  if (fbc)         user_data.fbc = fbc;        // valor raw do cookie _fbc (sem hash)
+  if (fbp)         user_data.fbp = fbp;        // valor raw do cookie _fbp (sem hash)
   // ip + user_agent quando a requisição original está disponível (melhora EMQ)
   if (req) {
     const ip = getClientIp(req);
@@ -728,12 +734,16 @@ app.post('/api/capi/dossie-view', async (req, res) => {
 // ─── CAPI Dossiê: InitiateCheckout ────────────────────────────────────────────
 
 app.post('/api/capi/initiate-checkout', async (req, res) => {
-  const { phone, content_name, perfil, event_source_url, event_id } = req.body || {};
+  const { phone, content_name, perfil, event_source_url, event_id, em, fbp, fbc, fn } = req.body || {};
   res.json({ ok: true });
 
   sendCapiEvent({
     eventName: 'InitiateCheckout',
     phone,
+    em,
+    fbp,
+    fbc,
+    fn,
     customData: {
       content_name: content_name || 'InitiateCheckout_Dossie',
       currency: 'BRL',

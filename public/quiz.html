@@ -1056,12 +1056,15 @@ function goOffer(){
   });
 
   // InitiateCheckout — CAPI server-side (mesmo event_id do pixel p/ dedup)
-  const phone = document.getElementById('user-phone')?.value || '';
+  // Usa os dados já em memória (phone E.164, email, fbp, fbc) p/ máximo match
   fetch('/api/capi/initiate-checkout',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
-      phone: phone,
+      phone: window._leadPhone,
+      em: window._leadEmail,
+      fbp: window._leadFbp,
+      fbc: window._leadFbc || undefined,
       content_name:'InitiateCheckout_Raiz',
       perfil:'raiz',
       event_id: icEventId,
