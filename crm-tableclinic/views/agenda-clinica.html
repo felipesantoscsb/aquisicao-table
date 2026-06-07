@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agenda Clínica · Table Clinic</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+  <style>
+    :root{--moss:#3D4A35;--moss2:#4E5E42;--terra:#B97040;--cream:#F8F4EE;--brown:#2C2018;--muted:#7A6E64;--line:#DDD4C4;--danger:#C0392B;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--cream);font-family:'Jost',sans-serif;font-weight:300;color:var(--brown);min-height:100vh}
+
+    /* Topbar */
+    .topbar{background:var(--moss);color:var(--cream);display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;position:sticky;top:0;z-index:200}
+    .topbar__brand{font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:500;letter-spacing:.04em}
+    .topbar__nav{display:flex;align-items:center;gap:2px}
+    .topbar__nav a{color:var(--cream);opacity:.7;font-size:.72rem;text-decoration:none;letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:2px;transition:opacity .15s}
+    .topbar__nav a:hover{opacity:1}
+    .topbar__nav a.active{opacity:1;background:rgba(255,255,255,.15)}
+    .btn-logout{background:none;border:1px solid rgba(248,244,238,.3);color:var(--cream);cursor:pointer;padding:4px 10px;border-radius:2px;font-family:'Jost',sans-serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;margin-left:8px}
+
+    /* Toolbar */
+    .toolbar{background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:52px;z-index:100}
+    .toolbar select,.toolbar input[type=date]{border:1px solid var(--line);border-radius:3px;padding:6px 10px;font-family:'Jost',sans-serif;font-size:.8rem;color:var(--brown);background:var(--cream);outline:none}
+    .toolbar select:focus,.toolbar input:focus{border-color:var(--moss)}
+    .view-toggle{display:flex;gap:3px}
+    .vbtn{padding:5px 14px;border-radius:2px;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border:1px solid var(--line);background:none;font-family:'Jost',sans-serif;color:var(--muted);transition:all .2s}
+    .vbtn.active{background:var(--moss);color:var(--cream);border-color:var(--moss)}
+    .nav-btn{background:none;border:1px solid var(--line);border-radius:3px;padding:5px 12px;font-family:'Jost',sans-serif;font-size:.85rem;cursor:pointer;color:var(--brown)}
+    .nav-btn:hover{border-color:var(--moss);color:var(--moss)}
+    .period-label{font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:500;color:var(--moss);min-width:200px;text-align:center}
+    .btn-new{background:var(--terra);color:#fff;border:none;border-radius:3px;padding:7px 16px;font-family:'Jost',sans-serif;font-size:.78rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;margin-left:auto;white-space:nowrap}
+    .btn-new:hover{background:#9E5E30}
+
+    /* ── Semana ── */
+    #weekView{padding:16px;overflow-x:auto}
+    .week-table{width:100%;border-collapse:collapse;min-width:720px;background:#fff;border-radius:4px;overflow:hidden;box-shadow:0 1px 4px rgba(44,32,24,.08)}
+    .week-table th{background:var(--moss);color:var(--cream);padding:9px 8px;font-size:.68rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;text-align:center;border-right:1px solid rgba(255,255,255,.12)}
+    .week-table th:first-child{width:56px}
+    .week-table th.today-col{background:var(--terra)}
+    .wk-time{padding:4px 6px;font-size:.64rem;color:var(--muted);text-align:right;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--cream);vertical-align:top;white-space:nowrap}
+    .wk-slot{border-right:1px solid var(--line);border-bottom:1px solid var(--line);vertical-align:top;min-height:48px;padding:2px;position:relative}
+    .wk-slot.today-col{background:#fffbf5}
+    .wk-slot.drag-over{background:rgba(61,74,53,.08)}
+
+    /* Chips de consulta na agenda */
+    .appt-chip{border-radius:3px;padding:3px 6px;font-size:.68rem;font-weight:500;color:#fff;margin-bottom:2px;cursor:pointer;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:opacity .15s}
+    .appt-chip:hover{opacity:.85}
+    .chip-juliana{background:#3D4A35}
+    .chip-natalia{background:#B97040}
+    .chip-evelyn {background:#5a6e4a}
+    .chip-other  {background:#8a9ba8}
+    .chip-confirmado{outline:2px solid #8fba7a;outline-offset:1px}
+    .chip-realizado {opacity:.55}
+    .allday-row td{border-bottom:2px solid var(--terra);background:#fff;min-height:36px;padding:3px}
+
+    /* ── Mês ── */
+    #monthView{padding:16px}
+    .month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+    .month-dow{background:var(--moss);color:var(--cream);font-size:.65rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:7px 0;text-align:center}
+    .month-day{background:#fff;min-height:96px;padding:5px;vertical-align:top}
+    .month-day--other{background:#f9f6f1;opacity:.6}
+    .month-day--today{background:#fffbf5}
+    .month-day__num{font-size:.72rem;font-weight:500;color:var(--muted);margin-bottom:3px}
+    .month-day--today .month-day__num{color:var(--terra);font-weight:600}
+    .month-chip{font-size:.65rem;padding:2px 6px;border-radius:2px;margin-bottom:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;display:block}
+    .month-chip:hover{opacity:.85}
+    .month-chip.chip-juliana{background:#3D4A35}
+    .month-chip.chip-natalia{background:#B97040}
+    .month-chip.chip-evelyn {background:#5a6e4a}
+    .month-chip.chip-other  {background:#8a9ba8}
+
+    /* Modal */
+    .overlay{position:fixed;inset:0;background:rgba(44,32,24,.45);z-index:300;display:none;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
+    .overlay.open{display:flex}
+    .modal{background:#fff;border-radius:4px;width:100%;max-width:560px;box-shadow:0 8px 48px rgba(44,32,24,.18);margin:auto}
+    .modal__head{background:var(--moss);color:var(--cream);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;border-radius:4px 4px 0 0}
+    .modal__title{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:500}
+    .modal__close{background:none;border:none;color:var(--cream);font-size:1.4rem;cursor:pointer;opacity:.7;line-height:1}
+    .modal__close:hover{opacity:1}
+    .modal__body{padding:20px}
+    .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+    @media(max-width:500px){.fgrid{grid-template-columns:1fr}}
+    .field label{display:block;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+    .field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:3px;padding:7px 10px;font-family:'Jost',sans-serif;font-size:.84rem;color:var(--brown);background:var(--cream);outline:none}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--moss)}
+    .modal__actions{padding:14px 20px 18px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
+    .btn-save{background:var(--moss);color:var(--cream);border:none;border-radius:3px;padding:9px 18px;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:500;cursor:pointer}
+    .btn-save:hover{background:var(--moss2)}
+    .btn-cancel{background:none;border:1px solid var(--line);color:var(--muted);border-radius:3px;padding:9px 18px;font-family:'Jost',sans-serif;font-size:.8rem;cursor:pointer}
+    .btn-confirm{background:var(--terra);color:#fff;border:none;border-radius:3px;padding:7px 14px;font-family:'Jost',sans-serif;font-size:.78rem;cursor:pointer}
+    .btn-danger{background:none;border:1px solid var(--danger);color:var(--danger);border-radius:3px;padding:7px 14px;font-family:'Jost',sans-serif;font-size:.78rem;cursor:pointer}
+    .form-err{color:var(--danger);font-size:.78rem;margin-top:6px;display:none}
+
+    .badge{display:inline-block;font-size:.62rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:2px;margin-left:6px}
+    .badge-agendado{background:rgba(61,74,53,.12);color:var(--moss)}
+    .badge-confirmado{background:rgba(61,74,53,.25);color:var(--moss)}
+    .badge-realizado{background:rgba(0,0,0,.07);color:var(--muted)}
+    .badge-cancelado{background:rgba(192,57,43,.12);color:var(--danger)}
+
+    .recurrence-opts{display:none;margin-top:8px;background:var(--cream);border:1px solid var(--line);border-radius:3px;padding:10px}
+    .recurrence-opts.show{display:block}
+    .recurrence-pills{display:flex;gap:6px;margin-top:6px}
+    .rec-pill{flex:1;background:none;border:1px solid var(--line);color:var(--muted);font-family:'Jost',sans-serif;font-size:.75rem;padding:5px;cursor:pointer;border-radius:2px;transition:all .15s}
+    .rec-pill.active{border-color:var(--moss);color:var(--moss);background:rgba(61,74,53,.08)}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar__brand">Table Clinic</div>
+  <div style="display:flex;align-items:center">
+    <nav class="topbar__nav" id="topNav"></nav>
+    <button class="btn-logout" id="btnLogout">Sair</button>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="view-toggle">
+    <button class="vbtn active" id="btnWeek">Semana</button>
+    <button class="vbtn"        id="btnMonth">Mês</button>
+  </div>
+  <button class="nav-btn" id="calPrev">‹</button>
+  <div class="period-label" id="periodLabel"></div>
+  <button class="nav-btn" id="calNext">›</button>
+  <select id="fNutri"><option value="">Todas as nutris</option></select>
+  <button class="btn-new" id="btnNew">+ Agendar consulta</button>
+</div>
+
+<!-- Semana -->
+<div id="weekView">
+  <div style="overflow-x:auto">
+    <table class="week-table" id="weekTable"></table>
+  </div>
+</div>
+
+<!-- Mês -->
+<div id="monthView" style="display:none">
+  <div class="month-grid" id="monthGrid"></div>
+</div>
+
+<!-- Modal: agendar / editar -->
+<div class="overlay" id="overlayAppt">
+  <div class="modal">
+    <div class="modal__head">
+      <div class="modal__title" id="apptModalTitle">Nova consulta</div>
+      <button class="modal__close" id="btnCloseAppt">×</button>
+    </div>
+    <div class="modal__body">
+      <div class="fgrid">
+        <div class="field" style="grid-column:1/-1">
+          <label>Paciente *</label>
+          <select id="aPatient"><option value="">— selecione —</option></select>
+        </div>
+        <div class="field">
+          <label>Nutri responsável</label>
+          <select id="aNutri"><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Tipo</label>
+          <select id="aType">
+            <option value="consulta">Consulta</option>
+            <option value="encaixe">Encaixe</option>
+            <option value="bloqueio">Bloqueio</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Início *</label>
+          <input id="aStart" type="datetime-local"/>
+        </div>
+        <div class="field">
+          <label>Duração (min)</label>
+          <input id="aDuration" type="number" value="50" min="10" step="5"/>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:10px">
+        <label>Observações</label>
+        <textarea id="aNotes" rows="2"></textarea>
+      </div>
+      <!-- Recorrência -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <label style="font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Recorrência</label>
+        <input type="checkbox" id="aRecurr" style="width:auto"/>
+        <span style="font-size:.78rem;color:var(--muted)">Semanal</span>
+      </div>
+      <div class="recurrence-opts" id="recurrOpts">
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:4px">Criar agendamentos por:</div>
+        <div class="recurrence-pills">
+          <button class="rec-pill active" data-days="30">30 dias</button>
+          <button class="rec-pill"        data-days="60">60 dias</button>
+          <button class="rec-pill"        data-days="90">90 dias</button>
+        </div>
+      </div>
+      <div class="form-err" id="apptErr"></div>
+    </div>
+    <div class="modal__actions">
+      <button class="btn-danger"   id="btnCancelAppt" style="display:none">Cancelar consulta</button>
+      <button class="btn-confirm"  id="btnConfirmAppt" style="display:none">✓ Confirmar</button>
+      <button class="btn-cancel"   id="btnCloseAppt2">Fechar</button>
+      <button class="btn-save"     id="btnSaveAppt">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+  'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DAYS   = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+let calDate   = new Date();
+let calMode   = 'week';
+let allAppts  = [];
+let editingId = null;
+let selRecDays = 30;
+let me = {};
+
+// ── Nav ───────────────────────────────────────────────────────
+function buildNav(role) {
+  const items = [
+    {href:'/pipeline',       label:'Pipeline',       roles:['admin','sdr','nutri','administrativo']},
+    {href:'/leads',          label:'Leads',          roles:['admin','sdr','administrativo']},
+    {href:'/pacientes',      label:'Pacientes',      roles:['admin','nutri','administrativo']},
+    {href:'/agenda-clinica', label:'Agenda Clínica', roles:['admin','nutri','administrativo']},
+    {href:'/financeiro',     label:'Financeiro',     roles:['admin','administrativo']},
+    {href:'/admin',          label:'Admin',          roles:['admin']},
+  ];
+  const nav = document.getElementById('topNav');
+  items.filter(i=>i.roles.includes(role)).forEach(i=>{
+    const a = document.createElement('a');
+    a.href=i.href; a.textContent=i.label;
+    if(location.pathname===i.href) a.classList.add('active');
+    nav.appendChild(a);
+  });
+}
+
+// ── Carregar dados ────────────────────────────────────────────
+async function loadAppts() {
+  const nutri = document.getElementById('fNutri').value;
+  const params = new URLSearchParams();
+  if (nutri) params.set('nutritionist_id', nutri);
+
+  if (calMode === 'week') {
+    const days = getWeekDays(calDate);
+    params.set('date_from', days[0].toISOString());
+    params.set('date_to',   days[6].toISOString().replace('T00','T23').replace(/:\d\d:\d\dZ/,':59:59Z'));
+  } else {
+    const y = calDate.getFullYear(), m = calDate.getMonth();
+    params.set('date_from', new Date(y,m,1).toISOString());
+    params.set('date_to',   new Date(y,m+1,0,23,59,59).toISOString());
+  }
+
+  const r = await fetch('/api/appointments-clinical?' + params);
+  const j = await r.json();
+  allAppts = j.data || [];
+
+  if (calMode === 'week') renderWeek();
+  else                    renderMonth();
+}
+
+// ── Semana ────────────────────────────────────────────────────
+function getWeekDays(ref) {
+  const day = ref.getDay();
+  const mon = new Date(ref);
+  mon.setDate(ref.getDate() - ((day+6)%7));
+  mon.setHours(0,0,0,0);
+  return Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;});
+}
+
+function isSameDay(a,b){
+  return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
+}
+
+function nutriClass(name) {
+  if (!name) return 'chip-other';
+  const n = name.toLowerCase();
+  if (n.includes('juliana')) return 'chip-juliana';
+  if (n.includes('natalia')||n.includes('natália')) return 'chip-natalia';
+  if (n.includes('evelyn')) return 'chip-evelyn';
+  return 'chip-other';
+}
+
+function renderWeek() {
+  const days  = getWeekDays(calDate);
+  const today = new Date();
+  const first = days[0], last = days[6];
+  const sameM = first.getMonth()===last.getMonth();
+  document.getElementById('periodLabel').textContent = sameM
+    ? `${first.getDate()}–${last.getDate()} de ${MONTHS[first.getMonth()]} ${first.getFullYear()}`
+    : `${first.getDate()} ${MONTHS[first.getMonth()]} – ${last.getDate()} ${MONTHS[last.getMonth()]}`;
+
+  let html = '<thead><tr><th></th>';
+  days.forEach(d=>{
+    const cls = isSameDay(d,today)?'today-col':'';
+    html+=`<th class="${cls}">${DAYS[d.getDay()]} ${d.getDate()}</th>`;
+  });
+  html+='</tr></thead><tbody>';
+
+  // Linha "Agenda" — todos os compromissos
+  html+='<tr class="allday-row"><td class="wk-time">Agenda</td>';
+  days.forEach(d=>{
+    const cls = isSameDay(d,today)?'today-col':'';
+    const dayAppts = allAppts.filter(a=>isSameDay(new Date(a.start_time),d));
+    html+=`<td class="wk-slot ${cls}">`;
+    dayAppts.forEach(a=>{
+      const nc  = nutriClass(a.nutri_short);
+      const sc  = a.status==='confirmado'?'chip-confirmado':a.status==='realizado'?'chip-realizado':'';
+      const time = new Date(a.start_time).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+      html+=`<span class="appt-chip ${nc} ${sc}" onclick="openEdit(${a.id})" title="${a.patient_name} — ${a.status}">${time} ${a.patient_name.split(' ')[0]}</span>`;
+    });
+    html+='</td>';
+  });
+  html+='</tr>';
+
+  // Linhas horárias 7h–21h
+  for(let h=7;h<=21;h++){
+    const t=`${String(h).padStart(2,'0')}:00`;
+    html+=`<tr><td class="wk-time">${t}</td>`;
+    days.forEach(d=>{
+      const cls=isSameDay(d,today)?'today-col':'';
+      html+=`<td class="wk-slot ${cls}" data-date="${d.toISOString().slice(0,10)}" data-hour="${h}"></td>`;
+    });
+    html+='</tr>';
+  }
+  html+='</tbody>';
+  document.getElementById('weekTable').innerHTML = html;
+
+  // Click em slot vazio → agendar
+  document.querySelectorAll('.wk-slot[data-date]').forEach(slot=>{
+    slot.addEventListener('click', ()=>{
+      const dt = slot.dataset.date + 'T' + String(slot.dataset.hour||9).padStart(2,'0') + ':00';
+      openNew(dt);
+    });
+  });
+}
+
+// ── Mês ───────────────────────────────────────────────────────
+function renderMonth() {
+  const y = calDate.getFullYear(), m = calDate.getMonth();
+  document.getElementById('periodLabel').textContent = `${MONTHS[m]} ${y}`;
+  const grid  = document.getElementById('monthGrid');
+  const today = new Date();
+  grid.innerHTML = '';
+
+  DAYS.forEach(d=>{ const h=document.createElement('div');h.className='month-dow';h.textContent=d;grid.appendChild(h);});
+
+  const firstDow = new Date(y,m,1).getDay();
+  const dim      = new Date(y,m+1,0).getDate();
+  for(let i=0;i<firstDow;i++){const c=document.createElement('div');c.className='month-day month-day--other';grid.appendChild(c);}
+
+  for(let d=1;d<=dim;d++){
+    const cell = document.createElement('div');
+    const isT  = isSameDay(new Date(y,m,d),today);
+    cell.className='month-day'+(isT?' month-day--today':'');
+    cell.innerHTML=`<div class="month-day__num">${d}</div>`;
+    const dayStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    allAppts.filter(a=>a.start_time.substring(0,10)===dayStr).forEach(a=>{
+      const nc=nutriClass(a.nutri_short);
+      const time=new Date(a.start_time).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+      const chip=document.createElement('span');
+      chip.className=`month-chip ${nc}`;
+      chip.textContent=`${time} ${a.patient_name.split(' ')[0]}`;
+      chip.title=`${a.patient_name} — ${a.status}`;
+      chip.addEventListener('click',()=>openEdit(a.id));
+      cell.appendChild(chip);
+    });
+    cell.addEventListener('click',e=>{if(e.target===cell||e.target.classList.contains('month-day__num')){openNew(dayStr+'T09:00');}});
+    grid.appendChild(cell);
+  }
+
+  const total=firstDow+dim;
+  const rem=total%7===0?0:7-(total%7);
+  for(let i=0;i<rem;i++){const c=document.createElement('div');c.className='month-day month-day--other';grid.appendChild(c);}
+}
+
+// ── Modal novo agendamento ────────────────────────────────────
+function openNew(defaultStart='') {
+  editingId = null;
+  document.getElementById('apptModalTitle').textContent = 'Nova consulta';
+  document.getElementById('aPatient').value  = '';
+  document.getElementById('aNutri').value    = me.role==='nutri'?me.id:'';
+  document.getElementById('aType').value     = 'consulta';
+  document.getElementById('aStart').value   = defaultStart;
+  document.getElementById('aDuration').value= '50';
+  document.getElementById('aNotes').value    = '';
+  document.getElementById('aRecurr').checked= false;
+  document.getElementById('recurrOpts').classList.remove('show');
+  document.getElementById('apptErr').style.display='none';
+  document.getElementById('btnCancelAppt').style.display='none';
+  document.getElementById('btnConfirmAppt').style.display='none';
+  document.getElementById('overlayAppt').classList.add('open');
+}
+
+async function openEdit(id) {
+  editingId = id;
+  const appt = allAppts.find(a=>a.id===id);
+  if (!appt) return;
+  document.getElementById('apptModalTitle').textContent = 'Editar consulta';
+  document.getElementById('aPatient').value  = appt.patient_id || '';
+  document.getElementById('aNutri').value    = appt.nutritionist_id || '';
+  document.getElementById('aType').value     = appt.type || 'consulta';
+  document.getElementById('aStart').value   = appt.start_time ? appt.start_time.substring(0,16) : '';
+  document.getElementById('aDuration').value= appt.duration_minutes || 50;
+  document.getElementById('aNotes').value    = appt.notes || '';
+  document.getElementById('aRecurr').checked= false;
+  document.getElementById('recurrOpts').classList.remove('show');
+  document.getElementById('apptErr').style.display='none';
+  document.getElementById('btnCancelAppt').style.display = appt.status!=='cancelado'?'':'none';
+  document.getElementById('btnConfirmAppt').style.display= appt.status==='agendado'?'':'none';
+  document.getElementById('overlayAppt').classList.add('open');
+}
+
+document.getElementById('btnNew').addEventListener('click', ()=>openNew());
+['btnCloseAppt','btnCloseAppt2'].forEach(id=>
+  document.getElementById(id).addEventListener('click', ()=>document.getElementById('overlayAppt').classList.remove('open'))
+);
+document.getElementById('overlayAppt').addEventListener('click', e=>{
+  if(e.target===document.getElementById('overlayAppt')) document.getElementById('overlayAppt').classList.remove('open');
+});
+
+document.getElementById('aRecurr').addEventListener('change', function(){
+  document.getElementById('recurrOpts').classList.toggle('show', this.checked);
+});
+
+document.querySelectorAll('.rec-pill').forEach(btn=>btn.addEventListener('click', ()=>{
+  document.querySelectorAll('.rec-pill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  selRecDays = parseInt(btn.dataset.days);
+}));
+
+document.getElementById('btnSaveAppt').addEventListener('click', async ()=>{
+  const errEl = document.getElementById('apptErr');
+  errEl.style.display='none';
+  const patient_id  = document.getElementById('aPatient').value;
+  const start_time  = document.getElementById('aStart').value;
+  if (!editingId && (!patient_id||!start_time)) {
+    errEl.textContent='Paciente e início são obrigatórios.';
+    errEl.style.display='block'; return;
+  }
+  const body = {
+    patient_id:     patient_id||undefined,
+    nutritionist_id:document.getElementById('aNutri').value||null,
+    type:           document.getElementById('aType').value,
+    start_time:     start_time||undefined,
+    duration_minutes:parseInt(document.getElementById('aDuration').value)||50,
+    notes:          document.getElementById('aNotes').value||null,
+    recurrence:     document.getElementById('aRecurr').checked?'weekly':'none',
+    recurrence_days:document.getElementById('aRecurr').checked?selRecDays:null,
+  };
+
+  const btn=document.getElementById('btnSaveAppt'); btn.textContent='Salvando…';
+  const r = await fetch(
+    editingId?`/api/appointments-clinical/${editingId}`:'/api/appointments-clinical',
+    { method:editingId?'PUT':'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) }
+  );
+  const j = await r.json();
+  if (r.ok) {
+    document.getElementById('overlayAppt').classList.remove('open');
+    loadAppts();
+  } else {
+    errEl.textContent=j.error||'Erro ao salvar.'; errEl.style.display='block';
+  }
+  btn.textContent='Salvar';
+});
+
+document.getElementById('btnConfirmAppt').addEventListener('click', async ()=>{
+  if(!editingId) return;
+  await fetch(`/api/appointments-clinical/${editingId}/confirm`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  document.getElementById('overlayAppt').classList.remove('open');
+  loadAppts();
+});
+
+document.getElementById('btnCancelAppt').addEventListener('click', async ()=>{
+  if(!editingId||!confirm('Cancelar esta consulta?')) return;
+  await fetch(`/api/appointments-clinical/${editingId}`,{method:'DELETE'});
+  document.getElementById('overlayAppt').classList.remove('open');
+  loadAppts();
+});
+
+// ── Navegação ────────────────────────────────────────────────
+document.getElementById('calPrev').addEventListener('click', ()=>{
+  if(calMode==='week') calDate=new Date(calDate.getFullYear(),calDate.getMonth(),calDate.getDate()-7);
+  else                 calDate=new Date(calDate.getFullYear(),calDate.getMonth()-1,1);
+  loadAppts();
+});
+document.getElementById('calNext').addEventListener('click', ()=>{
+  if(calMode==='week') calDate=new Date(calDate.getFullYear(),calDate.getMonth(),calDate.getDate()+7);
+  else                 calDate=new Date(calDate.getFullYear(),calDate.getMonth()+1,1);
+  loadAppts();
+});
+
+document.getElementById('btnWeek').addEventListener('click', ()=>{
+  calMode='week';
+  document.getElementById('weekView').style.display='';
+  document.getElementById('monthView').style.display='none';
+  document.getElementById('btnWeek').classList.add('active');
+  document.getElementById('btnMonth').classList.remove('active');
+  loadAppts();
+});
+document.getElementById('btnMonth').addEventListener('click', ()=>{
+  calMode='month';
+  document.getElementById('weekView').style.display='none';
+  document.getElementById('monthView').style.display='';
+  document.getElementById('btnWeek').classList.remove('active');
+  document.getElementById('btnMonth').classList.add('active');
+  loadAppts();
+});
+
+document.getElementById('fNutri').addEventListener('change', loadAppts);
+document.getElementById('btnLogout').addEventListener('click', async ()=>{
+  await fetch('/auth/logout',{method:'POST'}); window.location='/login';
+});
+
+// ── Init ──────────────────────────────────────────────────────
+(async ()=>{
+  const meR = await fetch('/api/me');
+  me = await meR.json();
+  buildNav(me.role);
+
+  // Carregar nutris no filtro e no modal
+  const usersR = await fetch('/api/admin/users');
+  const users  = await usersR.json();
+  const nutris = users.filter(u=>u.role==='nutri'||u.role==='admin');
+  const fNutri = document.getElementById('fNutri');
+  const aNutri = document.getElementById('aNutri');
+  nutris.forEach(u=>{
+    [fNutri,aNutri].forEach(sel=>{
+      const opt=document.createElement('option');
+      opt.value=u.id; opt.textContent=u.name;
+      sel.appendChild(opt);
+    });
+  });
+
+  // Carregar pacientes no select do modal
+  const patsR = await fetch('/api/patients');
+  const patsJ = await patsR.json();
+  const aPat  = document.getElementById('aPatient');
+  (patsJ.data||[]).forEach(p=>{
+    const opt=document.createElement('option');
+    opt.value=p.id; opt.textContent=p.name+(p.nutritionist_short?` (${p.nutritionist_short})`:'');
+    aPat.appendChild(opt);
+  });
+
+  // Se nutri, pré-filtra
+  if(me.role==='nutri') {
+    fNutri.value=me.id;
+  }
+
+  loadAppts();
+})();
+</script>
+</body>
+</html>

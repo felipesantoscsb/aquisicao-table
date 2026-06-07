@@ -2,10 +2,9 @@ const router = require('express').Router();
 const Anthropic = require('@anthropic-ai/sdk');
 const { pool } = require('../db');
 const { authApiMiddleware } = require('../auth');
+const { sendWhatsapp, fmtDateTimeBR } = require('../zapi');
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
-const http = require('http');
 
 function slugify(str) {
   return str
@@ -18,50 +17,19 @@ function slugify(str) {
 
 const STAGE_OFFER = ['Oferta D+0', 'Follow Up D+1', 'Follow Up D+3', 'Venda Confirmada'];
 
-// ── Z-API ────────────────────────────────────────────────────
-async function sendWhatsapp(phone, message) {
+// Stub para compatibilidade (sendWhatsapp agora vem do módulo zapi.js)
+// eslint-disable-next-line no-unused-vars
+async function _unused(phone, message) {
   const base = process.env.ZAPI_BASE_URL || 'https://api.z-api.io';
   const instanceId = process.env.ZAPI_INSTANCE_ID;
   const token = process.env.ZAPI_TOKEN;
 
-  if (!instanceId || !token || !phone) {
-    console.log('Z-API: configuração incompleta — notificação pulada');
-    return;
-  }
-
-  const url = `${base}/instances/${instanceId}/token/${token}/send-text`;
-  const body = JSON.stringify({ phone, message });
-
-  return new Promise((resolve) => {
-    const parsed = new URL(url);
-    const lib = parsed.protocol === 'https:' ? https : http;
-    const req = lib.request({
-      hostname: parsed.hostname,
-      port: parsed.port || (parsed.protocol === 'https:' ? 443 : 80),
-      path: parsed.pathname + parsed.search,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
-    }, res => {
-      let data = '';
-      res.on('data', chunk => { data += chunk; });
-      res.on('end', () => {
-        console.log(`Z-API: status ${res.statusCode}`, data.substring(0, 120));
-        resolve();
-      });
-    });
-    req.on('error', err => {
-      console.error('Z-API: erro ao enviar notificação —', err.message);
-      resolve();
-    });
-    req.write(body);
-    req.end();
-  });
+  // stub body — unused, kept to avoid parse error
 }
 
 function buildWhatsappMsg(card, slug) {
   const apptDate = card.appointment_date
-    ? new Date(card.appointment_date + 'T12:00:00')
-        .toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })
+    ? fmtDateTimeBR(card.appointment_date)
     : 'não informada';
 
   return `📋 Jornada gerada para pré-consulta!
@@ -83,7 +51,7 @@ router.use(authApiMiddleware);
 
 // POST /api/generate-jornada
 router.post('/generate-jornada', async (req, res) => {
-  const { card_id } = req.body;
+  const { card_id, force } = req.body;
   if (!card_id) return res.status(400).json({ error: 'card_id obrigatório' });
 
   try {
@@ -97,7 +65,8 @@ router.post('/generate-jornada', async (req, res) => {
     const card = rows[0];
     if (!card) return res.status(404).json({ error: 'Card não encontrado' });
 
-    if (!STAGE_OFFER.includes(card.stage)) {
+    // force=true permite geração automática em qualquer etapa (usado internamente)
+    if (!force && !STAGE_OFFER.includes(card.stage)) {
       return res.status(400).json({ error: 'Jornada só pode ser gerada a partir da etapa Oferta D+0' });
     }
 
@@ -121,7 +90,7 @@ Gere a jornada personalizada conforme as instruções do sistema.
     `.trim();
 
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 2000,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userPrompt }],
@@ -350,4 +319,102 @@ FORMATO DE SAÍDA — responda APENAS com este JSON, sem texto antes ou depois, 
   "produtoIndicado": "Essential|Premium|Elite"
 }`;
 
+/**
+ * Gera jornada automaticamente em background (fire-and-forget).
+ * Chamado pelo pipeline após criar um card com obs_form preenchido.
+ * Não lança exceções — erros são apenas logados.
+ */
+async function autoGenerateJornada(card_id) {
+  try {
+    const { rows } = await pool.query(`
+      SELECT pc.*, l.name AS lead_name, l.phone, l.email, l.tier, l.origin,
+             l.profile, l.quiz_answers, l.score
+      FROM pipeline_cards pc
+      JOIN leads l ON l.id = pc.lead_id
+      WHERE pc.id=$1
+    `, [card_id]);
+    const card = rows[0];
+    if (!card || !card.obs_form) return;
+
+    // Verifica se já existe jornada para este card
+    const { rows: existing } = await pool.query('SELECT id FROM jornadas WHERE card_id=$1', [card_id]);
+    if (existing.length > 0) return;
+
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const userPrompt = `
+DADOS DA LEAD:
+- Nome: ${card.lead_name}
+- Origem: ${card.origin || 'Formulário'}
+- Tier: ${card.tier || 'warm'}
+- Perfil: ${card.profile || 'não informado'}
+- Score: ${card.score || 'não informado'}
+- Nutri designada: ${card.nutri || 'Juliana'}
+- Produto indicado: ${card.product_indicated || 'Essential'}
+- Data: ${new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}
+- Observações do formulário: ${card.obs_form || 'não informado'}
+- Observações da nutri: ${card.obs_nutri || 'não informado'}
+- Respostas do quiz: ${card.quiz_answers ? JSON.stringify(card.quiz_answers, null, 2) : 'não informado'}
+
+Gere a jornada personalizada conforme as instruções do sistema.
+    `.trim();
+
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2000,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: userPrompt }],
+    });
+
+    let planData;
+    try {
+      planData = JSON.parse(message.content[0].text);
+    } catch {
+      const jsonMatch = message.content[0].text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) { console.error('[autoJornada] JSON inválido'); return; }
+      planData = JSON.parse(jsonMatch[0]);
+    }
+
+    const templatePath = path.join(__dirname, '../../public/templates/proposta.html');
+    let html = fs.readFileSync(templatePath, 'utf8');
+    html = buildJornada(html, planData, card);
+
+    const slug       = slugify(card.lead_name) + '-' + Date.now().toString(36);
+    const outputPath = path.join(__dirname, '../../public/jornadas', `${slug}.html`);
+
+    // Garante que o diretório existe
+    const dir = path.join(__dirname, '../../public/jornadas');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+    fs.writeFileSync(outputPath, html, 'utf8');
+
+    await pool.query(
+      `INSERT INTO jornadas (card_id, html_content, url_slug, generated_by)
+       VALUES ($1,$2,$3,NULL)
+       ON CONFLICT (url_slug) DO UPDATE SET html_content=$2, generated_at=NOW()`,
+      [card_id, html, slug]
+    );
+
+    const jornada_url = `https://crm.tableclinic.com.br/jornada/${slug}`;
+    await pool.query(
+      `UPDATE pipeline_cards SET plan_url=$1, updated_at=NOW() WHERE id=$2`,
+      [jornada_url, card_id]
+    );
+
+    // Notifica nutri via WhatsApp
+    if (card.nutri) {
+      pool.query('SELECT whatsapp FROM users WHERE nutri_name=$1 LIMIT 1', [card.nutri])
+        .then(({ rows: nutriRows }) => {
+          const nutriPhone = nutriRows[0]?.whatsapp;
+          if (nutriPhone) sendWhatsapp(nutriPhone, buildWhatsappMsg(card, slug));
+        })
+        .catch(err => console.error('[autoJornada] WhatsApp error:', err.message));
+    }
+
+    console.log(`[autoJornada] Jornada gerada para card ${card_id}: /jornada/${slug}`);
+  } catch (err) {
+    console.error(`[autoJornada] Erro ao gerar para card ${card_id}:`, err.message);
+  }
+}
+
 module.exports = router;
+module.exports.autoGenerateJornada = autoGenerateJornada;

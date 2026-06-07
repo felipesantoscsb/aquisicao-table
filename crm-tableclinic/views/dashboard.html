@@ -19,94 +19,330 @@
       --border: #e0d9d0;
     }
 
-    body { background: var(--bg); color: var(--ink); font-family: 'Jost', sans-serif; font-size: 14px; line-height: 1.6; min-height: 100vh; }
-    .page { max-width: 1300px; margin: 0 auto; padding: 0 24px 64px; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Jost', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .page { max-width: 1400px; margin: 0 auto; padding: 0 24px 64px; }
 
     /* ── Header ── */
-    header { padding: 48px 0 28px; border-bottom: 1px solid var(--terra); margin-bottom: 40px; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
-    .header-left h1 { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 52px; line-height: 1; letter-spacing: -0.5px; }
+    header {
+      padding: 48px 0 28px;
+      border-bottom: 1px solid var(--terra);
+      margin-bottom: 40px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .header-left h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 500;
+      font-size: 52px;
+      line-height: 1;
+      letter-spacing: -0.5px;
+      color: var(--ink);
+    }
     .header-left p { font-size: 14px; color: var(--muted); font-weight: 300; margin-top: 6px; }
     .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
     .header-nav { display: flex; gap: 16px; }
     .header-nav a { font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: 0.3px; }
     .header-nav a:hover { color: var(--moss); }
     #last-updated { font-size: 12px; color: var(--terra); }
-    #btn-refresh { background: none; border: 1px solid var(--terra); color: var(--terra); font-family: 'Jost', sans-serif; font-size: 12px; padding: 6px 16px; cursor: pointer; letter-spacing: 0.5px; transition: background .15s, color .15s; }
+    #btn-refresh {
+      background: none;
+      border: 1px solid var(--terra);
+      color: var(--terra);
+      font-family: 'Jost', sans-serif;
+      font-size: 12px;
+      padding: 6px 16px;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: background .15s, color .15s;
+    }
     #btn-refresh:hover { background: var(--terra); color: #fff; }
     #btn-refresh:disabled { opacity: .4; cursor: default; background: none; color: var(--terra); }
 
     /* ── Toast ── */
-    #toast { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-    .toast-item { padding: 10px 18px; font-size: 13px; font-family: 'Jost', sans-serif; border-left: 3px solid; opacity: 0; transform: translateX(20px); transition: opacity .2s, transform .2s; pointer-events: none; max-width: 320px; }
-    .toast-item.show { opacity: 1; transform: translateX(0); pointer-events: auto; }
+    #toast {
+      position: fixed; top: 20px; right: 20px;
+      z-index: 9999;
+      display: flex; flex-direction: column; gap: 8px;
+      pointer-events: none;
+    }
+    .toast-item {
+      padding: 10px 18px;
+      font-size: 13px;
+      font-family: 'Jost', sans-serif;
+      border-left: 3px solid;
+      opacity: 0;
+      transform: translateX(20px);
+      transition: opacity .2s, transform .2s;
+      max-width: 320px;
+    }
+    .toast-item.show { opacity: 1; transform: translateX(0); }
     .toast-ok  { background: #fff; border-color: var(--moss); color: var(--moss); }
     .toast-err { background: #fff8f5; border-color: var(--terra); color: var(--terra); }
 
     /* ── Spinner ── */
     .spinner-wrap { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; padding: 8px 0; }
-    .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--terra); border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--terra);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      flex-shrink: 0;
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .error-msg { background: #fff8f5; border-left: 3px solid var(--terra); padding: 14px 18px; font-size: 13px; color: var(--terra); margin-bottom: 24px; }
+    .error-msg {
+      background: #fff8f5;
+      border-left: 3px solid var(--terra);
+      padding: 14px 18px;
+      font-size: 13px;
+      color: var(--terra);
+      margin-bottom: 24px;
+    }
 
     /* ── Section title ── */
-    .section-title { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 28px; margin-bottom: 24px; }
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 500;
+      font-size: 28px;
+      margin-bottom: 24px;
+      color: var(--ink);
+    }
     .divider { border: none; border-top: 1px solid var(--terra); margin: 48px 0; }
 
     /* ── Comparison grid ── */
-    .comparison-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
     @media (max-width: 860px) { .comparison-grid { grid-template-columns: 1fr; } }
 
-    .cmp-card { background: var(--moss); color: var(--bg); padding: 28px 24px 24px; }
-    .cmp-card .card-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; opacity: .6; margin-bottom: 20px; }
-    .cmp-row { margin-bottom: 16px; }
+    .cmp-card {
+      background: var(--moss);
+      color: var(--bg);
+      padding: 28px 24px 24px;
+    }
+    .cmp-card .card-label {
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 20px;
+      font-family: 'Jost', sans-serif;
+    }
+    .cmp-row { margin-bottom: 14px; }
     .cmp-row:last-child { margin-bottom: 0; }
-    .cmp-metric-name { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; opacity: .55; margin-bottom: 2px; }
-    .cmp-current { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 30px; line-height: 1.1; display: flex; align-items: baseline; gap: 10px; }
-    .cmp-delta { font-size: 12px; font-weight: 500; }
-    .delta-up { color: #8fba7a; } .delta-down { color: #e09070; } .delta-neu { color: rgba(248,244,238,.4); }
-    .cmp-prev { font-size: 12px; opacity: .45; margin-top: 2px; }
+    .cmp-metric-name {
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      opacity: .55;
+      margin-bottom: 2px;
+      font-family: 'Jost', sans-serif;
+    }
+    .cmp-current {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 500;
+      font-size: 28px;
+      line-height: 1.1;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .cmp-delta { font-size: 12px; font-weight: 500; font-family: 'Jost', sans-serif; }
+    .delta-up   { color: #8fba7a; }
+    .delta-down { color: #e09070; }
+    .delta-neu  { color: rgba(248,244,238,.4); }
+    .cmp-prev { font-size: 12px; opacity: .45; margin-top: 2px; font-family: 'Jost', sans-serif; }
 
     /* ── Toolbar ── */
-    .table-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
-    .level-pills { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; }
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .level-pills {
+      display: flex; gap: 6px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
     .level-pills::-webkit-scrollbar { display: none; }
-    .pill { flex-shrink: 0; background: none; border: 1px solid var(--terra); color: var(--terra); font-family: 'Jost', sans-serif; font-size: 12px; font-weight: 500; padding: 6px 18px; cursor: pointer; border-radius: 999px; letter-spacing: 0.3px; transition: background .15s, color .15s; white-space: nowrap; }
+    .pill {
+      flex-shrink: 0;
+      background: none;
+      border: 1px solid var(--terra);
+      color: var(--terra);
+      font-family: 'Jost', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 18px;
+      cursor: pointer;
+      border-radius: 999px;
+      letter-spacing: 0.3px;
+      transition: background .15s, color .15s;
+      white-space: nowrap;
+    }
     .pill:hover { background: rgba(185,112,64,.1); }
     .pill.active { background: var(--moss); border-color: var(--moss); color: var(--bg); }
 
     .period-btns { display: flex; gap: 6px; flex-wrap: wrap; }
-    .filter-btn { background: none; border: 1px solid var(--border); color: var(--muted); font-family: 'Jost', sans-serif; font-size: 12px; padding: 5px 14px; cursor: pointer; transition: all .15s; }
-    .filter-btn.active, .filter-btn:hover { border-color: var(--moss); color: var(--moss); background: rgba(61,74,53,.06); }
+    .filter-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'Jost', sans-serif;
+      font-size: 12px;
+      padding: 5px 14px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .filter-btn.active,
+    .filter-btn:hover { border-color: var(--moss); color: var(--moss); background: rgba(61,74,53,.06); }
 
     /* ── Table ── */
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 1000px; }
-    thead th { text-align: left; padding: 10px 12px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); font-weight: 400; white-space: nowrap; }
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      min-width: 2400px; /* 28 cols */
+    }
+
+    thead th {
+      text-align: left;
+      padding: 9px 10px;
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 2px solid var(--border);
+      font-weight: 500;
+      white-space: nowrap;
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      font-family: 'Jost', sans-serif;
+    }
     thead th.num { text-align: right; }
+
     tbody tr:nth-child(odd)  { background: #fff; }
     tbody tr:nth-child(even) { background: var(--bg); }
-    tbody tr:hover { background: rgba(61,74,53,.05); }
-    tbody td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-    .td-name { font-size: 12px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    tbody tr:hover { background: rgba(61,74,53,.06); }
+
+    tbody td {
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    /* Name cells */
+    .td-main { font-size: 12px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; color: var(--ink); }
     .td-sub  { font-size: 11px; color: var(--muted); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .td-num  { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 500; text-align: right; white-space: nowrap; }
+
+    /* Number cells */
+    .td-num  {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      font-weight: 500;
+      text-align: right;
+      white-space: nowrap;
+      color: var(--ink);
+    }
+
+    /* Budget cell */
+    .td-budget {
+      font-size: 12px;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+    .td-budget .bud-type {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: 'Jost', sans-serif;
+    }
+
+    /* Pct cells — slightly lighter */
+    .td-pct {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: right;
+      white-space: nowrap;
+      color: var(--muted);
+    }
+
+    /* Toggle column */
+    .td-toggle { text-align: center; white-space: nowrap; padding: 6px 6px; }
+
+    /* Extra actions column */
+    .td-actions { white-space: nowrap; text-align: right; padding: 6px 6px; }
 
     /* Status badge */
-    .badge { display: inline-block; font-size: 10px; letter-spacing: .8px; text-transform: uppercase; padding: 3px 8px; }
+    .badge {
+      display: inline-block;
+      font-size: 9px;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      font-family: 'Jost', sans-serif;
+    }
     .badge-active { background: rgba(61,74,53,.12); color: var(--moss); }
-    .badge-paused { background: rgba(0,0,0,.06); color: var(--muted); }
+    .badge-paused { background: rgba(0,0,0,.06);    color: var(--muted); }
     .badge-other  { background: rgba(185,112,64,.1); color: var(--terra); }
 
     /* Tfoot totals */
     tfoot tr { background: var(--moss) !important; }
-    tfoot td { padding: 12px 12px; color: var(--bg); font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 16px; border-top: 2px solid var(--terra); }
-    tfoot td.tot-label { font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; font-family: 'Jost', sans-serif; font-weight: 500; opacity: .8; }
-    tfoot td.td-num { color: var(--bg); }
+    tfoot td {
+      padding: 11px 10px;
+      color: var(--bg);
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 500;
+      font-size: 15px;
+      border-top: 2px solid var(--terra);
+    }
+    tfoot td.tot-label {
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      font-family: 'Jost', sans-serif;
+      font-weight: 500;
+      opacity: .8;
+    }
+    tfoot td.td-num,
+    tfoot td.td-pct { color: var(--bg); }
+    tfoot td.td-pct { font-size: 13px; }
 
     /* ── Action buttons ── */
-    .td-actions { white-space: nowrap; text-align: right; }
-    .act-btn { background: none; border: 1px solid; font-family: 'Jost', sans-serif; font-size: 11px; padding: 4px 9px; cursor: pointer; border-radius: 3px; transition: background .15s, color .15s; margin-left: 4px; }
+    .act-btn {
+      background: none;
+      border: 1px solid;
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      padding: 3px 8px;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: background .15s, color .15s;
+      margin-left: 3px;
+      line-height: 1.4;
+    }
     .act-btn:first-child { margin-left: 0; }
     .act-btn-pause  { border-color: var(--terra); color: var(--terra); }
     .act-btn-pause:hover  { background: var(--terra); color: #fff; }
@@ -116,48 +352,122 @@
     .act-btn-neutral:hover { border-color: var(--moss); color: var(--moss); }
     .act-btn:disabled { opacity: .35; cursor: default; }
 
-    @media (max-width: 700px) { .act-label { display: none; } }
-
     /* ── Modal overlay ── */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(26,26,26,.55); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(26,26,26,.55);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
     .modal-overlay.open { display: flex; }
-    .modal-card { background: var(--bg); border: 1px solid var(--terra); max-width: 440px; width: 100%; padding: 32px 28px 24px; }
-    .modal-title { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 24px; margin-bottom: 10px; }
+    .modal-card {
+      background: var(--bg);
+      border: 1px solid var(--terra);
+      max-width: 440px;
+      width: 100%;
+      padding: 32px 28px 24px;
+    }
+    .modal-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 500;
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: var(--ink);
+    }
     .modal-sub   { font-size: 13px; color: var(--muted); margin-bottom: 24px; line-height: 1.5; }
     .modal-note  { font-size: 12px; color: var(--terra); margin-top: -12px; margin-bottom: 20px; }
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
-    .modal-btn-confirm { background: var(--moss); border: none; color: var(--bg); font-family: 'Jost', sans-serif; font-size: 13px; font-weight: 500; padding: 8px 22px; cursor: pointer; transition: opacity .15s; }
+    .modal-btn-confirm {
+      background: var(--moss); border: none; color: var(--bg);
+      font-family: 'Jost', sans-serif; font-size: 13px; font-weight: 500;
+      padding: 8px 22px; cursor: pointer; transition: opacity .15s;
+    }
     .modal-btn-confirm:hover   { opacity: .85; }
     .modal-btn-confirm:disabled { opacity: .4; cursor: default; }
-    .modal-btn-cancel { background: none; border: 1px solid var(--terra); color: var(--terra); font-family: 'Jost', sans-serif; font-size: 13px; padding: 8px 22px; cursor: pointer; transition: background .15s; }
+    .modal-btn-cancel {
+      background: none; border: 1px solid var(--terra); color: var(--terra);
+      font-family: 'Jost', sans-serif; font-size: 13px;
+      padding: 8px 22px; cursor: pointer; transition: background .15s;
+    }
     .modal-btn-cancel:hover { background: rgba(185,112,64,.08); }
 
     /* Budget input */
     .budget-field { margin-bottom: 20px; }
-    .budget-field label { display: block; font-size: 11px; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
-    .budget-wrap { display: flex; align-items: center; border: 1px solid var(--border); background: #fff; }
-    .budget-prefix { padding: 8px 12px; font-size: 13px; color: var(--muted); border-right: 1px solid var(--border); user-select: none; }
-    .budget-wrap input { border: none; outline: none; background: none; padding: 8px 12px; font-family: 'Jost', sans-serif; font-size: 14px; width: 100%; }
+    .budget-field label {
+      display: block; font-size: 11px; letter-spacing: .8px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+      font-family: 'Jost', sans-serif;
+    }
+    .budget-wrap {
+      display: flex; align-items: center;
+      border: 1px solid var(--border); background: #fff;
+    }
+    .budget-prefix {
+      padding: 8px 12px; font-size: 13px; color: var(--muted);
+      border-right: 1px solid var(--border); user-select: none;
+    }
+    .budget-wrap input {
+      border: none; outline: none; background: none;
+      padding: 8px 12px; font-family: 'Jost', sans-serif; font-size: 14px; width: 100%;
+    }
     .budget-type-row { display: flex; gap: 8px; margin-top: 10px; }
-    .budget-type-btn { flex: 1; background: none; border: 1px solid var(--border); color: var(--muted); font-family: 'Jost', sans-serif; font-size: 12px; padding: 6px; cursor: pointer; transition: all .15s; }
+    .budget-type-btn {
+      flex: 1; background: none; border: 1px solid var(--border); color: var(--muted);
+      font-family: 'Jost', sans-serif; font-size: 12px; padding: 6px; cursor: pointer; transition: all .15s;
+    }
     .budget-type-btn.active { border-color: var(--moss); color: var(--moss); background: rgba(61,74,53,.06); }
 
     /* Mobile cards */
     .camp-cards { display: none; }
-    @media (max-width: 700px) {
+    @media (max-width: 768px) {
       .table-wrap table { display: none; }
       .camp-cards { display: block; }
     }
     .camp-card { background: #fff; border-bottom: 1px solid var(--border); padding: 16px; }
-    .camp-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-    .camp-card-title { font-size: 13px; font-weight: 500; flex: 1; padding-right: 10px; }
+    .camp-card-header {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; margin-bottom: 12px;
+    }
+    .camp-card-title { font-size: 13px; font-weight: 500; flex: 1; padding-right: 10px; color: var(--ink); }
     .camp-card-sub   { font-size: 11px; color: var(--muted); margin-top: 2px; }
-    .camp-card-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
-    .m-label { font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); }
-    .m-value { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 500; }
+    .camp-card-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .m-label { font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); font-family: 'Jost', sans-serif; }
+    .m-value { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 500; color: var(--ink); }
     .camp-card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
-    footer { border-top: 1px solid var(--terra); padding-top: 20px; margin-top: 64px; font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; }
+    footer {
+      border-top: 1px solid var(--terra);
+      padding-top: 20px;
+      margin-top: 64px;
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      font-family: 'Jost', sans-serif;
+    }
+
+    /* CSV btn */
+    .csv-btn {
+      background: none;
+      border: 1px solid var(--terra);
+      color: var(--terra);
+      font-family: 'Jost', sans-serif;
+      font-size: 12px;
+      padding: 6px 14px;
+      cursor: pointer;
+      border-radius: 3px;
+      white-space: nowrap;
+      transition: background .15s, color .15s;
+    }
+    .csv-btn:hover { background: rgba(185,112,64,.1); }
   </style>
 </head>
 <body>
@@ -194,7 +504,7 @@
     </div>
     <div class="modal-actions">
       <button class="modal-btn-cancel"  onclick="closeModal('modal-budget')">Cancelar</button>
-      <button class="modal-btn-confirm" id="mb-confirm" onclick="confirmBudget()">Salvar</button>
+      <button class="modal-btn-confirm" onclick="confirmBudget()">Salvar</button>
     </div>
   </div>
 </div>
@@ -207,25 +517,29 @@
     <div class="modal-note">A entidade duplicada será criada com status <strong>Pausado</strong>.</div>
     <div class="modal-actions">
       <button class="modal-btn-cancel"  onclick="closeModal('modal-dup')">Cancelar</button>
-      <button class="modal-btn-confirm" id="md-confirm" onclick="confirmDuplicate()">Duplicar</button>
+      <button class="modal-btn-confirm" onclick="confirmDuplicate()">Duplicar</button>
     </div>
   </div>
 </div>
 
+<!-- ── Page ── -->
 <div class="page">
 
   <header>
     <div class="header-left">
       <h1>Meta Ads</h1>
-      <p>Table Clinic — Performance <em style="font-family:'Cormorant Garamond';font-style:italic;color:var(--terra)">Dashboard</em></p>
+      <p>Table Clinic — Performance <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--terra)">Dashboard</em></p>
     </div>
     <div class="header-right">
       <div class="header-nav">
-        <a href="/pipeline">← Pipeline</a>
+        <a href="/pipeline">Pipeline</a>
+        <a href="/pacientes">Pacientes</a>
+        <a href="/agenda-clinica">Agenda</a>
+        <a href="/financeiro">Financeiro</a>
         <a href="/admin">Admin</a>
       </div>
       <span id="last-updated">—</span>
-      <button id="btn-refresh" onclick="loadOverview()">Atualizar</button>
+      <button id="btn-refresh" onclick="loadOverview()">↺ Atualizar</button>
     </div>
   </header>
 
@@ -244,7 +558,7 @@
         <button class="pill"        data-level="adset"    onclick="setLevel(this)">Conjuntos</button>
         <button class="pill"        data-level="ad"       onclick="setLevel(this)">Anúncios</button>
       </div>
-      <button id="btn-csv" onclick="exportCSV()" style="background:none;border:1px solid var(--terra);color:var(--terra);font-family:'Jost',sans-serif;font-size:12px;padding:6px 14px;cursor:pointer;border-radius:3px;white-space:nowrap;transition:background .15s,color .15s;" onmouseover="this.style.background='rgba(185,112,64,.1)'" onmouseout="this.style.background='none'">↓ Exportar CSV</button>
+      <button class="csv-btn" onclick="exportCSV()">↓ Exportar CSV</button>
     </div>
     <div class="period-btns">
       <button class="filter-btn active" data-period="this_month" onclick="setPeriod(this)">Este mês</button>
@@ -265,15 +579,41 @@
 </div>
 
 <script>
-// ── Formatters ────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// FORMATADORES
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const fmt = {
-  brl: v => v == null ? '—' : 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-  pct: v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%',
+  brl: v => v == null ? '—' : 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
   num: v => v == null ? '—' : Number(v).toLocaleString('pt-BR'),
   x:   v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '×',
+  pct: v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%',
+  freq: v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
 };
 
-const lowerBetter = new Set(['cpl','cpa','cpm']);
+function fmtBudget(b) {
+  if (!b) return '<span style="color:var(--muted)">—</span>';
+  const amt = Number(b.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return `R$ ${amt}<span class="bud-type">/${b.type === 'daily' ? 'dia' : 'total'}</span>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CÁLCULOS AUXILIARES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/** a/b * 100, retorna null se denominador zero ou nulo */
+function calcPct(num, den) {
+  if (!num || !den || den === 0) return null;
+  return (num / den) * 100;
+}
+
+/** (purchaseValue - spend) / spend * 100 */
+function calcROI(purchaseValue, spend) {
+  if (purchaseValue == null || !spend || spend === 0) return null;
+  return (purchaseValue - spend) / spend * 100;
+}
+
+const lowerBetter = new Set(['cpl','cpa','cpm','costPerInitiateCheckout']);
 
 function calcDelta(curr, prev) {
   if (curr == null || prev == null || prev === 0) return null;
@@ -292,10 +632,17 @@ function deltaHtml(metric, curr, prev) {
 function badgeHtml(status) {
   if (status === 'ACTIVE') return `<span class="badge badge-active">Ativo</span>`;
   if (status === 'PAUSED') return `<span class="badge badge-paused">Pausado</span>`;
-  return `<span class="badge badge-other">${status}</span>`;
+  return `<span class="badge badge-other">${status ?? '—'}</span>`;
 }
 
-// ── Toast ─────────────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════════════════════════
+
 function toast(msg, ok = true) {
   const el = document.createElement('div');
   el.className = `toast-item ${ok ? 'toast-ok' : 'toast-err'}`;
@@ -305,7 +652,10 @@ function toast(msg, ok = true) {
   setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 250); }, 3500);
 }
 
-// ── Modal helpers ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// MODAIS
+// ═══════════════════════════════════════════════════════════════════════════════
+
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
@@ -313,7 +663,10 @@ document.querySelectorAll('.modal-overlay').forEach(o => {
   o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
 });
 
-// ── State ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════════════════════════════════════════════
+
 let overviewCache = {};
 let tableCache    = {};
 let tablePeriod   = 'this_month';
@@ -324,7 +677,10 @@ let pendingStatus = null;
 let pendingBudget = null;
 let pendingDup    = null;
 
-// ── Fetch (envia cookie JWT automaticamente) ──────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// FETCH (sempre com cookie JWT)
+// ═══════════════════════════════════════════════════════════════════════════════
+
 async function apiFetch(url, opts = {}) {
   const res = await fetch(url, { credentials: 'include', ...opts });
   if (res.status === 401 || res.status === 403) {
@@ -344,20 +700,26 @@ async function fetchInsights(period, level) {
   return json;
 }
 
-// ── Overview ──────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// VISÃO GERAL (cards comparativos)
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const COMPARISONS = [
   { label: 'Hoje vs Ontem',               curr: 'today',      prev: 'yesterday'  },
   { label: 'Esta semana vs Sem. passada', curr: 'this_week',  prev: 'last_week'  },
   { label: 'Este mês vs Mês passado',     curr: 'this_month', prev: 'last_month' },
 ];
+
 const METRICS = [
-  { key: 'spend',                 label: 'Gasto',               f: fmt.brl },
-  { key: 'leads',                 label: 'Leads',               f: fmt.num },
-  { key: 'cpl',                   label: 'CPL',                 f: fmt.brl },
-  { key: 'cpa',                   label: 'CPA',                 f: fmt.brl },
-  { key: 'roas',                  label: 'ROAS',                f: fmt.x   },
-  { key: 'purchaseValue',         label: 'Val. Purchase',       f: fmt.brl },
-  { key: 'initiateCheckoutValue', label: 'Val. Init. Checkout', f: fmt.brl },
+  { key: 'spend',                  label: 'Gasto',                f: fmt.brl },
+  { key: 'leads',                  label: 'Leads',                f: fmt.num },
+  { key: 'cpl',                    label: 'CPL',                  f: fmt.brl },
+  { key: 'purchases',              label: 'Compras',              f: fmt.num },
+  { key: 'cpa',                    label: 'CPA',                  f: fmt.brl },
+  { key: 'roas',                   label: 'ROAS',                 f: fmt.x   },
+  { key: 'purchaseValue',          label: 'Val. Conversão',       f: fmt.brl },
+  { key: 'initiateCheckout',       label: 'Init. Checkout',       f: fmt.num },
+  { key: 'costPerInitiateCheckout', label: 'Custo / Init. Chk.', f: fmt.brl },
 ];
 
 function renderComparisons() {
@@ -387,10 +749,12 @@ async function loadOverview() {
   document.getElementById('status-area').innerHTML =
     `<div class="spinner-wrap"><div class="spinner"></div> Carregando dados…</div>`;
   try {
-    await Promise.all(['today','yesterday','this_week','last_week','this_month','last_month'].map(async p => {
-      const d = await fetchInsights(p, 'campaign');
-      overviewCache[p] = d.overview;
-    }));
+    await Promise.all(
+      ['today','yesterday','this_week','last_week','this_month','last_month'].map(async p => {
+        const d = await fetchInsights(p, 'campaign');
+        overviewCache[p] = d.overview;
+      })
+    );
     document.getElementById('status-area').innerHTML = '';
     renderComparisons();
     const now = new Date().toLocaleString('pt-BR', { hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit' });
@@ -405,29 +769,52 @@ async function loadOverview() {
   }
 }
 
-// ── Table rendering ───────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// TABELA
+// ═══════════════════════════════════════════════════════════════════════════════
+
 function calcTotals(rows) {
-  let spend = 0, leads = 0, purchases = 0, imp = 0, clicks = 0, revenue = 0;
-  let purchaseValue = 0, initiateCheckoutValue = 0;
+  let spend = 0, leads = 0, purchases = 0, purchaseValue = 0;
+  let linkClicks = 0, landingPageViews = 0, initiateCheckout = 0;
+  let quizView = 0, quizCompleted = 0, impressions = 0;
+  // Para Hook Rate ponderado (3s views = hookRate/100 * impressions)
+  let hookNumer = 0, hookDenom = 0;
+
   for (const r of rows) {
-    spend                 += r.spend                 || 0;
-    leads                 += r.leads                 || 0;
-    purchases             += r.purchases             || 0;
-    imp                   += r._impressions          || 0;
-    clicks                += r._clicks               || 0;
-    revenue               += r._revenue              || 0;
-    purchaseValue         += r.purchaseValue         || 0;
-    initiateCheckoutValue += r.initiateCheckoutValue || 0;
+    spend             += r.spend             || 0;
+    leads             += r.leads             || 0;
+    purchases         += r.purchases         || 0;
+    purchaseValue     += r.purchaseValue     || 0;
+    linkClicks        += r.linkClicks        || 0;
+    landingPageViews  += r.landingPageViews  || 0;
+    initiateCheckout  += r.initiateCheckout  || 0;
+    quizView          += r.quizView          || 0;
+    quizCompleted     += r.quizCompleted     || 0;
+    impressions       += r.impressions       || 0;
+    if (r.hookRate != null && r.impressions) {
+      hookNumer += (r.hookRate / 100) * r.impressions;
+      hookDenom += r.impressions;
+    }
   }
+
   return {
-    spend, leads, purchases,
-    cpl:                  leads     > 0 ? spend / leads     : null,
-    cpa:                  purchases > 0 ? spend / purchases : null,
-    ctr:                  imp       > 0 ? (clicks / imp) * 100 : null,
-    cpm:                  imp       > 0 ? (spend / imp) * 1000  : null,
-    roas:                 spend     > 0 ? revenue / spend       : null,
-    purchaseValue:        purchaseValue         || null,
-    initiateCheckoutValue: initiateCheckoutValue || null,
+    spend,
+    leads,
+    purchases,
+    purchaseValue:           purchaseValue           || null,
+    linkClicks:              linkClicks              || null,
+    landingPageViews:        landingPageViews         || null,
+    initiateCheckout:        initiateCheckout         || null,
+    quizView:                quizView                || null,
+    quizCompleted:           quizCompleted           || null,
+    impressions:             impressions             || null,
+    cpl:                     leads > 0              ? spend / leads            : null,
+    cpa:                     purchases > 0          ? spend / purchases         : null,
+    roas:                    spend > 0 && purchaseValue > 0 ? purchaseValue / spend : null,
+    costPerInitiateCheckout: initiateCheckout > 0   ? spend / initiateCheckout : null,
+    ctr:                     impressions > 0 && linkClicks > 0 ? (linkClicks / impressions) * 100 : null,
+    cpm:                     impressions > 0        ? (spend / impressions) * 1000 : null,
+    hookRate:                hookDenom > 0           ? (hookNumer / hookDenom) * 100 : null,
   };
 }
 
@@ -437,119 +824,313 @@ function rowEntity(r, level) {
   return                          { id: r.adId,        type: 'ad'       };
 }
 
-function actionBtns(r, level) {
-  const { id, type } = rowEntity(r, level);
-  const isActive = r.status === 'ACTIVE';
-
-  const toggleBtn = isActive
-    ? `<button class="act-btn act-btn-pause"
-         onclick="openStatusModal('${type}','${id}','PAUSED','${escHtml(r.campaignName || r.adsetName || r.adName || '')}',this)"
-         title="Pausar">⏸ <span class="act-label">Pausar</span></button>`
-    : `<button class="act-btn act-btn-active"
-         onclick="openStatusModal('${type}','${id}','ACTIVE','${escHtml(r.campaignName || r.adsetName || r.adName || '')}',this)"
-         title="Ativar">▶ <span class="act-label">Ativar</span></button>`;
-
-  const budgetBtn = type !== 'ad'
-    ? `<button class="act-btn act-btn-neutral"
-         onclick="openBudgetModal('${type}','${id}','${escHtml(r.campaignName || r.adsetName || '')}',this)"
-         title="Editar orçamento">💰</button>`
-    : '';
-
-  const dupBtn = level !== 'ad'
-    ? `<button class="act-btn act-btn-neutral"
-         onclick="openDupModal('${type}','${id}','${escHtml(r.campaignName || r.adsetName || '')}',this)"
-         title="Duplicar">📋</button>`
-    : '';
-
-  return `<td class="td-actions">${toggleBtn}${budgetBtn}${dupBtn}</td>`;
+function getEntityName(r, level) {
+  if (level === 'campaign') return r.campaignName || '';
+  if (level === 'adset')    return r.adsetName    || '';
+  return r.adName || '';
 }
 
-function escHtml(s) { return s.replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+// Botão de toggle (ativar/pausar) — fica na col 1
+function toggleBtnHtml(r, level) {
+  const { id, type } = rowEntity(r, level);
+  const name = escHtml(getEntityName(r, level));
+  if (r.status === 'ACTIVE') {
+    return `<button class="act-btn act-btn-pause"
+      onclick="openStatusModal('${type}','${id}','PAUSED','${name}',this)"
+      title="Pausar">⏸</button>`;
+  }
+  return `<button class="act-btn act-btn-active"
+    onclick="openStatusModal('${type}','${id}','ACTIVE','${name}',this)"
+    title="Ativar">▶</button>`;
+}
 
+// Botões secundários (orçamento + duplicar) — coluna extra ao final
+function extraBtnsHtml(r, level) {
+  const { id, type } = rowEntity(r, level);
+  const name = escHtml(getEntityName(r, level));
+  const budgetBtn = type !== 'ad'
+    ? `<button class="act-btn act-btn-neutral"
+         onclick="openBudgetModal('${type}','${id}','${name}',this)"
+         title="Editar orçamento">💰</button>` : '';
+  const dupBtn = level !== 'ad'
+    ? `<button class="act-btn act-btn-neutral"
+         onclick="openDupModal('${type}','${id}','${name}',this)"
+         title="Duplicar">📋</button>` : '';
+  return `${budgetBtn}${dupBtn}`;
+}
+
+// ── Definição das 28 colunas + extra de ações ─────────────────────────────────
 function colDefs(level) {
+  // Colunas de nome variam por nível
   const nameCols = level === 'campaign'
-    ? [{ h: 'Campanha', td: r => `<td class="td-name" title="${r.campaignName}">${r.campaignName}</td>` }]
+    ? [{ h: 'Campanha', ht: 'Nome da campanha', num: false,
+         td: r => `<td class="td-main" title="${r.campaignName}">${r.campaignName}</td>`,
+         tot: () => `<td class="tot-label">TOTAL</td>`,
+         csv: r => r.campaignName }]
+
     : level === 'adset'
     ? [
-        { h: 'Campanha', td: r => `<td class="td-sub"  title="${r.campaignName}">${r.campaignName}</td>` },
-        { h: 'Conjunto', td: r => `<td class="td-name" title="${r.adsetName}">${r.adsetName}</td>` },
+        { h: 'Campanha', ht: 'Campanha pai', num: false,
+          td: r => `<td class="td-sub" title="${r.campaignName}">${r.campaignName}</td>`,
+          tot: () => `<td></td>`,
+          csv: r => r.campaignName },
+        { h: 'Conjunto', ht: 'Nome do conjunto', num: false,
+          td: r => `<td class="td-main" title="${r.adsetName}">${r.adsetName}</td>`,
+          tot: () => `<td class="tot-label">TOTAL</td>`,
+          csv: r => r.adsetName },
       ]
     : [
-        { h: 'Campanha', td: r => `<td class="td-sub"  title="${r.campaignName}">${r.campaignName}</td>` },
-        { h: 'Conjunto', td: r => `<td class="td-sub"  title="${r.adsetName}">${r.adsetName}</td>` },
-        { h: 'Anúncio',  td: r => `<td class="td-name" title="${r.adName}">${r.adName}</td>` },
+        { h: 'Campanha', ht: 'Campanha pai', num: false,
+          td: r => `<td class="td-sub" title="${r.campaignName}">${r.campaignName}</td>`,
+          tot: () => `<td></td>`,
+          csv: r => r.campaignName },
+        { h: 'Conjunto', ht: 'Conjunto pai', num: false,
+          td: r => `<td class="td-sub" title="${r.adsetName}">${r.adsetName}</td>`,
+          tot: () => `<td></td>`,
+          csv: r => r.adsetName },
+        { h: 'Anúncio', ht: 'Nome do anúncio', num: false,
+          td: r => `<td class="td-main" title="${r.adName}">${r.adName}</td>`,
+          tot: () => `<td class="tot-label">TOTAL</td>`,
+          csv: r => r.adName },
       ];
 
   return [
+    // ── Col 1: Toggle ────────────────────────────────────────────────────────
+    { h: '', ht: 'Ativar/Pausar', num: false,
+      td: r => `<td class="td-toggle">${toggleBtnHtml(r, level)}</td>`,
+      tot: () => `<td></td>`,
+      csv: r => r.status },
+
+    // ── Cols de nome ─────────────────────────────────────────────────────────
     ...nameCols,
-    { h: 'Status',          num: false, td: r => `<td>${badgeHtml(r.status)}</td>`,                              tot: () => `<td></td>` },
-    { h: 'Gasto',           num: true,  td: r => `<td class="td-num">${fmt.brl(r.spend)}</td>`,                  tot: t => `<td class="td-num">${fmt.brl(t.spend)}</td>` },
-    { h: 'Leads',           num: true,  td: r => `<td class="td-num">${fmt.num(r.leads)}</td>`,                  tot: t => `<td class="td-num">${fmt.num(t.leads)}</td>` },
-    { h: 'CPL',             num: true,  td: r => `<td class="td-num">${fmt.brl(r.cpl)}</td>`,                    tot: t => `<td class="td-num">${fmt.brl(t.cpl)}</td>` },
-    { h: 'CTR',             num: true,  td: r => `<td class="td-num">${fmt.pct(r.ctr)}</td>`,                    tot: t => `<td class="td-num">${fmt.pct(t.ctr)}</td>` },
-    { h: 'CPM',             num: true,  td: r => `<td class="td-num">${fmt.brl(r.cpm)}</td>`,                    tot: t => `<td class="td-num">${fmt.brl(t.cpm)}</td>` },
-    { h: 'Compras',         num: true,  td: r => `<td class="td-num">${fmt.num(r.purchases)}</td>`,              tot: t => `<td class="td-num">${fmt.num(t.purchases)}</td>` },
-    { h: 'Val. Purchase',   num: true,  td: r => `<td class="td-num">${fmt.brl(r.purchaseValue)}</td>`,          tot: t => `<td class="td-num">${fmt.brl(t.purchaseValue)}</td>` },
-    { h: 'Val. Init. Chk',  num: true,  td: r => `<td class="td-num">${fmt.brl(r.initiateCheckoutValue)}</td>`,  tot: t => `<td class="td-num">${fmt.brl(t.initiateCheckoutValue)}</td>` },
-    { h: 'CPA',             num: true,  td: r => `<td class="td-num">${fmt.brl(r.cpa)}</td>`,                    tot: t => `<td class="td-num">${fmt.brl(t.cpa)}</td>` },
-    { h: 'ROAS',            num: true,  td: r => `<td class="td-num">${fmt.x(r.roas)}</td>`,                     tot: t => `<td class="td-num">${fmt.x(t.roas)}</td>` },
-    { h: 'Ações',           num: false, td: r => actionBtns(r, level),                                           tot: () => `<td></td>` },
+
+    // ── Col: Orçamento ────────────────────────────────────────────────────────
+    { h: 'Orçamento', ht: 'Orçamento diário ou vitalício', num: false,
+      td: r => `<td class="td-budget">${fmtBudget(r.budget)}</td>`,
+      tot: () => `<td></td>`,
+      csv: r => r.budget ? `${r.budget.amount.toFixed(2)} / ${r.budget.type}` : '' },
+
+    // ── Col 4: Valor usado ────────────────────────────────────────────────────
+    { h: 'Gasto', ht: 'Valor total gasto no período', num: true,
+      td: r => `<td class="td-num">${fmt.brl(r.spend)}</td>`,
+      tot: t => `<td class="td-num">${fmt.brl(t.spend)}</td>`,
+      csv: r => r.spend?.toFixed(2) },
+
+    // ── Col 5: Valor de conversão ─────────────────────────────────────────────
+    { h: 'Val. Conv.', ht: 'Valor total de Purchase (R$)', num: true,
+      td: r => `<td class="td-num">${fmt.brl(r.purchaseValue)}</td>`,
+      tot: t => `<td class="td-num">${fmt.brl(t.purchaseValue)}</td>`,
+      csv: r => r.purchaseValue?.toFixed(2) },
+
+    // ── Col 6: ROAS ───────────────────────────────────────────────────────────
+    { h: 'ROAS', ht: 'Retorno sobre o investimento em anúncios', num: true,
+      td: r => `<td class="td-num">${fmt.x(r.roas)}</td>`,
+      tot: t => `<td class="td-num">${fmt.x(t.roas)}</td>`,
+      csv: r => r.roas?.toFixed(2) },
+
+    // ── Col 7: ROI Real ───────────────────────────────────────────────────────
+    { h: 'ROI Real', ht: '(Valor conversão − Gasto) / Gasto × 100', num: true,
+      td: r => `<td class="td-pct">${fmt.pct(calcROI(r.purchaseValue, r.spend))}</td>`,
+      tot: t => `<td class="td-pct">${fmt.pct(calcROI(t.purchaseValue, t.spend))}</td>`,
+      csv: r => calcROI(r.purchaseValue, r.spend)?.toFixed(1) },
+
+    // ── Col 8: Compras ────────────────────────────────────────────────────────
+    { h: 'Compras', ht: 'Número de compras (conversões Purchase)', num: true,
+      td: r => `<td class="td-num">${fmt.num(r.purchases)}</td>`,
+      tot: t => `<td class="td-num">${fmt.num(t.purchases)}</td>`,
+      csv: r => r.purchases },
+
+    // ── Col 9: Custo por compra ───────────────────────────────────────────────
+    { h: 'R$/Compra', ht: 'Custo por compra (CPA)', num: true,
+      td: r => `<td class="td-num">${fmt.brl(r.cpa)}</td>`,
+      tot: t => `<td class="td-num">${fmt.brl(t.cpa)}</td>`,
+      csv: r => r.cpa?.toFixed(2) },
+
+    // ── Col 10: Custo por lead ────────────────────────────────────────────────
+    { h: 'R$/Lead', ht: 'Custo por lead (CPL)', num: true,
+      td: r => `<td class="td-num">${fmt.brl(r.cpl)}</td>`,
+      tot: t => `<td class="td-num">${fmt.brl(t.cpl)}</td>`,
+      csv: r => r.cpl?.toFixed(2) },
+
+    // ── Col 11: QuizView ──────────────────────────────────────────────────────
+    { h: 'QuizView', ht: 'Visualizações do quiz (evento customizado)', num: true,
+      td: r => `<td class="td-num">${fmt.num(r.quizView)}</td>`,
+      tot: t => `<td class="td-num">${fmt.num(t.quizView)}</td>`,
+      csv: r => r.quizView },
+
+    // ── Col 12: Cliques no link ───────────────────────────────────────────────
+    { h: 'Cliques', ht: 'Cliques no link do anúncio', num: true,
+      td: r => `<td class="td-num">${fmt.num(r.linkClicks)}</td>`,
+      tot: t => `<td class="td-num">${fmt.num(t.linkClicks)}</td>`,
+      csv: r => r.linkClicks },
+
+    // ── Col 13: Visualizações da pág. de destino ──────────────────────────────
+    { h: 'Pág. Dest.', ht: 'Visualizações da página de destino', num: true,
+      td: r => `<td class="td-num">${fmt.num(r.landingPageViews)}</td>`,
+      tot: t => `<td class="td-num">${fmt.num(t.landingPageViews)}</td>`,
+      csv: r => r.landingPageViews },
+
+    // ── Col 14: Leads ─────────────────────────────────────────────────────────
+    { h: 'Leads', ht: 'Número de leads gerados', num: true,
+      td: r => `<td class="td-num">${fmt.num(r.leads)}</td>`,
+      tot: t => `<td class="td-num">${fmt.num(t.leads)}</td>`,
+      csv: r => r.leads },
+
+    // ── Col 15: % QuizView → Leads ────────────────────────────────────────────
+    { h: 'QV→Lead%', ht: '% de QuizViews que viraram Lead', num: true,
+      td: r => `<td class="td-pct">${fmt.pct(calcPct(r.leads, r.quizView))}</td>`,
+      tot: t => `<td class="td-pct">${fmt.pct(calcPct(t.leads, t.quizView))}</td>`,
+      csv: r => calcPct(r.leads, r.quizView)?.toFixed(1) },
+
+    // ── Col 16: QuizCompleted ─────────────────────────────────────────────────
+    { h: 'QuizComp.', ht: 'Quizzes completados (evento customizado)', num: true,
+      td: r => `<td class="td-num">${fmt.num(r.quizCompleted)}</td>`,
+      tot: t => `<td class="td-num">${fmt.num(t.quizCompleted)}</td>`,
+      csv: r => r.quizCompleted },
+
+    // ── Col 17: % Lead → QuizCompleted ───────────────────────────────────────
+    { h: 'Lead→QC%', ht: '% de Leads que completaram o quiz', num: true,
+      td: r => `<td class="td-pct">${fmt.pct(calcPct(r.quizCompleted, r.leads))}</td>`,
+      tot: t => `<td class="td-pct">${fmt.pct(calcPct(t.quizCompleted, t.leads))}</td>`,
+      csv: r => calcPct(r.quizCompleted, r.leads)?.toFixed(1) },
+
+    // ── Col 18: InitiateCheckout ──────────────────────────────────────────────
+    { h: 'Init.Chk.', ht: 'Finalizações de compra iniciadas', num: true,
+      td: r => `<td class="td-num">${fmt.num(r.initiateCheckout)}</td>`,
+      tot: t => `<td class="td-num">${fmt.num(t.initiateCheckout)}</td>`,
+      csv: r => r.initiateCheckout },
+
+    // ── Col 19: % QuizCompleted → InitiateCheckout ────────────────────────────
+    { h: 'QC→IC%', ht: '% de QuizCompleted que iniciaram checkout', num: true,
+      td: r => `<td class="td-pct">${fmt.pct(calcPct(r.initiateCheckout, r.quizCompleted))}</td>`,
+      tot: t => `<td class="td-pct">${fmt.pct(calcPct(t.initiateCheckout, t.quizCompleted))}</td>`,
+      csv: r => calcPct(r.initiateCheckout, r.quizCompleted)?.toFixed(1) },
+
+    // ── Col 20: Custo por InitiateCheckout ────────────────────────────────────
+    { h: 'R$/IC', ht: 'Custo por finalização de compra iniciada', num: true,
+      td: r => `<td class="td-num">${fmt.brl(r.costPerInitiateCheckout)}</td>`,
+      tot: t => `<td class="td-num">${fmt.brl(t.costPerInitiateCheckout)}</td>`,
+      csv: r => r.costPerInitiateCheckout?.toFixed(2) },
+
+    // ── Col 21: % Finalizações → Compras ─────────────────────────────────────
+    { h: 'IC→Comp%', ht: '% de finalizações que viraram compra', num: true,
+      td: r => `<td class="td-pct">${fmt.pct(calcPct(r.purchases, r.initiateCheckout))}</td>`,
+      tot: t => `<td class="td-pct">${fmt.pct(calcPct(t.purchases, t.initiateCheckout))}</td>`,
+      csv: r => calcPct(r.purchases, r.initiateCheckout)?.toFixed(1) },
+
+    // ── Col 22: % QuizCompleted → Compras ────────────────────────────────────
+    { h: 'QC→Comp%', ht: '% de QuizCompleted que viraram compra', num: true,
+      td: r => `<td class="td-pct">${fmt.pct(calcPct(r.purchases, r.quizCompleted))}</td>`,
+      tot: t => `<td class="td-pct">${fmt.pct(calcPct(t.purchases, t.quizCompleted))}</td>`,
+      csv: r => calcPct(r.purchases, r.quizCompleted)?.toFixed(1) },
+
+    // ── Col 23: % QuizView → Compras ─────────────────────────────────────────
+    { h: 'QV→Comp%', ht: '% de QuizViews que viraram compra', num: true,
+      td: r => `<td class="td-pct">${fmt.pct(calcPct(r.purchases, r.quizView))}</td>`,
+      tot: t => `<td class="td-pct">${fmt.pct(calcPct(t.purchases, t.quizView))}</td>`,
+      csv: r => calcPct(r.purchases, r.quizView)?.toFixed(1) },
+
+    // ── Col 24: CTR ───────────────────────────────────────────────────────────
+    { h: 'CTR', ht: 'Taxa de clique (link clicks / impressões)', num: true,
+      td: r => `<td class="td-pct">${fmt.pct(r.ctr)}</td>`,
+      tot: t => `<td class="td-pct">${fmt.pct(t.ctr)}</td>`,
+      csv: r => r.ctr?.toFixed(2) },
+
+    // ── Col 25: Hook Rate ─────────────────────────────────────────────────────
+    { h: 'Hook Rate', ht: 'Views 3s / Impressões × 100 (só vídeo)', num: true,
+      td: r => `<td class="td-pct">${fmt.pct(r.hookRate)}</td>`,
+      tot: t => `<td class="td-pct">${fmt.pct(t.hookRate)}</td>`,
+      csv: r => r.hookRate?.toFixed(1) },
+
+    // ── Col 26: Impressões ────────────────────────────────────────────────────
+    { h: 'Impressões', ht: 'Total de impressões', num: true,
+      td: r => `<td class="td-num">${fmt.num(r.impressions)}</td>`,
+      tot: t => `<td class="td-num">${fmt.num(t.impressions)}</td>`,
+      csv: r => r.impressions },
+
+    // ── Col 27: Frequência ────────────────────────────────────────────────────
+    { h: 'Freq.', ht: 'Frequência média de exibição por pessoa', num: true,
+      td: r => `<td class="td-num">${fmt.freq(r.frequency)}</td>`,
+      tot: () => `<td></td>`,       // frequência não se soma
+      csv: r => r.frequency?.toFixed(2) },
+
+    // ── Col 28: CPM ───────────────────────────────────────────────────────────
+    { h: 'CPM', ht: 'Custo por 1.000 impressões', num: true,
+      td: r => `<td class="td-num">${fmt.brl(r.cpm)}</td>`,
+      tot: t => `<td class="td-num">${fmt.brl(t.cpm)}</td>`,
+      csv: r => r.cpm?.toFixed(2) },
+
+    // ── Extra: botões de orçamento + duplicar ─────────────────────────────────
+    { h: '', ht: 'Ações', num: false,
+      td: r => `<td class="td-actions">${extraBtnsHtml(r, level)}</td>`,
+      tot: () => `<td></td>`,
+      csv: null },
   ];
 }
+
+// ── Renderização da tabela desktop + cards mobile ─────────────────────────────
 
 function renderTable(rows, level) {
   const wrap  = document.getElementById('table-wrap');
   const cards = document.getElementById('camp-cards');
 
   if (!rows || rows.length === 0) {
-    wrap.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:8px 0">Nenhum dado neste período.</p>';
-    cards.innerHTML = ''; return;
+    wrap.innerHTML  = '<p style="color:var(--muted);font-size:13px;padding:8px 0">Nenhum dado neste período.</p>';
+    cards.innerHTML = '';
+    return;
   }
 
-  const cols    = colDefs(level);
-  const totals  = calcTotals(rows);
-  const nameCols = level === 'campaign' ? 1 : level === 'adset' ? 2 : 3;
+  const cols   = colDefs(level);
+  const totals = calcTotals(rows);
 
-  const thead = `<thead><tr>${cols.map(c => `<th${c.num ? ' class="num"' : ''}>${c.h}</th>`).join('')}</tr></thead>`;
-  const tbody = `<tbody>${rows.map(r => `<tr data-id="${rowEntity(r,level).id}">${cols.map(c => c.td(r)).join('')}</tr>`).join('')}</tbody>`;
-  const tfootCells = cols.map((c, i) => {
-    if (i === 0) return `<td class="tot-label">TOTAL</td>`;
-    if (i < nameCols) return `<td></td>`;
-    return c.tot ? c.tot(totals) : `<td></td>`;
-  }).join('');
-  const tfoot = `<tfoot><tr>${tfootCells}</tr></tfoot>`;
+  // ── Desktop table ──
+  const thead = `<thead><tr>
+    ${cols.map(c => `<th${c.num ? ' class="num"' : ''} title="${c.ht || c.h}">${c.h}</th>`).join('')}
+  </tr></thead>`;
+
+  const tbody = `<tbody>
+    ${rows.map(r => `<tr data-id="${rowEntity(r,level).id}">
+      ${cols.map(c => c.td(r)).join('')}
+    </tr>`).join('')}
+  </tbody>`;
+
+  const tfoot = `<tfoot><tr>
+    ${cols.map(c => c.tot(totals)).join('')}
+  </tr></tfoot>`;
 
   wrap.innerHTML = `<table>${thead}${tbody}${tfoot}</table>`;
 
+  // ── Mobile cards (métricas-chave) ──
   const mainKey = level === 'campaign' ? 'campaignName' : level === 'adset' ? 'adsetName' : 'adName';
   const subKey  = level === 'adset' ? 'campaignName' : level === 'ad' ? 'adsetName' : null;
 
   cards.innerHTML = rows.map(r => {
     const { id, type } = rowEntity(r, level);
     const isActive = r.status === 'ACTIVE';
+    const name = escHtml(r[mainKey] || '');
     return `<div class="camp-card" data-id="${id}">
       <div class="camp-card-header">
         <div>
           <div class="camp-card-title">${r[mainKey]}</div>
-          ${subKey ? `<div class="camp-card-sub">${r[subKey]}</div>` : ''}
+          ${subKey ? `<div class="camp-card-sub">${r[subKey] || ''}</div>` : ''}
         </div>
         ${badgeHtml(r.status)}
       </div>
       <div class="camp-card-metrics">
-        <div><div class="m-label">Gasto</div><div class="m-value">${fmt.brl(r.spend)}</div></div>
-        <div><div class="m-label">Leads</div><div class="m-value">${fmt.num(r.leads)}</div></div>
-        <div><div class="m-label">CPL</div><div class="m-value">${fmt.brl(r.cpl)}</div></div>
-        <div><div class="m-label">Compras</div><div class="m-value">${fmt.num(r.purchases)}</div></div>
-        <div><div class="m-label">Val. Purchase</div><div class="m-value">${fmt.brl(r.purchaseValue)}</div></div>
-        <div><div class="m-label">Val. Init. Chk</div><div class="m-value">${fmt.brl(r.initiateCheckoutValue)}</div></div>
+        <div><div class="m-label">Gasto</div>      <div class="m-value">${fmt.brl(r.spend)}</div></div>
+        <div><div class="m-label">Val. Conv.</div>  <div class="m-value">${fmt.brl(r.purchaseValue)}</div></div>
+        <div><div class="m-label">ROAS</div>        <div class="m-value">${fmt.x(r.roas)}</div></div>
+        <div><div class="m-label">Compras</div>     <div class="m-value">${fmt.num(r.purchases)}</div></div>
+        <div><div class="m-label">Leads</div>       <div class="m-value">${fmt.num(r.leads)}</div></div>
+        <div><div class="m-label">Init.Chk.</div>   <div class="m-value">${fmt.num(r.initiateCheckout)}</div></div>
       </div>
       <div class="camp-card-actions">
         ${isActive
-          ? `<button class="act-btn act-btn-pause" onclick="openStatusModal('${type}','${id}','PAUSED','${escHtml(r[mainKey])}',this)">⏸ Pausar</button>`
-          : `<button class="act-btn act-btn-active" onclick="openStatusModal('${type}','${id}','ACTIVE','${escHtml(r[mainKey])}',this)">▶ Ativar</button>`
+          ? `<button class="act-btn act-btn-pause" onclick="openStatusModal('${type}','${id}','PAUSED','${name}',this)">⏸ Pausar</button>`
+          : `<button class="act-btn act-btn-active" onclick="openStatusModal('${type}','${id}','ACTIVE','${name}',this)">▶ Ativar</button>`
         }
-        ${type !== 'ad' ? `<button class="act-btn act-btn-neutral" onclick="openBudgetModal('${type}','${id}','${escHtml(r[mainKey])}',this)">💰 Orçamento</button>` : ''}
-        ${level !== 'ad' ? `<button class="act-btn act-btn-neutral" onclick="openDupModal('${type}','${id}','${escHtml(r[mainKey])}',this)">📋 Duplicar</button>` : ''}
+        ${type !== 'ad' ? `<button class="act-btn act-btn-neutral" onclick="openBudgetModal('${type}','${id}','${name}',this)">💰 Orçamento</button>` : ''}
+        ${level !== 'ad' ? `<button class="act-btn act-btn-neutral" onclick="openDupModal('${type}','${id}','${name}',this)">📋 Duplicar</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -563,11 +1144,6 @@ async function loadTable() {
   ts.innerHTML = `<div class="spinner-wrap"><div class="spinner"></div> Carregando…</div>`;
   try {
     const data = await fetchInsights(tablePeriod, tableLevel);
-    for (const r of data.rows || []) {
-      r._impressions = r.cpm   > 0    ? (r.spend * 1000 / r.cpm) : 0;
-      r._clicks      = r._impressions * (r.ctr / 100);
-      r._revenue     = r.roas != null ? r.roas * r.spend          : 0;
-    }
     ts.innerHTML = '';
     renderTable(data.rows, tableLevel);
   } catch (err) {
@@ -577,13 +1153,16 @@ async function loadTable() {
   }
 }
 
-// ── Modal: Status ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// AÇÕES — Status
+// ═══════════════════════════════════════════════════════════════════════════════
+
 function openStatusModal(type, id, action, name, btn) {
   pendingStatus = { entity_type: type, entity_id: id, action, btn };
   const label     = action === 'PAUSED' ? 'Pausar' : 'Ativar';
   const typeLabel = type === 'campaign' ? 'campanha' : type === 'adset' ? 'conjunto' : 'anúncio';
-  document.getElementById('ms-title').textContent = `${label} ${typeLabel}?`;
-  document.getElementById('ms-sub').textContent   = `"${name}" será ${action === 'PAUSED' ? 'pausado' : 'ativado'}. Você pode reverter a qualquer momento.`;
+  document.getElementById('ms-title').textContent   = `${label} ${typeLabel}?`;
+  document.getElementById('ms-sub').textContent     = `"${name}" será ${action === 'PAUSED' ? 'pausado' : 'ativado'}. Você pode reverter a qualquer momento.`;
   document.getElementById('ms-confirm').textContent = label;
   openModal('modal-status');
 }
@@ -594,7 +1173,7 @@ async function confirmStatus() {
 
   const origHtml = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<span style="display:inline-block;width:10px;height:10px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite"></span>';
+  btn.innerHTML = '<span style="display:inline-block;width:10px;height:10px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle"></span>';
 
   try {
     const res  = await apiFetch('/api/meta-action', {
@@ -604,6 +1183,7 @@ async function confirmStatus() {
     const json = await res.json();
     if (!json.ok) throw new Error(json.error);
 
+    // Atualiza cache local
     const cacheKey = `${tablePeriod}_${tableLevel}`;
     if (tableCache[cacheKey]) {
       const row = tableCache[cacheKey].rows?.find(r => {
@@ -614,32 +1194,43 @@ async function confirmStatus() {
       if (row) row.status = action;
     }
 
-    updateRowStatus(entity_id, entity_type, action, btn);
+    updateRowStatus(entity_id, action, btn);
     toast(`Sucesso — ${action === 'ACTIVE' ? 'ativado' : 'pausado'}!`);
   } catch (err) {
-    btn.disabled = false;
+    btn.disabled  = false;
     btn.innerHTML = origHtml;
     toast(`Erro: ${err.message}`, false);
   }
 }
 
-function updateRowStatus(entityId, entityType, newStatus, btn) {
+function updateRowStatus(entityId, newStatus, btn) {
+  // Atualiza badge na linha desktop
   const tr = document.querySelector(`tr[data-id="${entityId}"]`);
   if (tr) {
-    const statusCol = tr.querySelector('td:nth-child(' + (tableLevel === 'ad' ? 4 : tableLevel === 'adset' ? 3 : 2) + ')');
-    if (statusCol) statusCol.innerHTML = badgeHtml(newStatus);
+    // Badge fica na coluna de nome (col 2 = index 1 na estrutura)
+    const allTds = tr.querySelectorAll('td');
+    // Procura o badge dentro das células de nome
+    allTds.forEach(td => {
+      if (td.querySelector('.badge')) td.innerHTML = badgeHtml(newStatus); // não usado nessa estrutura
+    });
   }
+
   const isNowActive = newStatus === 'ACTIVE';
   btn.className = `act-btn ${isNowActive ? 'act-btn-pause' : 'act-btn-active'}`;
-  btn.innerHTML = isNowActive ? '⏸ <span class="act-label">Pausar</span>' : '▶ <span class="act-label">Ativar</span>';
+  btn.innerHTML = isNowActive ? '⏸' : '▶';
   btn.title     = isNowActive ? 'Pausar' : 'Ativar';
   btn.disabled  = false;
+
+  const { entity_type, entity_id } = pendingStatus;
   const nextAction = isNowActive ? 'PAUSED' : 'ACTIVE';
-  const name = btn.closest('tr,div.camp-card')?.querySelector('.td-name,.camp-card-title')?.textContent?.trim() || '';
-  btn.onclick = () => openStatusModal(entityType, entityId, nextAction, name, btn);
+  const name = '';
+  btn.onclick = () => openStatusModal(entity_type, entity_id, nextAction, name, btn);
 }
 
-// ── Modal: Budget ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// AÇÕES — Orçamento
+// ═══════════════════════════════════════════════════════════════════════════════
+
 function openBudgetModal(type, id, name, btn) {
   pendingBudget = { entity_type: type, entity_id: id, btn };
   document.getElementById('mb-sub').textContent = `"${name}"`;
@@ -669,13 +1260,18 @@ async function confirmBudget() {
     });
     const json = await res.json();
     if (!json.ok) throw new Error(json.error);
-    toast(`Orçamento atualizado — R$ ${raw.toFixed(2).replace('.',',')} / ${budgetType === 'daily' ? 'dia' : 'vitalício'}`);
+    toast(`Orçamento atualizado — R$ ${raw.toFixed(2).replace('.',',')} / ${budgetType === 'daily' ? 'dia' : 'total'}`);
+    // Invalida cache para recarregar com novo orçamento
+    tableCache = {};
   } catch (err) {
     toast(`Erro: ${err.message}`, false);
   }
 }
 
-// ── Modal: Duplicate ──────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// AÇÕES — Duplicar
+// ═══════════════════════════════════════════════════════════════════════════════
+
 function openDupModal(type, id, name, btn) {
   pendingDup = { entity_type: type, entity_id: id, btn };
   const typeLabel = type === 'campaign' ? 'campanha' : 'conjunto';
@@ -695,14 +1291,17 @@ async function confirmDuplicate() {
     });
     const json = await res.json();
     if (!json.ok) throw new Error(json.error);
-    toast(`Duplicado com sucesso${json.new_id ? ` — novo ID: ${json.new_id}` : ''}. Criado pausado.`);
+    toast(`Duplicado com sucesso${json.new_id ? ` — ID: ${json.new_id}` : ''}. Criado pausado.`);
     delete tableCache[`${tablePeriod}_${tableLevel}`];
   } catch (err) {
     toast(`Erro: ${err.message}`, false);
   }
 }
 
-// ── CSV Export ────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// EXPORTAR CSV
+// ═══════════════════════════════════════════════════════════════════════════════
+
 function exportCSV() {
   const key  = `${tablePeriod}_${tableLevel}`;
   const data = tableCache[key];
@@ -712,56 +1311,46 @@ function exportCSV() {
 
   const rows   = data.rows;
   const totals = calcTotals(rows);
-  const mainKey = tableLevel === 'campaign' ? 'campaignName' : tableLevel === 'adset' ? 'adsetName' : 'adName';
+  const cols   = colDefs(tableLevel).filter(c => c.csv !== null); // exclui col de ações
   const csvVal = v => v == null ? '' : String(v).replace(/,/g, '.');
 
   const csvRows = [];
-  csvRows.push(['Nome','Status','Gasto','Leads','CPL','CTR','CPM','Compras','Val. Purchase','Val. Init. Checkout','CPA','ROAS'].join(','));
 
+  // Cabeçalho
+  csvRows.push(cols.map(c => `"${c.ht || c.h}"`).join(','));
+
+  // Dados
   for (const r of rows) {
-    csvRows.push([
-      `"${(r[mainKey] || '').replace(/"/g, '""')}"`,
-      r.status,
-      csvVal(r.spend?.toFixed(2)),
-      csvVal(r.leads),
-      csvVal(r.cpl?.toFixed(2)),
-      csvVal(r.ctr?.toFixed(2)),
-      csvVal(r.cpm?.toFixed(2)),
-      csvVal(r.purchases),
-      csvVal(r.purchaseValue?.toFixed(2)),
-      csvVal(r.initiateCheckoutValue?.toFixed(2)),
-      csvVal(r.cpa?.toFixed(2)),
-      csvVal(r.roas?.toFixed(2)),
-    ].join(','));
+    csvRows.push(cols.map(c => {
+      const v = c.csv ? c.csv(r) : null;
+      return v == null ? '' : (typeof v === 'string' && v.includes(','))
+        ? `"${v.replace(/"/g, '""')}"`
+        : csvVal(v);
+    }).join(','));
   }
 
-  csvRows.push([
-    'TOTAL','',
-    csvVal(totals.spend?.toFixed(2)),
-    csvVal(totals.leads),
-    csvVal(totals.cpl?.toFixed(2)),
-    csvVal(totals.ctr?.toFixed(2)),
-    csvVal(totals.cpm?.toFixed(2)),
-    csvVal(totals.purchases),
-    csvVal(totals.purchaseValue?.toFixed(2)),
-    csvVal(totals.initiateCheckoutValue?.toFixed(2)),
-    csvVal(totals.cpa?.toFixed(2)),
-    csvVal(totals.roas?.toFixed(2)),
-  ].join(','));
+  // Totais
+  csvRows.push(cols.map((c, i) => {
+    if (i === 0) return 'TOTAL';
+    return '';
+  }).join(','));
 
   const blob = new Blob(['﻿' + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   const date = new Date().toISOString().slice(0, 10);
-  const periodLabel = { today:'hoje', yesterday:'ontem', this_week:'esta-semana', last_week:'semana-passada', this_month:'este-mes', last_month:'mes-passado' }[tablePeriod] || tablePeriod;
+  const pl   = { today:'hoje', yesterday:'ontem', this_week:'esta-semana', last_week:'semana-passada', this_month:'este-mes', last_month:'mes-passado' };
   a.href     = url;
-  a.download = `dashboard-tableclinic-${periodLabel}-${date}.csv`;
+  a.download = `meta-ads-tableclinic-${pl[tablePeriod] || tablePeriod}-${date}.csv`;
   a.click();
   URL.revokeObjectURL(url);
   toast('CSV exportado!');
 }
 
-// ── Controls ──────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONTROLES
+// ═══════════════════════════════════════════════════════════════════════════════
+
 function setLevel(btn) {
   document.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -776,9 +1365,10 @@ function setPeriod(btn) {
   loadTable();
 }
 
-// Auto-refresh 30 min
+// Auto-refresh a cada 30 min
 setInterval(loadOverview, 30 * 60 * 1000);
 
+// Init
 loadOverview();
 </script>
 </body>

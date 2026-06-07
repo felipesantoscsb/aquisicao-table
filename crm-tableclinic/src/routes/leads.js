@@ -7,9 +7,11 @@ router.use(authApiMiddleware);
 // GET /api/leads
 router.get('/', async (req, res) => {
   const { search, tier, origin, limit = 100, offset = 0 } = req.query;
-  let q = `SELECT l.*, pc.stage, pc.funnel, pc.nutri, pc.product_indicated
+  let q = `SELECT l.*, pc.stage, pc.funnel, pc.nutri, pc.product_indicated,
+                  j.url_slug AS jornada_slug
            FROM leads l
            LEFT JOIN pipeline_cards pc ON pc.lead_id = l.id
+           LEFT JOIN jornadas j ON j.card_id = pc.id
            WHERE 1=1`;
   const params = [];
   let i = 1;

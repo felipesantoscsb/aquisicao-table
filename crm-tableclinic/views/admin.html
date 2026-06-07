@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>
-    :root{--moss:#3D4A35;--moss2:#4E5E42;--terra:#B97040;--cream:#F8F4EE;--brown:#2C2018;--muted:#7A6E64;--line:#DDD4C4;}
+    :root{--moss:#3D4A35;--moss2:#4E5E42;--terra:#B97040;--cream:#F8F4EE;--brown:#2C2018;--muted:#7A6E64;--line:#DDD4C4;--danger:#C0392B;}
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{background:var(--cream);font-family:'Jost',sans-serif;font-weight:300;color:var(--brown);min-height:100vh}
     .topbar{background:var(--moss);color:var(--cream);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px}
@@ -16,11 +16,20 @@
     .topbar__links a{color:var(--cream);opacity:.7;font-size:.78rem;text-decoration:none;letter-spacing:.08em;text-transform:uppercase;margin-left:16px}
     .topbar__links a:hover{opacity:1}
     .btn-logout{background:none;border:1px solid rgba(248,244,238,.3);color:var(--cream);cursor:pointer;padding:4px 12px;border-radius:2px;font-family:'Jost',sans-serif;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;margin-left:16px}
-    .page{max-width:900px;margin:0 auto;padding:32px 20px}
+    .page{max-width:980px;margin:0 auto;padding:32px 20px}
     h1{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:500;color:var(--moss);margin-bottom:4px}
     .page-sub{font-size:.78rem;color:var(--muted);letter-spacing:.06em;margin-bottom:32px}
     .divider{height:1px;background:var(--terra);opacity:.3;margin-bottom:32px}
     .section-title{font-size:.65rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--terra);margin-bottom:16px}
+
+    /* Dashboard link */
+    .dashboard-card{background:var(--moss);color:var(--cream);border-radius:4px;padding:18px 22px;margin-bottom:32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    .dashboard-card h3{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500}
+    .dashboard-card p{font-size:.78rem;opacity:.7;margin-top:2px}
+    .btn-dashboard{background:var(--terra);color:#fff;border:none;border-radius:3px;padding:9px 18px;font-family:'Jost',sans-serif;font-size:.78rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;text-decoration:none;white-space:nowrap}
+    .btn-dashboard:hover{background:#9e5e30}
+
+    /* Tables */
     table{width:100%;border-collapse:collapse;font-size:.85rem;background:#fff;border-radius:4px;overflow:hidden}
     th{background:var(--moss);color:var(--cream);text-align:left;padding:10px 14px;font-size:.68rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase}
     td{padding:10px 14px;border-bottom:1px solid var(--line)}
@@ -30,8 +39,14 @@
     .role-admin{background:var(--moss);color:#fff}
     .role-nutri{background:var(--terra);color:#fff}
     .role-sdr{background:#8a9ba8;color:#fff}
+
+    /* Buttons */
     .btn-sm{font-size:.7rem;padding:4px 10px;border-radius:2px;cursor:pointer;font-family:'Jost',sans-serif;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);background:none;color:var(--muted);transition:all .2s}
     .btn-sm:hover{border-color:var(--moss);color:var(--moss)}
+    .btn-sm-danger{border-color:rgba(192,57,43,.3);color:var(--danger)}
+    .btn-sm-danger:hover{border-color:var(--danger);background:rgba(192,57,43,.08)}
+
+    /* Create form */
     .card-form{background:#fff;border-radius:4px;padding:24px;margin-bottom:32px;border:1px solid var(--line)}
     .field-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px}
     @media(max-width:600px){.field-grid{grid-template-columns:1fr}}
@@ -40,27 +55,51 @@
     input:focus,select:focus{border-color:var(--moss)}
     .btn-primary{background:var(--moss);color:var(--cream);border:none;border-radius:3px;padding:10px 20px;font-family:'Jost',sans-serif;font-size:.82rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
     .btn-primary:hover{background:var(--moss2)}
-    .msg{font-size:.82rem;margin-top:10px;color:var(--moss);display:none}
-    .jornadas-section{margin-top:40px}
+    .msg{font-size:.82rem;margin-top:10px;display:none}
+
+    /* Edit modal */
+    .overlay{position:fixed;inset:0;background:rgba(44,32,24,.45);z-index:300;display:none;align-items:center;justify-content:center;padding:24px}
+    .overlay.open{display:flex}
+    .modal{background:#fff;border-radius:4px;width:100%;max-width:520px;box-shadow:0 8px 48px rgba(44,32,24,.18)}
+    .modal__head{background:var(--moss);color:var(--cream);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;border-radius:4px 4px 0 0}
+    .modal__title{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:500}
+    .modal__close{background:none;border:none;color:var(--cream);font-size:1.4rem;cursor:pointer;opacity:.7;line-height:1}
+    .modal__close:hover{opacity:1}
+    .modal__body{padding:20px}
+    .modal__body .field-grid{grid-template-columns:1fr 1fr}
+    .modal__actions{padding:14px 20px 18px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
+    .btn-save{background:var(--moss);color:var(--cream);border:none;border-radius:3px;padding:9px 18px;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+    .btn-save:hover{background:var(--moss2)}
+    .btn-cancel{background:none;border:1px solid var(--line);color:var(--muted);border-radius:3px;padding:9px 18px;font-family:'Jost',sans-serif;font-size:.8rem;cursor:pointer}
+    .btn-cancel:hover{border-color:var(--moss);color:var(--moss)}
+    .modal-err{font-size:.8rem;color:var(--danger);margin-top:8px;display:none}
   </style>
 </head>
 <body>
+
 <div class="topbar">
   <div class="topbar__brand">Table Clinic · Admin</div>
   <div style="display:flex;align-items:center">
-    <div class="topbar__links">
-      <a href="/pipeline">Pipeline</a>
-      <a href="/leads">Leads</a>
-    </div>
+    <nav class="topbar__links" id="topNav" style="display:flex;gap:4px;margin-right:8px"></nav>
     <button class="btn-logout" id="btnLogout">Sair</button>
   </div>
 </div>
 
 <div class="page">
   <h1>Painel de Administração</h1>
-  <div class="page-sub">Gerenciamento de usuários e jornadas geradas</div>
+  <div class="page-sub">Gerenciamento de usuários e acesso ao dashboard Meta Ads</div>
   <div class="divider"></div>
 
+  <!-- Dashboard Meta link -->
+  <div class="dashboard-card">
+    <div>
+      <h3>Dashboard Meta Ads</h3>
+      <p>Campanhas, conjuntos, anúncios, ROAS, funil de conversão e relatórios em tempo real</p>
+    </div>
+    <a class="btn-dashboard" href="/admin/dashboard" target="_blank">Abrir Dashboard →</a>
+  </div>
+
+  <!-- Criar usuário -->
   <div class="section-title">Criar novo usuário</div>
   <div class="card-form">
     <div class="field-grid">
@@ -84,7 +123,7 @@
         </select>
       </div>
       <div>
-        <label>WhatsApp (DDI+número, ex: 5511999999999)</label>
+        <label>WhatsApp (DDI+número)</label>
         <input id="uWhatsapp" type="text" placeholder="5511999999999"/>
       </div>
     </div>
@@ -92,22 +131,42 @@
     <div class="msg" id="createMsg"></div>
   </div>
 
+  <!-- Lista usuários -->
   <div class="section-title">Usuários cadastrados</div>
   <table id="usersTable">
-    <thead><tr><th>ID</th><th>Nome</th><th>E-mail</th><th>Função</th><th>Nutri</th><th>WhatsApp</th><th>Criado em</th><th></th></tr></thead>
+    <thead><tr>
+      <th>ID</th><th>Nome</th><th>E-mail</th><th>Função</th><th>Nutri</th><th>WhatsApp</th><th>Criado em</th><th></th>
+    </tr></thead>
     <tbody id="usersTbody"></tbody>
   </table>
+</div>
 
-  <div class="jornadas-section">
-    <div class="section-title" style="margin-top:32px">Jornadas geradas</div>
-    <table id="propsTable">
-      <thead><tr><th>Lead</th><th>Gerado por</th><th>Data</th><th>Link</th></tr></thead>
-      <tbody id="propsTbody"></tbody>
-    </table>
+<!-- Modal editar usuário -->
+<div class="overlay" id="editOverlay">
+  <div class="modal">
+    <div class="modal__head">
+      <div class="modal__title">Editar usuário</div>
+      <button class="modal__close" id="btnCloseEdit">×</button>
+    </div>
+    <div class="modal__body">
+      <input type="hidden" id="eId"/>
+      <div class="field-grid">
+        <div><label>Nome</label><input id="eName" type="text"/></div>
+        <div><label>E-mail</label><input id="eEmail" type="email"/></div>
+        <div><label>WhatsApp</label><input id="eWhatsapp" type="text" placeholder="5511999999999"/></div>
+        <div><label>Nova senha (deixe em branco para manter)</label><input id="ePassword" type="password" placeholder=""/></div>
+      </div>
+      <div class="modal-err" id="editErr"></div>
+    </div>
+    <div class="modal__actions">
+      <button class="btn-cancel" id="btnCancelEdit">Cancelar</button>
+      <button class="btn-save" id="btnSaveEdit">Salvar alterações</button>
+    </div>
   </div>
 </div>
 
 <script>
+// ── Carregar usuários ─────────────────────────────────────────
 async function loadUsers() {
   const r = await fetch('/api/admin/users');
   const users = await r.json();
@@ -121,33 +180,20 @@ async function loadUsers() {
       <td>${u.email}</td>
       <td><span class="role-badge role-${u.role}">${u.role}</span></td>
       <td>${u.nutri_name || '—'}</td>
-      <td><span style="font-size:.78rem">${u.whatsapp || '—'}</span>
-          <button class="btn-sm" style="margin-left:4px" onclick="editWhatsapp(${u.id}, '${u.whatsapp || ''}')">✏</button></td>
+      <td style="font-size:.78rem">${u.whatsapp || '—'}</td>
       <td>${new Date(u.created_at).toLocaleDateString('pt-BR')}</td>
-      <td><button class="btn-sm" onclick="resetPwd(${u.id})">Resetar senha</button></td>
+      <td style="white-space:nowrap;display:flex;gap:5px">
+        <button class="btn-sm" onclick="openEdit(${u.id},'${escJs(u.name)}','${escJs(u.email)}','${escJs(u.whatsapp||'')}')">✏ Editar</button>
+        <button class="btn-sm btn-sm-danger" onclick="deleteUser(${u.id},'${escJs(u.name)}')">✕ Apagar</button>
+      </td>
     `;
     tbody.appendChild(tr);
   });
 }
 
-async function loadProposals() {
-  const r = await fetch('/api/jornadas');
-  const props = await r.json();
-  const tbody = document.getElementById('propsTbody');
-  tbody.innerHTML = '';
-  props.forEach(p => {
-    const tr = document.createElement('tr');
-    const url = `https://crm.tableclinic.com.br/jornada/${p.url_slug}`;
-    tr.innerHTML = `
-      <td>${p.lead_name}</td>
-      <td>${p.generated_by_name || '—'}</td>
-      <td>${new Date(p.generated_at).toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
-      <td><a href="${url}" target="_blank" style="color:var(--moss);font-size:.78rem">${p.url_slug}</a></td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
+function escJs(s) { return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"'); }
 
+// ── Criar usuário ─────────────────────────────────────────────
 document.getElementById('btnCreateUser').addEventListener('click', async () => {
   const btn = document.getElementById('btnCreateUser');
   const msg = document.getElementById('createMsg');
@@ -155,12 +201,12 @@ document.getElementById('btnCreateUser').addEventListener('click', async () => {
   const r = await fetch('/api/admin/users', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
-      name: document.getElementById('uName').value,
-      email: document.getElementById('uEmail').value,
-      password: document.getElementById('uPass').value || 'table2026',
-      role: document.getElementById('uRole').value,
+      name:       document.getElementById('uName').value,
+      email:      document.getElementById('uEmail').value,
+      password:   document.getElementById('uPass').value || 'table2026',
+      role:       document.getElementById('uRole').value,
       nutri_name: document.getElementById('uNutriName').value || null,
-      whatsapp: document.getElementById('uWhatsapp').value || null,
+      whatsapp:   document.getElementById('uWhatsapp').value || null,
     })
   });
   const data = await r.json();
@@ -168,43 +214,106 @@ document.getElementById('btnCreateUser').addEventListener('click', async () => {
   if (r.ok) {
     msg.style.color = 'var(--moss)';
     msg.textContent = `Usuário ${data.name} criado com sucesso.`;
+    ['uName','uEmail','uPass','uWhatsapp'].forEach(id => document.getElementById(id).value='');
     loadUsers();
   } else {
-    msg.style.color = '#c0392b';
+    msg.style.color = 'var(--danger)';
     msg.textContent = data.error || 'Erro ao criar usuário.';
   }
   btn.textContent = 'Criar usuário';
 });
 
-async function editWhatsapp(id, current) {
-  const val = prompt('WhatsApp (DDI+número, ex: 5511999999999):', current);
-  if (val === null) return;
+// ── Editar usuário ─────────────────────────────────────────────
+function openEdit(id, name, email, whatsapp) {
+  document.getElementById('eId').value        = id;
+  document.getElementById('eName').value      = name;
+  document.getElementById('eEmail').value     = email;
+  document.getElementById('eWhatsapp').value  = whatsapp;
+  document.getElementById('ePassword').value  = '';
+  document.getElementById('editErr').style.display = 'none';
+  document.getElementById('editOverlay').classList.add('open');
+}
+
+document.getElementById('btnCloseEdit').addEventListener('click', closeEdit);
+document.getElementById('btnCancelEdit').addEventListener('click', closeEdit);
+document.getElementById('editOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('editOverlay')) closeEdit();
+});
+function closeEdit() { document.getElementById('editOverlay').classList.remove('open'); }
+
+document.getElementById('btnSaveEdit').addEventListener('click', async () => {
+  const id       = document.getElementById('eId').value;
+  const name     = document.getElementById('eName').value.trim();
+  const email    = document.getElementById('eEmail').value.trim();
+  const whatsapp = document.getElementById('eWhatsapp').value.trim();
+  const password = document.getElementById('ePassword').value;
+  const errEl    = document.getElementById('editErr');
+  errEl.style.display = 'none';
+
+  if (!name || !email) { errEl.textContent='Nome e e-mail são obrigatórios.'; errEl.style.display='block'; return; }
+
+  const btn = document.getElementById('btnSaveEdit');
+  btn.textContent = 'Salvando…';
+
+  const body = { name, email, whatsapp: whatsapp || null };
+  if (password) body.password = password;
+
   const r = await fetch(`/api/admin/users/${id}`, {
-    method:'PATCH', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ whatsapp: val || null })
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(body)
   });
-  if (r.ok) loadUsers();
-  else alert('Erro ao salvar WhatsApp.');
+  const data = await r.json();
+  if (r.ok) {
+    closeEdit();
+    loadUsers();
+  } else {
+    errEl.textContent = data.error || 'Erro ao salvar.';
+    errEl.style.display = 'block';
+  }
+  btn.textContent = 'Salvar alterações';
+});
+
+// ── Apagar usuário ────────────────────────────────────────────
+async function deleteUser(id, name) {
+  if (!confirm(`Apagar o usuário "${name}"? Esta ação não pode ser desfeita.`)) return;
+  const r = await fetch(`/api/admin/users/${id}`, { method:'DELETE' });
+  const data = await r.json();
+  if (r.ok) {
+    loadUsers();
+  } else {
+    alert(data.error || 'Erro ao apagar usuário.');
+  }
 }
 
-async function resetPwd(id) {
-  const pwd = prompt('Nova senha para o usuário:');
-  if (!pwd) return;
-  const r = await fetch(`/api/admin/users/${id}/reset-password`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ password: pwd })
-  });
-  if (r.ok) alert('Senha resetada com sucesso.');
-  else alert('Erro ao resetar senha.');
-}
-
+// ── Logout ────────────────────────────────────────────────────
 document.getElementById('btnLogout').addEventListener('click', async () => {
   await fetch('/auth/logout', { method:'POST' });
   window.location.href = '/login';
 });
 
-loadUsers();
-loadProposals();
+function buildNav(role) {
+  const items = [
+    { href:'/pipeline',       label:'Pipeline',       roles:['admin','sdr','nutri','administrativo'] },
+    { href:'/leads',          label:'Leads',          roles:['admin','sdr','administrativo'] },
+    { href:'/pacientes',      label:'Pacientes',      roles:['admin','nutri','administrativo'] },
+    { href:'/agenda-clinica', label:'Agenda Clínica', roles:['admin','nutri','administrativo'] },
+    { href:'/financeiro',     label:'Financeiro',     roles:['admin','administrativo'] },
+    { href:'/admin',          label:'Admin',          roles:['admin'] },
+  ];
+  const nav = document.getElementById('topNav');
+  items.filter(i => i.roles.includes(role)).forEach(i => {
+    const a = document.createElement('a');
+    a.href = i.href; a.textContent = i.label;
+    if (location.pathname.startsWith(i.href) && i.href !== '/') a.style.opacity = '1';
+    nav.appendChild(a);
+  });
+}
+
+(async () => {
+  const me = await (await fetch('/api/me')).json();
+  buildNav(me.role || 'admin');
+  loadUsers();
+})();
 </script>
 </body>
 </html>
