@@ -112,7 +112,13 @@ Gere a jornada personalizada conforme as instruções do sistema.
 
     const slug = slugify(card.lead_name) + '-' + Date.now().toString(36);
     const outputPath = path.join(__dirname, '../../public/jornadas', `${slug}.html`);
-    fs.writeFileSync(outputPath, html, 'utf8');
+    try {
+      const dir = path.join(__dirname, '../../public/jornadas');
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(outputPath, html, 'utf8');
+    } catch (fsErr) {
+      console.warn('[jornada] cache filesystem indisponível, servindo do banco:', fsErr.message);
+    }
 
     await pool.query(
       `INSERT INTO jornadas (card_id, html_content, url_slug, generated_by)
@@ -381,11 +387,13 @@ Gere a jornada personalizada conforme as instruções do sistema.
     const slug       = slugify(card.lead_name) + '-' + Date.now().toString(36);
     const outputPath = path.join(__dirname, '../../public/jornadas', `${slug}.html`);
 
-    // Garante que o diretório existe
-    const dir = path.join(__dirname, '../../public/jornadas');
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-
-    fs.writeFileSync(outputPath, html, 'utf8');
+    try {
+      const dir = path.join(__dirname, '../../public/jornadas');
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(outputPath, html, 'utf8');
+    } catch (fsErr) {
+      console.warn('[autoJornada] cache filesystem indisponível, servindo do banco:', fsErr.message);
+    }
 
     await pool.query(
       `INSERT INTO jornadas (card_id, html_content, url_slug, generated_by)
