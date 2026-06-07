@@ -776,6 +776,8 @@ function startQuiz(){
   });
   fbq('track','Lead',{
     content_name:'quiz-lead',
+    value: 97,
+    currency: 'BRL',
     eventID: window._leadEventId
   });
   gtag('event','generate_lead');
@@ -1034,6 +1036,8 @@ function showResult(){
 
   // Pixel: Quiz completado
   fbq('trackCustom','QuizCompleted',{
+    value: 97,
+    currency: 'BRL',
     eventID: quizEventId
   });
   gtag('event', 'quiz_completed', {

@@ -209,6 +209,10 @@ app.post('/api/capi', async (req, res) => {
     user_data,
   };
   if (content_name) event.custom_data = { content_name };
+  // value/currency apenas no evento Lead (não afeta ViewContent/QuizView)
+  if (resolvedEventName === 'Lead') {
+    event.custom_data = { ...(event.custom_data || {}), value: 97, currency: 'BRL' };
+  }
 
   // Remove event_id se não veio (evita enviar null)
   if (!event.event_id) delete event.event_id;
@@ -229,6 +233,7 @@ app.post('/api/capi', async (req, res) => {
       event_source_url: event_source_url || 'https://www.evelynliu.com.br/raiz',
       event_id:         quiz_completed_event_id,
       user_data,
+      custom_data:      { value: 97, currency: 'BRL' },
     });
   }
 
