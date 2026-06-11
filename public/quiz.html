@@ -1283,7 +1283,11 @@ function showResult(){
       lead_event_id: crEventId,
       perfil: top,
       tier: tier,
-      event_source_url: window.location.href
+      event_source_url: window.location.href,
+      // Campos consumidos pelo SDR-forward no servidor (ignorados pela Meta CAPI)
+      profileName: p.type.replace(/<[^>]*>/g, ''),
+      qualification: qualificationAnswer,
+      respostas: quizAnswers
     })
   })
   .then(r => console.log("[CAPI] CompleteRegistration enviado:", r.status))
