@@ -147,6 +147,7 @@ app.post('/api/capi', async (req, res) => {
     fbp,
     lead_event_id,
     quiz_completed_event_id,
+    pageview_event_id,
     event_name,
     content_name,
     event_source_url,
@@ -222,6 +223,20 @@ app.post('/api/capi', async (req, res) => {
   const url = `https://graph.facebook.com/v21.0/${PIXEL_ID}/events?access_token=${CAPI_TOKEN}`;
 
   const dataEvents = [event];
+
+  // PageView server-side — pareado com browser via pageview_event_id
+  // Só no fluxo de page load (ViewContent/QuizView). Mesmo user_data → fbc+fbp
+  // presentes → EMQ elevado para tráfego vindo de anúncio.
+  if (resolvedEventName === 'ViewContent' && pageview_event_id) {
+    dataEvents.push({
+      event_name:       'PageView',
+      event_time:       Math.floor(Date.now() / 1000),
+      action_source:    'website',
+      event_source_url: event_source_url || 'https://www.evelynliu.com.br/raiz',
+      event_id:         pageview_event_id,
+      user_data,
+    });
+  }
 
   // QuizCompleted (custom) pareado com o pixel — só no fluxo de conclusão
   // real (event principal = Lead) e quando há id dedicado do browser.
@@ -616,7 +631,6 @@ async function forwardToSDR(body) {
   // Mapeia rótulos legíveis para os valores de qualificação do quiz
   const QUAL_LABELS = {
     nutri_convencional:   'nutricionista convencional',
-    low_carb:             'low carb',
     jejum:                'jejum intermitente',
     dieta_calorias:       'dieta restritiva',
     psicologo:            'psicólogo ou psiquiatra',

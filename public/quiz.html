@@ -4,6 +4,17 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Quiz Table — Descubra Sua Raiz</title>
+<meta name="description" content="Qual dos 4 padrões está por trás da sua relação com a comida? Descubra sua Raiz em 3 minutos — diagnóstico personalizado, gratuito."/>
+<meta property="og:title" content="Qual dos 4 padrões é o seu? Descubra agora."/>
+<meta property="og:description" content="Em menos de 3 minutos, identifique o padrão emocional que comanda sua relação com a comida — e o que fazer a partir de hoje."/>
+<meta property="og:image" content="https://evelynliu.com.br/images/quiz-og.jpg"/>
+<meta property="og:url" content="https://evelynliu.com.br/quiz"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Table · Evelyn Liu"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Qual dos 4 padrões é o seu?"/>
+<meta name="twitter:description" content="Em 3 minutos, descubra a raiz emocional da sua relação com a comida."/>
+<meta name="twitter:image" content="https://evelynliu.com.br/images/quiz-og.jpg"/>
 <script>
 // ── Captura fbclid e força criação do cookie _fbc antes do init ──
 (function(){
@@ -27,12 +38,14 @@ t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window,document,"script",
 "https://connect.facebook.net/en_US/fbevents.js");
 fbq('init', '989971718548782');
-fbq('track', 'PageView');
+// PageView com eventID disparado abaixo no IIFE async (para par CAPI com eventID)
 
 // QuizView — dispara ao carregar a página
 (async function(){
-  async function sha256q(str){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(String(str).toLowerCase().trim()));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+  function _gc(name){const m=document.cookie.match(new RegExp('(^| )'+name+'=([^;]+)'));return m?m[2]:null;}
   const qvEventId = crypto.randomUUID();
+  const pvEventId = crypto.randomUUID(); // par server-side do PageView browser
+  fbq('track','PageView',{eventID:pvEventId}); // sobrescreve o fbq('track','PageView') acima com eventID
   fbq('track','ViewContent',{content_name:'QuizView',eventID:qvEventId});
   fetch('/api/capi',{
     method:'POST',
@@ -41,6 +54,9 @@ fbq('track', 'PageView');
       event_name:'ViewContent',
       content_name:'QuizView',
       lead_event_id:qvEventId,
+      pageview_event_id:pvEventId,
+      fbc: _gc('_fbc') || null,
+      fbp: _gc('_fbp') || null,
       event_source_url:window.location.href
     })
   }).catch(()=>{});
@@ -82,6 +98,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
 .btn-capture{width:100%;background:var(--terra);color:var(--white);font-family:'Jost',sans-serif;font-size:15px;font-weight:500;padding:17px;border-radius:3px;border:none;cursor:pointer;margin-top:6px;transition:all .25s;letter-spacing:.03em}
 .btn-capture:hover{background:var(--terra-dk)}
 .capture-fine{font-size:11px;color:var(--soft);margin-top:12px;line-height:1.6}
+.field-error{font-size:12px;color:#c0392b;min-height:16px;margin:-4px 0 6px 2px;line-height:1.4}
+.form-field.error{border-color:#c0392b}
 #page-quiz{background:var(--cream);align-items:center;padding:40px 24px;justify-content:flex-start}
 .quiz-inner{max-width:560px;width:100%;margin:0 auto}
 .quiz-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px}
@@ -246,15 +264,15 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
 <body>
 <div id="page-intro" class="page active">
   <p class="intro-logo">Table</p>
-  <p class="intro-eyebrow">Mapeamento gratuito</p>
-  <h1 class="intro-title">Sua relação com a comida é um reflexo<br><em>de algo muito mais profundo.</em></h1>
-  <p class="intro-sub">Em menos de 3 minutos, descubra qual padrão emocional está por trás da sua relação com o seu corpo — <strong>e o que fazer a partir de agora.</strong></p>
+  <p class="intro-eyebrow">Mapeamento de raiz · gratuito</p>
+  <h1 class="intro-title">Toda relação difícil com a comida<br>tem uma raiz. Existem 4.<br><em>Em 3 minutos, você descobre a sua.</em></h1>
+  <p class="intro-sub">Cada padrão tem uma raiz diferente — e uma solução diferente. Descubra qual está por trás da sua relação com a comida <strong>e o que fazer a partir de agora.</strong></p>
   <div class="intro-promises">
     <div class="promise-item"><div class="promise-dot"></div><span>8 perguntas diretas, sem enrolação</span></div>
     <div class="promise-item"><div class="promise-dot"></div><span>Resultado personalizado para o seu perfil</span></div>
     <div class="promise-item"><div class="promise-dot"></div><span>Desenvolvido pela equipe da Table</span></div>
   </div>
-  <button class="btn-primary" onclick="goTo('page-capture')">Quero descobrir minha raiz →</button>
+  <button class="btn-primary" onclick="startQuiz()">Quero descobrir minha raiz →</button>
   <p class="intro-fine">Gratuito · 3 minutos · Sem spam</p>
 </div>
 
@@ -264,13 +282,16 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
 
 <div id="page-capture" class="page">
   <div class="capture-inner">
-    <span class="capture-tag">Antes de começar</span>
-    <h2 class="capture-title">Para onde enviamos<br>seu <em>mapeamento completo?</em></h2>
-    <p class="capture-sub">Seu resultado é detalhado e personalizado. Informe seus dados para recebê-lo assim que o quiz terminar.</p>
-    <input class="form-field" type="text" id="user-name" placeholder="Seu primeiro nome" autocomplete="given-name"/>
-    <input class="form-field" type="email" id="user-email" placeholder="Seu melhor e-mail" autocomplete="email"/>
-    <input class="form-field" type="tel" id="user-phone" placeholder="(11) 99999-9999" autocomplete="tel" oninput="formatPhone(this)" maxlength="15"/>
-    <button class="btn-capture" onclick="startQuiz()">Começar o quiz →</button>
+    <span class="capture-tag">Seu mapeamento está pronto</span>
+    <h2 class="capture-title">Para onde enviamos<br>seu <em>resultado personalizado?</em></h2>
+    <p class="capture-sub">Você respondeu as perguntas. Seu perfil já foi identificado — só precisamos saber para onde enviar.</p>
+    <input class="form-field" type="text" id="user-name" placeholder="Seu primeiro nome" autocomplete="given-name" oninput="clearFieldError('user-name')"/>
+    <p class="field-error" id="err-name"></p>
+    <input class="form-field" type="email" id="user-email" placeholder="Seu melhor e-mail" autocomplete="email" oninput="clearFieldError('user-email')"/>
+    <p class="field-error" id="err-email"></p>
+    <input class="form-field" type="tel" id="user-phone" placeholder="(11) 99999-9999" autocomplete="tel" oninput="formatPhone(this);clearFieldError('user-phone')" maxlength="15"/>
+    <p class="field-error" id="err-phone"></p>
+    <button class="btn-capture" onclick="submitCapture()">Ver meu resultado →</button>
     <p class="capture-fine">Seus dados estão seguros. Ao continuar, você aceita o uso de cookies para personalizar sua experiência e concorda com a nossa <a href="https://evelynliu.com.br/legal" target="_blank" style="color:inherit;text-decoration:underline">Política de Privacidade</a>.</p>
   </div>
 </div>
@@ -305,13 +326,13 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
 
 <div id="page-loading" class="page">
   <p class="loading-title">Analisando suas respostas...</p>
-  <p class="loading-sub">Mapeando seu perfil de relação com a comida</p>
+  <p class="loading-sub">Identificando o padrão por trás das suas escolhas</p>
   <div class="loading-bar-wrap"><div class="loading-bar-fill"></div></div>
   <div class="loading-steps">
-    <p class="loading-step" id="ls1">Mapeando comportamentos alimentares...</p>
-    <p class="loading-step" id="ls2">Mapeando seu perfil comportamental...</p>
-    <p class="loading-step" id="ls3">Encontrando sua Raiz...</p>
-    <p class="loading-step" id="ls4">Preparando seu mapeamento personalizado...</p>
+    <p class="loading-step" id="ls1">Cruzando suas respostas com os 4 perfis...</p>
+    <p class="loading-step" id="ls2">Identificando sua raiz dominante...</p>
+    <p class="loading-step" id="ls3">Montando seu diagnóstico personalizado...</p>
+    <p class="loading-step" id="ls4">Seu mapeamento está pronto.</p>
   </div>
 </div>
 
@@ -325,7 +346,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
 
   <!-- 1. HERO — nome + perfil -->
   <div class="result-hero">
-    <span class="result-tag" id="result-tag">Seu perfil</span>
+    <span class="result-tag" id="result-tag">Sua Raiz</span>
     <p id="result-name-greeting" style="font-family:'Jost',sans-serif;font-size:15px;color:rgba(255,255,255,.55);margin-bottom:8px;letter-spacing:.03em"></p>
     <h2 class="result-type" id="result-type"></h2>
     <p class="result-headline" id="result-headline"></p>
@@ -336,29 +357,61 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
     <p class="result-desc" id="result-desc"></p>
     <div class="result-signals">
       <p class="signals-title">Sinais que confirmam esse padrão em você</p>
+      <p id="result-mirror" style="display:none;font-size:14px;font-style:italic;color:var(--brown);line-height:1.7;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--sand)"></p>
       <div id="result-signals-list"></div>
     </div>
     <p class="result-desc" id="result-bridge"></p>
   </div>
 
-  <!-- 3. PROVA SOCIAL — Ação da Gracinha -->
+  <!-- 3. VÍDEO DA EVELYN — ponte emocional -->
+  <div class="video-section">
+    <div class="video-intro" style="margin-bottom:16px">
+      <p class="video-eyebrow">Uma mensagem da Evelyn para você</p>
+      <h3 class="video-headline" style="margin-bottom:0">
+        Agora que você conhece seu padrão,<br><em>quero te falar pessoalmente.</em>
+      </h3>
+    </div>
+    <div class="video-wrap" style="margin-top:0">
+      <script src="https://fast.wistia.com/player.js" async></script>
+      <script src="https://fast.wistia.com/embed/zrfwtube87.js" async type="module"></script>
+      <style>
+        .video-wrap{background:transparent!important;padding:0!important;box-shadow:none!important;border:none!important}
+        wistia-player[media-id='zrfwtube87']:not(:defined){background:center/cover no-repeat url('https://fast.wistia.com/embed/medias/zrfwtube87/swatch');display:block;filter:blur(5px);padding-top:177.78%;border-radius:24px;overflow:hidden}
+        wistia-player{display:block;width:100%;border-radius:24px;overflow:hidden;box-shadow:0 12px 35px rgba(0,0,0,.12)}
+        .video-placeholder{display:none!important}
+      </style>
+      <wistia-player media-id="zrfwtube87" aspect="0.5625"></wistia-player>
+    </div>
+    <p class="video-caption">86 segundos · sem enrolação · só o que importa para você agora</p>
+    <div class="vsl-evelyn-tag">
+      <div class="vsl-evelyn-dot">E</div>
+      <p class="vsl-evelyn-name"><strong>Evelyn Liu</strong> · Nutricionista comportamental · Fundadora da Table</p>
+    </div>
+    <div style="text-align:center;margin-top:28px">
+      <a href="#offer-anchor" onclick="event.preventDefault();document.getElementById('offer-anchor').scrollIntoView({behavior:'smooth'})" class="btn-offer" style="display:inline-block;width:auto;padding:16px 36px;font-size:14px;border-radius:4px;text-decoration:none">Quero começar pelo Protocolo Raiz →</a>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px">🔒 Garantia de 7 dias · R$ 97 pagamento único</p>
+    </div>
+  </div>
+
+  <!-- 4. PROVA SOCIAL — Ação da Gracinha -->
   <div class="gracinha-section">
     <p class="gracinha-eyebrow">Ação da Gracinha · Table</p>
     <h3 class="gracinha-title">Cada conquista virou<br><em>um ato de amor.</em></h3>
+    <p style="font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:18px">Na Table, cada aluna que completa sua jornada doa, em alimentos, o equivalente ao que transformou. Abaixo, algumas delas.</p>
     <div class="gracinha-grid">
       <div class="gracinha-card">
         <div class="gracinha-photo">
           <img src="/images/Juliana Moreno.png" alt="Juliana com sua doação de alimentos"/>
           <span class="gracinha-kg-tag">Juliana</span>
         </div>
-        <div class="gracinha-body"><p class="gracinha-quote">"Pela primeira vez me senti em paz com minhas escolhas."</p></div>
+        <div class="gracinha-body"><p class="gracinha-quote">"Depois de 12 anos tentando dietas, foi a primeira vez que me senti em paz com minhas escolhas."</p></div>
       </div>
       <div class="gracinha-card">
         <div class="gracinha-photo">
           <img src="/images/Adriana.png" alt="Adriana com sua doação de alimentos"/>
           <span class="gracinha-kg-tag">Adriana</span>
         </div>
-        <div class="gracinha-body"><p class="gracinha-quote">"Entendi que não era falta de força de vontade."</p></div>
+        <div class="gracinha-body"><p class="gracinha-quote">"Em 6 semanas entendi o que 3 nutricionistas não conseguiram me explicar: não era falta de força de vontade."</p></div>
       </div>
       <div class="gracinha-card">
         <div class="gracinha-photo">
@@ -513,7 +566,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
   </div>
 
   <!-- 8. OFERTA FINAL — uma vez, com todas as personalizações -->
-  <div class="offer-divider">
+  <div class="offer-divider" id="offer-anchor">
 
     <!-- Linha de transição personalizada por histórico -->
     <p id="offer-transition" style="font-size:15px;line-height:1.8;color:var(--muted);margin-bottom:28px;text-align:center;font-style:italic;padding:0 8px"></p>
@@ -538,8 +591,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
           <p class="price-note">pagamento único<br>acesso imediato</p>
         </div>
         <div class="offer-urgency" style="align-items:flex-start;margin-bottom:20px">
-          <span style="flex-shrink:0;margin-top:1px">✦</span>
-          <span>A clareza que você tem agora é real. O Protocolo Raiz começa exatamente daqui.</span>
+          <span style="flex-shrink:0;margin-top:1px">⏳</span>
+          <span><strong style="color:var(--terra)">Vagas limitadas para a sessão:</strong> a equipe da Table atende no máximo 30 pessoas por semana. Quando as vagas fecham, o próximo horário disponível fica para a semana seguinte.</span>
         </div>
         <button class="btn-offer" onclick="goOffer()">Quero começar pelo Protocolo Raiz →</button>
         <p class="offer-guarantee" style="margin-top:12px">🔒 Garantia de 7 dias · 100% do valor de volta se não fizer sentido</p>
@@ -577,6 +630,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
       <div class="quiz-faq-q">E se não funcionar para mim? <span class="quiz-faq-arrow">+</span></div>
       <p class="quiz-faq-a">Você tem 7 dias de garantia total. Se por qualquer motivo o Protocolo Raiz não fizer sentido, basta entrar em contato e devolvemos 100% do valor — sem perguntas, sem burocracia.</p>
     </div>
+    <div style="text-align:center;margin-top:32px">
+      <a href="#offer-anchor" onclick="event.preventDefault();document.getElementById('offer-anchor').scrollIntoView({behavior:'smooth'})" class="btn-offer" style="display:inline-block;width:auto;padding:16px 36px;font-size:14px;border-radius:4px;text-decoration:none">Quero começar pelo Protocolo Raiz →</a>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px">🔒 Garantia de 7 dias · R$ 97 pagamento único</p>
+    </div>
   </div>
 
 </div><!-- /page-result -->
@@ -587,7 +644,7 @@ const questions = [
     options: [
       { text: "Cansaço — já tentei tantas vezes e nada funciona a longo prazo", type: "E" },
       { text: "Medo de errar e estragar tudo de novo", type: "R" },
-      { text: "Culpa — sinto que não tenho força de vontade suficiente", type: "E" },
+      { text: "Desânimo — minha rotina não me deixa nem espaço para pensar nisso", type: "S" },
       { text: "Indiferença — estou no automático, não sei nem o que sinto", type: "A" }
     ]
   },
@@ -596,7 +653,7 @@ const questions = [
     options: [
       { text: "À noite, quando a agitação do dia finalmente para", type: "E" },
       { text: "Quando estou sozinha e ninguém está olhando", type: "R" },
-      { text: "Quando estou estressada, ansiosa ou com raiva", type: "E" },
+      { text: "Quando estou esgotada — no fim de um dia pesado, como qualquer coisa pra repor energia", type: "S" },
       { text: "Em qualquer momento — como sem nem perceber que estou comendo", type: "A" }
     ]
   },
@@ -606,7 +663,7 @@ const questions = [
       { text: "Uma vergonha enorme — de mim mesma", type: "R" },
       { text: "Um alívio momentâneo, seguido de culpa pesada", type: "E" },
       { text: "Nada — continuo como se nada tivesse acontecido", type: "A" },
-      { text: "Raiva e frustração — sinto que estraguei tudo outra vez", type: "S" }
+      { text: "Cansaço — aconteceu porque eu estava exausta demais pra resistir", type: "S" }
     ]
   },
   {
@@ -666,7 +723,7 @@ const questions = [
 
 const profiles = {
   E: {
-    tag: "Seu Perfil",
+    tag: "Sua Raiz",
     type: "A Comedora <em>Emocional</em>",
     headline: "Você não come por fome. Você come para sobreviver emocionalmente ao que está sentindo.",
     desc: "Desde cedo você aprendeu que a comida consola, acalma e preenche. Ela virou seu anestésico para a ansiedade, o estresse, a solidão e o cansaço. Não é fraqueza — é uma resposta que seu sistema nervoso criou para te proteger. Com o tempo, essa resposta passou a custar caro no seu corpo e na sua autoestima.",
@@ -680,7 +737,7 @@ const profiles = {
     bridge: "A maioria das mulheres com esse padrão já tentou monitorar o que come. Já criou regras. Já apostou na força de vontade. E funcionou — por alguns dias. Porque monitorar comportamento sem entender o gatilho emocional por baixo é como secar o chão com a torneira aberta. O padrão emocional não mora na comida — mora no sistema nervoso. E sistema nervoso não muda com lista de regras. O Protocolo Raiz foi construído para ir exatamente onde nenhuma dieta foi antes."
   },
   R: {
-    tag: "Seu Perfil",
+    tag: "Sua Raiz",
     type: "A Comedora <em>Restritiva</em>",
     headline: "Você alterna entre controle e descontrole — e acredita que falta disciplina. Não é isso.",
     desc: "Você vive em ciclos: restringe com rigor, 'escorrega', acha que estragou tudo e recomeça do zero. O que parece fraqueza é o efeito direto da restrição excessiva — quanto mais você proíbe, mais o cérebro deseja. Você não tem dificuldade com disciplina. Você tem um relacionamento muito rígido com suas próprias regras.",
@@ -694,7 +751,7 @@ const profiles = {
     bridge: "A maioria das mulheres com esse padrão já tentou ser menos rígida. Já ouviu que precisava relaxar. E quando tentou, o descontrole veio — e a conclusão foi a mesma de sempre: a culpa é dela. Não é. O ciclo restritivo não quebra com mais flexibilidade. Ele quebra quando a raiz da restrição é tratada. A Comedora Restritiva não tem dificuldade com comida — tem crenças muito arraigadas sobre si mesma quando come. O Protocolo Raiz vai onde esse trabalho precisa acontecer."
   },
   S: {
-    tag: "Seu Perfil",
+    tag: "Sua Raiz",
     type: "A Comedora em <em>Modo Sobrevivência</em>",
     headline: "Você vive tão sobrecarregada que cuidar de você mesma ficou em último lugar — e o corpo está cobrando essa conta.",
     desc: "Filhos, trabalho, casa, outros. Você cuida de tudo e de todos — menos de si mesma. A alimentação virou algo funcional: o que é mais rápido, o que cabe no intervalo, o que sobrou. Não é falta de vontade. É exaustão real. Seu corpo está pedindo atenção há muito tempo.",
@@ -708,7 +765,7 @@ const profiles = {
     bridge: "A maioria das mulheres com esse padrão já tentou se organizar. Já colocou a alimentação no planejamento. E a vida engoliu tudo — de novo. Não porque faltou compromisso. Porque nenhum plano alimentar foi construído para funcionar dentro de uma rotina de sobrevivência. O padrão de sobrevivência não muda com mais organização — muda quando você entende por que colocar a si mesma em último lugar virou automático. O Protocolo Raiz começa exatamente aí."
   },
   A: {
-    tag: "Seu Perfil",
+    tag: "Sua Raiz",
     type: "A Comedora <em>Desconectada</em>",
     headline: "Você come no automático — e há muito tempo não sente seu próprio corpo de verdade.",
     desc: "Você come sem fome real, para sem perceber, e muitas vezes nem recorda o que comeu. Não é negligência — é uma forma de desconexão. Você aprendeu, ao longo do tempo, a se afastar do próprio corpo como forma de se proteger de uma dor que parecia grande demais.",
@@ -723,15 +780,28 @@ const profiles = {
   }
 };
 
-let current = 0;
-let scores = { E:0, R:0, S:0, A:0 };
+// Restaura estado salvo (refresh no meio do quiz)
+function loadQuizState(){
+  try{
+    const s = sessionStorage.getItem('tq');
+    if(s) return JSON.parse(s);
+  }catch(e){}
+  return null;
+}
+function saveQuizState(){
+  try{ sessionStorage.setItem('tq', JSON.stringify({current, scores, quizAnswers})); }catch(e){}
+}
+function clearQuizState(){ try{ sessionStorage.removeItem('tq'); }catch(e){} }
+
+const _saved = loadQuizState();
+let current = _saved ? _saved.current : 0;
+let scores = _saved ? _saved.scores : { E:0, R:0, S:0, A:0 };
 let qualificationAnswer = null;
-let quizAnswers = [];
+let quizAnswers = _saved ? _saved.quizAnswers : [];
 
 // Qualification scoring — quanto mais investiu antes, maior o score
 const qualificationScore = {
   nutri_convencional: 1,
-  low_carb: 1,
   jejum: 1,
   dieta_calorias: 1,
   psicologo: 2,
@@ -777,22 +847,50 @@ function getCookie(name){
   return m ? m[2] : null;
 }
 
-function hashSHA256(str){
-  // Dados vao em claro pro Make, que faz o sha256 - apenas normaliza aqui
-  return str.toLowerCase().trim();
-}
-
 // Remove codigo de pais (55) para o Make hashar corretamente
 function phoneForHash(normalized){
   return normalized.startsWith('55') ? normalized.slice(2) : normalized;
 }
 
 function startQuiz(){
+  clearQuizState();
+  current = 0; scores = {E:0,R:0,S:0,A:0}; quizAnswers = [];
+  goTo('page-quiz');
+  renderQuestion();
+}
+
+// Se há estado salvo, retoma quiz automaticamente (refresh)
+if(_saved && _saved.current > 0 && _saved.current < questions.length){
+  goTo('page-quiz');
+  renderQuestion();
+}
+
+function showFieldError(fieldId, errId, msg){
+  const el = document.getElementById(fieldId);
+  el.classList.add('error');
+  document.getElementById(errId).textContent = msg;
+  el.focus();
+}
+function clearFieldError(fieldId){
+  const el = document.getElementById(fieldId);
+  if(!el) return;
+  el.classList.remove('error');
+  const errEl = document.getElementById('err-' + fieldId.replace('user-',''));
+  if(errEl) errEl.textContent = '';
+}
+
+function submitCapture(){
   const name = document.getElementById('user-name').value.trim();
   const email = document.getElementById('user-email').value.trim();
   const rawPhone = document.getElementById('user-phone').value.trim();
-  if(!name||!email||!rawPhone){alert('Por favor, preencha seu nome, e-mail e WhatsApp para continuar.');return;}
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){alert('Por favor, insira um e-mail válido.');return;}
+  // Limpa erros anteriores
+  ['user-name','user-email','user-phone'].forEach(id => clearFieldError(id));
+  let valid = true;
+  if(!name){ showFieldError('user-name','err-name','Por favor, informe seu nome.'); valid=false; }
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showFieldError('user-email','err-email','Insira um e-mail válido.'); valid=false; }
+  const digits = rawPhone.replace(/\D/g,'');
+  if(digits.length < 10 || digits.length > 11){ showFieldError('user-phone','err-phone','Informe um WhatsApp válido com DDD (ex: 11 99999-9999).'); valid=false; }
+  if(!valid) return;
   const phone = normalizePhone(rawPhone);
   window._leadPhone = phone;
   window._leadName = name;
@@ -800,9 +898,6 @@ function startQuiz(){
   window._leadEventId = generateEventId();
   window._leadFbc = getCookie('_fbc') || null;
   window._leadFbp = getCookie('_fbp') || null;
-  document.cookie = "tc_ph=" + phone + "; path=/; max-age=604800; SameSite=Lax; domain=.evelynliu.com.br";
-  goTo('page-quiz');
-  renderQuestion();
   // Advanced Matching: já temos nome/email/telefone — passa em/ph/fn ao pixel
   // (Meta normaliza e hasheia no browser). Eleva o EMQ do Lead no lado browser
   // para casar com o user_data completo enviado pelo CAPI.
@@ -818,13 +913,33 @@ function startQuiz(){
     eventID: window._leadEventId
   });
   gtag('event','generate_lead');
+  // CAPI Lead server-side — espelha o evento browser para dedup correto
+  // Dispara aqui (não só no showResult) para cobrir leads que abandonam antes do resultado
+  fetch('/api/capi',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      event_name:'Lead',
+      content_name:'quiz-lead',
+      nome: name,
+      email: email,
+      whats: phoneForHash(phone),
+      fbc: window._leadFbc,
+      fbp: window._leadFbp,
+      lead_event_id: window._leadEventId,
+      event_source_url: window.location.href,
+      value: 97,
+      currency: 'BRL'
+    })
+  }).catch(()=>{});
+  showLoading();
 }
 function renderQuestion(){
   const q = questions[current];
   document.getElementById('q-number').textContent = `Pergunta ${current+1}`;
   document.getElementById('q-text').textContent = q.text;
   document.getElementById('quiz-counter').textContent = `${current+1} de ${questions.length}`;
-  document.getElementById('progress-fill').style.width = `${(current/questions.length)*100}%`;
+  document.getElementById('progress-fill').style.width = `${((current+1)/questions.length)*100}%`;
 
   const list = document.getElementById('options-list');
   list.innerHTML = '';
@@ -887,6 +1002,7 @@ function selectAndAdvance(type, btn){
   setTimeout(()=>{
     scores[type]++;
     current++;
+    saveQuizState();
     renderQuestion();
   }, 340);
 }
@@ -916,6 +1032,18 @@ function toggleQualification(value, btn){
 }
 
 function finishQualification(){
+  if(selectedQual.size === 0){
+    // Erro inline abaixo das opções
+    let errEl = document.getElementById('qual-error');
+    if(!errEl){
+      errEl = document.createElement('p');
+      errEl.id = 'qual-error';
+      errEl.style.cssText = 'font-size:13px;color:#c0392b;margin-top:12px;text-align:center';
+      document.getElementById('q-nav').insertAdjacentElement('beforebegin', errEl);
+    }
+    errEl.textContent = 'Selecione ao menos uma opção para continuar.';
+    return;
+  }
   // Calcula score de qualificação
   let qScore = 0;
   selectedQual.forEach(v => { qScore += qualificationScore[v] || 0; });
@@ -925,7 +1053,9 @@ function finishQualification(){
     // hot = já investiu em coisas caras antes
     tier: qScore >= 4 ? 'hot' : qScore >= 2 ? 'warm' : 'cold'
   };
-  showLoading();
+  clearQuizState(); // sessão completa — limpa estado persistido
+  // Captura depois do quiz — curiosidade no pico, custo afundado
+  goTo('page-capture');
 }
 
 function nextQuestion(){
@@ -941,8 +1071,55 @@ function showLoading(){
   setTimeout(showResult, 3200);
 }
 
+// Extrai a parte descritiva da resposta (após o em-dash, ou resposta inteira)
+function extractContent(text){
+  const parts = text.split('—');
+  return (parts[1] || parts[0]).trim().toLowerCase().replace(/\.$/, '');
+}
+
+// Gera frase espelho a partir das 2 primeiras respostas que batem com o perfil
+function buildMirrorIntro(top, answers){
+  const profileLabel = {E:'Comedora Emocional',R:'Comedora Restritiva',S:'Comedora em Modo Sobrevivência',A:'Comedora Desconectada'};
+  const matched = answers.filter(a => a.tipo === top);
+  if(matched.length < 2) return null;
+  const c1 = extractContent(matched[0].resposta);
+  const c2 = extractContent(matched[1].resposta);
+  return `Você marcou que ${c1} — e que ${c2}. Esses dois padrões juntos são a assinatura da ${profileLabel[top]}.`;
+}
+
+// Gera lista de sinais: prioritiza respostas reais da lead, completa com estáticos
+function buildSignals(top, answers){
+  const qTemplates = [
+    r => `Seu primeiro sentimento ao pensar em mudança: ${extractContent(r)}.`,
+    r => `Você perde o controle quando ${extractContent(r)}.`,
+    r => `Depois de comer além do planejado, você sente ${extractContent(r)}.`,
+    r => `Você se identificou com: ${r.trim()}.`,
+    r => `O que mais quer resolver: ${extractContent(r)}.`,
+    r => `Sua relação com o corpo agora: ${extractContent(r)}.`,
+    r => `O que mais te impede de manter mudanças: ${extractContent(r)}.`,
+  ];
+  const result = [];
+  answers.forEach((a, i) => {
+    if(a.tipo === top && qTemplates[i]) result.push({personal:true, text:qTemplates[i](a.resposta)});
+  });
+  const statics = profiles[top].signals;
+  let si = 0;
+  while(result.length < 5 && si < statics.length){ result.push({personal:false, text:statics[si++]}); }
+  return result;
+}
+
 function showResult(){
-  const top = Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];
+  const sorted = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  let top = sorted[0][0];
+  // Tiebreak: se empate no topo, usar Q5 ("resolver UMA coisa") ou Q6 ("relação com o corpo") — mais diagnósticas
+  if(sorted[1] && sorted[0][1] === sorted[1][1]){
+    const maxScore = sorted[0][1];
+    const tied = sorted.filter(([,v])=>v===maxScore).map(([k])=>k);
+    const q5 = quizAnswers[4]; // Q5 index 4
+    const q6 = quizAnswers[5]; // Q6 index 5
+    if(q5 && tied.includes(q5.tipo)) top = q5.tipo;
+    else if(q6 && tied.includes(q6.tipo)) top = q6.tipo;
+  }
   const p = profiles[top];
   const name = (window._leadName || '').trim();
   const firstName = name.split(' ')[0];
@@ -960,10 +1137,18 @@ function showResult(){
   document.getElementById('result-desc').textContent = p.desc;
   document.getElementById('result-bridge').textContent = p.bridge;
 
+  // Espelho: frase que ecoa respostas reais da lead
+  const mirrorEl = document.getElementById('result-mirror');
+  const mirrorText = buildMirrorIntro(top, quizAnswers);
+  if(mirrorText){ mirrorEl.textContent = mirrorText; mirrorEl.style.display='block'; }
+
+  // Sinais: respostas reais primeiro, estáticos como fallback
   const sigList = document.getElementById('result-signals-list');
   sigList.innerHTML = '';
-  p.signals.forEach(s=>{
-    sigList.innerHTML += `<div class="signal-item"><div class="signal-dot"></div><span>${s}</span></div>`;
+  buildSignals(top, quizAnswers).forEach(s => {
+    const dot = s.personal ? 'background:var(--terra)' : '';
+    const weight = s.personal ? 'font-weight:500' : '';
+    sigList.innerHTML += `<div class="signal-item"><div class="signal-dot" style="${dot}"></div><span style="${weight}">${s.text}</span></div>`;
   });
 
   // 2. Nome do perfil no título do card de oferta
@@ -978,7 +1163,6 @@ function showResult(){
   // 4. Linha personalizada de qualificação antes da oferta
   const qualLabels = {
     nutri_convencional: 'nutricionista convencional',
-    low_carb: 'low carb',
     jejum: 'jejum intermitente',
     dieta_calorias: 'dieta restritiva',
     psicologo: 'psicólogo ou psiquiatra',
@@ -1072,11 +1256,18 @@ function showResult(){
     console.error("[CAPI] Erro ao enviar (não crítico):", error);
   });
 
-  // Pixel: Quiz completado
+  // Pixel: Quiz completado — custom para segmentação + padrão para otimização de campanha
   fbq('trackCustom','QuizCompleted',{
     value: 97,
     currency: 'BRL',
     eventID: quizEventId
+  });
+  fbq('track','CompleteRegistration',{
+    content_name: 'quiz-' + top,
+    status: top,
+    value: 97,
+    currency: 'BRL',
+    eventID: quizEventId // mesmo eventID → Meta deduplica automaticamente
   });
   gtag('event', 'quiz_completed', {
     perfil: top,
