@@ -397,7 +397,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
   <div class="gracinha-section">
     <p class="gracinha-eyebrow">Ação da Gracinha · Table</p>
     <h3 class="gracinha-title">Cada conquista virou<br><em>um ato de amor.</em></h3>
-    <p style="font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:18px">Na Table, cada aluna que completa sua jornada doa, em alimentos, o equivalente ao que transformou. Abaixo, algumas delas.</p>
+    <p style="font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:18px">Mulheres que passaram pela Table doam, em alimentos, o equivalente ao que transformaram. Porque transformação real transborda.</p>
     <div class="gracinha-grid">
       <div class="gracinha-card">
         <div class="gracinha-photo">
@@ -442,7 +442,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
         <div class="gracinha-body"><p class="gracinha-quote">"Nunca pensei que ia me sentir assim de novo."</p></div>
       </div>
     </div>
-    <p class="gracinha-note">Mulheres que passaram pela Table doam, em alimentos, o equivalente ao que transformaram. Porque transformação real transborda.</p>
   </div>
 
   <!-- 4b. VÍDEO DA EVELYN — ponte emocional, após prova social -->
@@ -588,7 +587,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
         </div>
         <div class="offer-price-row">
           <div><p class="price-from">De R$ 297</p><p class="price-main">R$ 97</p></div>
-          <p class="price-note">pagamento único<br>acesso imediato</p>
+          <p class="price-note">pagamento único · Pix ou cartão<br>ou 12× de R$ 10,03 · acesso imediato</p>
         </div>
         <div class="offer-urgency" style="align-items:flex-start;margin-bottom:20px">
           <span style="flex-shrink:0;margin-top:1px">⏳</span>
@@ -1156,9 +1155,18 @@ function showResult(){
   document.getElementById('offer-profile-title').innerHTML =
     `Protocolo Raiz — <em style="color:var(--terra);font-style:italic">${profileNameClean}</em><br><span style="font-size:14px;color:rgba(255,255,255,.5)">by Evelyn Liu · Table</span>`;
 
-  // 3. Include 1 com nome do perfil
+  // 3. Include 1 com nome do perfil — artigo minúsculo
   document.getElementById('offer-include-1').innerHTML =
-    `Exercícios psicoemocionais guiados para <strong style="color:var(--white)">${profileNameClean}</strong>`;
+    `Exercícios psicoemocionais guiados para <strong style="color:var(--white)">${profileNameClean.replace(/^(A|O) /, (m,a) => a.toLowerCase()+' ')}</strong>`;
+
+  // 4. CTA principal com perfil interpolado ("Começar pelo meu perfil →")
+  // Extrai só o tipo sem o artigo: "Comedora Emocional", "Modo Sobrevivência", etc.
+  const profileShort = profileNameClean.replace(/^(A |O )/, '');
+  document.querySelectorAll('.btn-offer').forEach(btn => {
+    if(btn.getAttribute('onclick') === 'goOffer()'){
+      btn.textContent = `Começar pelo meu perfil ${profileShort} →`;
+    }
+  });
 
   // 4. Linha personalizada de qualificação antes da oferta
   const qualLabels = {
