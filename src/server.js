@@ -145,11 +145,13 @@ app.post('/api/capi', async (req, res) => {
     whats,
     fbc,
     fbp,
+    external_id,     // SHA-256 do email — gerado no browser, não rehashear
     lead_event_id,
-    quiz_completed_event_id,
     pageview_event_id,
     event_name,
     content_name,
+    perfil,          // para CompleteRegistration custom_data
+    tier,            // idem
     event_source_url,
   } = req.body;
 
@@ -169,22 +171,21 @@ app.post('/api/capi', async (req, res) => {
 
   // ── Monta user_data ─────────────────────────────────────────────────────────
 
-  const phoneNormalized = normalizePhone(whats);     // com DDI 55
-  const emailHashed     = sha256(email);             // para external_id também
+  const phoneNormalized = normalizePhone(whats);
 
   const user_data = {
-    // Campos hasheados (SHA-256, lowercase + trim)
-    em: emailHashed,
+    em: sha256(email),
     ph: sha256(phoneNormalized),
     fn: sha256(firstName(nome)),
-    external_id: emailHashed,                        // reutiliza hash do email
+    // external_id vem pré-hasheado do browser (SHA-256 do email normalizado)
+    // Se não vier do browser, deriva do hash do email como fallback
+    external_id: external_id || sha256(email),
 
-    // Campos em texto puro (não hashear — Meta exige assim)
     client_ip_address: getClientIp(req),
     client_user_agent: req.headers['user-agent'] || null,
   };
 
-  // fbc e fbp só incluídos se existirem (texto puro, nunca hashear)
+  // fbc e fbp: texto puro, nunca hashear
   if (fbc) user_data.fbc = fbc;
   if (fbp) user_data.fbp = fbp;
 
@@ -209,11 +210,12 @@ app.post('/api/capi', async (req, res) => {
     event_id:          lead_event_id || null,            // deduplicação com pixel browser
     user_data,
   };
+  // custom_data por tipo de evento
   if (content_name) event.custom_data = { content_name };
-  // value/currency apenas no evento Lead (não afeta ViewContent/QuizView)
-  if (resolvedEventName === 'Lead') {
-    event.custom_data = { ...(event.custom_data || {}), value: 97, currency: 'BRL' };
+  if (resolvedEventName === 'CompleteRegistration') {
+    event.custom_data = { ...(event.custom_data || {}), perfil, tier };
   }
+  // Lead não carrega value/currency
 
   // Remove event_id se não veio (evita enviar null)
   if (!event.event_id) delete event.event_id;
@@ -238,19 +240,7 @@ app.post('/api/capi', async (req, res) => {
     });
   }
 
-  // QuizCompleted (custom) pareado com o pixel — só no fluxo de conclusão
-  // real (event principal = Lead) e quando há id dedicado do browser.
-  if (quiz_completed_event_id && resolvedEventName === 'Lead') {
-    dataEvents.push({
-      event_name:       'QuizCompleted',
-      event_time:       Math.floor(Date.now() / 1000),
-      action_source:    'website',
-      event_source_url: event_source_url || 'https://www.evelynliu.com.br/raiz',
-      event_id:         quiz_completed_event_id,
-      user_data,
-      custom_data:      { value: 97, currency: 'BRL' },
-    });
-  }
+  // QuizCompleted é browser-only (audiences). Sem par server-side.
 
   const metaPayload = {
     data: dataEvents,

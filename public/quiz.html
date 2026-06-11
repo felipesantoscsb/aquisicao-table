@@ -859,6 +859,22 @@ function phoneForHash(normalized){
   return normalized.startsWith('55') ? normalized.slice(2) : normalized;
 }
 
+// SHA-256 do e-mail normalizado → external_id estável para Meta CAPI
+async function sha256Email(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str.toLowerCase().trim()));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// ── Configuração Ticto ──────────────────────────────────────────────────────
+// TODO: confirmar nomes de campo na doc/painel da Ticto antes de ir a ar
+// Checkout ignora params desconhecidos — sem risco de quebra
+const TICTO_PARAMS = {
+  email: 'email',       // TODO: confirmar (pré-preenchimento)
+  phone: 'phone',       // TODO: confirmar
+  name:  'name',        // TODO: confirmar
+  src:   'src'          // TODO: confirmar — deve retornar no webhook como join key
+};
+
 function startQuiz(){
   clearQuizState();
   current = 0; scores = {E:0,R:0,S:0,A:0}; quizAnswers = [];
@@ -886,7 +902,7 @@ function clearFieldError(fieldId){
   if(errEl) errEl.textContent = '';
 }
 
-function submitCapture(){
+async function submitCapture(){
   const name = document.getElementById('user-name').value.trim();
   const email = document.getElementById('user-email').value.trim();
   const rawPhone = document.getElementById('user-phone').value.trim();
@@ -905,23 +921,22 @@ function submitCapture(){
   window._leadEventId = generateEventId();
   window._leadFbc = getCookie('_fbc') || null;
   window._leadFbp = getCookie('_fbp') || null;
-  // Advanced Matching: já temos nome/email/telefone — passa em/ph/fn ao pixel
-  // (Meta normaliza e hasheia no browser). Eleva o EMQ do Lead no lado browser
-  // para casar com o user_data completo enviado pelo CAPI.
+  // external_id: SHA-256 do email normalizado — identificador estável cross-evento
+  window._leadExternalId = await sha256Email(email);
+  // Advanced Matching: nome/email/telefone/external_id ao pixel browser
   fbq('init','989971718548782',{
     em: email,
     ph: phone,
-    fn: name.trim().split(/\s+/)[0]
+    fn: name.trim().split(/\s+/)[0],
+    external_id: window._leadExternalId
   });
+  // Lead browser — sem value/currency (Lead não carrega valor monetário)
   fbq('track','Lead',{
     content_name:'quiz-lead',
-    value: 97,
-    currency: 'BRL',
     eventID: window._leadEventId
   });
   gtag('event','generate_lead');
-  // CAPI Lead server-side — espelha o evento browser para dedup correto
-  // Dispara aqui (não só no showResult) para cobrir leads que abandonam antes do resultado
+  // CAPI Lead server-side — par do browser para dedup. Cobre abandono pré-resultado.
   fetch('/api/capi',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
@@ -933,10 +948,9 @@ function submitCapture(){
       whats: phoneForHash(phone),
       fbc: window._leadFbc,
       fbp: window._leadFbp,
+      external_id: window._leadExternalId,
       lead_event_id: window._leadEventId,
-      event_source_url: window.location.href,
-      value: 97,
-      currency: 'BRL'
+      event_source_url: window.location.href
     })
   }).catch(()=>{});
   showLoading();
@@ -1009,6 +1023,7 @@ function selectAndAdvance(type, btn){
   setTimeout(()=>{
     scores[type]++;
     current++;
+    if(current === 4) fbq('trackCustom','QuizProgress',{step:4}); // Q4 respondida
     saveQuizState();
     renderQuestion();
   }, 340);
@@ -1222,14 +1237,17 @@ function showResult(){
   }
   document.getElementById('offer-guarantee-copy').textContent = guaranteeCopy;
 
-  const quizEventId = generateEventId();
+  const crEventId = crypto.randomUUID();   // CompleteRegistration — browser + CAPI par
+  const quizEventId = generateEventId();    // QuizCompleted — browser-only, só para audiences
 
-  const payload = {
+  // Make: payload completo para automações CRM (intacto)
+  const makePayload = {
     nome: window._leadName,
     email: window._leadEmail,
     whats: phoneForHash(window._leadPhone),
     fbc: window._leadFbc || getCookie('_fbc') || null,
     fbp: window._leadFbp || getCookie('_fbp') || null,
+    external_id: window._leadExternalId || null,
     lead_event_id: window._leadEventId,
     quiz_completed_event_id: quizEventId,
     event_source_url: window.location.href,
@@ -1244,47 +1262,44 @@ function showResult(){
 
   fetch("https://hook.us2.make.com/tfxlcbxavrfroywhwnqc5qmo8t1rkb3n", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(makePayload)
   })
-  .then(response => {
-    console.log("Quiz enviado para o Make:", response.status);
-  })
-  .catch(error => {
-    console.error("Erro ao enviar quiz para o Make:", error);
-  });
+  .then(r => console.log("Quiz enviado para o Make:", r.status))
+  .catch(e => console.error("Erro ao enviar quiz para o Make:", e));
 
-  // CAPI — disparo independente pro servidor Railway.
-  // Usa o mesmo payload do Make. Erros são silenciosos: não afetam
-  // o fluxo da usuária nem o disparo pro Make acima.
+  // CAPI CompleteRegistration — payload separado do Make, event_id próprio para dedup
   fetch("/api/capi", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      event_name: 'CompleteRegistration',
+      nome: window._leadName,
+      email: window._leadEmail,
+      whats: phoneForHash(window._leadPhone),
+      fbc: window._leadFbc || getCookie('_fbc') || null,
+      fbp: window._leadFbp || getCookie('_fbp') || null,
+      external_id: window._leadExternalId || null,
+      lead_event_id: crEventId,
+      perfil: top,
+      tier: tier,
+      event_source_url: window.location.href
+    })
   })
-  .then(response => {
-    console.log("[CAPI] Enviado:", response.status);
-  })
-  .catch(error => {
-    console.error("[CAPI] Erro ao enviar (não crítico):", error);
-  });
+  .then(r => console.log("[CAPI] CompleteRegistration enviado:", r.status))
+  .catch(() => {});
 
-  // Pixel: Quiz completado — custom para segmentação + padrão para otimização de campanha
-  fbq('trackCustom','QuizCompleted',{
-    value: 97,
-    currency: 'BRL',
-    eventID: quizEventId
-  });
+  // Pixel: CompleteRegistration primeiro (evento principal, otimizável)
+  // depois QuizCompleted (browser-only, audiences — sem value, sem CAPI par)
   fbq('track','CompleteRegistration',{
     content_name: 'quiz-' + top,
     status: top,
-    value: 97,
-    currency: 'BRL',
-    eventID: quizEventId // mesmo eventID → Meta deduplica automaticamente
+    eventID: crEventId
+  });
+  fbq('trackCustom','QuizCompleted',{
+    perfil: top,
+    tier: tier,
+    eventID: quizEventId
   });
   gtag('event', 'quiz_completed', {
     perfil: top,
@@ -1306,7 +1321,6 @@ function goOffer(){
   });
 
   // InitiateCheckout — CAPI server-side (mesmo event_id do pixel p/ dedup)
-  // Usa os dados já em memória (phone E.164, email, fbp, fbc) p/ máximo match
   fetch('/api/capi/initiate-checkout',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
@@ -1315,6 +1329,7 @@ function goOffer(){
       em: window._leadEmail,
       fbp: window._leadFbp,
       fbc: window._leadFbc || undefined,
+      external_id: window._leadExternalId || undefined,
       content_name:'InitiateCheckout_Raiz',
       perfil:'raiz',
       event_id: icEventId,
@@ -1322,7 +1337,13 @@ function goOffer(){
     })
   }).catch(()=>{});
 
-  window.location.href = 'https://checkout.ticto.app/O3EB65FBD';
+  // Redirect com params de identidade para pré-preenchimento e join key webhook
+  const checkoutUrl = new URL('https://checkout.ticto.app/O3EB65FBD');
+  if(window._leadEmail)   checkoutUrl.searchParams.set(TICTO_PARAMS.email, window._leadEmail);
+  if(window._leadPhone)   checkoutUrl.searchParams.set(TICTO_PARAMS.phone, window._leadPhone);
+  if(window._leadName)    checkoutUrl.searchParams.set(TICTO_PARAMS.name,  window._leadName.split(' ')[0]);
+  if(window._leadEventId) checkoutUrl.searchParams.set(TICTO_PARAMS.src,   window._leadEventId);
+  window.location.href = checkoutUrl.toString();
 }
 </script>
 </body>
