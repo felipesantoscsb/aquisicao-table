@@ -577,27 +577,57 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
       </div>
       <div class="offer-body">
 
-        <!-- Copy variável por tier -->
+        <!-- 1. Justificativa (tier copy) -->
         <p id="offer-tier-copy" style="font-size:13px;color:rgba(255,255,255,.65);line-height:1.75;margin-bottom:22px;padding:12px 14px;background:rgba(255,255,255,.05);border-radius:6px;border-left:2px solid var(--terra)"></p>
 
-        <div class="offer-includes">
-          <div class="include-item"><div class="include-check">✓</div><span id="offer-include-1">12 exercícios psicoemocionais guiados <strong>para o seu perfil</strong></span></div>
-          <div class="include-item"><div class="include-check">✓</div><span>Livro <em style="color:var(--terra)">"Gordura Não Existe"</em> em PDF — obra completa de Evelyn Liu</span></div>
-          <div class="include-item"><div class="include-check">✓</div><span>Sessão individual com uma nutricionista comportamental da Table <em style="color:rgba(255,255,255,.45);font-size:12px">(garantida na compra — agendamos pelo WhatsApp)</em></span></div>
+        <!-- 2. Entregáveis com valores individuais -->
+        <div class="offer-includes" style="margin-bottom:0">
+          <div class="include-item" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px;flex:1">
+              <div class="include-check">✓</div>
+              <span id="offer-include-1">Exercícios psicoemocionais guiados <strong>para o seu perfil</strong></span>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,.4);white-space:nowrap;margin-left:12px">R$ 97</span>
+          </div>
+          <div class="include-item" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px;flex:1">
+              <div class="include-check">✓</div>
+              <span>Livro <em style="color:var(--terra)">"Gordura Não Existe"</em> em PDF</span>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,.4);white-space:nowrap;margin-left:12px">R$ 47</span>
+          </div>
+          <div class="include-item" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px;flex:1">
+              <div class="include-check">✓</div>
+              <span>Sessão individual com nutricionista comportamental da Table <em style="color:rgba(255,255,255,.4);font-size:11px">· 45 min · videochamada · agendamos pelo WhatsApp</em></span>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,.4);white-space:nowrap;margin-left:12px">R$ 297</span>
+          </div>
         </div>
-        <div class="offer-price-row">
-          <div><p class="price-from">De R$ 297</p><p class="price-main">R$ 97</p></div>
+
+        <!-- 3. Soma → anomalia de preço -->
+        <div style="border-top:1px solid rgba(255,255,255,.1);margin:14px 0;padding-top:14px;display:flex;justify-content:space-between;align-items:baseline">
+          <span style="font-size:12px;color:rgba(255,255,255,.4)">Valor total dos componentes</span>
+          <span style="font-size:14px;color:rgba(255,255,255,.35);text-decoration:line-through">R$ 441</span>
+        </div>
+
+        <!-- 4. Preço -->
+        <div class="offer-price-row" style="margin-bottom:16px">
+          <div><p class="price-main">R$ 97</p></div>
           <p class="price-note">pagamento único · Pix ou cartão<br>ou 12× de R$ 10,03 · acesso imediato</p>
         </div>
+
+        <!-- 5. Escassez -->
         <div class="offer-urgency" style="align-items:flex-start;margin-bottom:20px">
           <span style="flex-shrink:0;margin-top:1px">⏳</span>
           <span><strong style="color:var(--terra)">Vagas limitadas para a sessão:</strong> a equipe da Table atende no máximo 30 pessoas por semana. Quando as vagas fecham, o próximo horário disponível fica para a semana seguinte.</span>
         </div>
+
+        <!-- 6. CTA -->
         <button class="btn-offer" onclick="goOffer()">Quero começar pelo Protocolo Raiz →</button>
+
+        <!-- 7. Garantia — único elemento pós-CTA -->
         <p class="offer-guarantee" style="margin-top:12px">🔒 Garantia de 7 dias · 100% do valor de volta se não fizer sentido</p>
-        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:14px 16px;margin-top:16px;font-size:12px;color:rgba(255,255,255,.45);line-height:1.65">
-          <strong style="color:var(--terra)">Sobre a sessão:</strong> garantida na compra. 45 min por videochamada com uma nutricionista comportamental da Table. Nossa equipe entra em contato pelo seu WhatsApp em até 48h para agendar no melhor horário para você.
-        </div>
       </div>
     </div>
   </div>
@@ -624,6 +654,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
     <div class="quiz-faq-item" onclick="this.classList.toggle('open')">
       <div class="quiz-faq-q">Em quanto tempo recebo o acesso? <span class="quiz-faq-arrow">+</span></div>
       <p class="quiz-faq-a">Imediatamente após a confirmação do pagamento. Você recebe o acesso ao material e o link para agendar sua sessão no horário que melhor funcionar para você.</p>
+    </div>
+    <div class="quiz-faq-item" onclick="this.classList.toggle('open')">
+      <div class="quiz-faq-q">Como funciona a sessão individual? <span class="quiz-faq-arrow">+</span></div>
+      <p class="quiz-faq-a">45 minutos por videochamada com uma nutricionista comportamental da equipe da Table. Após a compra, nossa equipe entra em contato pelo seu WhatsApp em até 48h para agendar no horário mais conveniente para você.</p>
     </div>
     <div class="quiz-faq-item" onclick="this.classList.toggle('open')">
       <div class="quiz-faq-q">E se não funcionar para mim? <span class="quiz-faq-arrow">+</span></div>
