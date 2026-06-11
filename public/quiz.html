@@ -388,7 +388,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
       <p class="vsl-evelyn-name"><strong>Evelyn Liu</strong> · Nutricionista comportamental · Fundadora da Table</p>
     </div>
     <div style="text-align:center;margin-top:28px">
-      <a href="#offer-anchor" onclick="event.preventDefault();document.getElementById('offer-anchor').scrollIntoView({behavior:'smooth'})" class="btn-offer" style="display:inline-block;width:auto;padding:16px 36px;font-size:14px;border-radius:4px;text-decoration:none">Quero começar pelo Protocolo Raiz →</a>
+      <a id="video-cta-btn" href="#offer-anchor" onclick="event.preventDefault();document.getElementById('offer-anchor').scrollIntoView({behavior:'smooth'})" class="btn-offer" style="display:inline-block;width:auto;padding:16px 36px;font-size:14px;border-radius:4px;text-decoration:none">Quero começar pelo Protocolo Raiz →</a>
     </div>
   </div>
 
@@ -1170,11 +1170,12 @@ function showResult(){
   // 4. CTA principal com perfil interpolado ("Começar pelo meu perfil →")
   // Extrai só o tipo sem o artigo: "Comedora Emocional", "Modo Sobrevivência", etc.
   const profileShort = profileNameClean.replace(/^(A |O )/, '');
+  const ctaLabel = `Começar pelo meu perfil ${profileShort} →`;
   document.querySelectorAll('.btn-offer').forEach(btn => {
-    if(btn.getAttribute('onclick') === 'goOffer()'){
-      btn.textContent = `Começar pelo meu perfil ${profileShort} →`;
-    }
+    if(btn.getAttribute('onclick') === 'goOffer()') btn.textContent = ctaLabel;
   });
+  const videoCta = document.getElementById('video-cta-btn');
+  if(videoCta) videoCta.textContent = ctaLabel;
 
   // 4. Linha personalizada de qualificação antes da oferta
   const qualLabels = {
