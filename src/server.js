@@ -697,7 +697,8 @@ async function forwardToSDR(body) {
     historico:              historico || '',
     'Perguntas e respostas': perguntasRespostas,
     source:                 'quiz_evelynliu',
-    lead_event_id:          body.lead_event_id || null, // join key para URL do dossiê (?lid=)
+    lead_event_id:          body.lead_event_id || null,
+    tier:                   body.qualification?.tier || body.tier || null, // hot/warm/cold para parágrafo de tier no dossiê
   };
 
   console.log('[SDR-forward] URL:', SDR_URL);
