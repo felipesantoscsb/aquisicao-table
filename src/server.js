@@ -9,7 +9,7 @@ const Redis = require('ioredis');
 let _redis;
 function getRedis() {
   if (!_redis) {
-    _redis = new Redis(process.env.REDIS_URL, {
+    _redis = new Redis(process.env.REDIS_URL_TRACKING, {
       maxRetriesPerRequest: 1,
       enableOfflineQueue: false,
       lazyConnect: true,
