@@ -870,7 +870,7 @@ async function sha256Email(str){
 // Checkout ignora params desconhecidos — sem risco de quebra
 const TICTO_PARAMS = {
   email: 'email',       // confirmado — pré-preenche email
-  phone: 'telefone',    // nome do campo no payload Ticto (body.telefone)
+  phone: 'phone',       // confirmado — aparece em query_params.phone no payload
   name:  'name',        // confirmado — pré-preenche nome
   src:   'src'          // TODO: confirmar — deve retornar no webhook como join key
 };

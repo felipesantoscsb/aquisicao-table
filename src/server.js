@@ -164,11 +164,31 @@ app.post('/api/capi', async (req, res) => {
   } = req.body;
 
   // SDR forward só no CompleteRegistration: único momento com perfil+respostas+qualificação completos.
-  // Lead (submitCapture) não tem esses dados ainda — disparo lá causaria duplicata sem contexto.
   if ((req.body.event_name || 'Lead') === 'CompleteRegistration') {
     forwardToSDR(req.body).catch(err =>
       console.error('[SDR-forward] Erro ao encaminhar para o SDR:', err.message)
     );
+    // Fase 2 — persiste lead no Redis para enriquecimento do Purchase CAPI
+    // Chave: lead_event_id (join key que vai em tracking.src do checkout Ticto)
+    if (req.body.lead_event_id) {
+      const leadRecord = {
+        lead_event_id: req.body.lead_event_id,
+        email:         req.body.email    || null,
+        phone:         req.body.whats    || null, // E.164 sem DDI: phoneForHash aplicado no frontend
+        external_id:   req.body.external_id || null,
+        fbc:           req.body.fbc      || null,
+        fbp:           req.body.fbp      || null,
+        perfil:        req.body.perfil   || null,
+        tier:          req.body.tier     || null,
+        saved_at:      new Date().toISOString(),
+      };
+      getRedis().set(
+        `lead:${req.body.lead_event_id}`,
+        JSON.stringify(leadRecord),
+        'EX', 60 * 60 * 24 * 90  // 90 dias
+      ).catch(e => console.error('[Lead-persist] Redis write error:', e.message));
+      console.log(`[Lead-persist] Lead salvo: ${req.body.lead_event_id} / ${req.body.email}`);
+    }
   }
 
   // Credenciais via variáveis de ambiente
@@ -894,10 +914,9 @@ app.post('/api/webhooks/ticto', async (req, res) => {
   const fbp    = body.query_params?.fbp    || null;
   const fbc    = body.query_params?.fbc    || (fbclid ? `fb.1.${Date.now()}.${fbclid}` : null);
 
-  // tracking.src: "Não Informado" quando o param não chega — tratar como null
+  // tracking.src: join key = _leadEventId do quiz. "Não Informado" = compra fora do funil.
   const rawSrc    = body.tracking?.src;
   const srcLeadId = (rawSrc && rawSrc !== 'Não Informado') ? rawSrc : null;
-  // TODO: confirmar com Ticto se query params customizados (src=_leadEventId) chegam neste campo
 
   const productName = body.item?.product_name || null;
   const offerId     = body.item?.offer_id     || null;
@@ -931,34 +950,61 @@ app.post('/api/webhooks/ticto', async (req, res) => {
   console.log(`[Ticto] src_lead_id: ${srcLeadId} | fbc: ${fbc} | email: ${customerEmail}`);
 
   if (status === 'authorized') {
-    // TODO: lookup do lead no Redis/DB por src_lead_id → email → phone (Fase 2 / Phase 3.3)
-    // TODO: enriquecer user_data com fbp/fbc/external_id do lead original
+    // Fase 2 — lookup do lead no Redis para enriquecimento do Purchase
+    // Ordem: src_lead_id (join key exato) → email → sem match
+    let leadData = null;
+    if (srcLeadId) {
+      try {
+        const raw = await getRedis().get(`lead:${srcLeadId}`);
+        if (raw) { leadData = JSON.parse(raw); console.log(`[Ticto] Lead enriquecido via src: ${srcLeadId}`); }
+      } catch {}
+    }
+    if (!leadData && customerEmail) {
+      // Fallback: scan por email (O(n) — só executa se src falhar)
+      try {
+        const keys = await getRedis().keys('lead:*');
+        for (const k of keys) {
+          const raw = await getRedis().get(k);
+          if (!raw) continue;
+          const l = JSON.parse(raw);
+          if (l.email === customerEmail) { leadData = l; console.log(`[Ticto] Lead enriquecido via email: ${customerEmail}`); break; }
+        }
+      } catch {}
+    }
 
-    // Monta preview do payload CAPI Purchase (para validação antes do go-live)
+    // fbc/fbp: preferir dado do lead (capturado no quiz, mais confiável) sobre o do checkout
+    const enrichedFbc        = leadData?.fbc || fbc || null;
+    const enrichedFbp        = leadData?.fbp || fbp || body.query_params?.fbp || null;
+    const enrichedExternalId = leadData?.external_id || sha256(customerEmail);
+    const enrichedPerfil     = leadData?.perfil || null;
+    const enrichedTier       = leadData?.tier   || null;
+
+    // Monta payload CAPI Purchase
     const capiPreview = {
       event_name:       'Purchase',
       event_time:       Math.floor(Date.now() / 1000),
       action_source:    'website',
-      event_id:         transactionId, // estável para retries
+      event_id:         transactionId,
       event_source_url: 'https://www.evelynliu.com.br/raiz',
       user_data: {
-        em:  sha256(customerEmail),
-        ph:  sha256(normalizePhone(customerPhone || '')),
-        // TODO: adicionar external_id, fbc, fbp do lead enriquecido após Fase 2
-        fbc:  fbc || undefined,
-        fbp:  fbp || undefined,
+        em:          sha256(customerEmail),
+        ph:          sha256(normalizePhone(customerPhone || '')),
+        external_id: enrichedExternalId,
+        fbc:         enrichedFbc  || undefined,
+        fbp:         enrichedFbp  || undefined,
         client_ip_address: getClientIp(req),
         client_user_agent: req.headers['user-agent'] || null,
       },
       custom_data: {
         value,
+        perfil: enrichedPerfil || undefined,
+        tier:   enrichedTier   || undefined,
         currency:     'BRL',
         content_name: productName,
         content_ids:  offerId ? [offerId] : undefined,
-        // TODO: adicionar perfil/tier após enriquecimento com dados do lead
       },
     };
-    // Remove nulls do user_data
+    // Remove nulls/undefined do user_data
     Object.keys(capiPreview.user_data).forEach(k => {
       if (!capiPreview.user_data[k]) delete capiPreview.user_data[k];
     });
@@ -966,9 +1012,24 @@ app.post('/api/webhooks/ticto', async (req, res) => {
     const PURCHASE_ENABLED = process.env.PURCHASE_CAPI_ENABLED === 'true';
 
     if (PURCHASE_ENABLED) {
-      // TODO (Fase 4 — só ativar com autorização explícita):
-      // await sendCapiEvent({ eventName:'Purchase', ... });
-      console.warn('[Ticto] PURCHASE_CAPI_ENABLED=true mas envio ainda não implementado. Ative na Fase 4.');
+      // Fase 4 — envio real à Meta (só ativar com autorização explícita)
+      const PIXEL_ID   = process.env.META_PIXEL_ID;
+      const CAPI_TOKEN = process.env.META_CAPI_TOKEN;
+      if (PIXEL_ID && CAPI_TOKEN) {
+        const metaPayload = { data: [capiPreview] };
+        const TEST_CODE = process.env.META_TEST_EVENT_CODE;
+        if (TEST_CODE) metaPayload.test_event_code = TEST_CODE;
+        fetch(`https://graph.facebook.com/v21.0/${PIXEL_ID}/events?access_token=${CAPI_TOKEN}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(metaPayload),
+        })
+        .then(r => r.json())
+        .then(j => console.log('[Ticto] Purchase CAPI enviado. fbtrace_id:', j.fbtrace_id))
+        .catch(e => console.error('[Ticto] Purchase CAPI erro:', e.message));
+      }
+      // Atualiza registro com capi_sent_at
+      await redisPurchaseSet(transactionId, { ...record, capi_sent_at: new Date().toISOString(), capi_preview: capiPreview });
     } else {
       // MODO SOMBRA: loga preview, não envia à Meta
       console.log('[Ticto] SOMBRA — Purchase CAPI preview:', JSON.stringify(capiPreview, null, 2));
