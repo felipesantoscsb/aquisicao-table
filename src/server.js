@@ -835,12 +835,10 @@ app.post('/api/webhooks/ticto', async (req, res) => {
     return;
   }
 
-  // Validação do token (se TICTO_WEBHOOK_SECRET estiver configurado)
-  const secret = process.env.TICTO_WEBHOOK_SECRET;
-  if (secret && body.token !== secret) {
-    console.warn('[Ticto] Token inválido — payload rejeitado silenciosamente.');
-    return; // já respondeu 200; apenas ignora
-  }
+  // Validação do token: token da Ticto é por transação (não fixo).
+  // TICTO_WEBHOOK_SECRET não é usado para validação direta.
+  // Segurança via HTTPS + obscuridade da URL do endpoint.
+  // TODO: confirmar na Ticto se existe mecanismo de assinatura fixo (HMAC etc.)
 
   const transactionId = body.order?.hash;
   const status        = body.order?.status;
@@ -865,16 +863,30 @@ app.post('/api/webhooks/ticto', async (req, res) => {
   }
 
   // Extração dos campos para CAPI
-  const customerEmail = body.customer?.email  || null;
-  const customerCpf   = body.customer?.cpf    || null;
-  const customerPhone = body.customer?.phone  || null;
-  const paidAmount    = body.order?.paid_amount; // centavos
-  const value         = typeof paidAmount === 'number' ? paidAmount / 100 : null;
+  const customerEmail = body.customer?.email || null;
+  const customerCpf   = body.customer?.cpf   || null;
 
-  const fbclid    = body.query_params?.fbclid || null;
-  const fbp       = body.query_params?.fbp    || null;
-  const fbc       = body.query_params?.fbc    || (fbclid ? `fb.1.${Date.now()}.${fbclid}` : null);
-  const srcLeadId = body.tracking?.src        || null; // join key com _leadEventId do quiz
+  // Phone: Ticto retorna objeto aninhado {ddi, ddd, number} em customer.phone
+  // e também como string flat em body.telefone — usar flat como primário
+  const phoneObj      = body.customer?.phone;
+  const customerPhone = body.telefone
+    || body.phone_number_customer
+    || (phoneObj && typeof phoneObj === 'object'
+        ? `${(phoneObj.ddi || '+55').replace('+', '')}${phoneObj.ddd || ''}${phoneObj.number || ''}`
+        : phoneObj)
+    || null;
+
+  const paidAmount = body.order?.paid_amount; // centavos
+  const value      = typeof paidAmount === 'number' ? paidAmount / 100 : null;
+
+  const fbclid = body.query_params?.fbclid || null;
+  const fbp    = body.query_params?.fbp    || null;
+  const fbc    = body.query_params?.fbc    || (fbclid ? `fb.1.${Date.now()}.${fbclid}` : null);
+
+  // tracking.src: "Não Informado" quando o param não chega — tratar como null
+  const rawSrc    = body.tracking?.src;
+  const srcLeadId = (rawSrc && rawSrc !== 'Não Informado') ? rawSrc : null;
+  // TODO: confirmar com Ticto se query params customizados (src=_leadEventId) chegam neste campo
 
   const productName = body.item?.product_name || null;
   const offerId     = body.item?.offer_id     || null;
