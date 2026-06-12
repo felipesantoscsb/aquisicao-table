@@ -27,8 +27,16 @@ const PORT = process.env.PORT || 3000;
 // ─── Middlewares ───────────────────────────────────────────────────────────────
 
 
-// Lê o body das requisições JSON
-app.use(express.json());
+// Body parsers — json primário, text como fallback para webhooks sem Content-Type correto
+app.use(express.json({ strict: false }));
+app.use(express.text({ type: '*/*' }));
+app.use((req, res, next) => {
+  if (typeof req.body === 'string') {
+    try { req.body = JSON.parse(req.body); } catch { req.body = {}; }
+  }
+  if (req.body === undefined) req.body = {};
+  next();
+});
 
 // CORS — permite que o quiz em evelynliu.com.br chame este endpoint
 app.use((req, res, next) => {
