@@ -767,6 +767,224 @@ app.post('/api/capi/initiate-checkout', async (req, res) => {
   }).catch(() => {});
 });
 
+// ─── Ticto Webhook ───────────────────────────────────────────────────────────
+//
+// Estrutura esperada (payload v2.0 da Ticto):
+//   order.hash          → event_id para dedup (estável em retries)
+//   order.paid_amount   → valor em centavos
+//   order.status        → authorized | refunded | chargeback | ...
+//   customer.email      → e-mail do comprador
+//   customer.cpf        → CPF (usar como external_id hasheado)
+//   customer.phone      → telefone
+//   query_params.fbclid → fbclid capturado no checkout
+//   query_params.fbp    → _fbp
+//   query_params.fbc    → _fbc
+//   tracking.src        → join key que passamos no redirect (= _leadEventId)
+//   tracking.utm_*      → UTMs
+//   item.product_name   → nome do produto
+//   item.offer_id       → ID da oferta
+//
+// Env vars:
+//   TICTO_WEBHOOK_SECRET  → token de validação (opcional; se ausente, aceita tudo)
+//   PURCHASE_CAPI_ENABLED → 'true' para ativar envio à Meta (padrão: false / SOMBRA)
+
+// Helpers Redis para persistência leve de eventos Ticto
+async function redisPurchaseSet(hash, data) {
+  try {
+    const redis = getRedis();
+    await redis.set(`ticto:purchase:${hash}`, JSON.stringify(data), 'EX', 60 * 60 * 24 * 90); // 90 dias
+  } catch (e) {
+    console.error('[Ticto] Redis write error:', e.message);
+  }
+}
+async function redisPurchaseGet(hash) {
+  try {
+    const raw = await getRedis().get(`ticto:purchase:${hash}`);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+async function redisIncrStats(key) {
+  try { await getRedis().incr(`ticto:stats:${key}`); } catch {}
+}
+async function redisSetLastEvent(ts) {
+  try { await getRedis().set('ticto:stats:last_event_at', ts); } catch {}
+}
+async function redisGetStats() {
+  try {
+    const redis = getRedis();
+    const [total, lastAt, totalFbc, totalFbcPresent] = await Promise.all([
+      redis.get('ticto:stats:total'),
+      redis.get('ticto:stats:last_event_at'),
+      redis.get('ticto:stats:authorized'),
+      redis.get('ticto:stats:fbc_present'),
+    ]);
+    return { total: Number(total)||0, lastAt, authorized: Number(totalFbc)||0, fbc_present: Number(totalFbcPresent)||0 };
+  } catch { return {}; }
+}
+
+app.post('/api/webhooks/ticto', async (req, res) => {
+  // Responde 200 imediatamente — Ticto exige resposta rápida (inclusive no ping de validação)
+  res.sendStatus(200);
+
+  const body = req.body || {};
+  console.log('[Ticto] Payload recebido:', JSON.stringify(body, null, 2));
+
+  // Ping de validação do cadastro: body vazio ou sem order
+  if (!body.order) {
+    console.log('[Ticto] Ping de validação — sem order, ignorado.');
+    return;
+  }
+
+  // Validação do token (se TICTO_WEBHOOK_SECRET estiver configurado)
+  const secret = process.env.TICTO_WEBHOOK_SECRET;
+  if (secret && body.token !== secret) {
+    console.warn('[Ticto] Token inválido — payload rejeitado silenciosamente.');
+    return; // já respondeu 200; apenas ignora
+  }
+
+  const transactionId = body.order?.hash;
+  const status        = body.order?.status;
+
+  if (!transactionId) {
+    console.warn('[Ticto] order.hash ausente — não é possível garantir idempotência. Ignorado.');
+    return;
+  }
+
+  // Filtro de status relevantes
+  const RELEVANT = ['authorized', 'refunded', 'chargeback'];
+  if (!RELEVANT.includes(status)) {
+    console.log(`[Ticto] Status "${status}" não relevante — ignorado.`);
+    return;
+  }
+
+  // Idempotência: rejeita duplicatas do mesmo hash + status
+  const existing = await redisPurchaseGet(transactionId);
+  if (existing && existing.status === status) {
+    console.log(`[Ticto] Duplicata detectada: ${transactionId} / ${status} — no-op.`);
+    return;
+  }
+
+  // Extração dos campos para CAPI
+  const customerEmail = body.customer?.email  || null;
+  const customerCpf   = body.customer?.cpf    || null;
+  const customerPhone = body.customer?.phone  || null;
+  const paidAmount    = body.order?.paid_amount; // centavos
+  const value         = typeof paidAmount === 'number' ? paidAmount / 100 : null;
+
+  const fbclid    = body.query_params?.fbclid || null;
+  const fbp       = body.query_params?.fbp    || null;
+  const fbc       = body.query_params?.fbc    || (fbclid ? `fb.1.${Date.now()}.${fbclid}` : null);
+  const srcLeadId = body.tracking?.src        || null; // join key com _leadEventId do quiz
+
+  const productName = body.item?.product_name || null;
+  const offerId     = body.item?.offer_id     || null;
+
+  // Persiste o evento (inclui raw payload para debug e auditing)
+  const record = {
+    transaction_id: transactionId,
+    status,
+    value,
+    email: customerEmail,
+    phone: customerPhone,
+    src_lead_id: srcLeadId,
+    fbc,
+    fbp,
+    fbclid,
+    product_name: productName,
+    offer_id: offerId,
+    capi_sent_at: null,
+    raw_payload: body,
+    created_at: new Date().toISOString(),
+  };
+  await redisPurchaseSet(transactionId, record);
+
+  // Atualiza estatísticas
+  await redisIncrStats('total');
+  await redisSetLastEvent(new Date().toISOString());
+  if (status === 'authorized') await redisIncrStats('authorized');
+  if (fbc) await redisIncrStats('fbc_present');
+
+  console.log(`[Ticto] Evento registrado: ${transactionId} / ${status} / R$ ${value}`);
+  console.log(`[Ticto] src_lead_id: ${srcLeadId} | fbc: ${fbc} | email: ${customerEmail}`);
+
+  if (status === 'authorized') {
+    // TODO: lookup do lead no Redis/DB por src_lead_id → email → phone (Fase 2 / Phase 3.3)
+    // TODO: enriquecer user_data com fbp/fbc/external_id do lead original
+
+    // Monta preview do payload CAPI Purchase (para validação antes do go-live)
+    const capiPreview = {
+      event_name:       'Purchase',
+      event_time:       Math.floor(Date.now() / 1000),
+      action_source:    'website',
+      event_id:         transactionId, // estável para retries
+      event_source_url: 'https://www.evelynliu.com.br/raiz',
+      user_data: {
+        em:  sha256(customerEmail),
+        ph:  sha256(normalizePhone(customerPhone || '')),
+        // TODO: adicionar external_id, fbc, fbp do lead enriquecido após Fase 2
+        fbc:  fbc || undefined,
+        fbp:  fbp || undefined,
+        client_ip_address: getClientIp(req),
+        client_user_agent: req.headers['user-agent'] || null,
+      },
+      custom_data: {
+        value,
+        currency:     'BRL',
+        content_name: productName,
+        content_ids:  offerId ? [offerId] : undefined,
+        // TODO: adicionar perfil/tier após enriquecimento com dados do lead
+      },
+    };
+    // Remove nulls do user_data
+    Object.keys(capiPreview.user_data).forEach(k => {
+      if (!capiPreview.user_data[k]) delete capiPreview.user_data[k];
+    });
+
+    const PURCHASE_ENABLED = process.env.PURCHASE_CAPI_ENABLED === 'true';
+
+    if (PURCHASE_ENABLED) {
+      // TODO (Fase 4 — só ativar com autorização explícita):
+      // await sendCapiEvent({ eventName:'Purchase', ... });
+      console.warn('[Ticto] PURCHASE_CAPI_ENABLED=true mas envio ainda não implementado. Ative na Fase 4.');
+    } else {
+      // MODO SOMBRA: loga preview, não envia à Meta
+      console.log('[Ticto] SOMBRA — Purchase CAPI preview:', JSON.stringify(capiPreview, null, 2));
+      // Atualiza registro com preview para inspeção via /health
+      const updated = { ...record, capi_preview: capiPreview };
+      await redisPurchaseSet(transactionId, updated);
+    }
+  }
+
+  if (status === 'refunded' || status === 'chargeback') {
+    // TODO: reverter/marcar na tabela de leads; não enviar nada à Meta por ora
+    console.log(`[Ticto] ${status.toUpperCase()} registrado para ${transactionId} — nenhuma ação na Meta.`);
+  }
+});
+
+// ─── Ticto Health ─────────────────────────────────────────────────────────────
+// Autenticado por HEALTH_TOKEN (env var simples)
+
+app.get('/api/webhooks/ticto/health', async (req, res) => {
+  const token = process.env.HEALTH_TOKEN;
+  if (token && req.headers['x-health-token'] !== token) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const stats = await redisGetStats();
+  const fbcRate = stats.authorized > 0
+    ? Math.round((stats.fbc_present / stats.authorized) * 100) + '%'
+    : 'n/a';
+
+  return res.json({
+    status: 'ok',
+    purchase_capi_enabled: process.env.PURCHASE_CAPI_ENABLED === 'true',
+    total_events_received: stats.total,
+    authorized_count:      stats.authorized,
+    last_event_at:         stats.lastAt || null,
+    fbc_match_rate:        fbcRate,
+  });
+});
+
 // ─── Start ────────────────────────────────────────────────────────────────────
 
 app.listen(PORT, () => {
