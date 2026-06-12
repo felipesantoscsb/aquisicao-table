@@ -242,11 +242,8 @@ app.post('/api/capi', async (req, res) => {
     user_data,
   };
   // custom_data por tipo de evento
+  // LGPD / Meta policy: perfil e tier são dados psicológicos sensíveis — nunca enviar à Meta
   if (content_name) event.custom_data = { content_name };
-  if (resolvedEventName === 'CompleteRegistration') {
-    event.custom_data = { ...(event.custom_data || {}), perfil, tier };
-  }
-  // Lead não carrega value/currency
 
   // Remove event_id se não veio (evita enviar null)
   if (!event.event_id) delete event.event_id;
@@ -997,8 +994,7 @@ app.post('/api/webhooks/ticto', async (req, res) => {
       },
       custom_data: {
         value,
-        perfil: enrichedPerfil || undefined,
-        tier:   enrichedTier   || undefined,
+        // perfil e tier: dados psicológicos sensíveis — ficam no Redis/Make, não vão à Meta
         currency:     'BRL',
         content_name: productName,
         content_ids:  offerId ? [offerId] : undefined,
