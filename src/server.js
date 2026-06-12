@@ -155,10 +155,13 @@ app.post('/api/capi', async (req, res) => {
     event_source_url,
   } = req.body;
 
-  // Encaminha lead ao SDR de forma assíncrona (não bloqueia resposta ao usuário)
-  forwardToSDR(req.body).catch(err =>
-    console.error('[SDR-forward] Erro ao encaminhar para o SDR:', err.message)
-  );
+  // SDR forward só no CompleteRegistration: único momento com perfil+respostas+qualificação completos.
+  // Lead (submitCapture) não tem esses dados ainda — disparo lá causaria duplicata sem contexto.
+  if ((req.body.event_name || 'Lead') === 'CompleteRegistration') {
+    forwardToSDR(req.body).catch(err =>
+      console.error('[SDR-forward] Erro ao encaminhar para o SDR:', err.message)
+    );
+  }
 
   // Credenciais via variáveis de ambiente
   const PIXEL_ID    = process.env.META_PIXEL_ID;
