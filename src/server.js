@@ -173,8 +173,9 @@ app.post('/api/capi', async (req, res) => {
     if (req.body.lead_event_id) {
       const leadRecord = {
         lead_event_id: req.body.lead_event_id,
+        nome:          req.body.nome     || null, // para first_name no /api/lead-context
         email:         req.body.email    || null,
-        phone:         req.body.whats    || null, // E.164 sem DDI: phoneForHash aplicado no frontend
+        phone:         req.body.whats    || null,
         external_id:   req.body.external_id || null,
         fbc:           req.body.fbc      || null,
         fbp:           req.body.fbp      || null,
@@ -678,6 +679,7 @@ async function forwardToSDR(body) {
     historico:              historico || '',
     'Perguntas e respostas': perguntasRespostas,
     source:                 'quiz_evelynliu',
+    lead_event_id:          body.lead_event_id || null, // join key para URL do dossiê (?lid=)
   };
 
   console.log('[SDR-forward] URL:', SDR_URL);
@@ -696,7 +698,7 @@ async function forwardToSDR(body) {
 
 // ─── Helper CAPI genérico ─────────────────────────────────────────────────────
 
-async function sendCapiEvent({ eventName, phone, fbclid, fbc, fbp, em, fn, customData, eventSourceUrl, eventId, req }) {
+async function sendCapiEvent({ eventName, phone, fbclid, fbc, fbp, em, fn, external_id, customData, eventSourceUrl, eventId, req }) {
   const PIXEL_ID   = process.env.META_PIXEL_ID;
   const CAPI_TOKEN = process.env.META_CAPI_TOKEN;
   if (!PIXEL_ID || !CAPI_TOKEN) return;
@@ -704,13 +706,15 @@ async function sendCapiEvent({ eventName, phone, fbclid, fbc, fbp, em, fn, custo
   const user_data = {};
   const phoneHashed = sha256(phone);
   if (phoneHashed) user_data.ph = phoneHashed;
-  const emHashed = sha256(em);                 // hash SHA-256 (lowercase+trim)
+  const emHashed = sha256(em);
   if (emHashed) user_data.em = emHashed;
-  const fnHashed = sha256(fn);                 // hash SHA-256 (lowercase+trim)
+  const fnHashed = sha256(fn);
   if (fnHashed) user_data.fn = fnHashed;
-  if (fbclid)      user_data.fbc = fbclid;     // compat: dossie-view envia fbclid
-  if (fbc)         user_data.fbc = fbc;        // valor raw do cookie _fbc (sem hash)
-  if (fbp)         user_data.fbp = fbp;        // valor raw do cookie _fbp (sem hash)
+  // external_id: já vem pré-hasheado do Redis (sha256 do email)
+  if (external_id) user_data.external_id = external_id;
+  if (fbclid)      user_data.fbc = fbclid;
+  if (fbc)         user_data.fbc = fbc;
+  if (fbp)         user_data.fbp = fbp;
   // ip + user_agent quando a requisição original está disponível (melhora EMQ)
   if (req) {
     const ip = getClientIp(req);
@@ -747,21 +751,66 @@ async function sendCapiEvent({ eventName, phone, fbclid, fbc, fbp, em, fn, custo
   }
 }
 
+// ─── Lead Context (dossiê bootstrap) ─────────────────────────────────────────
+// Retorna hashes e first_name para hidratação do fbq('init') no dossiê.
+// Não expõe PII — apenas campos hasheados + primeiro nome em texto puro.
+
+app.get('/api/lead-context', async (req, res) => {
+  const lid = req.query.lid;
+  if (!lid) return res.status(400).json({ error: 'lid obrigatório' });
+  try {
+    const raw = await getRedis().get(`lead:${lid}`);
+    if (!raw) return res.status(404).json({});
+    const lead = JSON.parse(raw);
+    const phoneNorm = normalizePhone(lead.phone || '');
+    return res.json({
+      em_hash:     sha256(lead.email)           || null,
+      ph_hash:     sha256(phoneNorm)            || null,
+      fn_hash:     sha256(firstName(lead.nome)) || null,
+      external_id: lead.external_id || sha256(lead.email) || null,
+      first_name:  firstName(lead.nome)         || null,  // texto puro para interpolação visual
+    });
+  } catch {
+    return res.status(404).json({});
+  }
+});
+
+// Helper: enriquece dados de evento a partir do lid (lookup Redis)
+async function enrichFromLid(lid, base = {}) {
+  if (!lid) return base;
+  try {
+    const raw = await getRedis().get(`lead:${lid}`);
+    if (!raw) return base;
+    const lead = JSON.parse(raw);
+    return {
+      phone:       base.phone       || lead.phone,
+      em:          base.em          || lead.email,
+      fn:          base.fn          || firstName(lead.nome),
+      fbc:         base.fbc         || lead.fbc,
+      fbp:         base.fbp         || lead.fbp,
+      external_id: base.external_id || lead.external_id || sha256(lead.email),
+    };
+  } catch { return base; }
+}
+
 // ─── CAPI Dossiê: DossieView ──────────────────────────────────────────────────
 
 app.post('/api/capi/dossie-view', async (req, res) => {
-  const { phone, fbclid, perfil, event_source_url, event_id } = req.body || {};
-  res.json({ ok: true }); // responde imediatamente
+  const { phone, fbclid, fbc, fbp, perfil, event_source_url, event_id, lid } = req.body || {};
+  res.json({ ok: true });
+
+  const enriched = await enrichFromLid(lid, { phone, fbc, fbp });
 
   sendCapiEvent({
     eventName: 'DossieView',
-    phone,
+    phone:       enriched.phone,
     fbclid,
-    customData: {
-      content_name: 'dossie-view',
-      currency: 'BRL',
-      value: 97,
-    },
+    fbc:         enriched.fbc,
+    fbp:         enriched.fbp,
+    em:          enriched.em,
+    fn:          enriched.fn,
+    external_id: enriched.external_id,
+    customData: { content_name: 'dossie-view', currency: 'BRL', value: 97 },
     eventSourceUrl: event_source_url,
     eventId: event_id,
     req,
@@ -771,16 +820,19 @@ app.post('/api/capi/dossie-view', async (req, res) => {
 // ─── CAPI Dossiê: InitiateCheckout ────────────────────────────────────────────
 
 app.post('/api/capi/initiate-checkout', async (req, res) => {
-  const { phone, content_name, perfil, event_source_url, event_id, em, fbp, fbc, fn } = req.body || {};
+  const { phone, content_name, perfil, event_source_url, event_id, em, fbp, fbc, fn, lid } = req.body || {};
   res.json({ ok: true });
+
+  const enriched = await enrichFromLid(lid, { phone, em, fbc, fbp, fn });
 
   sendCapiEvent({
     eventName: 'InitiateCheckout',
-    phone,
-    em,
-    fbp,
-    fbc,
-    fn,
+    phone:       enriched.phone,
+    em:          enriched.em,
+    fbp:         enriched.fbp,
+    fbc:         enriched.fbc,
+    fn:          enriched.fn,
+    external_id: enriched.external_id,
     customData: {
       content_name: content_name || 'InitiateCheckout_Dossie',
       currency: 'BRL',
