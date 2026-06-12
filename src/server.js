@@ -843,10 +843,13 @@ app.post('/api/webhooks/ticto', async (req, res) => {
     return;
   }
 
-  // Validação do token: token da Ticto é por transação (não fixo).
-  // TICTO_WEBHOOK_SECRET não é usado para validação direta.
-  // Segurança via HTTPS + obscuridade da URL do endpoint.
-  // TODO: confirmar na Ticto se existe mecanismo de assinatura fixo (HMAC etc.)
+  // Validação do token: token é fixo por integração (confirmado — dois payloads distintos, mesmo token).
+  // Setar TICTO_WEBHOOK_SECRET no Railway com o valor do campo body.token.
+  const secret = process.env.TICTO_WEBHOOK_SECRET;
+  if (secret && body.token !== secret) {
+    console.warn('[Ticto] Token inválido — payload rejeitado.');
+    return; // já respondeu 200; Ticto não reenvia
+  }
 
   const transactionId = body.order?.hash;
   const status        = body.order?.status;
