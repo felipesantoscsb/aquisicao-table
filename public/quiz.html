@@ -74,18 +74,25 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
 #page-intro{background:var(--moss);align-items:center;justify-content:center;padding:56px 24px;text-align:center;position:relative;overflow:hidden}
 #page-intro::before{content:'';position:absolute;top:-100px;right:-100px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.06) 0%,transparent 65%);pointer-events:none}
 #page-intro::after{content:'';position:absolute;bottom:-80px;left:-80px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(185,112,64,.15) 0%,transparent 65%);pointer-events:none}
-.intro-logo{font-family:'Cormorant Garamond',serif;font-size:12px;letter-spacing:.35em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:52px;opacity:0;animation:fadeUp .8s ease .1s forwards}
-.intro-eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--terra);font-weight:500;margin-bottom:20px;opacity:0;animation:fadeUp .8s ease .25s forwards}
-.intro-title{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,7vw,54px);line-height:1.1;color:var(--white);margin-bottom:24px;max-width:560px;opacity:0;animation:fadeUp .8s ease .35s forwards}
-.intro-title em{color:var(--terra);font-style:italic}
-.intro-sub{font-size:16px;line-height:1.75;color:rgba(255,255,255,.6);max-width:440px;margin:0 auto 44px;opacity:0;animation:fadeUp .8s ease .5s forwards}
-.intro-sub strong{color:rgba(255,255,255,.9)}
-.intro-promises{display:flex;flex-direction:column;gap:10px;margin-bottom:44px;max-width:360px;opacity:0;animation:fadeUp .8s ease .62s forwards}
-.promise-item{display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.55)}
-.promise-dot{width:5px;height:5px;border-radius:50%;background:var(--terra);flex-shrink:0}
-.btn-primary{display:inline-block;background:var(--terra);color:var(--white);font-family:'Jost',sans-serif;font-size:15px;font-weight:500;letter-spacing:.06em;padding:17px 48px;border-radius:3px;border:none;cursor:pointer;text-decoration:none;transition:all .25s;opacity:0;animation:fadeUp .8s ease .75s forwards}
-.btn-primary:hover{background:var(--terra-dk);transform:translateY(-2px);box-shadow:0 10px 32px rgba(185,112,64,.4)}
-.intro-fine{margin-top:16px;font-size:12px;color:rgba(255,255,255,.35);opacity:0;animation:fadeUp .8s ease .85s forwards}
+.intro-logo{font-family:'Cormorant Garamond',serif;font-size:12px;letter-spacing:.35em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:44px;opacity:0;animation:fadeUp .8s ease .1s forwards}
+/* Badge com linhas laterais */
+.intro-eyebrow{display:flex;align-items:center;gap:12px;font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.45);font-weight:400;margin-bottom:28px;opacity:0;animation:fadeUp .8s ease .25s forwards}
+.intro-eyebrow::before,.intro-eyebrow::after{content:'';width:32px;height:1px;background:rgba(185,112,64,.35);flex-shrink:0}
+/* Título com hierarquia clara */
+.intro-title{font-family:'Cormorant Garamond',serif;font-size:clamp(30px,6.5vw,50px);line-height:1.18;color:var(--white);margin-bottom:0;max-width:520px;font-weight:500;opacity:0;animation:fadeUp .8s ease .35s forwards}
+.intro-title em{color:var(--terra);font-style:italic;font-size:.91em}
+/* Separador entre título e corpo */
+.intro-divider{width:28px;height:1px;background:rgba(185,112,64,.35);margin:28px auto;opacity:0;animation:fadeUp .8s ease .43s forwards}
+/* Coluna de texto com largura controlada */
+.intro-sub{font-size:15px;line-height:1.8;color:rgba(255,255,255,.58);max-width:380px;margin:0 auto 36px;opacity:0;animation:fadeUp .8s ease .5s forwards}
+.intro-sub strong{color:rgba(255,255,255,.88)}
+.intro-promises{display:flex;flex-direction:column;gap:10px;margin-bottom:40px;max-width:320px;opacity:0;animation:fadeUp .8s ease .62s forwards}
+.promise-item{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.5)}
+.promise-dot{width:4px;height:4px;border-radius:50%;background:var(--terra);flex-shrink:0}
+/* CTA com respiro generoso */
+.btn-primary{display:inline-block;background:var(--terra);color:var(--white);font-family:'Jost',sans-serif;font-size:14px;font-weight:500;letter-spacing:.08em;padding:18px 52px;border-radius:3px;border:none;cursor:pointer;text-decoration:none;transition:background .25s,transform .25s,box-shadow .25s,letter-spacing .25s;opacity:0;animation:fadeUp .8s ease .75s forwards}
+.btn-primary:hover{background:var(--terra-dk);transform:translateY(-2px);box-shadow:0 12px 36px rgba(185,112,64,.45);letter-spacing:.10em}
+.intro-fine{margin-top:18px;font-size:11px;color:rgba(255,255,255,.3);opacity:0;animation:fadeUp .8s ease .85s forwards}
 #page-capture{background:var(--cream);align-items:center;justify-content:center;padding:56px 24px}
 .capture-inner{max-width:460px;width:100%;text-align:center}
 .capture-tag{display:inline-block;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--moss);border:1px solid var(--moss-lt);padding:5px 14px;border-radius:2px;margin-bottom:28px}
@@ -266,6 +273,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
   <p class="intro-logo">Table</p>
   <p class="intro-eyebrow">Mapeamento de raiz · gratuito</p>
   <h1 class="intro-title">Toda relação difícil com a comida<br>tem uma raiz. Existem 4.<br><em>Em 3 minutos, você descobre a sua.</em></h1>
+  <div class="intro-divider"></div>
   <p class="intro-sub">Cada padrão tem uma raiz diferente, e uma solução diferente. Descubra qual está por trás da sua relação com a comida <strong>e o que fazer a partir de agora.</strong></p>
   <div class="intro-promises">
     <div class="promise-item"><div class="promise-dot"></div><span>8 perguntas diretas, sem enrolação</span></div>
