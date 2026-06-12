@@ -153,14 +153,16 @@ app.post('/api/capi', async (req, res) => {
     whats,
     fbc,
     fbp,
-    external_id,     // SHA-256 do email — gerado no browser, não rehashear
+    external_id,       // SHA-256 do email — gerado no browser, não rehashear
     lead_event_id,
     pageview_event_id,
     event_name,
     content_name,
-    perfil,          // para CompleteRegistration custom_data
-    tier,            // idem
+    content_category,  // ViewContent do dossiê envia o perfil aqui
+    perfil,
+    tier,
     event_source_url,
+    lid,               // token opaco do dossiê — permite enriquecimento via Redis
   } = req.body;
 
   // SDR forward só no CompleteRegistration: único momento com perfil+respostas+qualificação completos.
@@ -201,25 +203,37 @@ app.post('/api/capi', async (req, res) => {
     return res.status(500).json({ ok: false, error: 'Credenciais da Meta não configuradas no servidor.' });
   }
 
+  // ── Enriquecimento via lid (dossiê) ─────────────────────────────────────────
+  // Quando o browser não tem email/phone (ex: ViewContent do dossiê),
+  // o servidor faz lookup no Redis usando o lid para montar user_data completo.
+
+  let _email = email, _whats = whats, _nome = nome,
+      _fbc = fbc, _fbp = fbp, _external_id = external_id;
+
+  if (lid && (!email || !whats)) {
+    const enriched = await enrichFromLid(lid, { phone: whats, em: email, fn: firstName(nome), fbc, fbp });
+    _email       = _email       || enriched.em;
+    _whats       = _whats       || enriched.phone;
+    _fbc         = _fbc         || enriched.fbc;
+    _fbp         = _fbp         || enriched.fbp;
+    _external_id = _external_id || enriched.external_id;
+  }
+
   // ── Monta user_data ─────────────────────────────────────────────────────────
 
-  const phoneNormalized = normalizePhone(whats);
+  const phoneNormalized = normalizePhone(_whats);
 
   const user_data = {
-    em: sha256(email),
-    ph: sha256(phoneNormalized),
-    fn: sha256(firstName(nome)),
-    // external_id vem pré-hasheado do browser (SHA-256 do email normalizado)
-    // Se não vier do browser, deriva do hash do email como fallback
-    external_id: external_id || sha256(email),
-
+    em:          sha256(_email),
+    ph:          sha256(phoneNormalized),
+    fn:          sha256(firstName(_nome)),
+    external_id: _external_id || sha256(_email),
     client_ip_address: getClientIp(req),
     client_user_agent: req.headers['user-agent'] || null,
   };
 
-  // fbc e fbp: texto puro, nunca hashear
-  if (fbc) user_data.fbc = fbc;
-  if (fbp) user_data.fbp = fbp;
+  if (_fbc) user_data.fbc = _fbc;
+  if (_fbp) user_data.fbp = _fbp;
 
   // Remove chaves com valor null para não poluir o payload
   Object.keys(user_data).forEach(k => {
@@ -244,7 +258,11 @@ app.post('/api/capi', async (req, res) => {
   };
   // custom_data por tipo de evento
   // LGPD / Meta policy: perfil e tier são dados psicológicos sensíveis — nunca enviar à Meta
-  if (content_name) event.custom_data = { content_name };
+  if (content_name || content_category) {
+    event.custom_data = {};
+    if (content_name)     event.custom_data.content_name     = content_name;
+    if (content_category) event.custom_data.content_category = content_category;
+  }
 
   // Remove event_id se não veio (evita enviar null)
   if (!event.event_id) delete event.event_id;
@@ -796,25 +814,11 @@ async function enrichFromLid(lid, base = {}) {
 // ─── CAPI Dossiê: DossieView ──────────────────────────────────────────────────
 
 app.post('/api/capi/dossie-view', async (req, res) => {
-  const { phone, fbclid, fbc, fbp, perfil, event_source_url, event_id, lid } = req.body || {};
+  // DossieView: telemetria interna apenas — não repassa à Meta.
+  // ViewContent nativo (2.1) já vai à Meta com EMQ completo via /api/capi.
+  // Decisão registrada em CONTRACT.md.
+  console.log('[DossieView] Telemetria interna:', req.body?.event_id, '| perfil:', req.body?.perfil, '| lid:', req.body?.lid);
   res.json({ ok: true });
-
-  const enriched = await enrichFromLid(lid, { phone, fbc, fbp });
-
-  sendCapiEvent({
-    eventName: 'DossieView',
-    phone:       enriched.phone,
-    fbclid,
-    fbc:         enriched.fbc,
-    fbp:         enriched.fbp,
-    em:          enriched.em,
-    fn:          enriched.fn,
-    external_id: enriched.external_id,
-    customData: { content_name: 'dossie-view', currency: 'BRL', value: 97 },
-    eventSourceUrl: event_source_url,
-    eventId: event_id,
-    req,
-  }).catch(() => {});
 });
 
 // ─── CAPI Dossiê: InitiateCheckout ────────────────────────────────────────────
