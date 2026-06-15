@@ -170,28 +170,29 @@ app.post('/api/capi', async (req, res) => {
     forwardToSDR(req.body).catch(err =>
       console.error('[SDR-forward] Erro ao encaminhar para o SDR:', err.message)
     );
-    // Fase 2 — persiste lead no Redis para enriquecimento do Purchase CAPI
-    // Chave: lead_event_id (join key que vai em tracking.src do checkout Ticto)
-    if (req.body.lead_event_id) {
-      const leadRecord = {
-        lead_event_id: req.body.lead_event_id,
-        nome:          req.body.nome     || null, // para first_name no /api/lead-context
-        email:         req.body.email    || null,
-        phone:         req.body.whats    || null,
-        external_id:   req.body.external_id || null,
-        fbc:           req.body.fbc      || null,
-        fbp:           req.body.fbp      || null,
-        perfil:        req.body.perfil   || null,
-        tier:          req.body.tier     || null,
-        saved_at:      new Date().toISOString(),
-      };
-      getRedis().set(
-        `lead:${req.body.lead_event_id}`,
-        JSON.stringify(leadRecord),
-        'EX', 60 * 60 * 24 * 90  // 90 dias
-      ).catch(e => console.error('[Lead-persist] Redis write error:', e.message));
-      console.log(`[Lead-persist] Lead salvo: ${req.body.lead_event_id} / ${req.body.email}`);
-    }
+  }
+
+  // Fase 2 — persiste lead no Redis para enriquecimento do Purchase CAPI.
+  // Gravado no evento Lead: aqui req.body.lead_event_id === _leadEventId do quiz,
+  // exatamente o valor enviado em tracking.src do checkout Ticto (join key correto).
+  // Bloco ADITIVO e ISOLADO: não toca o envio do Lead à Meta (escrita fire-and-forget).
+  if ((req.body.event_name || 'Lead') === 'Lead' && req.body.lead_event_id) {
+    const leadRecord = {
+      lead_event_id: req.body.lead_event_id,
+      nome:          req.body.nome        || null, // para first_name no /api/lead-context
+      email:         req.body.email       || null,
+      phone:         req.body.whats       || null,
+      external_id:   req.body.external_id || null,
+      fbc:           req.body.fbc         || null,
+      fbp:           req.body.fbp         || null,
+      saved_at:      new Date().toISOString(),
+    };
+    getRedis().set(
+      `lead:${req.body.lead_event_id}`,
+      JSON.stringify(leadRecord),
+      'EX', 60 * 60 * 24 * 90  // 90 dias
+    ).catch(e => console.error('[Lead-persist] Redis write error:', e.message));
+    console.log(`[Lead-persist] Lead salvo: ${req.body.lead_event_id} / ${req.body.email}`);
   }
 
   // Credenciais via variáveis de ambiente
@@ -926,7 +927,8 @@ app.post('/api/webhooks/ticto', async (req, res) => {
   }
 
   const transactionId = body.order?.hash;
-  const status        = body.order?.status;
+  // status: top-level no payload real da Ticto (body.status); order.status como fallback
+  const status        = body.order?.status || body.status;
 
   if (!transactionId) {
     console.warn('[Ticto] order.hash ausente — não é possível garantir idempotência. Ignorado.');
