@@ -264,6 +264,13 @@ app.post('/api/capi', async (req, res) => {
     if (content_name)     event.custom_data.content_name     = content_name;
     if (content_category) event.custom_data.content_category = content_category;
   }
+  // value/currency: apenas InitiateCheckout (paridade com o pixel browser p/ dedup).
+  // Valor fixo da oferta (R$ 97) — não confia em valor vindo do cliente.
+  if (resolvedEventName === 'InitiateCheckout') {
+    event.custom_data = event.custom_data || {};
+    event.custom_data.value = 97;
+    event.custom_data.currency = 'BRL';
+  }
 
   // Remove event_id se não veio (evita enviar null)
   if (!event.event_id) delete event.event_id;

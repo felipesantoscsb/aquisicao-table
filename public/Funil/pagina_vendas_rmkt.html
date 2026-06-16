@@ -4,9 +4,12 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Protocolo Raiz — Table · Evelyn Liu</title>
-<!-- Meta Pixel -->
-
-
+<!-- og:tags -->
+<meta property="og:title" content="Protocolo Raiz — Table · Evelyn Liu" />
+<meta property="og:description" content="O primeiro passo para trabalhar o padrão por trás da relação com a comida." />
+<meta property="og:image" content="https://www.evelynliu.com.br/og-rmkt.jpg" />
+<!-- TODO: criar og-rmkt.jpg (1200x630) -->
+<meta property="og:type" content="website" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 :root {
@@ -131,6 +134,14 @@ hr.oferta-div{border:none;border-top:1px solid rgba(255,255,255,.08);margin:26px
 .oferta-sessao-note{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:16px 18px;margin-top:20px;font-size:13px;color:rgba(255,255,255,.5);line-height:1.65}
 .oferta-sessao-note strong{color:var(--terra)}
 
+/* DEPOIMENTO */
+#depoimento { background:var(--warm); padding:56px 0;
+              border-top:1px solid var(--line); border-bottom:1px solid var(--line); text-align:center }
+.dep-quote { font-family:'Cormorant Garamond',serif; font-size:clamp(19px,3.5vw,26px);
+             font-style:italic; color:var(--brown); line-height:1.6;
+             max-width:520px; margin:0 auto 16px; quotes:none }
+.dep-cite  { font-size:13px; color:var(--muted); letter-spacing:.08em }
+
 /* FAQ */
 #faq{padding:72px 0;border-top:1px solid var(--line)}
 .faq-h2{font-family:'Cormorant Garamond',serif;font-size:clamp(24px,4vw,38px);margin-bottom:36px}
@@ -180,19 +191,108 @@ footer{background:var(--moss);padding:32px 24px;text-align:center}
     y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
   })(window, document, "clarity", "script", "wmgpdfdmkw");
 </script>
+<!-- Meta Pixel -->
 <script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window,document,"script",
-"https://connect.facebook.net/en_US/fbevents.js");
-fbq('init', '989971718548782');
-fbq('track', 'PageView');
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+document,'script','https://connect.facebook.net/en_US/fbevents.js');
 </script>
-<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=989971718548782&ev=PageView&noscript=1"/></noscript>
+<noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=989971718548782&ev=PageView&noscript=1"/></noscript>
+<script>
+(function() {
+  // — helpers —
+  function getCookie(n){var m=document.cookie.match('(^|;)\\s*'+n+'\\s*=\\s*([^;]+)');return m?m.pop():''}
+  function uuid(){return([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16))}
+  // — identity via lid —
+  var lid = new URLSearchParams(location.search).get('lid') || '';
+  window._rmktLid = lid;
+  window._rmktCtx = {};
+  var fbp = getCookie('_fbp') || '';
+  var fbc = getCookie('_fbc') || (location.search.includes('fbclid')
+    ? 'fb.1.'+Date.now()+'.'+new URLSearchParams(location.search).get('fbclid')
+    : '');
+  window._rmktFbp = fbp;
+  window._rmktFbc = fbc;
+  // init pixel base (sem advanced matching ainda)
+  fbq('init', '989971718548782');
+  fbq('track', 'PageView');
+
+  // — ViewContent + RmktPageView (dispara após tentativa de hidratação) —
+  function fireView() {
+    var vcId = uuid();
+    // ViewContent (browser) — sem perfil/dado sensível
+    fbq('track', 'ViewContent', { content_name: 'RmktPage' }, { eventID: vcId });
+    // ViewContent (server) — contrato real do /api/capi: lead_event_id + content_name
+    fetch('/api/capi', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event_name: 'ViewContent',
+        lead_event_id: vcId,
+        event_source_url: location.href,
+        lid: window._rmktLid,
+        fbp: window._rmktFbp,
+        fbc: window._rmktFbc,
+        content_name: 'RmktPage'
+      })
+    }).catch(function(){});
+    // RmktPageView (custom, browser only — audience). Sem perfil.
+    fbq('trackCustom', 'RmktPageView', { source: 'rmkt_page' });
+  }
+
+  // hidratação via lid → advanced matching (em/ph/fn/external_id hasheados)
+  if (lid) {
+    fetch('/api/lead-context?lid=' + encodeURIComponent(lid))
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(ctx) {
+        if (ctx) {
+          window._rmktCtx = ctx;
+          fbq('init', '989971718548782', {
+            em: ctx.em_hash,
+            ph: ctx.ph_hash,
+            fn: ctx.fn_hash,
+            external_id: ctx.external_id
+          });
+        }
+      })
+      .catch(function(){})
+      .finally(fireView);
+  } else {
+    fireView();
+  }
+
+  // — InitiateCheckout handler (chamado por todos os CTAs de checkout) —
+  window.trackCta = function(position) {
+    var icId = uuid();
+    fbq('track', 'InitiateCheckout', {
+      value: 97,
+      currency: 'BRL',
+      content_name: 'ProtocoloRaiz',
+      content_category: position
+    }, { eventID: icId });
+    if (typeof gtag === 'function') {
+      gtag('event', 'begin_checkout', { value: 97, currency: 'BRL' });
+    }
+    fetch('/api/capi', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event_name: 'InitiateCheckout',
+        lead_event_id: icId,
+        event_source_url: location.href,
+        lid: window._rmktLid,
+        fbp: window._rmktFbp,
+        fbc: window._rmktFbc,
+        content_name: 'ProtocoloRaiz',
+        content_category: position
+      })
+    }).catch(function(){});
+  };
+})();
+</script>
 </head>
 <body>
 
@@ -202,46 +302,64 @@ fbq('track', 'PageView');
     <p class="hero-logo">Table · Evelyn Liu</p>
     <p class="eyebrow hero-eyebrow">Protocolo Raiz</p>
     <h1 class="hero-h1">Você já reconheceu o seu padrão.<br><em>Agora é hora de trabalhar nele.</em></h1>
-    <p class="hero-sub">Você fez o quiz. Você se reconheceu. Essa clareza é o começo.<br><strong>O Protocolo Raiz é o primeiro passo concreto — para trabalhar o que está por trás, não a consequência.</strong></p>
+    <p class="hero-sub">O quiz identificou o padrão. O Protocolo Raiz é o primeiro passo concreto — para trabalhar o que está por trás, não a consequência.<br><strong>Antes que essa clareza some no ritmo do dia.</strong></p>
     <a href="#oferta" class="btn-cta" onclick="event.preventDefault();document.getElementById('oferta').scrollIntoView({behavior:'smooth'})">Quero começar pelo Protocolo Raiz →</a>
     <p class="hero-fine">R$ 97 · Acesso imediato · Garantia de 7 dias</p>
+    <p class="hero-fine" style="margin-top:6px;color:rgba(255,255,255,.25)">
+      Sessão individual avulsa custa R$ 297 — inclusa no Protocolo Raiz
+    </p>
   </div>
 </section>
 
-<!-- 2. VÍDEO DA EVELYN — primeiro elemento após o hero -->
-<section id="vsl">
-  <div class="container">
-    <p class="eyebrow vsl-eyebrow reveal">Uma mensagem da Evelyn para você</p>
-    <h2 class="vsl-h2 reveal">Antes de continuar, quero<br>te falar <em>pessoalmente.</em></h2>
-    <div class="vsl-frame reveal">
-      <script src="https://fast.wistia.com/player.js" async></script>
-      <script src="https://fast.wistia.com/embed/xc4e7ykqti.js" async type="module"></script>
-      <style>
-        wistia-player[media-id='xc4e7ykqti']:not(:defined){background:center/cover no-repeat url('https://fast.wistia.com/embed/medias/xc4e7ykqti/swatch');display:block;filter:blur(5px);padding-top:177.78%;border-radius:24px;overflow:hidden}
-      </style>
-      <wistia-player media-id="xc4e7ykqti" aspect="0.5625"></wistia-player>
-    </div>
-    <p class="vsl-caption reveal">90 segundos · sem enrolação · direto ao ponto</p>
-    <div class="vsl-tag reveal">
-      <div class="vsl-avatar">E</div>
-      <p class="vsl-name"><strong>Evelyn Liu</strong> · Nutricionista comportamental · Fundadora da Table</p>
+<!-- 2. OFERTA -->
+<section id="oferta">
+  <div class="container oferta-inner">
+    <p class="eyebrow oferta-eyebrow reveal">Protocolo Raiz · Table</p>
+    <h2 class="oferta-h2 reveal">O primeiro passo que<br><em>trabalha o que está por trás.</em></h2>
+    <p class="oferta-sub reveal">Desenvolvido por Evelyn Liu a partir da experiência com centenas de mulheres e da mesma tese do seu livro.</p>
+    <div class="oferta-card reveal">
+      <div class="oferta-includes">
+        <div class="oferta-inc"><div class="oferta-check">✓</div><span><strong style="color:var(--white)">Exercícios psicoemocionais guiados</strong> — aplicação imediata, sem precisar esperar a sessão</span></div>
+        <div class="oferta-inc"><div class="oferta-check">✓</div><span><strong style="color:var(--white)">Livro "Gordura Não Existe" em PDF</strong> — obra completa de Evelyn Liu</span></div>
+        <div class="oferta-inc"><div class="oferta-check">✓</div><span><strong style="color:var(--white)">Sessão individual de direcionamento</strong> com a equipe Table</span></div>
+      </div>
+      <hr class="oferta-div"/>
+      <p class="oferta-anchor">Só a sessão individual avulsa custa <span>R$ 297</span></p>
+      <div class="oferta-price-row">
+        <p class="oferta-price">R$ 97</p>
+        <p class="oferta-price-note">pagamento único<br>acesso imediato</p>
+      </div>
+      <div class="oferta-urgency"><span style="flex-shrink:0;margin-top:1px">✦</span><span>Vagas da sessão individual limitadas: a equipe atende no máximo 30 pessoas por semana. Quando fecham, o próximo horário disponível fica para a semana seguinte.</span></div>
+      <a href="https://checkout.ticto.app/OBEF2D02E" class="btn-oferta" onclick="trackCta('offer_card')">Quero começar pelo Protocolo Raiz →</a>
+      <p class="oferta-guarantee">🔒 Garantia de 7 dias — se não fizer sentido, devolvemos 100% do valor. Sem questionamentos.</p>
+      <div class="oferta-sessao-note"><strong>Sobre a sessão:</strong> após a compra você recebe o link para agendar por videochamada, em horário conveniente para você. Duração aproximada de 45 minutos.</div>
     </div>
   </div>
 </section>
 
-<!-- 3. REFRAME DA OBJEÇÃO — por que dessa vez é diferente -->
+<!-- 3. DEPOIMENTO -->
+<section id="depoimento">
+  <div class="container" style="text-align:center">
+    <p class="eyebrow" style="margin-bottom:20px">Quem já começou</p>
+    <blockquote class="dep-quote">
+      "Eu sempre soube que comia quando a ansiedade chegava.
+       O que eu não sabia era o que fazer quando ela chegava."
+    </blockquote>
+    <cite class="dep-cite">Ana P. · Table</cite>
+  </div>
+</section>
+
+<!-- 4. REFRAME DA OBJEÇÃO -->
 <section id="reframe">
   <div class="container">
     <p class="eyebrow reveal" style="margin-bottom:14px">Por que o Protocolo Raiz é diferente</p>
     <h2 class="reframe-h2 reveal">Você não falhou.<br><em>Faltou a camada certa.</em></h2>
-    <p class="reframe-body reveal">Dieta, jejum, nutricionista convencional, força de vontade. Você já tentou. Funcionou por um tempo — e parou. Não porque você é inconstante. Porque nenhuma dessas abordagens foi onde o problema realmente está.</p>
-    <p class="reframe-body reveal"><strong>A relação com a comida não muda só com regras.</strong> Ela muda quando se entende o que está por trás dela — o padrão emocional que o sistema nervoso criou como proteção. É exatamente isso que o Protocolo Raiz trabalha.</p>
-    <p class="reframe-body reveal">Não é mais uma dieta. Não é mais uma lista de alimentos proibidos. É o trabalho que deveria ter vindo junto com tudo que você já tentou — e que vai garantir que dessa vez, alguma coisa mude de verdade.</p>
+    <p class="reframe-body reveal"><strong>A relação com a comida não muda só com regras.</strong> Ela muda quando se entende o que está por trás dela — o padrão que foi sendo construído como resposta ao que se vive. É exatamente isso que o Protocolo Raiz trabalha.</p>
     <p class="reframe-quote reveal">"Quando a gente cuida do que se sente — e não fica preso à balança — tudo muda. Sem violência, sem restrição extrema."</p>
   </div>
 </section>
 
-<!-- 4. O QUE ESTÁ INCLUSO -->
+<!-- 5. O QUE ESTÁ INCLUSO -->
 <section id="incluso">
   <div class="container">
     <div class="inc-hdr reveal">
@@ -254,7 +372,7 @@ fbq('track', 'PageView');
         <div class="inc-num">1</div>
         <div>
           <p class="inc-t">Exercícios Psicoemocionais Guiados</p>
-          <p class="inc-d">Desenvolvidos por Evelyn Liu a partir da experiência com centenas de mulheres. Trabalham o padrão emocional do seu perfil — não um conteúdo genérico. Aplicação imediata, sem precisar esperar a sessão.</p>
+          <p class="inc-d">Desenvolvidos por Evelyn Liu a partir da experiência com centenas de mulheres. Desenvolvidos para cada padrão identificado no quiz — não um conteúdo genérico. Aplicação imediata.</p>
           <span class="inc-tag">Acesso imediato após a compra</span>
         </div>
       </div>
@@ -278,18 +396,36 @@ fbq('track', 'PageView');
   </div>
 </section>
 
-<!-- 5. BLOCO de tratamento de objeção -->
-<section id="faq-glp">
-  <div class="container glp-inner">
-    <p class="eyebrow reveal" style="margin-bottom:14px;color:var(--terra)">Uma pergunta frequente</p>
-    <h2 class="glp-h2 reveal">Já tentei de tudo.<br><em>Por que isso seria diferente?</em></h2>
-    <p class="glp-body reveal">Porque a maioria das abordagens foca no que você come. O Protocolo Raiz começa antes disso: no que você sente quando come.</p>
-    <p class="glp-body reveal" style="margin-top:16px">Regras e listas de alimentos funcionam por um tempo e depois perdem força, porque o comportamento volta quando a emoção por trás dele continua ali. <strong>O trabalho emocional é a camada que costuma ficar de fora — e é exatamente onde o Protocolo Raiz começa.</strong></p>
-    <p class="glp-body reveal" style="margin-top:16px">Não é sobre recomeçar do zero mais uma vez. É sobre olhar, talvez pela primeira vez, para a parte que ninguém te ajudou a enxergar.</p>
+<!-- 6. VÍDEO DA EVELYN -->
+<section id="vsl">
+  <div class="container">
+    <p class="eyebrow vsl-eyebrow reveal">Uma mensagem da Evelyn para você</p>
+    <h2 class="vsl-h2 reveal">Antes de continuar, quero<br>te falar <em>pessoalmente.</em></h2>
+    <div class="vsl-frame reveal">
+      <script src="https://fast.wistia.com/player.js" async></script>
+      <script src="https://fast.wistia.com/embed/xc4e7ykqti.js" async type="module"></script>
+      <style>
+        wistia-player[media-id='xc4e7ykqti']:not(:defined){background:center/cover no-repeat url('https://fast.wistia.com/embed/medias/xc4e7ykqti/swatch');display:block;filter:blur(5px);padding-top:177.78%;border-radius:24px;overflow:hidden}
+      </style>
+      <wistia-player media-id="xc4e7ykqti" aspect="0.5625"></wistia-player>
+    </div>
+    <p class="vsl-caption reveal">90 segundos · sem enrolação · direto ao ponto</p>
+    <div class="vsl-tag reveal">
+      <div class="vsl-avatar">E</div>
+      <p class="vsl-name"><strong>Evelyn Liu</strong> · Nutricionista comportamental · Fundadora da Table</p>
+    </div>
+  </div>
+  <div class="container" style="text-align:center; margin-top:32px">
+    <a href="https://checkout.ticto.app/OBEF2D02E"
+       class="btn-cta btn-cta-posvsl"
+       id="cta-posvsl"
+       onclick="trackCta('post_video')">
+      Quero começar pelo Protocolo Raiz →
+    </a>
   </div>
 </section>
 
-<!-- 6. GARANTIA -->
+<!-- 7. GARANTIA -->
 <section id="garantia">
   <div class="container">
     <div class="gar-icon reveal">🔒</div>
@@ -299,32 +435,6 @@ fbq('track', 'PageView');
     <div class="gar-quote reveal">
       <p>"Acreditamos tanto no que entregamos que o risco é todo nosso."</p>
       <cite>— Equipe Table</cite>
-    </div>
-  </div>
-</section>
-
-<!-- 7. OFERTA -->
-<section id="oferta">
-  <div class="container oferta-inner">
-    <p class="eyebrow oferta-eyebrow reveal">Protocolo Raiz · Table</p>
-    <h2 class="oferta-h2 reveal">O primeiro passo que<br><em>trabalha o que está por trás.</em></h2>
-    <p class="oferta-sub reveal">Desenvolvido por Evelyn Liu a partir da experiência com centenas de mulheres e da mesma tese do seu livro.</p>
-    <div class="oferta-card reveal">
-      <div class="oferta-includes">
-        <div class="oferta-inc"><div class="oferta-check">✓</div><span><strong style="color:var(--white)">Exercícios psicoemocionais guiados</strong> — aplicação imediata, sem precisar esperar a sessão</span></div>
-        <div class="oferta-inc"><div class="oferta-check">✓</div><span><strong style="color:var(--white)">Livro "Gordura Não Existe" em PDF</strong> — obra completa de Evelyn Liu</span></div>
-        <div class="oferta-inc"><div class="oferta-check">✓</div><span><strong style="color:var(--white)">Sessão individual de direcionamento</strong> com a equipe Table</span></div>
-      </div>
-      <hr class="oferta-div"/>
-      <p class="oferta-anchor">Só a sessão individual avulsa custa <span>R$ 297</span></p>
-      <div class="oferta-price-row">
-        <p class="oferta-price">R$ 97</p>
-        <p class="oferta-price-note">pagamento único<br>acesso imediato</p>
-      </div>
-      <div class="oferta-urgency"><span style="flex-shrink:0;margin-top:1px">✦</span><span>Este valor reflete o momento atual da Table. À medida que novas histórias se somam ao método, o investimento será ajustado. O que está disponível agora é o ponto de entrada mais acessível que teremos.</span></div>
-      <a href="https://checkout.ticto.app/OBEF2D02E" class="btn-oferta" onclick="gtag('event','begin_checkout',{value:97,currency:'BRL'});">Quero começar pelo Protocolo Raiz →</a>
-      <p class="oferta-guarantee">🔒 Garantia de 7 dias — se não fizer sentido, devolvemos 100% do valor. Sem questionamentos.</p>
-      <div class="oferta-sessao-note"><strong>Sobre a sessão:</strong> após a compra você recebe o link para agendar por videochamada, em horário conveniente para você. Duração aproximada de 45 minutos.</div>
     </div>
   </div>
 </section>
@@ -364,12 +474,12 @@ fbq('track', 'PageView');
 <section id="fechamento">
   <div class="container">
     <p class="eyebrow fech-eyebrow reveal" style="margin-bottom:18px">Uma última coisa</p>
-    <h2 class="fech-h2 reveal">Você fez o quiz porque algo em você<br>sabia que existia <em>uma resposta diferente.</em></h2>
+    <h2 class="fech-h2 reveal">Quem faz o quiz está<br>buscando <em>uma resposta diferente.</em></h2>
     <p class="fech-body reveal">Não vim te vender mais uma solução. Vim te oferecer o trabalho que deveria ter existido antes — o que trata a causa, não o sintoma.</p>
     <p class="fech-body reveal"><strong>Você já deu o primeiro passo quando fez o quiz. O Protocolo Raiz é o segundo.</strong></p>
     <p class="fech-assinatura reveal">Com carinho, Evelyn.</p>
     <div class="reveal">
-      <a href="https://checkout.ticto.app/OBEF2D02E" class="btn-cta" onclick="gtag('event','begin_checkout',{value:97,currency:'BRL'})">Quero começar pelo Protocolo Raiz →</a>
+      <a href="https://checkout.ticto.app/OBEF2D02E" class="btn-cta" onclick="trackCta('closing')">Quero começar pelo Protocolo Raiz →</a>
     </div>
     <p class="hero-fine reveal" style="margin-top:14px;color:var(--muted)">R$ 97 · Acesso imediato · Garantia de 7 dias</p>
   </div>
@@ -382,7 +492,7 @@ fbq('track', 'PageView');
 
 <div class="sticky-bar" id="sticky-bar">
   <p class="sticky-text"><strong>Protocolo Raiz</strong> · Evelyn Liu · Table</p>
-  <a href="https://checkout.ticto.app/OBEF2D02E" class="btn-sticky" onclick="void 0">Começar por R$ 97 →</a>
+  <a href="https://checkout.ticto.app/OBEF2D02E" class="btn-sticky" id="cta-sticky" onclick="trackCta('sticky')">Começar por R$ 97 →</a>
 </div>
 
 <script>
@@ -405,6 +515,16 @@ function toggleFaq(el){
   document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
   if(!open)el.classList.add('open');
 }
+
+// Checkout: adiciona src (lid) aos links da Ticto. URLs base inalteradas.
+document.addEventListener('DOMContentLoaded', function() {
+  var base = 'https://checkout.ticto.app/OBEF2D02E';
+  var params = new URLSearchParams();
+  if (window._rmktLid) params.set('src', window._rmktLid);
+  var suffix = params.toString() ? '?' + params.toString() : '';
+  document.querySelectorAll('a[href^="https://checkout.ticto.app/OBEF2D02E"]')
+    .forEach(function(a){ a.href = base + suffix; });
+});
 </script>
 </body>
 </html>
