@@ -306,8 +306,12 @@ const revealEls=document.querySelectorAll('.reveal');
 const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:.08});
 revealEls.forEach(el=>obs.observe(el));
 
+let isSubmitting=false;
+
 async function submitForm(e){
   e.preventDefault();
+  if(isSubmitting)return;
+  isSubmitting=true;
   const form=document.getElementById('pre-form');
   const data=new FormData(form);
   const payload={
@@ -325,15 +329,22 @@ async function submitForm(e){
     horario: data.get('horario'),
     observacoes: data.get('observacoes'),
     origem: 'formulario_pre_sessao',
+    event_id: 'ps_' + Date.now() + '_' + Math.random().toString(36).slice(2,11),
     created_at: new Date().toISOString()
   };
   try{
-    await fetch('https://hook.us2.make.com/2dut7wf3cxv3k6e8qr43jm638jr5s3re',{
+    const response=await fetch('/api/pre-sessao',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(payload)
     });
-  }catch(err){console.error('Webhook error:',err)}
+    if(!response.ok)throw new Error(`Status ${response.status}`);
+  }catch(err){
+    console.error('Erro ao enviar formulário:',err);
+    isSubmitting=false;
+    alert('Não conseguimos enviar suas respostas agora. Tente novamente em instantes.');
+    return;
+  }
   document.getElementById('form-container').style.display='none';
   document.getElementById('confirmacao').classList.add('visible');
   window.scrollTo({top:document.getElementById('formulario').offsetTop-20,behavior:'smooth'});

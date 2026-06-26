@@ -457,6 +457,88 @@ app.post('/api/captacao/conversa', async (req, res) => {
   }
 });
 
+// ─── Formulário pré-sessão → Hub CRM direto ─────────────────────────────────
+
+function normalizePreSessaoPayload(body = {}) {
+  return {
+    nome: body.nome || body.name || '',
+    telefone: normalizePhone(body.telefone || body.whats || body.whatsapp || body.phone || ''),
+    email: body.email || null,
+    dificuldade_hoje: body.dificuldade_hoje || '',
+    sentimento_inicial: body.sentimento_inicial || '',
+    historico: toArray(body.historico),
+    padrao_abandono: body.padrao_abandono || '',
+    saude: toArray(body.saude),
+    saude_outro: body.saude_outro || '',
+    objetivo: toArray(body.objetivo),
+    uma_coisa: body.uma_coisa || '',
+    rotina: body.rotina || '',
+    horario: body.horario || '',
+    observacoes: body.observacoes || '',
+    origem: body.origem || 'formulario_pre_sessao',
+    event_id: body.event_id || crypto.randomUUID(),
+    created_at: body.created_at || new Date().toISOString(),
+  };
+}
+
+async function forwardPreSessaoToHub(payload) {
+  const HUB_URL = process.env.HUB_PRE_SESSAO_WEBHOOK_URL || 'https://crm.tableclinic.com.br/webhook/pre-sessao';
+  const HUB_SECRET = process.env.HUB_WEBHOOK_SECRET || process.env.INTERNAL_WEBHOOK_SECRET;
+  if (!HUB_SECRET) throw new Error('HUB_WEBHOOK_SECRET não configurado');
+
+  const retryDelays = [0, 1500, 4000];
+  let lastError;
+  for (let attempt = 0; attempt < retryDelays.length; attempt++) {
+    if (retryDelays[attempt]) await sleep(retryDelays[attempt]);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12_000);
+    try {
+      const hubRes = await fetch(HUB_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-webhook-secret': HUB_SECRET },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+      const text = await hubRes.text();
+      if (!hubRes.ok) {
+        throw new Error(`Hub respondeu ${hubRes.status}: ${text.slice(0, 300)}`);
+      }
+      console.log(`[pre-sessao] Hub ok — ${payload.nome} (${payload.telefone})`);
+      return text;
+    } catch (err) {
+      lastError = err;
+      console.warn(`[pre-sessao] tentativa ${attempt + 1} falhou: ${err.message}`);
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  throw lastError;
+}
+
+app.post('/api/pre-sessao', async (req, res) => {
+  const payload = normalizePreSessaoPayload(req.body || {});
+
+  if (!payload.nome || !payload.telefone) {
+    return res.status(400).json({ ok: false, error: 'Nome e WhatsApp são obrigatórios.' });
+  }
+
+  try {
+    await forwardPreSessaoToHub(payload);
+    return res.json({ ok: true, event_id: payload.event_id });
+  } catch (err) {
+    console.error('[pre-sessao] falha ao encaminhar para Hub:', err.message);
+    await redisSet(
+      `pre_sessao:failed:${payload.event_id}`,
+      JSON.stringify({ payload, error: err.message, failed_at: new Date().toISOString() }),
+      'EX',
+      7 * 24 * 60 * 60
+    );
+    return res.status(502).json({ ok: false, error: 'Falha ao encaminhar formulário para o CRM.' });
+  }
+});
+
 // ─── Rota Purchase (webhook Infinitepay → Meta CAPI) ─────────────────────────
 
 app.post('/api/purchase', async (req, res) => {
