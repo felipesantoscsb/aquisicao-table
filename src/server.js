@@ -23,6 +23,7 @@ function getRedis() {
 }
 async function redisGet(key) { try { return await getRedis().get(key); } catch { return null; } }
 async function redisSet(key, value, ...args) { try { return await getRedis().set(key, value, ...args); } catch { return null; } }
+async function redisDel(key) { try { return await getRedis().del(key); } catch { return null; } }
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -538,6 +539,37 @@ app.post('/api/pre-sessao', async (req, res) => {
     return res.status(502).json({ ok: false, error: 'Falha ao encaminhar formulário para o CRM.' });
   }
 });
+
+// Reprocessa formulários pré-sessão que falharam ao encaminhar para o Hub.
+// Roda periodicamente; ao ter sucesso, remove a chave de falha do Redis.
+let drainingPreSessao = false;
+async function drainFailedPreSessao() {
+  if (drainingPreSessao) return;
+  drainingPreSessao = true;
+  try {
+    const keys = await getRedis().keys('pre_sessao:failed:*');
+    if (!keys.length) return;
+    console.log(`[pre-sessao] drain: ${keys.length} pendente(s)`);
+    for (const key of keys) {
+      const raw = await redisGet(key);
+      if (!raw) { await redisDel(key); continue; }
+      let payload;
+      try { payload = JSON.parse(raw).payload; } catch { await redisDel(key); continue; }
+      if (!payload) { await redisDel(key); continue; }
+      try {
+        await forwardPreSessaoToHub(payload);
+        await redisDel(key);
+        console.log(`[pre-sessao] drain ok — ${payload.nome} (${payload.telefone})`);
+      } catch (err) {
+        console.warn(`[pre-sessao] drain ainda falhando para ${key}: ${err.message}`);
+      }
+    }
+  } catch (err) {
+    console.error('[pre-sessao] drain erro:', err.message);
+  } finally {
+    drainingPreSessao = false;
+  }
+}
 
 // ─── Rota Purchase (webhook Infinitepay → Meta CAPI) ─────────────────────────
 
@@ -1341,4 +1373,7 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
+  // Reprocessa formulários pré-sessão pendentes a cada 10 min.
+  setInterval(() => { drainFailedPreSessao().catch(() => {}); }, 10 * 60 * 1000);
+  setTimeout(() => { drainFailedPreSessao().catch(() => {}); }, 30 * 1000);
 });

@@ -281,6 +281,7 @@ footer{background:var(--moss);padding:28px 24px;text-align:center}
           <cite>— Equipe Table</cite>
         </div>
         <button type="submit" class="btn-submit">Agendar minha Sessão de Direcionamento →</button>
+        <p id="form-error" role="alert" style="display:none;margin-top:14px;text-align:center;color:#c0392b;font-weight:600;">Não conseguimos enviar suas respostas agora. Tente novamente em instantes.</p>
         <p class="form-fine">Suas respostas são confidenciais e chegam apenas para a equipe da Table.</p>
       </div>
 
@@ -313,6 +314,8 @@ async function submitForm(e){
   if(isSubmitting)return;
   isSubmitting=true;
   const form=document.getElementById('pre-form');
+  const errorEl=document.getElementById('form-error');
+  if(errorEl)errorEl.style.display='none';
   const data=new FormData(form);
   const payload={
     nome: data.get('nome'),
@@ -342,7 +345,10 @@ async function submitForm(e){
   }catch(err){
     console.error('Erro ao enviar formulário:',err);
     isSubmitting=false;
-    alert('Não conseguimos enviar suas respostas agora. Tente novamente em instantes.');
+    if(errorEl){
+      errorEl.style.display='block';
+      errorEl.scrollIntoView({block:'center',behavior:'smooth'});
+    }
     return;
   }
   document.getElementById('form-container').style.display='none';
