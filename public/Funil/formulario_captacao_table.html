@@ -716,10 +716,14 @@ const qualScore = {
   nutri:1, dieta:1, jejum:1, nenhum:0
 };
 
-function submitForm(){
+let isSubmitting = false;
+
+async function submitForm(){
+  if (isSubmitting) return;
   const nome = document.getElementById('f-nome').value.trim();
   const rawWhats = document.getElementById('f-whats').value.trim();
   if(!nome || !rawWhats){alert('Nome e WhatsApp são obrigatórios.');return;}
+  isSubmitting = true;
   const whats = normalizePhone(rawWhats);
 
   const dores = document.querySelector('input[name="dor"]:checked')?.value || '';
@@ -752,19 +756,25 @@ function submitForm(){
     utm: { source: utmSource, medium: utmMedium, campaign: utmCampaign }
   };
 
-  // ── INTEGRAÇÃO MAKE ──
-  fetch("https://hook.us2.make.com/77yvukvkc2419hlxxwgc9l3x99x8mmur", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      ...payload,
-      event_id: eventId,
-      source: "formulario_captacao_table_clinic",
-      created_at: new Date().toISOString()
-    })
-  })
-  .then(response => { console.log("Lead enviado para o Make:", response.status); })
-  .catch(error => { console.error("Erro ao enviar lead para o Make:", error); });
+  try {
+    const response = await fetch("/api/captacao/conversa", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...payload,
+        event_id: eventId,
+        source: "formulario_captacao_table_clinic",
+        created_at: new Date().toISOString()
+      })
+    });
+    if (!response.ok) throw new Error(`Status ${response.status}`);
+    console.log("Lead enviado para o SDR:", response.status);
+  } catch (error) {
+    console.error("Erro ao enviar lead para o SDR:", error);
+    isSubmitting = false;
+    alert("Não conseguimos enviar seu formulário agora. Tente novamente em instantes.");
+    return;
+  }
 
   // Mostra confirmação
   document.getElementById('form-main').style.display = 'none';

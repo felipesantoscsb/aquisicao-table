@@ -7,6 +7,8 @@ const Redis = require('ioredis');
 
 // ─── Redis (compartilhado com sdr-table) ──────────────────────────────────────
 let _redis;
+const captacaoSeenEvents = new Set();
+
 function getRedis() {
   if (!_redis) {
     _redis = new Redis(process.env.REDIS_URL_TRACKING, {
@@ -20,6 +22,7 @@ function getRedis() {
   return _redis;
 }
 async function redisGet(key) { try { return await getRedis().get(key); } catch { return null; } }
+async function redisSet(key, value, ...args) { try { return await getRedis().set(key, value, ...args); } catch { return null; } }
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -330,6 +333,127 @@ app.post('/api/capi', async (req, res) => {
   } catch (err) {
     console.error('[CAPI] Erro de rede ao chamar a Meta:', err.message);
     return res.status(500).json({ ok: false, error: 'Falha de conexão com a Meta CAPI.', detail: err.message });
+  }
+});
+
+// ─── Captação Table → SDR direto ─────────────────────────────────────────────
+
+function toArray(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (!value) return [];
+  return [value];
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function normalizeCaptacaoLead(body = {}) {
+  const phone = normalizePhone(body.whats || body.whatsapp || body.WhatsApp || '');
+  const historico = toArray(body.historico);
+  const saude = toArray(body.saude);
+  const qualificacao = body.qualificacao && typeof body.qualificacao === 'object'
+    ? body.qualificacao
+    : null;
+
+  return {
+    nome: body.nome || body.Nome || 'Lead',
+    whatsapp: phone,
+    whats: phone,
+    temperatura: body.temperatura || qualificacao?.tier || 'desconhecida',
+    score: body.score || qualificacao?.score || '0',
+    qualificacao,
+    oqueMaisPesa: body.oqueMaisPesa || body.dores || '',
+    dores: body.dores || body.oqueMaisPesa || '',
+    historico: historico.join(', '),
+    saude: saude.join(', '),
+    comprometimento: body.comprometimento || '',
+    maiorDificuldade: body.maiorDificuldade || body.dificuldade || '',
+    dificuldade: body.dificuldade || body.maiorDificuldade || '',
+    utm: body.utm || {},
+    event_id: body.event_id || crypto.randomUUID(),
+    source: body.source || 'formulario_captacao_table_clinic',
+    created_at: body.created_at || new Date().toISOString(),
+  };
+}
+
+async function reserveCaptacaoEvent(eventId) {
+  const key = `captacao:event:${eventId}`;
+  try {
+    const reserved = await getRedis().set(key, '1', 'EX', 24 * 60 * 60, 'NX');
+    return reserved === 'OK';
+  } catch {
+    if (captacaoSeenEvents.has(eventId)) return false;
+    captacaoSeenEvents.add(eventId);
+    setTimeout(() => captacaoSeenEvents.delete(eventId), 24 * 60 * 60 * 1000).unref?.();
+    return true;
+  }
+}
+
+async function forwardCaptacaoToSDR(leadData) {
+  const SDR_URL = process.env.SDR_LEAD_WEBHOOK_URL || 'https://table-production-07c5.up.railway.app/webhook/lead';
+  const SDR_SECRET = process.env.SDR_WEBHOOK_SECRET;
+
+  if (!SDR_SECRET) {
+    throw new Error('SDR_WEBHOOK_SECRET não configurado');
+  }
+
+  const retryDelays = [0, 1500, 4000];
+  let lastError;
+
+  for (let attempt = 0; attempt < retryDelays.length; attempt++) {
+    if (retryDelays[attempt]) await sleep(retryDelays[attempt]);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12_000);
+    try {
+      const sdrRes = await fetch(SDR_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-webhook-secret': SDR_SECRET },
+        body: JSON.stringify(leadData),
+        signal: controller.signal,
+      });
+      const text = await sdrRes.text();
+      if (!sdrRes.ok) {
+        throw new Error(`SDR respondeu ${sdrRes.status}: ${text.slice(0, 300)}`);
+      }
+      console.log(`[captacao/conversa] SDR ok — ${leadData.nome} (${leadData.whatsapp})`);
+      return text;
+    } catch (err) {
+      lastError = err;
+      console.warn(`[captacao/conversa] tentativa ${attempt + 1} falhou: ${err.message}`);
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  throw lastError;
+}
+
+app.post('/api/captacao/conversa', async (req, res) => {
+  const leadData = normalizeCaptacaoLead(req.body || {});
+
+  if (!leadData.nome || leadData.nome === 'Lead' || !leadData.whatsapp) {
+    return res.status(400).json({ ok: false, error: 'Nome e WhatsApp são obrigatórios.' });
+  }
+
+  const isNew = await reserveCaptacaoEvent(leadData.event_id);
+  if (!isNew) {
+    return res.json({ ok: true, duplicate: true, event_id: leadData.event_id });
+  }
+
+  try {
+    await forwardCaptacaoToSDR(leadData);
+    return res.json({ ok: true, event_id: leadData.event_id });
+  } catch (err) {
+    console.error('[captacao/conversa] falha ao encaminhar para SDR:', err.message);
+    await redisSet(
+      `captacao:failed:${leadData.event_id}`,
+      JSON.stringify({ leadData, error: err.message, failed_at: new Date().toISOString() }),
+      'EX',
+      7 * 24 * 60 * 60
+    );
+    return res.status(502).json({ ok: false, error: 'Falha ao encaminhar lead para o SDR.' });
   }
 });
 
