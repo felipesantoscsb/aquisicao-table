@@ -356,7 +356,7 @@ footer{
     <p class="hero-eyebrow" id="hero-eyebrow">Agenda de Julho</p>
     <h1 class="hero-h1" id="hero-h1">Consulta direta<br>com Evelyn Liu.<br><em>Para quem quer um olhar de raiz.</em></h1>
     <p class="hero-sub" id="hero-sub">Um formulário breve para entendermos se faz sentido encaixar você na agenda da Evelyn neste momento.</p>
-    <p class="hero-context" id="hero-context">A primeira consulta tem investimento de R$600, abatido caso você siga em um plano da Table.</p>
+    <p class="hero-context" id="hero-context">A primeira consulta tem investimento de R$600, abatido caso você siga em um acompanhamento mais profundo com a Evelyn.</p>
     <button class="hero-cta" onclick="scrollToForm()">Quero passar com a Evelyn →</button>
     <p class="hero-selection">Agenda pontual · Vagas limitadas em julho</p>
   </div>
@@ -507,7 +507,7 @@ footer{
     <div class="step" id="step-5">
       <p class="step-eyebrow">Etapa 5 · Investimento</p>
       <h2 class="step-title">A primeira consulta tem<br><em>investimento de R$600.</em></h2>
-      <p class="step-sub">Esse valor é abatido caso você decida seguir em um plano da Table depois. Esse primeiro passo faz sentido para você agora?</p>
+      <p class="step-sub">Esse valor é abatido caso você decida seguir em um acompanhamento mais profundo com a Evelyn depois. Esse primeiro passo faz sentido para você agora?</p>
 
       <div class="choices" style="display:flex;flex-direction:column;gap:9px">
         <label class="choice" onclick="selectRadio(this,'investimento')"><input type="radio" name="investimento" value="sim_faz_sentido"/><p class="choice-text">Sim, faz sentido e quero avaliar um encaixe</p></label>
@@ -572,19 +572,19 @@ footer{
       eyebrow: 'Agenda de Julho',
       h1: 'Consulta direta<br>com Evelyn Liu.<br><em>Para quem quer um olhar de raiz.</em>',
       sub: 'Um formulário breve para entendermos se faz sentido encaixar você na agenda da Evelyn neste momento.',
-      ctx: 'A primeira consulta tem investimento de R$600, abatido caso você siga em um plano da Table.'
+      ctx: 'A primeira consulta tem investimento de R$600, abatido caso você siga em um acompanhamento mais profundo com a Evelyn.'
     },
     stories: {
       eyebrow: 'Vindo dos Stories da Evelyn',
       h1: 'Se isso falou com você,<br>talvez seja hora<br><em>de olhar mais fundo.</em>',
       sub: 'A Evelyn abriu alguns encaixes pontuais em julho para primeiras consultas diretas.',
-      ctx: 'Investimento da primeira consulta: R$600, abatido se você seguir em um plano da Table.'
+      ctx: 'Investimento da primeira consulta: R$600, abatido se você seguir em um acompanhamento mais profundo com a Evelyn.'
     },
     ads: {
       eyebrow: 'Agenda de Julho',
       h1: 'Consulta direta<br>com Evelyn Liu.<br><em>Para quem quer um olhar de raiz.</em>',
       sub: 'Um formulário breve para entendermos se faz sentido encaixar você na agenda da Evelyn neste momento.',
-      ctx: 'A primeira consulta tem investimento de R$600, abatido caso você siga em um plano da Table.'
+      ctx: 'A primeira consulta tem investimento de R$600, abatido caso você siga em um acompanhamento mais profundo com a Evelyn.'
     }
   };
 
@@ -756,7 +756,7 @@ async function submitForm(){
       dificuldade,
       'Campanha: consulta direta com Evelyn Liu',
       'Investimento informado no formulario: R$600 na primeira consulta',
-      'Regra comercial: valor abatido se seguir em um plano da Table',
+      'Regra comercial: valor abatido se seguir em um acompanhamento mais profundo com a Evelyn',
       `Resposta sobre investimento: ${investimento || 'nao informado'}`,
       `Disponibilidade/urgencia: ${urgencia || 'nao informado'}`,
       'Handoff: depois de qualificada e decidida, Karina faz cobrança e agendamento',
