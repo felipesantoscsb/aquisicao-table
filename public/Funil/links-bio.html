@@ -190,6 +190,30 @@ body::after{
   color:rgba(255,255,255,.5);
 }
 
+.urgency-ribbon{
+  display:block;
+  width:100%;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(185,112,64,.38);
+  border-bottom:none;
+  border-radius:6px 6px 0 0;
+  padding:9px 14px;
+  margin-bottom:0;
+  color:rgba(255,255,255,.76);
+  font-size:10px;
+  line-height:1.45;
+  letter-spacing:.12em;
+  text-align:center;
+  text-transform:uppercase;
+  opacity:0;
+  animation:fadeUp .6s ease .32s forwards;
+}
+
+.urgency-ribbon + .link-primary{
+  border-radius:0 0 6px 6px;
+  margin-bottom:10px;
+}
+
 /* DIVIDER */
 .divider{
   width:100%;
@@ -230,6 +254,7 @@ body::after{
 .link-secondary:nth-child(2){animation:fadeUp .5s ease .58s forwards}
 .link-secondary:nth-child(3){animation:fadeUp .5s ease .66s forwards}
 .link-secondary:nth-child(4){animation:fadeUp .5s ease .74s forwards}
+.link-secondary:nth-child(5){animation:fadeUp .5s ease .82s forwards}
 
 .link-secondary:hover{
   background:rgba(255,255,255,.09);
@@ -316,12 +341,14 @@ fbq('track', 'PageView');
 
   <p class="tese">"O problema nunca foi a comida.<br>Foi sempre <em>o que veio antes.</em>"</p>
 
-  <a href="https://evelynliu.com.br/raiz"
+  <span class="urgency-ribbon">Abrimos 3 vagas para julho com a Evelyn. Depois, apenas lista de espera.</span>
+
+  <a href="https://evelynliu.com.br/evelyn?utm_source=links&utm_medium=bio&utm_campaign=consulta_evelyn_julho"
      class="link-primary"
      onclick="void 0">
-    <span class="tag">Gratuito · 3 minutos</span>
-    <span class="label">Descubra sua Raiz</span>
-    <span class="sublabel">Qual padrão emocional está por trás da sua relação com a comida?</span>
+    <span class="tag">Agenda pontual · Julho</span>
+    <span class="label">Passar com Evelyn Liu</span>
+    <span class="sublabel">Primeira consulta direta com Evelyn, mediante avaliação de encaixe.</span>
     <span class="arrow">→</span>
   </a>
 
@@ -332,6 +359,19 @@ fbq('track', 'PageView');
   </div>
 
   <div class="links-grid">
+
+    <a href="https://evelynliu.com.br/raiz"
+       class="link-secondary"
+       onclick="void 0">
+      <div class="icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(185,112,64,.8)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 8c3 0 5 2 7 5 2-3 4-5 7-5"/></svg>
+      </div>
+      <div class="text">
+        <span class="text-label">Descubra sua Raiz</span>
+        <span class="text-sub">Quiz gratuito · 3 minutos</span>
+      </div>
+      <span class="chevron">›</span>
+    </a>
 
     <a href="https://evelynliu.com.br/protocolo-raiz"
        class="link-secondary"

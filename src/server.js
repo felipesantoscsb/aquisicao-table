@@ -96,6 +96,7 @@ app.get('/rmkt',       (req, res) => res.sendFile(path.join(funil, 'pagina_venda
 app.get('/links',      (req, res) => res.sendFile(path.join(funil, 'links-bio.html')));
 app.get('/table',      (req, res) => res.sendFile(path.join(funil, 'site_table.html')));
 app.get('/conversa',   (req, res) => res.sendFile(path.join(funil, 'formulario_captacao_table.html')));
+app.get('/evelyn',     (req, res) => res.sendFile(path.join(funil, 'formulario_consulta_evelyn.html')));
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
