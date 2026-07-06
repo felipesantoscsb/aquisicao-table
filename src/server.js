@@ -1200,7 +1200,10 @@ function buildCheckoutSuffix({ email, phone, name, lid }) {
   return qs ? `${path}?${qs}` : path;
 }
 
-async function scheduleCheckoutRecovery({ phone, email, name, lid, stage, checkoutSuffix }) {
+async function scheduleCheckoutRecovery({
+  phone, email, name, lid, stage, checkoutSuffix,
+  paymentMethod, bankSlipUrl, bankSlipCode, pixCode, pixUrl,
+}) {
   const phoneNorm = normalizePhone(phone);
   if (!phoneNorm) return;
   try {
@@ -1213,8 +1216,16 @@ async function scheduleCheckoutRecovery({ phone, email, name, lid, stage, checko
       email:           email || prev?.email || null,
       name:            name  || prev?.name  || null,
       lid:             lid   || prev?.lid   || null,
-      // checkout_url do abandono da Ticto tem prioridade sobre o link montado por nós
+      // Reservado p/ um link de sessão específica melhor que o nosso, se algum
+      // evento futuro trouxer um — hoje nenhum gatilho popula isto (ver abandoned_cart)
       checkout_suffix: checkoutSuffix || prev?.checkout_suffix || null,
+      // Dados da transação específica (boleto/Pix) — capturados mas ainda não
+      // usados no envio (template atual só aceita link de checkout.ticto.app)
+      payment_method:  paymentMethod || prev?.payment_method || null,
+      bank_slip_url:   bankSlipUrl   || prev?.bank_slip_url  || null,
+      bank_slip_code:  bankSlipCode  || prev?.bank_slip_code || null,
+      pix_code:        pixCode       || prev?.pix_code       || null,
+      pix_url:         pixUrl        || prev?.pix_url        || null,
       stage,                                                        // ic | abandoned_cart | waiting_payment
       due_at:          prev?.due_at || (Date.now() + recoveryDelayMs()),
       created_at:      prev?.created_at || new Date().toISOString(),
@@ -1305,6 +1316,13 @@ app.post('/api/webhooks/ticto', async (req, res) => {
   res.sendStatus(200);
 
   const body = req.body || {};
+
+  // Blindagem: qualquer erro não previsto (payload de evento novo/inesperado,
+  // ex. assinatura) fica contido aqui — sem isso, uma exceção não capturada
+  // dentro de um handler async vira unhandled rejection e derruba o processo
+  // inteiro (Node 15+), tirando do ar CAPI e formulários junto com a Ticto.
+  try {
+
   console.log('[Ticto] Payload recebido:', JSON.stringify(body, null, 2));
 
   // Ping de validação do cadastro: body vazio ou sem order
@@ -1323,30 +1341,23 @@ app.post('/api/webhooks/ticto', async (req, res) => {
   }
 
   // ── Abandono de checkout: agenda recuperação e encerra ──────────────────────
-  // Payload v2 flat: status, email, phone, checkout_url, tracking.src
+  // Payload v2 flat: status, email, phone, name (nome do CLIENTE, confirmado em
+  // teste real — não é o nome da oferta), checkout_url, tracking.src (opcional).
+  //
+  // checkout_url neste evento é a URL BASE da oferta (ex: .../O3EB65FBD), sem
+  // query params — confirmado em teste real. Não é um link de sessão que
+  // resume o carrinho especificamente, então não usamos: nosso próprio link
+  // (via buildCheckoutSuffix, no envio) é estritamente melhor porque leva
+  // email/telefone/nome para pré-preencher o checkout.
   if (body.status === 'abandoned_cart') {
     await redisIncrStats('abandoned_cart');
     const abandonSrc = (body.tracking?.src && body.tracking.src !== 'Não Informado') ? body.tracking.src : null;
-    // Nome do comprador não vem no payload de abandono (body.name é o nome da
-    // oferta) — busca no lead salvo via join key src
-    let leadName = null;
-    if (abandonSrc) {
-      try {
-        const raw = await getRedis().get(`lead:${abandonSrc}`);
-        if (raw) leadName = JSON.parse(raw).nome || null;
-      } catch {}
-    }
-    // checkout_url da Ticto → sufixo (base fixa no botão do template)
-    const checkoutSuffix = body.checkout_url
-      ? String(body.checkout_url).replace(/^https?:\/\/checkout\.ticto\.app\//, '')
-      : null;
     await scheduleCheckoutRecovery({
       phone: body.phone,
       email: body.email || null,
-      name:  leadName,
+      name:  body.name  || null,
       lid:   abandonSrc,
       stage: 'abandoned_cart',
-      checkoutSuffix,
     });
     return;
   }
@@ -1361,7 +1372,19 @@ app.post('/api/webhooks/ticto', async (req, res) => {
   }
 
   // ── Pix gerado / aguardando pagamento: lead clicou em comprar e não pagou ──
-  // Agenda recuperação (mesmo template; se pagar antes, authorized cancela)
+  // Agenda recuperação (mesmo template; se pagar antes, authorized cancela).
+  //
+  // transaction.payment_method diz o meio (bank_slip | pix | credit_card).
+  // Para boleto, a Ticto manda o PDF e a linha digitável da MESMA transação
+  // (transaction.bank_slip_url / bank_slip_code) — melhor que mandar a lead
+  // de volta pro checkout, pois reativa o pagamento já gerado, sem novo boleto.
+  // Campos equivalentes de Pix (pix_code/qr_code) ainda não confirmados em
+  // payload real — capturados abaixo com nomes candidatos; checar no log
+  // quando um teste de Pix chegar e ajustar se o nome vier diferente.
+  // Guardado no registro por ora (não usado no envio ainda: o botão do
+  // template WhatsApp tem URL base fixa checkout.ticto.app, não aceita domínio
+  // diferente — enviar o boleto por link exigiria template próprio ou texto
+  // no corpo da mensagem; ver com o Felipe antes de linkar isso ao envio).
   if (status === 'waiting_payment' || status === 'pix_created') {
     await redisIncrStats(status);
     const wpSrc = (body.tracking?.src && body.tracking.src !== 'Não Informado') ? body.tracking.src : null;
@@ -1372,12 +1395,26 @@ app.post('/api/webhooks/ticto', async (req, res) => {
           ? `${(wpPhoneObj.ddi || '+55').replace('+', '')}${wpPhoneObj.ddd || ''}${wpPhoneObj.number || ''}`
           : wpPhoneObj)
       || null;
+    const paymentMethod  = body.transaction?.payment_method || null;
+    const bankSlipUrl    = body.transaction?.bank_slip_url  || null;
+    const bankSlipCode   = body.transaction?.bank_slip_code || null;
+    // Nomes candidatos p/ Pix — não confirmados, ajustar após ver payload real
+    const pixCode        = body.transaction?.pix_code || body.transaction?.pix_qr_code || body.transaction?.qr_code || null;
+    const pixUrl          = body.transaction?.pix_url || body.transaction?.qr_code_url || null;
+    if (paymentMethod) {
+      console.log(`[Ticto] waiting_payment método=${paymentMethod} bank_slip_url=${bankSlipUrl || 'n/a'} pix_code=${pixCode ? 'presente' : 'n/a'}`);
+    }
     await scheduleCheckoutRecovery({
       phone: wpPhone,
       email: body.customer?.email || null,
       name:  body.customer?.name  || null,
       lid:   wpSrc,
       stage: 'waiting_payment',
+      paymentMethod,
+      bankSlipUrl,
+      bankSlipCode,
+      pixCode,
+      pixUrl,
     });
     return;
   }
@@ -1547,6 +1584,11 @@ app.post('/api/webhooks/ticto', async (req, res) => {
   if (status === 'refunded' || status === 'chargeback') {
     // TODO: reverter/marcar na tabela de leads; não enviar nada à Meta por ora
     console.log(`[Ticto] ${status.toUpperCase()} registrado para ${transactionId} — nenhuma ação na Meta.`);
+  }
+
+  } catch (e) {
+    console.error('[Ticto] Erro não tratado no processamento do webhook:', e.message, e.stack);
+    await redisIncrStats('webhook_unhandled_errors');
   }
 });
 
