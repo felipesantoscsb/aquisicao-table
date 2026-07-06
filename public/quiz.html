@@ -874,13 +874,13 @@ async function sha256Email(str){
 }
 
 // ── Configuração Ticto ──────────────────────────────────────────────────────
-// TODO: confirmar nomes de campo na doc/painel da Ticto antes de ir a ar
+// Params conforme doc oficial de checkout pré-populado (help.ticto.com.br)
 // Checkout ignora params desconhecidos — sem risco de quebra
 const TICTO_PARAMS = {
   email: 'email',       // confirmado — pré-preenche email
-  phone: 'phone',       // confirmado — aparece em query_params.phone no payload
+  phone: 'phonenumber', // doc oficial: 'phonenumber', formato DDD+numero ('phone' não preenche o campo)
   name:  'name',        // confirmado — pré-preenche nome
-  src:   'src'          // TODO: confirmar — deve retornar no webhook como join key
+  src:   'src'          // confirmado — volta no webhook em tracking.src (join key)
 };
 
 function startQuiz(){
@@ -1355,7 +1355,8 @@ function goOffer(){
   // Phone sem DDI 55 — Ticto espera número local (ex: 11918253788, não 5511918253788)
   const phoneForTicto = window._leadPhone ? phoneForHash(window._leadPhone) : null;
   if(phoneForTicto) checkoutUrl.searchParams.set(TICTO_PARAMS.phone, phoneForTicto);
-  if(window._leadName)    checkoutUrl.searchParams.set(TICTO_PARAMS.name,  window._leadName.split(' ')[0]);
+  // Nome completo: o campo do checkout valida nome + sobrenome
+  if(window._leadName)    checkoutUrl.searchParams.set(TICTO_PARAMS.name,  window._leadName);
   if(window._leadEventId) checkoutUrl.searchParams.set(TICTO_PARAMS.src,   window._leadEventId);
   window.location.href = checkoutUrl.toString();
 }

@@ -1077,6 +1077,16 @@ app.post('/api/capi/initiate-checkout', async (req, res) => {
 
   const enriched = await enrichFromLid(lid, { phone, em, fbc, fbp, fn });
 
+  // Agenda recuperação de checkout: se o Purchase não chegar via webhook Ticto
+  // em RECOVERY_DELAY_MIN, o sweep dispara o WhatsApp (authorized cancela)
+  scheduleCheckoutRecovery({
+    phone: enriched.phone,
+    email: enriched.em,
+    name:  enriched.fn,
+    lid,
+    stage: 'ic',
+  }).catch(() => {});
+
   sendCapiEvent({
     eventName: 'InitiateCheckout',
     phone:       enriched.phone,
@@ -1151,6 +1161,145 @@ async function redisGetStats() {
   } catch { return {}; }
 }
 
+// ─── Recuperação de checkout via WhatsApp Cloud API ──────────────────────────
+//
+// Três gatilhos agendam uma mensagem de recuperação (1 por lead a cada 24h):
+//   1. InitiateCheckout do quiz sem Purchase em RECOVERY_DELAY_MIN (cobre quem
+//      abriu o checkout e não digitou nada — a Ticto não enxerga esses)
+//   2. Webhook abandoned_cart da Ticto (lead digitou email/phone e saiu;
+//      payload traz checkout_url de retorno)
+//   3. Webhook waiting_payment/pix_created (gerou Pix e não pagou)
+// O status authorized cancela qualquer recuperação pendente do telefone.
+//
+// Env vars:
+//   RECOVERY_ENABLED            → 'true' ativa envio real (padrão: SOMBRA, só loga)
+//   WHATSAPP_CLOUD_TOKEN        → token permanente da WhatsApp Cloud API
+//   WHATSAPP_PHONE_NUMBER_ID    → phone number id do remetente
+//   WHATSAPP_RECOVERY_TEMPLATE  → nome do modelo aprovado (padrão: recuperacao_checkout_raiz)
+//   RECOVERY_DELAY_MIN          → atraso do envio após o gatilho (padrão: 30)
+//   TICTO_CHECKOUT_PATH         → path da oferta no checkout (padrão: O3EB65FBD)
+
+const RECOVERY_TTL_PENDING = 60 * 60 * 24;      // pendência expira em 24h
+const RECOVERY_TTL_SENT    = 60 * 60 * 24;      // no máximo 1 mensagem por lead a cada 24h
+
+function recoveryDelayMs() {
+  return (Number(process.env.RECOVERY_DELAY_MIN) || 30) * 60 * 1000;
+}
+
+// Sufixo do link do checkout (vai no botão do template como variável de URL,
+// base fixa https://checkout.ticto.app/ definida no modelo)
+function buildCheckoutSuffix({ email, phone, name, lid }) {
+  const path = process.env.TICTO_CHECKOUT_PATH || 'O3EB65FBD';
+  const params = new URLSearchParams();
+  if (email) params.set('email', email);
+  // phonenumber: formato DDD+numero, sem DDI 55 (doc de checkout pré-populado da Ticto)
+  if (phone) params.set('phonenumber', String(phone).replace(/\D/g, '').replace(/^55/, ''));
+  if (name)  params.set('name', name);
+  if (lid)   params.set('src', lid);
+  const qs = params.toString();
+  return qs ? `${path}?${qs}` : path;
+}
+
+async function scheduleCheckoutRecovery({ phone, email, name, lid, stage, checkoutSuffix }) {
+  const phoneNorm = normalizePhone(phone);
+  if (!phoneNorm) return;
+  try {
+    const redis = getRedis();
+    if (await redis.get(`recovery:sent:${phoneNorm}`)) return;      // já recebeu nas últimas 24h
+    const existing = await redis.get(`recovery:pending:${phoneNorm}`);
+    const prev = existing ? JSON.parse(existing) : null;
+    const record = {
+      phone:           phoneNorm,
+      email:           email || prev?.email || null,
+      name:            name  || prev?.name  || null,
+      lid:             lid   || prev?.lid   || null,
+      // checkout_url do abandono da Ticto tem prioridade sobre o link montado por nós
+      checkout_suffix: checkoutSuffix || prev?.checkout_suffix || null,
+      stage,                                                        // ic | abandoned_cart | waiting_payment
+      due_at:          prev?.due_at || (Date.now() + recoveryDelayMs()),
+      created_at:      prev?.created_at || new Date().toISOString(),
+    };
+    await redis.set(`recovery:pending:${phoneNorm}`, JSON.stringify(record), 'EX', RECOVERY_TTL_PENDING);
+    console.log(`[Recovery] Agendada (${stage}): ${phoneNorm} para ${new Date(record.due_at).toISOString()}`);
+  } catch (e) {
+    console.error('[Recovery] Erro ao agendar:', e.message);
+  }
+}
+
+async function cancelCheckoutRecovery(phone, reason) {
+  const phoneNorm = normalizePhone(phone);
+  if (!phoneNorm) return;
+  try {
+    const removed = await getRedis().del(`recovery:pending:${phoneNorm}`);
+    if (removed) console.log(`[Recovery] Cancelada (${reason}): ${phoneNorm}`);
+  } catch {}
+}
+
+async function sendRecoveryMessage(rec) {
+  const TOKEN     = process.env.WHATSAPP_CLOUD_TOKEN;
+  const PHONE_ID  = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const TEMPLATE  = process.env.WHATSAPP_RECOVERY_TEMPLATE || 'recuperacao_checkout_raiz';
+  const ENABLED   = process.env.RECOVERY_ENABLED === 'true';
+
+  const suffix = rec.checkout_suffix
+    || buildCheckoutSuffix({ email: rec.email, phone: rec.phone, name: rec.name, lid: rec.lid });
+
+  const payload = {
+    messaging_product: 'whatsapp',
+    to: rec.phone,
+    type: 'template',
+    template: {
+      name: TEMPLATE,
+      language: { code: 'pt_BR' },
+      components: [
+        { type: 'body',   parameters: [{ type: 'text', text: firstName(rec.name) || 'querida' }] },
+        { type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: suffix }] },
+      ],
+    },
+  };
+
+  if (!ENABLED || !TOKEN || !PHONE_ID) {
+    console.log('[Recovery] SOMBRA — payload WhatsApp:', JSON.stringify(payload));
+    return { shadow: true };
+  }
+
+  const resp = await fetch(`https://graph.facebook.com/v21.0/${PHONE_ID}/messages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
+    body: JSON.stringify(payload),
+  });
+  const json = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(`WhatsApp API ${resp.status}: ${JSON.stringify(json.error || json)}`);
+  return json;
+}
+
+async function recoverySweep() {
+  const redis = getRedis();
+  let keys = [];
+  try { keys = await redis.keys('recovery:pending:*'); } catch { return; }
+
+  for (const key of keys) {
+    try {
+      const raw = await redis.get(key);
+      if (!raw) continue;
+      const rec = JSON.parse(raw);
+      if (Date.now() < rec.due_at) continue;
+
+      // Marca como enviada ANTES do envio — evita duplicata se dois sweeps concorrerem
+      const lock = await redis.set(`recovery:sent:${rec.phone}`, rec.stage, 'EX', RECOVERY_TTL_SENT, 'NX');
+      await redis.del(key);
+      if (!lock) continue;
+
+      await sendRecoveryMessage(rec);
+      await redisIncrStats(`recovery_sent_${rec.stage}`);
+      console.log(`[Recovery] Enviada (${rec.stage}): ${rec.phone}`);
+    } catch (e) {
+      console.error('[Recovery] Erro no envio:', e.message);
+      await redisIncrStats('recovery_errors');
+    }
+  }
+}
+
 app.post('/api/webhooks/ticto', async (req, res) => {
   // Responde 200 imediatamente — Ticto exige resposta rápida (inclusive no ping de validação)
   res.sendStatus(200);
@@ -1159,7 +1308,8 @@ app.post('/api/webhooks/ticto', async (req, res) => {
   console.log('[Ticto] Payload recebido:', JSON.stringify(body, null, 2));
 
   // Ping de validação do cadastro: body vazio ou sem order
-  if (!body.order) {
+  // (abandoned_cart é o único evento legítimo sem body.order — payload v2 flat)
+  if (!body.order && body.status !== 'abandoned_cart') {
     console.log('[Ticto] Ping de validação — sem order, ignorado.');
     return;
   }
@@ -1172,12 +1322,63 @@ app.post('/api/webhooks/ticto', async (req, res) => {
     return; // já respondeu 200; Ticto não reenvia
   }
 
+  // ── Abandono de checkout: agenda recuperação e encerra ──────────────────────
+  // Payload v2 flat: status, email, phone, checkout_url, tracking.src
+  if (body.status === 'abandoned_cart') {
+    await redisIncrStats('abandoned_cart');
+    const abandonSrc = (body.tracking?.src && body.tracking.src !== 'Não Informado') ? body.tracking.src : null;
+    // Nome do comprador não vem no payload de abandono (body.name é o nome da
+    // oferta) — busca no lead salvo via join key src
+    let leadName = null;
+    if (abandonSrc) {
+      try {
+        const raw = await getRedis().get(`lead:${abandonSrc}`);
+        if (raw) leadName = JSON.parse(raw).nome || null;
+      } catch {}
+    }
+    // checkout_url da Ticto → sufixo (base fixa no botão do template)
+    const checkoutSuffix = body.checkout_url
+      ? String(body.checkout_url).replace(/^https?:\/\/checkout\.ticto\.app\//, '')
+      : null;
+    await scheduleCheckoutRecovery({
+      phone: body.phone,
+      email: body.email || null,
+      name:  leadName,
+      lid:   abandonSrc,
+      stage: 'abandoned_cart',
+      checkoutSuffix,
+    });
+    return;
+  }
+
   const transactionId = body.order?.hash;
   // status: top-level no payload real da Ticto (body.status); order.status como fallback
   const status        = body.order?.status || body.status;
 
   if (!transactionId) {
     console.warn('[Ticto] order.hash ausente — não é possível garantir idempotência. Ignorado.');
+    return;
+  }
+
+  // ── Pix gerado / aguardando pagamento: lead clicou em comprar e não pagou ──
+  // Agenda recuperação (mesmo template; se pagar antes, authorized cancela)
+  if (status === 'waiting_payment' || status === 'pix_created') {
+    await redisIncrStats(status);
+    const wpSrc = (body.tracking?.src && body.tracking.src !== 'Não Informado') ? body.tracking.src : null;
+    const wpPhoneObj = body.customer?.phone;
+    const wpPhone = body.telefone
+      || body.phone_number_customer
+      || (wpPhoneObj && typeof wpPhoneObj === 'object'
+          ? `${(wpPhoneObj.ddi || '+55').replace('+', '')}${wpPhoneObj.ddd || ''}${wpPhoneObj.number || ''}`
+          : wpPhoneObj)
+      || null;
+    await scheduleCheckoutRecovery({
+      phone: wpPhone,
+      email: body.customer?.email || null,
+      name:  body.customer?.name  || null,
+      lid:   wpSrc,
+      stage: 'waiting_payment',
+    });
     return;
   }
 
@@ -1252,6 +1453,9 @@ app.post('/api/webhooks/ticto', async (req, res) => {
   console.log(`[Ticto] src_lead_id: ${srcLeadId} | fbc: ${fbc} | email: ${customerEmail}`);
 
   if (status === 'authorized') {
+    // Compra confirmada → cancela recuperação pendente do telefone
+    await cancelCheckoutRecovery(customerPhone, 'authorized');
+
     // Fase 2 — lookup do lead no Redis para enriquecimento do Purchase
     // Ordem: src_lead_id (join key exato) → email → sem match
     let leadData = null;
@@ -1360,6 +1564,27 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
     ? Math.round((stats.fbc_present / stats.authorized) * 100) + '%'
     : 'n/a';
 
+  // Estatísticas de recuperação de checkout
+  let recovery = {};
+  try {
+    const redis = getRedis();
+    const [pending, sentIc, sentAb, sentWp, errors] = await Promise.all([
+      redis.keys('recovery:pending:*').then(k => k.length),
+      redis.get('ticto:stats:recovery_sent_ic'),
+      redis.get('ticto:stats:recovery_sent_abandoned_cart'),
+      redis.get('ticto:stats:recovery_sent_waiting_payment'),
+      redis.get('ticto:stats:recovery_errors'),
+    ]);
+    recovery = {
+      enabled: process.env.RECOVERY_ENABLED === 'true',
+      pending,
+      sent_ic:              Number(sentIc) || 0,
+      sent_abandoned_cart:  Number(sentAb) || 0,
+      sent_waiting_payment: Number(sentWp) || 0,
+      errors:               Number(errors) || 0,
+    };
+  } catch {}
+
   return res.json({
     status: 'ok',
     purchase_capi_enabled: process.env.PURCHASE_CAPI_ENABLED === 'true',
@@ -1367,6 +1592,7 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
     authorized_count:      stats.authorized,
     last_event_at:         stats.lastAt || null,
     fbc_match_rate:        fbcRate,
+    recovery,
   });
 });
 
@@ -1377,4 +1603,7 @@ app.listen(PORT, () => {
   // Reprocessa formulários pré-sessão pendentes a cada 10 min.
   setInterval(() => { drainFailedPreSessao().catch(() => {}); }, 10 * 60 * 1000);
   setTimeout(() => { drainFailedPreSessao().catch(() => {}); }, 30 * 1000);
+  // Recuperação de checkout: verifica pendências vencidas a cada 5 min.
+  setInterval(() => { recoverySweep().catch(() => {}); }, 5 * 60 * 1000);
+  setTimeout(() => { recoverySweep().catch(() => {}); }, 60 * 1000);
 });
