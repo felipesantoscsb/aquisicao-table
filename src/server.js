@@ -1593,6 +1593,23 @@ app.post('/api/webhooks/ticto', async (req, res) => {
     // Compra confirmada → cancela recuperação pendente do telefone
     await cancelCheckoutRecovery(customerPhone, 'authorized');
 
+    // Atribuição de recuperação: se este telefone recebeu mensagem de
+    // recuperação nas últimas 24h (TTL do marcador recovery:sent), conta a
+    // compra como recuperada — métrica que justifica o sistema. Janela de
+    // 24h = mesma da dedupe; valor somado em centavos p/ receita recuperada.
+    const buyerPhoneNorm = normalizePhone(customerPhone);
+    if (buyerPhoneNorm) {
+      const sentStage = await redisGet(`recovery:sent:${buyerPhoneNorm}`);
+      if (sentStage) {
+        await redisIncrStats('recovery_converted');
+        await redisIncrStats(`recovery_converted_${sentStage}`);
+        if (typeof paidAmount === 'number') {
+          try { await getRedis().incrby('ticto:stats:recovery_converted_cents', paidAmount); } catch {}
+        }
+        console.log(`[Recovery] CONVERTIDA (${sentStage}): ${buyerPhoneNorm} — R$ ${value}`);
+      }
+    }
+
     // Fase 2 — lookup do lead no Redis para enriquecimento do Purchase
     // Ordem: src_lead_id (join key exato) → email → sem match
     let leadData = null;
@@ -1710,20 +1727,26 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
   let recovery = {};
   try {
     const redis = getRedis();
-    const [pending, sentIc, sentAb, sentWp, errors, optouts] = await Promise.all([
+    const [pending, sentIc, sentAb, sentWp, errors, optouts, converted, convertedCents] = await Promise.all([
       redis.keys('recovery:pending:*').then(k => k.length),
       redis.get('ticto:stats:recovery_sent_ic'),
       redis.get('ticto:stats:recovery_sent_abandoned_cart'),
       redis.get('ticto:stats:recovery_sent_waiting_payment'),
       redis.get('ticto:stats:recovery_errors'),
       redis.keys('recovery:optout:*').then(k => k.length),
+      redis.get('ticto:stats:recovery_converted'),
+      redis.get('ticto:stats:recovery_converted_cents'),
     ]);
+    const totalSent = (Number(sentIc) || 0) + (Number(sentAb) || 0) + (Number(sentWp) || 0);
     recovery = {
       enabled: process.env.RECOVERY_ENABLED === 'true',
       pending,
       sent_ic:              Number(sentIc) || 0,
       sent_abandoned_cart:  Number(sentAb) || 0,
       sent_waiting_payment: Number(sentWp) || 0,
+      converted:            Number(converted) || 0,
+      conversion_rate:      totalSent > 0 ? Math.round(((Number(converted) || 0) / totalSent) * 1000) / 10 + '%' : 'n/a',
+      recovered_revenue:    'R$ ' + (((Number(convertedCents) || 0) / 100).toFixed(2)),
       errors:               Number(errors) || 0,
       optouts,
     };
