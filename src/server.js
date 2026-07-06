@@ -1208,6 +1208,7 @@ async function scheduleCheckoutRecovery({
   if (!phoneNorm) return;
   try {
     const redis = getRedis();
+    if (await redis.get(`recovery:optout:${phoneNorm}`)) return;    // lead pediu SAIR — nunca mais
     if (await redis.get(`recovery:sent:${phoneNorm}`)) return;      // já recebeu nas últimas 24h
     const existing = await redis.get(`recovery:pending:${phoneNorm}`);
     const prev = existing ? JSON.parse(existing) : null;
@@ -1306,6 +1307,13 @@ async function recoverySweep() {
       const rec = JSON.parse(raw);
       if (Date.now() < rec.due_at) continue;
 
+      // Blocklist (lead respondeu SAIR): descarta a pendência sem enviar
+      if (await redis.get(`recovery:optout:${rec.phone}`)) {
+        await redis.del(key);
+        console.log(`[Recovery] Descartada (optout): ${rec.phone}`);
+        continue;
+      }
+
       // Marca como enviada ANTES do envio — evita duplicata se dois sweeps concorrerem
       const lock = await redis.set(`recovery:sent:${rec.phone}`, rec.stage, 'EX', RECOVERY_TTL_SENT, 'NX');
       await redis.del(key);
@@ -1320,6 +1328,88 @@ async function recoverySweep() {
     }
   }
 }
+
+// ─── Webhook WhatsApp Cloud API (mensagens recebidas) ────────────────────────
+//
+// Processa respostas das leads no número da recuperação:
+//   - SAIR/PARAR/STOP/CANCELAR → blocklist permanente (recovery:optout:{phone})
+//     + confirmação em texto livre (permitido: janela de 24h aberta pela lead)
+//   - Demais mensagens → apenas logadas (Felipe responde manualmente)
+//
+// Configurar no painel do app Meta (WhatsApp → Configuration → Webhook):
+//   Callback URL: https://<dominio>/api/webhooks/whatsapp
+//   Verify token: valor de WHATSAPP_VERIFY_TOKEN
+//   Campo assinado: messages
+
+// Verificação do webhook (chamada única do Meta ao cadastrar a URL)
+app.get('/api/webhooks/whatsapp', (req, res) => {
+  const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN;
+  if (req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === verifyToken) {
+    return res.status(200).send(req.query['hub.challenge']);
+  }
+  return res.sendStatus(403);
+});
+
+// Palavras que ativam o opt-out (comparação sem acentos/pontuação, minúsculas)
+const OPTOUT_WORDS = new Set(['sair', 'parar', 'stop', 'cancelar', 'pare']);
+
+function isOptOutText(text) {
+  if (!text) return false;
+  const t = String(text)
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')  // remove acentos
+    .toLowerCase().replace(/[^a-z\s]/g, '').trim();
+  return OPTOUT_WORDS.has(t);
+}
+
+async function sendWhatsAppText(to, bodyText) {
+  const TOKEN    = process.env.WHATSAPP_CLOUD_TOKEN;
+  const PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  if (!TOKEN || !PHONE_ID) return;
+  const resp = await fetch(`https://graph.facebook.com/v21.0/${PHONE_ID}/messages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
+    body: JSON.stringify({ messaging_product: 'whatsapp', to, type: 'text', text: { body: bodyText } }),
+  });
+  if (!resp.ok) {
+    const j = await resp.json().catch(() => ({}));
+    throw new Error(`WhatsApp API ${resp.status}: ${JSON.stringify(j.error || j)}`);
+  }
+}
+
+app.post('/api/webhooks/whatsapp', async (req, res) => {
+  res.sendStatus(200); // Meta exige resposta rápida; reenvios são deduplicados pelo id da msg
+
+  try {
+    const entries = req.body?.entry || [];
+    for (const entry of entries) {
+      for (const change of entry.changes || []) {
+        // Ignora recibos de entrega/leitura (value.statuses) — só interessa messages
+        const messages = change.value?.messages || [];
+        for (const msg of messages) {
+          const from = normalizePhone(msg.from);
+          const text = msg.text?.body || msg.button?.text || null;
+          if (!from) continue;
+
+          if (isOptOutText(text)) {
+            // Blocklist permanente (sem TTL) + limpa pendência se houver
+            await redisSet(`recovery:optout:${from}`, new Date().toISOString());
+            await redisDel(`recovery:pending:${from}`);
+            await redisIncrStats('recovery_optout');
+            console.log(`[WhatsApp] Opt-out registrado: ${from}`);
+            await sendWhatsAppText(from,
+              'Pronto! Você não vai mais receber mensagens automáticas por aqui. Se mudar de ideia ou precisar de algo, é só me chamar 💚'
+            ).catch(e => console.error('[WhatsApp] Erro na confirmação de opt-out:', e.message));
+          } else if (text) {
+            // Resposta comum — loga para visibilidade (atendimento manual)
+            console.log(`[WhatsApp] Mensagem recebida de ${from}: ${String(text).slice(0, 200)}`);
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error('[WhatsApp] Erro no processamento do webhook:', e.message);
+  }
+});
 
 app.post('/api/webhooks/ticto', async (req, res) => {
   // Responde 200 imediatamente — Ticto exige resposta rápida (inclusive no ping de validação)
@@ -1620,12 +1710,13 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
   let recovery = {};
   try {
     const redis = getRedis();
-    const [pending, sentIc, sentAb, sentWp, errors] = await Promise.all([
+    const [pending, sentIc, sentAb, sentWp, errors, optouts] = await Promise.all([
       redis.keys('recovery:pending:*').then(k => k.length),
       redis.get('ticto:stats:recovery_sent_ic'),
       redis.get('ticto:stats:recovery_sent_abandoned_cart'),
       redis.get('ticto:stats:recovery_sent_waiting_payment'),
       redis.get('ticto:stats:recovery_errors'),
+      redis.keys('recovery:optout:*').then(k => k.length),
     ]);
     recovery = {
       enabled: process.env.RECOVERY_ENABLED === 'true',
@@ -1634,6 +1725,7 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
       sent_abandoned_cart:  Number(sentAb) || 0,
       sent_waiting_payment: Number(sentWp) || 0,
       errors:               Number(errors) || 0,
+      optouts,
     };
   } catch {}
 
