@@ -1251,9 +1251,22 @@ async function sendRecoveryMessage(rec) {
   const PHONE_ID  = process.env.WHATSAPP_PHONE_NUMBER_ID;
   const TEMPLATE  = process.env.WHATSAPP_RECOVERY_TEMPLATE || 'recuperacao_checkout_raiz';
   const ENABLED   = process.env.RECOVERY_ENABLED === 'true';
+  // O template aprovado usa botão com URL FIXA (magic link de recuperação da
+  // Ticto — link único que resolve a sessão da lead via cookies no aparelho
+  // dela). Botão fixo NÃO aceita parâmetro: enviar um faz a API rejeitar a
+  // mensagem inteira. Se um dia o template mudar para URL dinâmica
+  // (https://checkout.ticto.app/{{1}}), setar RECOVERY_BUTTON_MODE=dynamic
+  // para voltar a enviar o sufixo com prefill por lead.
+  const BUTTON_MODE = process.env.RECOVERY_BUTTON_MODE || 'static';
 
-  const suffix = rec.checkout_suffix
-    || buildCheckoutSuffix({ email: rec.email, phone: rec.phone, name: rec.name, lid: rec.lid });
+  const components = [
+    { type: 'body', parameters: [{ type: 'text', text: firstName(rec.name) || 'querida' }] },
+  ];
+  if (BUTTON_MODE === 'dynamic') {
+    const suffix = rec.checkout_suffix
+      || buildCheckoutSuffix({ email: rec.email, phone: rec.phone, name: rec.name, lid: rec.lid });
+    components.push({ type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: suffix }] });
+  }
 
   const payload = {
     messaging_product: 'whatsapp',
@@ -1262,10 +1275,7 @@ async function sendRecoveryMessage(rec) {
     template: {
       name: TEMPLATE,
       language: { code: 'pt_BR' },
-      components: [
-        { type: 'body',   parameters: [{ type: 'text', text: firstName(rec.name) || 'querida' }] },
-        { type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: suffix }] },
-      ],
+      components,
     },
   };
 
