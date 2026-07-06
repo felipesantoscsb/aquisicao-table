@@ -361,10 +361,14 @@ let pendingBudget   = null;  // { entity_type, entity_id, budget_type }
 let pendingDup      = null;  // { entity_type, entity_id }
 
 // ── Fetch ─────────────────────────────────────────────────────────────────────
+// Token de acesso: as rotas /api/meta-* agora exigem autenticação (DASH_TOKEN).
+// A página é aberta como /dashboard.html?token=SEU_TOKEN
+const DASH_TOKEN = new URLSearchParams(location.search).get('token') || '';
+
 async function fetchInsights(period, level) {
   const key = `${period}_${level}`;
   if (tableCache[key]) return tableCache[key];
-  const res  = await fetch(`/api/meta-insights?period=${period}&level=${level}`);
+  const res  = await fetch(`/api/meta-insights?period=${period}&level=${level}&token=${encodeURIComponent(DASH_TOKEN)}`);
   const json = await res.json();
   if (!res.ok) throw new Error(json.error || 'Erro desconhecido');
   tableCache[key] = json;
@@ -621,7 +625,7 @@ async function confirmStatus() {
 
   try {
     const res  = await fetch('/api/meta-action', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-dash-token': DASH_TOKEN },
       body: JSON.stringify({ entity_type, entity_id, action }),
     });
     const json = await res.json();
@@ -694,7 +698,7 @@ async function confirmBudget() {
 
   try {
     const res  = await fetch('/api/meta-budget', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-dash-token': DASH_TOKEN },
       body: JSON.stringify({ entity_type, entity_id, budget_type: budgetType, amount }),
     });
     const json = await res.json();
@@ -720,7 +724,7 @@ async function confirmDuplicate() {
 
   try {
     const res  = await fetch('/api/meta-duplicate', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-dash-token': DASH_TOKEN },
       body: JSON.stringify({ entity_type, entity_id }),
     });
     const json = await res.json();

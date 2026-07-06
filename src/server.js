@@ -51,6 +51,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// Dashboard e rotas de gestão Meta exigem token (antes do static, senão o
+// dashboard.html público vaza — e /api/meta-action permitiria a qualquer um
+// pausar campanhas e mexer em orçamento)
+app.use(
+  ['/dashboard.html', '/dash', '/api/dash', '/api/meta-insights', '/api/meta-action', '/api/meta-budget', '/api/meta-duplicate'],
+  requireDashToken
+);
+
 // Serve os arquivos estáticos da pasta public/
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
@@ -144,6 +152,38 @@ function getClientIp(req) {
   return req.socket?.remoteAddress || null;
 }
 
+// ─── Métricas diárias (série temporal p/ dashboard /dash) ────────────────────
+//
+// Contadores por dia (fuso de São Paulo) em metrics:{YYYY-MM-DD}:{nome}.
+// Fire-and-forget: falha de Redis nunca afeta a rota que instrumenta.
+// TTL 400 dias — histórico de ~13 meses para comparações ano a ano.
+
+function spDate(ts = Date.now()) {
+  // en-CA → formato YYYY-MM-DD direto
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(ts);
+}
+
+async function metricsIncr(name, n = 1) {
+  const amount = Math.round(Number(n));
+  if (!amount) return;
+  try {
+    const key = `metrics:${spDate()}:${name}`;
+    const redis = getRedis();
+    await redis.incrby(key, amount);
+    await redis.expire(key, 60 * 60 * 24 * 400);
+  } catch {}
+}
+
+// Autenticação simples por token para dashboard e rotas de gestão Meta.
+// Token via ?token= ou header x-dash-token; valor em DASH_TOKEN (ou HEALTH_TOKEN).
+function requireDashToken(req, res, next) {
+  const expected = process.env.DASH_TOKEN || process.env.HEALTH_TOKEN;
+  if (!expected) return res.status(500).json({ error: 'DASH_TOKEN não configurado no servidor.' });
+  const got = req.query.token || req.headers['x-dash-token'];
+  if (got !== expected) return res.status(401).json({ error: 'Unauthorized' });
+  next();
+}
+
 // ─── Rota CAPI ────────────────────────────────────────────────────────────────
 
 app.post('/api/capi', async (req, res) => {
@@ -169,6 +209,9 @@ app.post('/api/capi', async (req, res) => {
     event_source_url,
     lid,               // token opaco do dossiê — permite enriquecimento via Redis
   } = req.body;
+
+  // Série diária p/ dashboard (fire-and-forget)
+  metricsIncr('evt_' + (event_name || 'Lead')).catch(() => {});
 
   // SDR forward só no CompleteRegistration: único momento com perfil+respostas+qualificação completos.
   if ((req.body.event_name || 'Lead') === 'CompleteRegistration') {
@@ -1077,6 +1120,9 @@ app.post('/api/capi/initiate-checkout', async (req, res) => {
 
   const enriched = await enrichFromLid(lid, { phone, em, fbc, fbp, fn });
 
+  // Série diária p/ dashboard (fire-and-forget)
+  metricsIncr('evt_InitiateCheckout').catch(() => {});
+
   // Agenda recuperação de checkout: se o Purchase não chegar via webhook Ticto
   // em RECOVERY_DELAY_MIN, o sweep dispara o WhatsApp (authorized cancela)
   scheduleCheckoutRecovery({
@@ -1321,6 +1367,7 @@ async function recoverySweep() {
 
       await sendRecoveryMessage(rec);
       await redisIncrStats(`recovery_sent_${rec.stage}`);
+      metricsIncr('recovery_sent').catch(() => {});
       console.log(`[Recovery] Enviada (${rec.stage}): ${rec.phone}`);
     } catch (e) {
       console.error('[Recovery] Erro no envio:', e.message);
@@ -1451,6 +1498,7 @@ app.post('/api/webhooks/ticto', async (req, res) => {
   // email/telefone/nome para pré-preencher o checkout.
   if (body.status === 'abandoned_cart') {
     await redisIncrStats('abandoned_cart');
+    metricsIncr('abandoned_cart').catch(() => {});
     const abandonSrc = (body.tracking?.src && body.tracking.src !== 'Não Informado') ? body.tracking.src : null;
     await scheduleCheckoutRecovery({
       phone: body.phone,
@@ -1487,6 +1535,7 @@ app.post('/api/webhooks/ticto', async (req, res) => {
   // no corpo da mensagem; ver com o Felipe antes de linkar isso ao envio).
   if (status === 'waiting_payment' || status === 'pix_created') {
     await redisIncrStats(status);
+    metricsIncr('waiting_payment').catch(() => {});
     const wpSrc = (body.tracking?.src && body.tracking.src !== 'Não Informado') ? body.tracking.src : null;
     const wpPhoneObj = body.customer?.phone;
     const wpPhone = body.telefone
@@ -1593,6 +1642,11 @@ app.post('/api/webhooks/ticto', async (req, res) => {
     // Compra confirmada → cancela recuperação pendente do telefone
     await cancelCheckoutRecovery(customerPhone, 'authorized');
 
+    // Série diária p/ dashboard (fire-and-forget) — pós-checagem de
+    // idempotência acima, então retries da Ticto não contam duas vezes
+    metricsIncr('purchases').catch(() => {});
+    if (typeof paidAmount === 'number') metricsIncr('revenue_cents', paidAmount).catch(() => {});
+
     // Atribuição de recuperação: se este telefone recebeu mensagem de
     // recuperação nas últimas 24h (TTL do marcador recovery:sent), conta a
     // compra como recuperada — métrica que justifica o sistema. Janela de
@@ -1603,8 +1657,10 @@ app.post('/api/webhooks/ticto', async (req, res) => {
       if (sentStage) {
         await redisIncrStats('recovery_converted');
         await redisIncrStats(`recovery_converted_${sentStage}`);
+        metricsIncr('recovery_converted').catch(() => {});
         if (typeof paidAmount === 'number') {
           try { await getRedis().incrby('ticto:stats:recovery_converted_cents', paidAmount); } catch {}
+          metricsIncr('recovery_revenue_cents', paidAmount).catch(() => {});
         }
         console.log(`[Recovery] CONVERTIDA (${sentStage}): ${buyerPhoneNorm} — R$ ${value}`);
       }
@@ -1700,6 +1756,7 @@ app.post('/api/webhooks/ticto', async (req, res) => {
 
   if (status === 'refunded' || status === 'chargeback') {
     // TODO: reverter/marcar na tabela de leads; não enviar nada à Meta por ora
+    metricsIncr('refunds').catch(() => {});
     console.log(`[Ticto] ${status.toUpperCase()} registrado para ${transactionId} — nenhuma ação na Meta.`);
   }
 
@@ -1762,6 +1819,122 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
     recovery,
   });
 });
+
+// ─── Dashboard /dash — funil, faturamento e recuperação ──────────────────────
+//
+// Série temporal vem dos contadores metrics:{date}:{nome} (a partir de jul/2026)
+// + backfill de vendas/faturamento dos registros ticto:purchase:* (TTL 90d).
+// Protegido por requireDashToken (aplicado no app.use lá em cima).
+
+const DASH_METRICS = [
+  'evt_PageView', 'evt_ViewContent', 'evt_Lead', 'evt_CompleteRegistration', 'evt_InitiateCheckout',
+  'abandoned_cart', 'waiting_payment',
+  'purchases', 'revenue_cents', 'refunds',
+  'recovery_sent', 'recovery_converted', 'recovery_revenue_cents',
+];
+
+app.get('/api/dash/data', async (req, res) => {
+  try {
+    const daysN = Math.min(Math.max(Number(req.query.days) || 30, 1), 90);
+    const redis = getRedis();
+
+    // Datas (fuso SP), da mais antiga até hoje
+    const dates = [];
+    for (let i = daysN - 1; i >= 0; i--) dates.push(spDate(Date.now() - i * 86400000));
+
+    // Contadores diários em um único MGET
+    const keys = [];
+    for (const d of dates) for (const m of DASH_METRICS) keys.push(`metrics:${d}:${m}`);
+    const values = await redis.mget(keys);
+    const days = dates.map((date, di) => {
+      const row = { date };
+      DASH_METRICS.forEach((m, mi) => { row[m] = Number(values[di * DASH_METRICS.length + mi]) || 0; });
+      return row;
+    });
+    const byDate = Object.fromEntries(days.map(r => [r.date, r]));
+
+    // Backfill de vendas a partir dos registros individuais (cobre o período
+    // anterior ao início dos contadores). Usa o MAIOR entre as duas fontes por
+    // dia para não dobrar contagem no período de transição.
+    const backfill = {};
+    const purchaseKeys = await redis.keys('ticto:purchase:*');
+    for (const k of purchaseKeys) {
+      try {
+        const raw = await redis.get(k);
+        if (!raw) continue;
+        const rec = JSON.parse(raw);
+        if (!rec?.created_at) continue;
+        const d = spDate(new Date(rec.created_at).getTime());
+        if (!byDate[d]) continue;
+        backfill[d] = backfill[d] || { purchases: 0, revenue_cents: 0, refunds: 0 };
+        backfill[d].purchases += 1;
+        backfill[d].revenue_cents += Math.round((rec.value || 0) * 100);
+        if (rec.status === 'refunded' || rec.status === 'chargeback') backfill[d].refunds += 1;
+      } catch {}
+    }
+    for (const [d, b] of Object.entries(backfill)) {
+      const row = byDate[d];
+      if (b.purchases > row.purchases) {
+        row.purchases = b.purchases;
+        row.revenue_cents = b.revenue_cents;
+      }
+      if (b.refunds > row.refunds) row.refunds = b.refunds;
+    }
+
+    // Totais por janela (dias corridos até hoje, dentro da janela pedida)
+    function windowTotals(n) {
+      const slice = days.slice(-n);
+      const sum = (f) => slice.reduce((a, r) => a + r[f], 0);
+      const ic = sum('evt_InitiateCheckout'), purch = sum('purchases');
+      return {
+        page_views:         sum('evt_PageView'),
+        view_content:       sum('evt_ViewContent'),
+        leads:              sum('evt_Lead'),
+        registrations:      sum('evt_CompleteRegistration'),
+        initiate_checkout:  ic,
+        abandoned_cart:     sum('abandoned_cart'),
+        purchases:          purch,
+        revenue:            sum('revenue_cents') / 100,
+        refunds:            sum('refunds'),
+        ic_to_purchase:     ic > 0 ? Math.round((purch / ic) * 1000) / 10 : null,
+        recovery_sent:      sum('recovery_sent'),
+        recovery_converted: sum('recovery_converted'),
+        recovery_revenue:   sum('recovery_revenue_cents') / 100,
+      };
+    }
+
+    // Recuperação — acumulado desde o início (contadores globais)
+    const [rcSentIc, rcSentAb, rcSentWp, rcConv, rcCents, rcErr] = await Promise.all([
+      redis.get('ticto:stats:recovery_sent_ic'),
+      redis.get('ticto:stats:recovery_sent_abandoned_cart'),
+      redis.get('ticto:stats:recovery_sent_waiting_payment'),
+      redis.get('ticto:stats:recovery_converted'),
+      redis.get('ticto:stats:recovery_converted_cents'),
+      redis.get('ticto:stats:recovery_errors'),
+    ]);
+    const rcSent = (Number(rcSentIc) || 0) + (Number(rcSentAb) || 0) + (Number(rcSentWp) || 0);
+
+    return res.json({
+      generated_at: new Date().toISOString(),
+      timezone: 'America/Sao_Paulo',
+      days,
+      totals: { today: windowTotals(1), d7: windowTotals(7), d30: windowTotals(Math.min(30, daysN)) },
+      recovery_lifetime: {
+        enabled:   process.env.RECOVERY_ENABLED === 'true',
+        sent:      rcSent,
+        converted: Number(rcConv) || 0,
+        rate:      rcSent > 0 ? Math.round(((Number(rcConv) || 0) / rcSent) * 1000) / 10 : null,
+        revenue:   (Number(rcCents) || 0) / 100,
+        errors:    Number(rcErr) || 0,
+      },
+    });
+  } catch (e) {
+    console.error('[Dash] Erro:', e.message);
+    return res.status(500).json({ error: 'Erro ao montar dados do dashboard.' });
+  }
+});
+
+app.get('/dash', (req, res) => res.sendFile(path.join(__dirname, 'dash.html')));
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Funil · Evelyn Liu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F8F4EE; --moss: #3D4A35; --terra: #B97040; --ink: #1a1a1a;
+    --muted: #7a7a7a; --border: #e0d9d0; --card: #ffffff;
+  }
+  body { background: var(--bg); color: var(--ink); font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.6; min-height: 100vh; }
+  .page { max-width: 1200px; margin: 0 auto; padding: 0 24px 64px; }
+
+  header { padding: 40px 0 24px; border-bottom: 1px solid var(--terra); margin-bottom: 32px; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+  h1 { font-family: 'Cormorant', serif; font-weight: 500; font-size: 44px; line-height: 1; }
+  header p { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .periods { display: flex; gap: 8px; }
+  .periods button { font-family: 'DM Sans'; font-size: 12px; padding: 6px 14px; border: 1px solid var(--border); background: var(--card); border-radius: 3px; cursor: pointer; color: var(--muted); }
+  .periods button.active { background: var(--moss); color: #fff; border-color: var(--moss); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 36px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-top: 2px solid var(--terra); border-radius: 4px; padding: 16px 18px; }
+  .card.green { border-top-color: var(--moss); }
+  .card .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  .card .value { font-family: 'Cormorant', serif; font-size: 34px; font-weight: 600; margin-top: 2px; }
+  .card .sub { font-size: 11.5px; color: var(--muted); }
+
+  section { margin-bottom: 40px; }
+  section > h2 { font-family: 'Cormorant', serif; font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--moss); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 18px; }
+  .chart-box { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 18px; }
+
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  th { background: var(--moss); color: #fff; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 500; text-align: left; padding: 10px 14px; }
+  td { padding: 9px 14px; border-top: 1px solid var(--border); font-size: 13px; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.total td { font-weight: 500; background: #faf7f2; }
+  .rate { color: var(--terra); font-size: 12px; }
+
+  #err { display: none; background: #fbe9e7; border: 1px solid #e5b3aa; color: #8a3324; padding: 14px 18px; border-radius: 4px; margin-bottom: 24px; }
+  .note { font-size: 11.5px; color: var(--muted); margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div>
+      <h1>Funil &amp; Faturamento</h1>
+      <p id="updated">carregando…</p>
+    </div>
+    <div class="periods">
+      <button data-days="7">7 dias</button>
+      <button data-days="30" class="active">30 dias</button>
+      <button data-days="90">90 dias</button>
+    </div>
+  </header>
+
+  <div id="err"></div>
+
+  <div class="cards" id="cards"></div>
+
+  <section>
+    <h2>Vendas &amp; Faturamento por dia</h2>
+    <div class="chart-box"><canvas id="chart-revenue" height="90"></canvas></div>
+  </section>
+
+  <section>
+    <h2>Funil por dia</h2>
+    <div class="chart-box"><canvas id="chart-funnel" height="90"></canvas></div>
+    <p class="note">Eventos do servidor (quiz/dossiê + webhook Ticto). Série diária iniciada em jul/2026 — dias anteriores mostram só vendas (backfill dos registros de compra).</p>
+  </section>
+
+  <section>
+    <h2>Funil ponto a ponto — período selecionado</h2>
+    <table id="funnel-table">
+      <thead><tr><th>Etapa</th><th class="num">Volume</th><th class="num">Conv. da etapa anterior</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Recuperação de checkout</h2>
+    <div class="cards" id="recovery-cards"></div>
+  </section>
+</div>
+
+<script>
+const TOKEN = new URLSearchParams(location.search).get('token') || '';
+let daysSel = 30;
+let charts = {};
+
+const fmtBRL = v => 'R$ ' + (v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtN   = v => (v || 0).toLocaleString('pt-BR');
+const pct    = (a, b) => b > 0 ? (Math.round((a / b) * 1000) / 10).toLocaleString('pt-BR') + '%' : '—';
+
+async function load() {
+  try {
+    const res = await fetch(`/api/dash/data?days=${daysSel}&token=${encodeURIComponent(TOKEN)}`);
+    if (!res.ok) throw new Error(res.status === 401 ? 'Token inválido — confira o ?token= na URL.' : `Erro ${res.status}`);
+    render(await res.json());
+  } catch (e) {
+    const el = document.getElementById('err');
+    el.style.display = 'block';
+    el.textContent = e.message;
+  }
+}
+
+function card(label, value, sub, green) {
+  return `<div class="card${green ? ' green' : ''}"><div class="label">${label}</div><div class="value">${value}</div><div class="sub">${sub || ''}</div></div>`;
+}
+
+function render(data) {
+  document.getElementById('err').style.display = 'none';
+  const w = daysSel <= 7 ? data.totals.d7 : data.totals.d30;
+  const t = data.totals.today;
+  document.getElementById('updated').textContent =
+    `Atualizado ${new Date(data.generated_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })} · fuso São Paulo`;
+
+  document.getElementById('cards').innerHTML = [
+    card('Faturamento', fmtBRL(w.revenue), `hoje: ${fmtBRL(t.revenue)}`, true),
+    card('Vendas', fmtN(w.purchases), `hoje: ${fmtN(t.purchases)}`, true),
+    card('Checkouts iniciados', fmtN(w.initiate_checkout), `hoje: ${fmtN(t.initiate_checkout)}`),
+    card('IC → Compra', w.ic_to_purchase !== null ? w.ic_to_purchase.toLocaleString('pt-BR') + '%' : '—', 'meta histórica: ~28%'),
+    card('Reembolsos', fmtN(w.refunds), ''),
+  ].join('');
+
+  const rl = data.recovery_lifetime;
+  document.getElementById('recovery-cards').innerHTML = [
+    card('Status', rl.enabled ? 'ATIVA' : 'SOMBRA', '', rl.enabled),
+    card('Enviadas (total)', fmtN(rl.sent), `no período: ${fmtN(w.recovery_sent)}`),
+    card('Convertidas (total)', fmtN(rl.converted), `no período: ${fmtN(w.recovery_converted)}`, true),
+    card('Taxa de recuperação', rl.rate !== null ? rl.rate.toLocaleString('pt-BR') + '%' : '—', 'meta: 4–8%'),
+    card('Receita recuperada', fmtBRL(rl.revenue), `no período: ${fmtBRL(w.recovery_revenue)}`, true),
+    card('Erros de envio', fmtN(rl.errors), ''),
+  ].join('');
+
+  const labels = data.days.map(d => d.date.slice(5).split('-').reverse().join('/'));
+
+  drawChart('chart-revenue', {
+    labels,
+    datasets: [
+      { type: 'bar', label: 'Faturamento (R$)', data: data.days.map(d => d.revenue_cents / 100), backgroundColor: '#3D4A35cc', yAxisID: 'y' },
+      { type: 'line', label: 'Vendas', data: data.days.map(d => d.purchases), borderColor: '#B97040', backgroundColor: '#B97040', tension: .3, yAxisID: 'y1' },
+    ],
+  }, { y: { position: 'left' }, y1: { position: 'right', grid: { drawOnChartArea: false } } });
+
+  drawChart('chart-funnel', {
+    labels,
+    datasets: [
+      { type: 'line', label: 'ViewContent', data: data.days.map(d => d.evt_ViewContent), borderColor: '#c9bfae', tension: .3 },
+      { type: 'line', label: 'Leads', data: data.days.map(d => d.evt_Lead), borderColor: '#8d9b7a', tension: .3 },
+      { type: 'line', label: 'Cadastros (quiz)', data: data.days.map(d => d.evt_CompleteRegistration), borderColor: '#3D4A35', tension: .3 },
+      { type: 'line', label: 'Checkouts', data: data.days.map(d => d.evt_InitiateCheckout), borderColor: '#B97040', tension: .3 },
+      { type: 'line', label: 'Vendas', data: data.days.map(d => d.purchases), borderColor: '#1a1a1a', tension: .3 },
+    ],
+  });
+
+  const s = f => data.days.reduce((a, r) => a + r[f], 0);
+  const steps = [
+    ['PageView', s('evt_PageView'), null],
+    ['ViewContent', s('evt_ViewContent'), s('evt_PageView')],
+    ['Lead', s('evt_Lead'), s('evt_ViewContent')],
+    ['CompleteRegistration', s('evt_CompleteRegistration'), s('evt_Lead')],
+    ['InitiateCheckout', s('evt_InitiateCheckout'), s('evt_CompleteRegistration')],
+    ['Compra', s('purchases'), s('evt_InitiateCheckout')],
+  ];
+  document.querySelector('#funnel-table tbody').innerHTML = steps.map(([name, vol, prev]) =>
+    `<tr><td>${name}</td><td class="num">${fmtN(vol)}</td><td class="num rate">${prev !== null ? pct(vol, prev) : '—'}</td></tr>`
+  ).join('') + `<tr class="total"><td>Faturamento</td><td class="num" colspan="2">${fmtBRL(s('revenue_cents') / 100)} · recuperado: ${fmtBRL(s('recovery_revenue_cents') / 100)}</td></tr>`;
+}
+
+function drawChart(id, config, extraScales = {}) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id), {
+    data: config,
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { labels: { font: { family: 'DM Sans', size: 11 } } } },
+      scales: Object.fromEntries(Object.entries({ x: {}, y: { beginAtZero: true }, ...extraScales })
+        .map(([k, v]) => [k, { ...v, ticks: { font: { family: 'DM Sans', size: 10 } } }])),
+    },
+  });
+}
+
+document.querySelectorAll('.periods button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.periods button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  daysSel = Number(b.dataset.days);
+  load();
+}));
+
+load();
+setInterval(load, 5 * 60 * 1000); // atualiza a cada 5 min
+</script>
+</body>
+</html>
