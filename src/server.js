@@ -987,7 +987,7 @@ async function forwardToSDR(body) {
     historico:              historico || '',
     'Perguntas e respostas': perguntasRespostas,
     source:                 'quiz_evelynliu',
-    lead_event_id:          body.lead_event_id || null,
+    lead_event_id:          body.quiz_lead_event_id || body.lead_event_id || null,
     tier:                   body.qualification?.tier || body.tier || null, // hot/warm/cold para parágrafo de tier no dossiê
   };
 
@@ -1294,7 +1294,7 @@ async function cancelCheckoutRecovery(phone, reason) {
 }
 
 async function sendRecoveryMessage(rec) {
-  const TOKEN     = process.env.WHATSAPP_CLOUD_TOKEN;
+  const TOKEN     = process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
   const PHONE_ID  = process.env.WHATSAPP_PHONE_NUMBER_ID;
   const TEMPLATE  = process.env.WHATSAPP_RECOVERY_TEMPLATE || 'recuperacao_checkout_raiz';
   const ENABLED   = process.env.RECOVERY_ENABLED === 'true';
@@ -1341,6 +1341,46 @@ async function sendRecoveryMessage(rec) {
   return json;
 }
 
+async function registerRecoveryTemplateInHub(rec, provider) {
+  const HUB_URL = process.env.HUB_TEMPLATE_SENT_URL
+    || 'https://crm.tableclinic.com.br/webhook/whatsapp-template-sent';
+  const HUB_SECRET = process.env.HUB_WEBHOOK_SECRET || process.env.INTERNAL_WEBHOOK_SECRET;
+  if (!HUB_SECRET) {
+    console.warn('[Recovery] HUB_WEBHOOK_SECRET não configurado — registro no Hub ignorado');
+    return null;
+  }
+
+  const payload = {
+    phone: rec.phone,
+    nome: rec.name || 'Lead',
+    template_name: process.env.WHATSAPP_RECOVERY_TEMPLATE || 'recuperacao_checkout_raiz',
+    params: [firstName(rec.name) || 'querida'],
+    provider,
+    provider_message_id: provider?.messages?.[0]?.id || null,
+    source: 'checkout_recovery',
+    tier: null,
+    funnel: 'quiz',
+    body_text: 'recuperacao_checkout_raiz',
+  };
+
+  try {
+    const res = await fetch(HUB_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-webhook-secret': HUB_SECRET },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      console.warn(`[Recovery] Hub registro falhou (${res.status}): ${text}`);
+      return null;
+    }
+    return await res.json().catch(() => ({}));
+  } catch (err) {
+    console.warn('[Recovery] Hub registro falhou:', err.message);
+    return null;
+  }
+}
+
 async function recoverySweep() {
   const redis = getRedis();
   let keys = [];
@@ -1360,12 +1400,21 @@ async function recoverySweep() {
         continue;
       }
 
-      // Marca como enviada ANTES do envio — evita duplicata se dois sweeps concorrerem
-      const lock = await redis.set(`recovery:sent:${rec.phone}`, rec.stage, 'EX', RECOVERY_TTL_SENT, 'NX');
-      await redis.del(key);
-      if (!lock) continue;
+      const sendingLock = await redis.set(`recovery:sending:${rec.phone}`, rec.stage, 'EX', 5 * 60, 'NX');
+      if (!sendingLock) continue;
 
-      await sendRecoveryMessage(rec);
+      const provider = await sendRecoveryMessage(rec);
+      if (provider?.shadow) {
+        await redis.del(`recovery:sending:${rec.phone}`);
+        continue;
+      }
+
+      const sentLock = await redis.set(`recovery:sent:${rec.phone}`, rec.stage, 'EX', RECOVERY_TTL_SENT, 'NX');
+      await redis.del(`recovery:sending:${rec.phone}`);
+      if (!sentLock) continue;
+
+      await redis.del(key);
+      registerRecoveryTemplateInHub(rec, provider).catch(() => {});
       await redisIncrStats(`recovery_sent_${rec.stage}`);
       metricsIncr('recovery_sent').catch(() => {});
       console.log(`[Recovery] Enviada (${rec.stage}): ${rec.phone}`);
