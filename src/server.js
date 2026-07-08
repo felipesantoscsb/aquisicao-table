@@ -218,6 +218,8 @@ app.post('/api/capi', async (req, res) => {
     forwardToSDR(req.body).catch(err =>
       console.error('[SDR-forward] Erro ao encaminhar para o SDR:', err.message)
     );
+    // Sequência pós-quiz: agenda a mensagem de 4h (regras de parada no sweep)
+    scheduleQuizSequence(req.body).catch(() => {});
   }
 
   // Fase 2 — persiste lead no Redis para enriquecimento do Purchase CAPI.
@@ -1110,6 +1112,16 @@ app.post('/api/capi/dossie-view', async (req, res) => {
   // Decisão registrada em CONTRACT.md.
   console.log('[DossieView] Telemetria interna:', req.body?.event_id, '| perfil:', req.body?.perfil, '| lid:', req.body?.lid);
   res.json({ ok: true });
+
+  // Reabertura via sequência pós-quiz: o botão da mensagem de 4h leva ao
+  // dossiê com &via=seq4h — a página reporta a URL completa aqui
+  try {
+    if (/[?&]via=seq4h(&|$)/.test(String(req.body?.event_source_url || ''))) {
+      await redisIncrStats('seq_dossie_reopen_4h');
+      metricsIncr('seq_dossie_reopen_4h').catch(() => {});
+      console.log('[Seq] Dossiê reaberto via mensagem de 4h');
+    }
+  } catch {}
 });
 
 // ─── CAPI Dossiê: InitiateCheckout ────────────────────────────────────────────
@@ -1425,6 +1437,156 @@ async function recoverySweep() {
   }
 }
 
+// ─── Sequência pós-quiz (fase 1: mensagem de 4h) ─────────────────────────────
+//
+// Leads que completam o quiz e NÃO iniciam checkout recebem uma mensagem
+// ~4h depois apontando de volta pro dossiê (template recuperacao_4h).
+// Regras de parada — a pendência é descartada se, até a hora do envio:
+//   - a lead comprou (authorized cancela via cancelQuizSequence)
+//   - iniciou checkout (recovery:pending/sent presente — a recuperação assume)
+//   - respondeu qualquer coisa no WhatsApp (webhook de inbound cancela)
+//   - pediu SAIR (blocklist compartilhada com a recuperação)
+// Medição (3 degraus): seq_sent_4h (envio), seq_dossie_reopen_4h (reabertura
+// do dossiê via &via=seq4h na URL do botão), seq_converted_4h + receita
+// (compra em até 24h, last-touch: recuperação tem prioridade na atribuição).
+//
+// Env vars:
+//   SEQ_ENABLED          → 'true' ativa envio real (padrão: SOMBRA, só loga)
+//   SEQ_TEMPLATE_4H      → nome do modelo aprovado (padrão: recuperacao_4h)
+//   SEQ_DELAY_4H_MIN     → atraso do envio (padrão: 240 min)
+
+const SEQ_PERFIL_SLUG = { E: 'emocional', R: 'restritiva', S: 'sobrevivencia', A: 'desconectada' };
+
+function seqDelayMs() {
+  return (Number(process.env.SEQ_DELAY_4H_MIN) || 240) * 60 * 1000;
+}
+
+async function scheduleQuizSequence(body) {
+  const phoneNorm = normalizePhone(body.whats || '');
+  const perfil = String(body.perfil || '').trim().toUpperCase();
+  if (!phoneNorm || !SEQ_PERFIL_SLUG[perfil]) return;
+  try {
+    const redis = getRedis();
+    if (await redis.get(`recovery:optout:${phoneNorm}`)) return;
+    if (await redis.get(`seq:done:${phoneNorm}`)) return;   // já passou pela sequência (60d)
+    const record = {
+      phone:      phoneNorm,
+      name:       body.nome || null,
+      perfil,
+      lid:        body.quiz_lead_event_id || body.lead_event_id || null,
+      due_at:     Date.now() + seqDelayMs(),
+      created_at: new Date().toISOString(),
+    };
+    await redis.set(`seq:pending:${phoneNorm}`, JSON.stringify(record), 'EX', 60 * 60 * 48);
+    console.log(`[Seq] Agendada 4h: ${phoneNorm} (${perfil}) para ${new Date(record.due_at).toISOString()}`);
+  } catch (e) {
+    console.error('[Seq] Erro ao agendar:', e.message);
+  }
+}
+
+async function cancelQuizSequence(phone, reason) {
+  const phoneNorm = normalizePhone(phone);
+  if (!phoneNorm) return;
+  try {
+    const removed = await getRedis().del(`seq:pending:${phoneNorm}`);
+    if (removed) console.log(`[Seq] Cancelada (${reason}): ${phoneNorm}`);
+  } catch {}
+}
+
+async function sendSeqMessage(rec) {
+  const TOKEN    = process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
+  const PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const TEMPLATE = process.env.SEQ_TEMPLATE_4H || 'recuperacao_4h';
+  const ENABLED  = process.env.SEQ_ENABLED === 'true';
+
+  // Botão → dossiê do perfil, com lid (identidade/EMQ) e marcador de origem
+  const slug = SEQ_PERFIL_SLUG[rec.perfil] || 'emocional';
+  const params = new URLSearchParams();
+  if (rec.lid) params.set('lid', rec.lid);
+  params.set('via', 'seq4h');
+  const suffix = `d/${slug}?${params.toString()}`;
+
+  const payload = {
+    messaging_product: 'whatsapp',
+    to: rec.phone,
+    type: 'template',
+    template: {
+      name: TEMPLATE,
+      language: { code: 'pt_BR' },
+      components: [
+        { type: 'body',   parameters: [{ type: 'text', text: firstName(rec.name) || 'querida' }] },
+        { type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: suffix }] },
+      ],
+    },
+  };
+
+  if (!ENABLED || !TOKEN || !PHONE_ID) {
+    console.log('[Seq] SOMBRA — payload WhatsApp:', JSON.stringify(payload));
+    return { shadow: true };
+  }
+
+  const resp = await fetch(`https://graph.facebook.com/v21.0/${PHONE_ID}/messages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
+    body: JSON.stringify(payload),
+  });
+  const json = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(`WhatsApp API ${resp.status}: ${JSON.stringify(json.error || json)}`);
+  return json;
+}
+
+async function seqSweep() {
+  const redis = getRedis();
+  let keys = [];
+  try { keys = await redis.keys('seq:pending:*'); } catch { return; }
+
+  for (const key of keys) {
+    try {
+      const raw = await redis.get(key);
+      if (!raw) continue;
+      const rec = JSON.parse(raw);
+      if (Date.now() < rec.due_at) continue;
+
+      // Regras de parada na hora do envio
+      if (await redis.get(`recovery:optout:${rec.phone}`)) {
+        await redis.del(key);
+        continue;
+      }
+      // Iniciou checkout → a recuperação assume; a sequência sai de cena
+      const [recPending, recSent] = await Promise.all([
+        redis.get(`recovery:pending:${rec.phone}`),
+        redis.get(`recovery:sent:${rec.phone}`),
+      ]);
+      if (recPending || recSent) {
+        await redis.del(key);
+        console.log(`[Seq] Descartada (lead no fluxo de checkout): ${rec.phone}`);
+        continue;
+      }
+
+      const sendingLock = await redis.set(`seq:sending:${rec.phone}`, '4h', 'EX', 5 * 60, 'NX');
+      if (!sendingLock) continue;
+
+      const provider = await sendSeqMessage(rec);
+      if (provider?.shadow) {
+        await redis.del(`seq:sending:${rec.phone}`);
+        continue;
+      }
+
+      await redis.del(key);
+      await redis.del(`seq:sending:${rec.phone}`);
+      // Janela de atribuição (24h) + anti-reentrada (60d)
+      await redis.set(`seq:conv:4h:${rec.phone}`, new Date().toISOString(), 'EX', 60 * 60 * 24);
+      await redis.set(`seq:done:${rec.phone}`, '4h', 'EX', 60 * 60 * 24 * 60);
+      await redisIncrStats('seq_sent_4h');
+      metricsIncr('seq_sent_4h').catch(() => {});
+      console.log(`[Seq] Enviada 4h: ${rec.phone} (${rec.perfil})`);
+    } catch (e) {
+      console.error('[Seq] Erro no envio:', e.message);
+      await redisIncrStats('seq_errors');
+    }
+  }
+}
+
 // ─── Webhook WhatsApp Cloud API (mensagens recebidas) ────────────────────────
 //
 // Processa respostas das leads no número da recuperação:
@@ -1487,9 +1649,10 @@ app.post('/api/webhooks/whatsapp', async (req, res) => {
           if (!from) continue;
 
           if (isOptOutText(text)) {
-            // Blocklist permanente (sem TTL) + limpa pendência se houver
+            // Blocklist permanente (sem TTL) + limpa pendências se houver
             await redisSet(`recovery:optout:${from}`, new Date().toISOString());
             await redisDel(`recovery:pending:${from}`);
+            await redisDel(`seq:pending:${from}`);
             await redisIncrStats('recovery_optout');
             console.log(`[WhatsApp] Opt-out registrado: ${from}`);
             await sendWhatsAppText(from,
@@ -1497,6 +1660,8 @@ app.post('/api/webhooks/whatsapp', async (req, res) => {
             ).catch(e => console.error('[WhatsApp] Erro na confirmação de opt-out:', e.message));
           } else if (text) {
             // Resposta comum — loga para visibilidade (atendimento manual)
+            // e tira a lead da sequência automática: virou conversa
+            await cancelQuizSequence(from, 'respondeu');
             console.log(`[WhatsApp] Mensagem recebida de ${from}: ${String(text).slice(0, 200)}`);
           }
         }
@@ -1715,6 +1880,28 @@ app.post('/api/webhooks/ticto', async (req, res) => {
       }
     }
 
+    // Sequência pós-quiz: compra cancela pendência; atribuição last-touch
+    // (recuperação tem prioridade — só credita a sequência se a recuperação
+    // não enviou nada nas últimas 24h)
+    if (buyerPhoneNorm) {
+      await cancelQuizSequence(buyerPhoneNorm, 'authorized');
+      try {
+        const [seqTouch, recTouch] = await Promise.all([
+          getRedis().get(`seq:conv:4h:${buyerPhoneNorm}`),
+          getRedis().get(`recovery:sent:${buyerPhoneNorm}`),
+        ]);
+        if (seqTouch && !recTouch) {
+          await redisIncrStats('seq_converted_4h');
+          metricsIncr('seq_converted_4h').catch(() => {});
+          if (typeof paidAmount === 'number') {
+            try { await getRedis().incrby('ticto:stats:seq_revenue_cents', paidAmount); } catch {}
+            metricsIncr('seq_revenue_cents', paidAmount).catch(() => {});
+          }
+          console.log(`[Seq] CONVERTIDA (4h): ${buyerPhoneNorm} — R$ ${value}`);
+        }
+      } catch {}
+    }
+
     // Fase 2 — lookup do lead no Redis para enriquecimento do Purchase
     // Ordem: src_lead_id (join key exato) → email → sem match
     let leadData = null;
@@ -1858,6 +2045,32 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
     };
   } catch {}
 
+  // Estatísticas da sequência pós-quiz (fase 1: mensagem de 4h)
+  let sequence = {};
+  try {
+    const redis = getRedis();
+    const [pending, sent, reopens, converted, revenueCents, errors] = await Promise.all([
+      redis.keys('seq:pending:*').then(k => k.length),
+      redis.get('ticto:stats:seq_sent_4h'),
+      redis.get('ticto:stats:seq_dossie_reopen_4h'),
+      redis.get('ticto:stats:seq_converted_4h'),
+      redis.get('ticto:stats:seq_revenue_cents'),
+      redis.get('ticto:stats:seq_errors'),
+    ]);
+    const sentN = Number(sent) || 0;
+    sequence = {
+      enabled: process.env.SEQ_ENABLED === 'true',
+      pending,
+      sent_4h:          sentN,
+      dossie_reopens:   Number(reopens) || 0,
+      reopen_rate:      sentN > 0 ? Math.round(((Number(reopens) || 0) / sentN) * 1000) / 10 + '%' : 'n/a',
+      converted:        Number(converted) || 0,
+      conversion_rate:  sentN > 0 ? Math.round(((Number(converted) || 0) / sentN) * 1000) / 10 + '%' : 'n/a',
+      revenue:          'R$ ' + (((Number(revenueCents) || 0) / 100).toFixed(2)),
+      errors:           Number(errors) || 0,
+    };
+  } catch {}
+
   return res.json({
     status: 'ok',
     purchase_capi_enabled: process.env.PURCHASE_CAPI_ENABLED === 'true',
@@ -1866,6 +2079,7 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
     last_event_at:         stats.lastAt || null,
     fbc_match_rate:        fbcRate,
     recovery,
+    sequence,
   });
 });
 
@@ -1880,6 +2094,7 @@ const DASH_METRICS = [
   'abandoned_cart', 'waiting_payment',
   'purchases', 'revenue_cents', 'refunds',
   'recovery_sent', 'recovery_converted', 'recovery_revenue_cents',
+  'seq_sent_4h', 'seq_dossie_reopen_4h', 'seq_converted_4h', 'seq_revenue_cents',
 ];
 
 app.get('/api/dash/data', async (req, res) => {
@@ -1995,4 +2210,7 @@ app.listen(PORT, () => {
   // Recuperação de checkout: verifica pendências vencidas a cada 5 min.
   setInterval(() => { recoverySweep().catch(() => {}); }, 5 * 60 * 1000);
   setTimeout(() => { recoverySweep().catch(() => {}); }, 60 * 1000);
+  // Sequência pós-quiz: verifica pendências vencidas a cada 5 min.
+  setInterval(() => { seqSweep().catch(() => {}); }, 5 * 60 * 1000);
+  setTimeout(() => { seqSweep().catch(() => {}); }, 90 * 1000);
 });

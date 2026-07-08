@@ -87,6 +87,12 @@
     <h2>Recuperação de checkout</h2>
     <div class="cards" id="recovery-cards"></div>
   </section>
+
+  <section>
+    <h2>Sequência pós-quiz (mensagem de 4h)</h2>
+    <div class="cards" id="seq-cards"></div>
+    <p class="note">Leads que completaram o quiz e não iniciaram checkout. Reabertura = cliques no botão do dossiê (&via=seq4h); conversão = compra em até 24h do envio (last-touch, recuperação tem prioridade).</p>
+  </section>
 </div>
 
 <script>
@@ -137,6 +143,15 @@ function render(data) {
     card('Taxa de recuperação', rl.rate !== null ? rl.rate.toLocaleString('pt-BR') + '%' : '—', 'meta: 4–8%'),
     card('Receita recuperada', fmtBRL(rl.revenue), `no período: ${fmtBRL(w.recovery_revenue)}`, true),
     card('Erros de envio', fmtN(rl.errors), ''),
+  ].join('');
+
+  const sSeq = f => data.days.reduce((a, r) => a + (r[f] || 0), 0);
+  const seqSent = sSeq('seq_sent_4h'), seqReopen = sSeq('seq_dossie_reopen_4h'), seqConv = sSeq('seq_converted_4h');
+  document.getElementById('seq-cards').innerHTML = [
+    card('Enviadas', fmtN(seqSent), 'no período'),
+    card('Dossiês reabertos', fmtN(seqReopen), seqSent > 0 ? pct(seqReopen, seqSent) + ' dos envios' : ''),
+    card('Convertidas', fmtN(seqConv), seqSent > 0 ? pct(seqConv, seqSent) + ' dos envios' : '', true),
+    card('Receita atribuída', fmtBRL(sSeq('seq_revenue_cents') / 100), `custo est.: ${fmtBRL(seqSent * 0.35)}`, true),
   ].join('');
 
   const labels = data.days.map(d => d.date.slice(5).split('-').reverse().join('/'));
