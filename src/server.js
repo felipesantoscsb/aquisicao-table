@@ -1221,7 +1221,7 @@ async function redisGetStats() {
 //   RECOVERY_ENABLED            → 'true' ativa envio real (padrão: SOMBRA, só loga)
 //   WHATSAPP_CLOUD_TOKEN        → token permanente da WhatsApp Cloud API
 //   WHATSAPP_PHONE_NUMBER_ID    → phone number id do remetente
-//   WHATSAPP_RECOVERY_TEMPLATE  → nome do modelo aprovado (padrão: recuperacao_checkout_raiz)
+//   WHATSAPP_RECOVERY_TEMPLATE  → nome do modelo aprovado (padrão: recuperacao_checkout_raizv2)
 //   RECOVERY_DELAY_MIN          → atraso do envio após o gatilho (padrão: 30)
 //   TICTO_CHECKOUT_PATH         → path da oferta no checkout (padrão: O3EB65FBD)
 
@@ -1296,7 +1296,7 @@ async function cancelCheckoutRecovery(phone, reason) {
 async function sendRecoveryMessage(rec) {
   const TOKEN     = process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
   const PHONE_ID  = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const TEMPLATE  = process.env.WHATSAPP_RECOVERY_TEMPLATE || 'recuperacao_checkout_raiz';
+  const TEMPLATE  = process.env.WHATSAPP_RECOVERY_TEMPLATE || 'recuperacao_checkout_raizv2';
   const ENABLED   = process.env.RECOVERY_ENABLED === 'true';
   // O template aprovado usa botão com URL FIXA (magic link de recuperação da
   // Ticto — link único que resolve a sessão da lead via cookies no aparelho
@@ -1353,14 +1353,14 @@ async function registerRecoveryTemplateInHub(rec, provider) {
   const payload = {
     phone: rec.phone,
     nome: rec.name || 'Lead',
-    template_name: process.env.WHATSAPP_RECOVERY_TEMPLATE || 'recuperacao_checkout_raiz',
+    template_name: process.env.WHATSAPP_RECOVERY_TEMPLATE || 'recuperacao_checkout_raizv2',
     params: [firstName(rec.name) || 'querida'],
     provider,
     provider_message_id: provider?.messages?.[0]?.id || null,
     source: 'checkout_recovery',
     tier: null,
     funnel: 'quiz',
-    body_text: 'recuperacao_checkout_raiz',
+    body_text: 'recuperacao_checkout_raizv2',
   };
 
   try {
