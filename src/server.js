@@ -1393,10 +1393,24 @@ async function registerRecoveryTemplateInHub(rec, provider) {
   }
 }
 
+// Janela de horário p/ envios proativos de WhatsApp (recuperação e sequência
+// pós-quiz) — espelha dentroDoHorario() do disparo de dossiê no sdr-table:
+// dia útil 8h-21h, fim de semana 8h-17h, horário de Brasília. Pendência que
+// vence fora da janela fica no Redis (TTL já cobre a espera) e é enviada no
+// próximo sweep dentro do horário — sem recalcular due_at.
+function dentroDoHorarioEnvio() {
+  const brasilia = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+  const dia = brasilia.getDay();
+  const hora = brasilia.getHours();
+  const fds = dia === 0 || dia === 6;
+  return fds ? (hora >= 8 && hora < 17) : (hora >= 8 && hora < 21);
+}
+
 async function recoverySweep() {
   const redis = getRedis();
   let keys = [];
   try { keys = await redis.keys('recovery:pending:*'); } catch { return; }
+  if (!dentroDoHorarioEnvio()) return; // fora do horário — tenta de novo no próximo sweep
 
   for (const key of keys) {
     try {
@@ -1539,6 +1553,7 @@ async function seqSweep() {
   const redis = getRedis();
   let keys = [];
   try { keys = await redis.keys('seq:pending:*'); } catch { return; }
+  if (!dentroDoHorarioEnvio()) return; // fora do horário — tenta de novo no próximo sweep
 
   for (const key of keys) {
     try {
