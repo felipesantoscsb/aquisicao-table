@@ -140,7 +140,7 @@ function render(data) {
     card('Status', rl.enabled ? 'ATIVA' : 'SOMBRA', '', rl.enabled),
     card('Enviadas (total)', fmtN(rl.sent), `no período: ${fmtN(w.recovery_sent)}`),
     card('Convertidas (total)', fmtN(rl.converted), `no período: ${fmtN(w.recovery_converted)}`, true),
-    card('Taxa de recuperação', rl.rate !== null ? rl.rate.toLocaleString('pt-BR') + '%' : '—', 'meta: 4–8%'),
+    card('Taxa de recuperação (período)', w.recovery_rate !== null ? w.recovery_rate.toLocaleString('pt-BR') + '%' : '—', `meta: 4–8% · desde o início: ${rl.rate !== null ? rl.rate.toLocaleString('pt-BR') + '%' : '—'}`),
     card('Receita recuperada', fmtBRL(rl.revenue), `no período: ${fmtBRL(w.recovery_revenue)}`, true),
     card('Erros de envio', fmtN(rl.errors), ''),
   ].join('');

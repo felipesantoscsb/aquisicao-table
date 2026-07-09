@@ -2150,6 +2150,7 @@ app.get('/api/dash/data', async (req, res) => {
       const slice = days.slice(-n);
       const sum = (f) => slice.reduce((a, r) => a + r[f], 0);
       const ic = sum('evt_InitiateCheckout'), purch = sum('purchases');
+      const recSent = sum('recovery_sent'), recConv = sum('recovery_converted');
       return {
         page_views:         sum('evt_PageView'),
         view_content:       sum('evt_ViewContent'),
@@ -2161,8 +2162,12 @@ app.get('/api/dash/data', async (req, res) => {
         revenue:            sum('revenue_cents') / 100,
         refunds:            sum('refunds'),
         ic_to_purchase:     ic > 0 ? Math.round((purch / ic) * 1000) / 10 : null,
-        recovery_sent:      sum('recovery_sent'),
-        recovery_converted: sum('recovery_converted'),
+        recovery_sent:      recSent,
+        recovery_converted: recConv,
+        // Taxa DO PERÍODO selecionado — distinta de recovery_lifetime.rate
+        // (que é desde que o sistema foi ligado). É esta que responde
+        // "qual a eficiência dos últimos 7 dias".
+        recovery_rate:      recSent > 0 ? Math.round((recConv / recSent) * 1000) / 10 : null,
         recovery_revenue:   sum('recovery_revenue_cents') / 100,
       };
     }
