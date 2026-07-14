@@ -618,6 +618,37 @@ async function drainFailedPreSessao() {
   }
 }
 
+// Reprocessa leads de captação (/conversa) que falharam ao encaminhar para o
+// SDR. Roda periodicamente; ao ter sucesso, remove a chave de falha do Redis.
+let drainingCaptacao = false;
+async function drainFailedCaptacao() {
+  if (drainingCaptacao) return;
+  drainingCaptacao = true;
+  try {
+    const keys = await getRedis().keys('captacao:failed:*');
+    if (!keys.length) return;
+    console.log(`[captacao/conversa] drain: ${keys.length} pendente(s)`);
+    for (const key of keys) {
+      const raw = await redisGet(key);
+      if (!raw) { await redisDel(key); continue; }
+      let leadData;
+      try { leadData = JSON.parse(raw).leadData; } catch { await redisDel(key); continue; }
+      if (!leadData) { await redisDel(key); continue; }
+      try {
+        await forwardCaptacaoToSDR(leadData);
+        await redisDel(key);
+        console.log(`[captacao/conversa] drain ok — ${leadData.nome} (${leadData.whatsapp})`);
+      } catch (err) {
+        console.warn(`[captacao/conversa] drain ainda falhando para ${key}: ${err.message}`);
+      }
+    }
+  } catch (err) {
+    console.error('[captacao/conversa] drain erro:', err.message);
+  } finally {
+    drainingCaptacao = false;
+  }
+}
+
 // ─── Rota Purchase (webhook Infinitepay → Meta CAPI) ─────────────────────────
 
 app.post('/api/purchase', async (req, res) => {
@@ -2228,6 +2259,9 @@ app.listen(PORT, () => {
   // Reprocessa formulários pré-sessão pendentes a cada 10 min.
   setInterval(() => { drainFailedPreSessao().catch(() => {}); }, 10 * 60 * 1000);
   setTimeout(() => { drainFailedPreSessao().catch(() => {}); }, 30 * 1000);
+  // Reprocessa leads de captação pendentes a cada 10 min.
+  setInterval(() => { drainFailedCaptacao().catch(() => {}); }, 10 * 60 * 1000);
+  setTimeout(() => { drainFailedCaptacao().catch(() => {}); }, 45 * 1000);
   // Recuperação de checkout: verifica pendências vencidas a cada 5 min.
   setInterval(() => { recoverySweep().catch(() => {}); }, 5 * 60 * 1000);
   setTimeout(() => { recoverySweep().catch(() => {}); }, 60 * 1000);
