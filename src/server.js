@@ -466,8 +466,16 @@ async function forwardCaptacaoToSDR(leadData) {
       if (!sdrRes.ok) {
         throw new Error(`SDR respondeu ${sdrRes.status}: ${text.slice(0, 300)}`);
       }
-      console.log(`[captacao/conversa] SDR ok — ${leadData.nome} (${leadData.whatsapp})`);
-      return text;
+
+      let sdrPayload = null;
+      try { sdrPayload = text ? JSON.parse(text) : null; } catch {}
+      if (sdrPayload?.activated !== true) {
+        const reason = sdrPayload?.reason || sdrPayload?.error || 'activation_not_confirmed';
+        throw new Error(`SDR não confirmou ativação: ${reason}`);
+      }
+
+      console.log(`[captacao/conversa] SDR ativou lead — ${leadData.nome} (${leadData.whatsapp})`);
+      return sdrPayload;
     } catch (err) {
       lastError = err;
       console.warn(`[captacao/conversa] tentativa ${attempt + 1} falhou: ${err.message}`);
@@ -632,14 +640,26 @@ async function drainFailedCaptacao() {
     for (const key of keys) {
       const raw = await redisGet(key);
       if (!raw) { await redisDel(key); continue; }
-      let leadData;
-      try { leadData = JSON.parse(raw).leadData; } catch { await redisDel(key); continue; }
+      let pending;
+      try { pending = JSON.parse(raw); } catch { await redisDel(key); continue; }
+      const leadData = pending.leadData;
       if (!leadData) { await redisDel(key); continue; }
       try {
         await forwardCaptacaoToSDR(leadData);
         await redisDel(key);
         console.log(`[captacao/conversa] drain ok — ${leadData.nome} (${leadData.whatsapp})`);
       } catch (err) {
+        await redisSet(
+          key,
+          JSON.stringify({
+            ...pending,
+            error: err.message,
+            attempts: (pending.attempts || 0) + 1,
+            last_attempt_at: new Date().toISOString(),
+          }),
+          'EX',
+          7 * 24 * 60 * 60
+        );
         console.warn(`[captacao/conversa] drain ainda falhando para ${key}: ${err.message}`);
       }
     }
