@@ -1565,7 +1565,7 @@ async function sendSeqMessage(rec) {
   const TOKEN    = process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
   const PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
   const TEMPLATE = process.env.SEQ_TEMPLATE_4H || 'recuperacao_4h';
-  const ENABLED  = process.env.SEQ_ENABLED === 'true';
+  const ENABLED  = process.env.SEQ_ENABLED !== 'false'; // ligada por padrão; SEQ_ENABLED=false desliga
 
   // Botão → dossiê do perfil, com lid (identidade/EMQ) e marcador de origem
   const slug = SEQ_PERFIL_SLUG[rec.perfil] || 'emocional';
@@ -2164,7 +2164,7 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
     ]);
     const sentN = Number(sent) || 0;
     sequence = {
-      enabled: process.env.SEQ_ENABLED === 'true',
+      enabled: process.env.SEQ_ENABLED !== 'false',
       pending,
       sent_4h:          sentN,
       dossie_reopens:   Number(reopens) || 0,
