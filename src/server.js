@@ -1587,7 +1587,16 @@ async function seqSweep() {
   try { keys = await redis.keys('seq:pending:*'); } catch { return; }
   if (!dentroDoHorarioEnvio()) return; // fora do horário — tenta de novo no próximo sweep
 
+  // Teto por varredura: protege contra rajada quando há backlog (ex.: ao ligar
+  // SEQ_ENABLED com centenas de pendentes). O restante sai nos próximos sweeps.
+  const MAX_PER_SWEEP = Number(process.env.SEQ_MAX_PER_SWEEP) || 30;
+  let sentThisSweep = 0;
+
   for (const key of keys) {
+    if (sentThisSweep >= MAX_PER_SWEEP) {
+      console.log(`[Seq] Teto de ${MAX_PER_SWEEP} envios nesta varredura atingido — restante no próximo sweep`);
+      break;
+    }
     try {
       const raw = await redis.get(key);
       if (!raw) continue;
@@ -1626,6 +1635,7 @@ async function seqSweep() {
       await redis.set(`seq:done:${rec.phone}`, '4h', 'EX', 60 * 60 * 24 * 60);
       await redisIncrStats('seq_sent_4h');
       metricsIncr('seq_sent_4h').catch(() => {});
+      sentThisSweep++;
       console.log(`[Seq] Enviada 4h: ${rec.phone} (${rec.perfil})`);
     } catch (e) {
       console.error('[Seq] Erro no envio:', e.message);
