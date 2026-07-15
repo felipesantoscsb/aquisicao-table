@@ -1445,10 +1445,11 @@ async function recoverySweep() {
   if (!dentroDoHorarioEnvio()) return; // fora do horário — tenta de novo no próximo sweep
 
   for (const key of keys) {
+    let rec = null;
     try {
       const raw = await redis.get(key);
       if (!raw) continue;
-      const rec = JSON.parse(raw);
+      rec = JSON.parse(raw);
       if (Date.now() < rec.due_at) continue;
 
       // Blocklist (lead respondeu SAIR): descarta a pendência sem enviar
@@ -1479,6 +1480,27 @@ async function recoverySweep() {
     } catch (e) {
       console.error('[Recovery] Erro no envio:', e.message);
       await redisIncrStats('recovery_errors');
+      // Diagnóstico sem log: último erro visível no /api/webhooks/ticto/health
+      await redisSet('ticto:stats:recovery_last_error', JSON.stringify({
+        at: new Date().toISOString(), phone: rec?.phone, stage: rec?.stage,
+        attempts: (rec?.attempts || 0) + 1, error: String(e.message).slice(0, 300),
+      })).catch(() => {});
+      // Orçamento de tentativas: erro permanente (ex.: telefone inválido da
+      // Ticto) não pode re-tentar a cada sweep até o TTL — após 5 falhas a
+      // pendência é descartada e contada em recovery_dropped.
+      try {
+        if (rec && key) {
+          rec.attempts = (rec.attempts || 0) + 1;
+          await redis.del(`recovery:sending:${rec.phone}`);
+          if (rec.attempts >= 5) {
+            await redis.del(key);
+            await redisIncrStats('recovery_dropped');
+            console.warn(`[Recovery] Descartada após ${rec.attempts} falhas: ${rec.phone}`);
+          } else {
+            await redis.set(key, JSON.stringify(rec), 'KEEPTTL');
+          }
+        }
+      } catch {}
     }
   }
 }
@@ -1597,10 +1619,11 @@ async function seqSweep() {
       console.log(`[Seq] Teto de ${MAX_PER_SWEEP} envios nesta varredura atingido — restante no próximo sweep`);
       break;
     }
+    let rec = null;
     try {
       const raw = await redis.get(key);
       if (!raw) continue;
-      const rec = JSON.parse(raw);
+      rec = JSON.parse(raw);
       if (Date.now() < rec.due_at) continue;
 
       // Regras de parada na hora do envio
@@ -1640,6 +1663,25 @@ async function seqSweep() {
     } catch (e) {
       console.error('[Seq] Erro no envio:', e.message);
       await redisIncrStats('seq_errors');
+      await redisSet('ticto:stats:seq_last_error', JSON.stringify({
+        at: new Date().toISOString(), phone: rec?.phone,
+        attempts: (rec?.attempts || 0) + 1, error: String(e.message).slice(0, 300),
+      })).catch(() => {});
+      // Orçamento de tentativas (mesmo padrão da recuperação): após 5 falhas
+      // a pendência é descartada e contada em seq_dropped.
+      try {
+        if (rec && key) {
+          rec.attempts = (rec.attempts || 0) + 1;
+          await redis.del(`seq:sending:${rec.phone}`);
+          if (rec.attempts >= 5) {
+            await redis.del(key);
+            await redisIncrStats('seq_dropped');
+            console.warn(`[Seq] Descartada após ${rec.attempts} falhas: ${rec.phone}`);
+          } else {
+            await redis.set(key, JSON.stringify(rec), 'KEEPTTL');
+          }
+        }
+      } catch {}
     }
   }
 }
@@ -2077,7 +2119,7 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
   let recovery = {};
   try {
     const redis = getRedis();
-    const [pending, sentIc, sentAb, sentWp, errors, optouts, converted, convertedCents] = await Promise.all([
+    const [pending, sentIc, sentAb, sentWp, errors, optouts, converted, convertedCents, dropped, lastError] = await Promise.all([
       redis.keys('recovery:pending:*').then(k => k.length),
       redis.get('ticto:stats:recovery_sent_ic'),
       redis.get('ticto:stats:recovery_sent_abandoned_cart'),
@@ -2086,6 +2128,8 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
       redis.keys('recovery:optout:*').then(k => k.length),
       redis.get('ticto:stats:recovery_converted'),
       redis.get('ticto:stats:recovery_converted_cents'),
+      redis.get('ticto:stats:recovery_dropped'),
+      redis.get('ticto:stats:recovery_last_error'),
     ]);
     const totalSent = (Number(sentIc) || 0) + (Number(sentAb) || 0) + (Number(sentWp) || 0);
     recovery = {
@@ -2098,6 +2142,8 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
       conversion_rate:      totalSent > 0 ? Math.round(((Number(converted) || 0) / totalSent) * 1000) / 10 + '%' : 'n/a',
       recovered_revenue:    'R$ ' + (((Number(convertedCents) || 0) / 100).toFixed(2)),
       errors:               Number(errors) || 0,
+      dropped:              Number(dropped) || 0,
+      last_error:           lastError ? JSON.parse(lastError) : null,
       optouts,
     };
   } catch {}
@@ -2106,13 +2152,15 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
   let sequence = {};
   try {
     const redis = getRedis();
-    const [pending, sent, reopens, converted, revenueCents, errors] = await Promise.all([
+    const [pending, sent, reopens, converted, revenueCents, errors, seqDropped, seqLastError] = await Promise.all([
       redis.keys('seq:pending:*').then(k => k.length),
       redis.get('ticto:stats:seq_sent_4h'),
       redis.get('ticto:stats:seq_dossie_reopen_4h'),
       redis.get('ticto:stats:seq_converted_4h'),
       redis.get('ticto:stats:seq_revenue_cents'),
       redis.get('ticto:stats:seq_errors'),
+      redis.get('ticto:stats:seq_dropped'),
+      redis.get('ticto:stats:seq_last_error'),
     ]);
     const sentN = Number(sent) || 0;
     sequence = {
@@ -2125,6 +2173,8 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
       conversion_rate:  sentN > 0 ? Math.round(((Number(converted) || 0) / sentN) * 1000) / 10 + '%' : 'n/a',
       revenue:          'R$ ' + (((Number(revenueCents) || 0) / 100).toFixed(2)),
       errors:           Number(errors) || 0,
+      dropped:          Number(seqDropped) || 0,
+      last_error:       seqLastError ? JSON.parse(seqLastError) : null,
     };
   } catch {}
 
