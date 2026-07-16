@@ -1550,7 +1550,19 @@ function seqDelayMs() {
   return (Number(process.env.SEQ_DELAY_4H_MIN) || 240) * 60 * 1000;
 }
 
+// ── PAUSA da sequência 4h (16/07/2026) ──────────────────────────────────────
+// Decisão do Felipe: 260 envios → 4,2% de reabertura de dossiê não paga o
+// custo do template, e a qualidade do número na Meta caiu para média.
+// Para RETOMAR: trocar SEQ_HARD_PAUSED para false (o kill switch por env
+// SEQ_ENABLED=false continua valendo por cima quando despausada).
+const SEQ_HARD_PAUSED = true;
+
+function seqEnabled() {
+  return !SEQ_HARD_PAUSED && process.env.SEQ_ENABLED !== 'false';
+}
+
 async function scheduleQuizSequence(body) {
+  if (!seqEnabled()) return; // pausada: nem agenda (evita pendências órfãs no Redis)
   const phoneNorm = normalizePhone(body.whats || '');
   const perfil = String(body.perfil || '').trim().toUpperCase();
   if (!phoneNorm || !SEQ_PERFIL_SLUG[perfil]) return;
@@ -1586,7 +1598,7 @@ async function sendSeqMessage(rec) {
   const TOKEN    = process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
   const PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
   const TEMPLATE = process.env.SEQ_TEMPLATE_4H || 'recuperacao_4h';
-  const ENABLED  = process.env.SEQ_ENABLED !== 'false'; // ligada por padrão; SEQ_ENABLED=false desliga
+  const ENABLED  = seqEnabled();
 
   // Botão → dossiê do perfil, com lid (identidade/EMQ) e marcador de origem
   const slug = SEQ_PERFIL_SLUG[rec.perfil] || 'emocional';
@@ -1625,6 +1637,7 @@ async function sendSeqMessage(rec) {
 }
 
 async function seqSweep() {
+  if (!seqEnabled()) return; // pausada: pendências existentes expiram pelo TTL (48h)
   const redis = getRedis();
   let keys = [];
   try { keys = await redis.keys('seq:pending:*'); } catch { return; }
@@ -2185,7 +2198,7 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
     ]);
     const sentN = Number(sent) || 0;
     sequence = {
-      enabled: process.env.SEQ_ENABLED !== 'false',
+      enabled: seqEnabled(),
       pending,
       sent_4h:          sentN,
       dossie_reopens:   Number(reopens) || 0,
