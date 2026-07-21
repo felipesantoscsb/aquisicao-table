@@ -804,6 +804,34 @@ async function metaFetch(path, params) {
   return json;
 }
 
+// Topo do funil (Meta, nível conta) por janela de datas — impressões/cliques/CTR.
+// Alinha com a janela do dashboard via time_range (since/until). Fail-safe:
+// retorna null se a conta não estiver configurada ou a Meta falhar, e o funil
+// simplesmente começa no PageView.
+async function fetchMetaFunnelTop(since, until) {
+  const token     = process.env.META_ADS_ACCESS_TOKEN;
+  const accountId = process.env.META_AD_ACCOUNT_ID;
+  if (!token || !accountId) return null;
+  try {
+    const json = await metaFetch(`act_${accountId}/insights`, {
+      level: 'account',
+      fields: 'impressions,clicks,ctr,spend',
+      time_range: JSON.stringify({ since, until }),
+    });
+    const d = json.data?.[0];
+    if (!d) return { impressions: 0, clicks: 0, ctr: 0, spend: 0 };
+    return {
+      impressions: parseInt(d.impressions, 10) || 0,
+      clicks:      parseInt(d.clicks, 10) || 0,
+      ctr:         parseFloat(d.ctr) || 0,        // % já vem calculado pela Meta
+      spend:       parseFloat(d.spend) || 0,
+    };
+  } catch (e) {
+    console.error('[Dash] Meta funnel top falhou:', e.message);
+    return null;
+  }
+}
+
 async function getCampaignStatuses() {
   if (campaignsCache.data && Date.now() - campaignsCache.at < 5 * 60 * 1000) {
     return campaignsCache.data;
@@ -1165,6 +1193,9 @@ app.post('/api/capi/dossie-view', async (req, res) => {
   // Decisão registrada em CONTRACT.md.
   console.log('[DossieView] Telemetria interna:', req.body?.event_id, '| perfil:', req.body?.perfil, '| lid:', req.body?.lid);
   res.json({ ok: true });
+
+  // Série diária p/ o funil de saúde (fire-and-forget)
+  metricsIncr('evt_DossieView').catch(() => {});
 
   // Reabertura via sequência pós-quiz: o botão da mensagem de 4h leva ao
   // dossiê com &via=seq4h — a página reporta a URL completa aqui
@@ -2231,7 +2262,8 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
 // Protegido por requireDashToken (aplicado no app.use lá em cima).
 
 const DASH_METRICS = [
-  'evt_PageView', 'evt_ViewContent', 'evt_Lead', 'evt_CompleteRegistration', 'evt_InitiateCheckout',
+  'evt_PageView', 'evt_ViewContent', 'evt_Lead', 'evt_CompleteRegistration',
+  'evt_DossieView', 'evt_InitiateCheckout',
   'abandoned_cart', 'waiting_payment',
   'purchases', 'revenue_cents', 'refunds',
   'recovery_sent', 'recovery_converted', 'recovery_revenue_cents',
@@ -2297,6 +2329,7 @@ app.get('/api/dash/data', async (req, res) => {
         view_content:       sum('evt_ViewContent'),
         leads:              sum('evt_Lead'),
         registrations:      sum('evt_CompleteRegistration'),
+        dossie_views:       sum('evt_DossieView'),
         initiate_checkout:  ic,
         abandoned_cart:     sum('abandoned_cart'),
         purchases:          purch,
@@ -2324,10 +2357,14 @@ app.get('/api/dash/data', async (req, res) => {
     ]);
     const rcSent = (Number(rcSentIc) || 0) + (Number(rcSentAb) || 0) + (Number(rcSentWp) || 0);
 
+    // Topo do funil (Meta) alinhado à janela pedida — impressões/cliques/CTR
+    const meta = await fetchMetaFunnelTop(dates[0], dates[dates.length - 1]);
+
     return res.json({
       generated_at: new Date().toISOString(),
       timezone: 'America/Sao_Paulo',
       days,
+      meta,
       totals: { today: windowTotals(1), d7: windowTotals(7), d30: windowTotals(Math.min(30, daysN)) },
       recovery_lifetime: {
         enabled:   process.env.RECOVERY_ENABLED === 'true',
