@@ -128,7 +128,7 @@ const pct    = (a, b) => b > 0 ? (Math.round((a / b) * 1000) / 10).toLocaleStrin
 
 async function load() {
   try {
-    const res = await fetch(`/api/dash/data?days=${daysSel}&token=${encodeURIComponent(TOKEN)}`);
+    const res = await fetch(`/api/dash/data?days=${daysSel}&meta=1&token=${encodeURIComponent(TOKEN)}`);
     if (!res.ok) throw new Error(res.status === 401 ? 'Token inválido — confira o ?token= na URL.' : `Erro ${res.status}`);
     render(await res.json());
   } catch (e) {

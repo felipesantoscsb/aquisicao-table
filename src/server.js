@@ -2357,8 +2357,12 @@ app.get('/api/dash/data', async (req, res) => {
     ]);
     const rcSent = (Number(rcSentIc) || 0) + (Number(rcSentAb) || 0) + (Number(rcSentWp) || 0);
 
-    // Topo do funil (Meta) alinhado à janela pedida — impressões/cliques/CTR
-    const meta = await fetchMetaFunnelTop(dates[0], dates[dates.length - 1]);
+    // Topo do funil (Meta) alinhado à janela pedida — impressões/cliques/CTR.
+    // Só com ?meta=1: o Hub (/admin/funil) já busca a Meta por conta própria e
+    // não deve pagar por uma segunda chamada aqui.
+    const meta = req.query.meta === '1'
+      ? await fetchMetaFunnelTop(dates[0], dates[dates.length - 1])
+      : null;
 
     return res.json({
       generated_at: new Date().toISOString(),
