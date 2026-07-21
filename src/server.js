@@ -1247,6 +1247,14 @@ app.post('/api/capi/dossie-view', async (req, res) => {
   } catch {}
 });
 
+// ─── Quiz: início ─────────────────────────────────────────────────────────────
+// Telemetria interna (não vai à Meta): fecha o vão entre "visitou a página" e
+// "completou o cadastro" no funil de saúde.
+app.post('/api/capi/quiz-start', async (req, res) => {
+  res.json({ ok: true });
+  metricsIncr('evt_QuizStart').catch(() => {});
+});
+
 // ─── CAPI Dossiê: InitiateCheckout ────────────────────────────────────────────
 
 app.post('/api/capi/initiate-checkout', async (req, res) => {
@@ -1257,6 +1265,12 @@ app.post('/api/capi/initiate-checkout', async (req, res) => {
 
   // Série diária p/ dashboard (fire-and-forget)
   metricsIncr('evt_InitiateCheckout').catch(() => {});
+
+  // CTA do dossiê separado do checkout que sai direto do quiz — os dois caem
+  // neste mesmo endpoint, e sem separar a performance do dossiê fica inflada.
+  if (String(content_name || '') === 'InitiateCheckout_Dossie') {
+    metricsIncr('evt_DossieCTA').catch(() => {});
+  }
 
   // Agenda recuperação de checkout: se o Purchase não chegar via webhook Ticto
   // em RECOVERY_DELAY_MIN, o sweep dispara o WhatsApp (authorized cancela)
@@ -2301,8 +2315,8 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
 // Protegido por requireDashToken (aplicado no app.use lá em cima).
 
 const DASH_METRICS = [
-  'evt_PageView', 'evt_QuizView', 'evt_ViewContent', 'evt_Lead', 'evt_CompleteRegistration',
-  'evt_DossieView', 'evt_InitiateCheckout',
+  'evt_PageView', 'evt_QuizView', 'evt_QuizStart', 'evt_ViewContent', 'evt_Lead', 'evt_CompleteRegistration',
+  'evt_DossieView', 'evt_DossieCTA', 'evt_InitiateCheckout',
   'abandoned_cart', 'waiting_payment',
   'purchases', 'revenue_cents', 'refunds',
   'recovery_sent', 'recovery_converted', 'recovery_revenue_cents',
