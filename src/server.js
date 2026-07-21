@@ -215,6 +215,27 @@ app.post('/api/capi', async (req, res) => {
   // Série diária p/ dashboard (fire-and-forget)
   metricsIncr('evt_' + (event_name || 'Lead')).catch(() => {});
 
+  // Visita à landing do quiz — o dossiê também manda ViewContent, então só o
+  // page-load do quiz (content_name QuizView) conta como "visitou a página".
+  if ((event_name || '') === 'ViewContent' && content_name === 'QuizView') {
+    metricsIncr('evt_QuizView').catch(() => {});
+  }
+
+  // Perfil do quiz (E/R/S/A) indexado por telefone: o formulário de pré-sessão
+  // é preenchido depois e não conhece o perfil — é aqui que ele fica disponível
+  // para o Hub gravar em leads.profile e medir venda por perfil.
+  if ((event_name || '') === 'CompleteRegistration') {
+    const perfilPhone = normalizePhone(req.body.whats);
+    const perfilVal = String(req.body.perfil || '').trim().toUpperCase();
+    if (perfilPhone && perfilVal) {
+      getRedis().set(
+        `quiz:perfil:${perfilPhone}`,
+        JSON.stringify({ perfil: perfilVal, tier: req.body.tier || null, at: new Date().toISOString() }),
+        'EX', 60 * 60 * 24 * 180 // 180 dias — cobre a distância entre quiz e pré-sessão
+      ).catch(e => console.error('[perfil-persist] Redis:', e.message));
+    }
+  }
+
   // SDR forward só no CompleteRegistration: único momento com perfil+respostas+qualificação completos.
   if ((req.body.event_name || 'Lead') === 'CompleteRegistration') {
     forwardToSDR(req.body).catch(err =>
@@ -574,8 +595,26 @@ async function forwardPreSessaoToHub(payload) {
   throw lastError;
 }
 
+// Recupera o perfil do quiz (E/R/S/A) pelo telefone, gravado no CompleteRegistration.
+// Sem perfil o Hub não consegue medir venda por perfil — mas nunca bloqueia o envio.
+async function attachPerfilDoQuiz(payload) {
+  try {
+    if (!payload.telefone) return payload;
+    const raw = await redisGet(`quiz:perfil:${payload.telefone}`);
+    if (!raw) return payload;
+    const rec = JSON.parse(raw);
+    if (rec?.perfil) {
+      payload.perfil = rec.perfil;
+      if (rec.tier) payload.tier = rec.tier;
+    }
+  } catch (e) {
+    console.warn('[pre-sessao] perfil do quiz indisponível:', e.message);
+  }
+  return payload;
+}
+
 app.post('/api/pre-sessao', async (req, res) => {
-  const payload = normalizePreSessaoPayload(req.body || {});
+  const payload = await attachPerfilDoQuiz(normalizePreSessaoPayload(req.body || {}));
 
   if (!payload.nome || !payload.telefone) {
     return res.status(400).json({ ok: false, error: 'Nome e WhatsApp são obrigatórios.' });
@@ -2262,7 +2301,7 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
 // Protegido por requireDashToken (aplicado no app.use lá em cima).
 
 const DASH_METRICS = [
-  'evt_PageView', 'evt_ViewContent', 'evt_Lead', 'evt_CompleteRegistration',
+  'evt_PageView', 'evt_QuizView', 'evt_ViewContent', 'evt_Lead', 'evt_CompleteRegistration',
   'evt_DossieView', 'evt_InitiateCheckout',
   'abandoned_cart', 'waiting_payment',
   'purchases', 'revenue_cents', 'refunds',
