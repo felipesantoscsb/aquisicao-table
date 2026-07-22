@@ -2490,6 +2490,21 @@ app.get('/api/dash/data', async (req, res) => {
         backfill[d].revenue_cents += Math.round((rec.value || 0) * 100);
         if (rec.status === 'refunded' || rec.status === 'chargeback') backfill[d].refunds += 1;
 
+        // Inventário de ofertas: registra TODA transação, inclusive reembolsada.
+        // É o que permite descobrir o offer_id de um canal novo com uma compra
+        // de teste que depois é estornada — o mapeamento não pode depender de
+        // a venda continuar de pé.
+        {
+          const oid = String(rec.offer_id || 'sem_offer_id');
+          const estorno = rec.status === 'refunded' || rec.status === 'chargeback';
+          const inv = ofertasVistas[oid] = ofertasVistas[oid] ||
+            { compras: 0, estornos: 0, canal: canalDaOferta(rec.offer_id),
+              produto: rec.product_name || null, primeira: d, ultima: d, por_dia: {} };
+          if (estorno) inv.estornos += 1;
+          if (d < inv.primeira) inv.primeira = d;
+          if (d > inv.ultima)   inv.ultima = d;
+        }
+
         // agrega por canal (só compras válidas) e, dentro dele, por perfil —
         // permite cruzar as duas dimensões: qual perfil compra em qual canal
         if (rec.status !== 'refunded' && rec.status !== 'chargeback') {
@@ -2502,17 +2517,13 @@ app.get('/api/dash/data', async (req, res) => {
             porCanal[canal].por_perfil[letraCompra] =
               (porCanal[canal].por_perfil[letraCompra] || 0) + 1;
           }
-          // inventário de ofertas: permite mapear novos checkouts sem adivinhar.
-          // Guarda a distribuição por dia porque é ela que identifica o canal —
-          // cruzando com o volume conhecido de cada canal num dia específico.
-          const oid = String(rec.offer_id || 'sem_offer_id');
-          const inv = ofertasVistas[oid] = ofertasVistas[oid] ||
-            { compras: 0, canal, produto: rec.product_name || null,
-              primeira: d, ultima: d, por_dia: {} };
-          inv.compras += 1;
-          inv.por_dia[d] = (inv.por_dia[d] || 0) + 1;
-          if (d < inv.primeira) inv.primeira = d;
-          if (d > inv.ultima)   inv.ultima = d;
+          // compras válidas no inventário (o registro da oferta em si já foi
+          // feito acima, cobrindo também as estornadas)
+          const inv = ofertasVistas[String(rec.offer_id || 'sem_offer_id')];
+          if (inv) {
+            inv.compras += 1;
+            inv.por_dia[d] = (inv.por_dia[d] || 0) + 1;
+          }
         }
       } catch {}
     }
