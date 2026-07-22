@@ -230,6 +230,11 @@ app.post('/api/capi', async (req, res) => {
   if (evt === 'InitiateCheckout' && content_name === 'ProtocoloRaiz') {
     metricsIncr('evt_RmktCTA').catch(() => {});
   }
+  // Cadastro por perfil — a fatia de cada perfil no topo do funil
+  if (evt === 'CompleteRegistration') {
+    const letra = perfilLetra(req.body.perfil);
+    if (letra) metricsIncr(`evt_CompleteRegistration_${letra}`).catch(() => {});
+  }
 
   // Perfil do quiz (E/R/S/A) indexado por telefone: o formulário de pré-sessão
   // é preenchido depois e não conhece o perfil — é aqui que ele fica disponível
@@ -1243,8 +1248,8 @@ app.post('/api/capi/dossie-view', async (req, res) => {
   console.log('[DossieView] Telemetria interna:', req.body?.event_id, '| perfil:', req.body?.perfil, '| lid:', req.body?.lid);
   res.json({ ok: true });
 
-  // Série diária p/ o funil de saúde (fire-and-forget)
-  metricsIncr('evt_DossieView').catch(() => {});
+  // Série diária p/ o funil de saúde (fire-and-forget) + fatia por perfil
+  metricsIncrPerfil('evt_DossieView', req.body?.perfil);
 
   // Reabertura via sequência pós-quiz: o botão da mensagem de 4h leva ao
   // dossiê com &via=seq4h — a página reporta a URL completa aqui
@@ -1286,7 +1291,7 @@ app.post('/api/capi/initiate-checkout', async (req, res) => {
   // CTA do dossiê separado do checkout que sai direto do quiz — os dois caem
   // neste mesmo endpoint, e sem separar a performance do dossiê fica inflada.
   if (String(content_name || '') === 'InitiateCheckout_Dossie') {
-    metricsIncr('evt_DossieCTA').catch(() => {});
+    metricsIncrPerfil('evt_DossieCTA', perfil);
   }
 
   // Agenda recuperação de checkout: se o Purchase não chegar via webhook Ticto
@@ -2095,6 +2100,24 @@ app.post('/api/webhooks/ticto', async (req, res) => {
     metricsIncr('purchases').catch(() => {});
     if (typeof paidAmount === 'number') metricsIncr('revenue_cents', paidAmount).catch(() => {});
 
+    // Compra por perfil: a Ticto não manda o perfil, então recuperamos pelo
+    // telefone (gravado no CompleteRegistration do quiz). É o que permite
+    // responder "qual perfil mais compra", e não só qual mais entra no funil.
+    try {
+      const raw = await redisGet(`quiz:perfil:${customerPhone}`);
+      const letra = raw ? perfilLetra(JSON.parse(raw)?.perfil) : null;
+      if (letra) {
+        metricsIncr(`purchases_${letra}`).catch(() => {});
+        if (typeof paidAmount === 'number') {
+          metricsIncr(`revenue_cents_${letra}`, paidAmount).catch(() => {});
+        }
+        // grava no registro p/ o inventário e para auditoria posterior
+        await redisPurchaseSet(transactionId, { ...record, perfil: letra });
+      }
+    } catch (e) {
+      console.warn('[Ticto] perfil da compra indisponível:', e.message);
+    }
+
     // Atribuição de recuperação: se este telefone recebeu mensagem de
     // recuperação nas últimas 24h (TTL do marcador recovery:sent), conta a
     // compra como recuperada — métrica que justifica o sistema. Janela de
@@ -2349,9 +2372,54 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
 //   OFFER_IDS_BIO  (listas por vírgula)
 // Sem mapa configurado tudo cai em "nao_mapeado" — e o /api/dash/data devolve o
 // inventário de ofertas vistas para preencher o mapa com dado real.
+// offer_ids identificados em 22/07/2026 cruzando o inventário de compras com o
+// volume conhecido por canal. Ficam como padrão para o relatório já nascer certo;
+// a env correspondente sobrescreve quando precisar (canal novo, oferta trocada).
+//   156277 → quiz (99 compras, o mais antigo)
+//   164501 → dossiê (21)
+//   164550 → SDR conversa (15)
+// remarketing e bio ainda não têm venda: os links foram isolados em 21/07 e o
+// offer_id só aparece depois da primeira compra — revisar daqui a uma semana.
+//   165506 (1 compra) fica de fora de propósito: volume baixo demais para
+//   afirmar o canal sem chutar.
+const OFFER_IDS_PADRAO = {
+  OFFER_IDS_PRIMARIO: ['156277'],
+  OFFER_IDS_DOSSIE:   ['164501'],
+  OFFER_IDS_SDR:      ['164550'],
+  OFFER_IDS_RMKT:     [],
+  OFFER_IDS_BIO:      [],
+};
+// ─── Perfil do quiz: normalização ────────────────────────────────────────────
+// O quiz manda a letra (E/R/S/A) e o dossiê manda por extenso (emocional...).
+// Tudo vira letra — mesmo alfabeto de leads.profile no Hub, que já usa o CHECK
+// IN ('E','R','S','A'). Retorna null quando não reconhece, e aí a métrica
+// segmentada simplesmente não é contada (melhor não medir do que medir errado).
+const PERFIL_LETRAS = ['E', 'R', 'S', 'A'];
+const PERFIL_POR_EXTENSO = {
+  emocional: 'E',
+  restritiva: 'R',
+  sobrevivencia: 'S',
+  desconectada: 'A',
+};
+function perfilLetra(valor) {
+  const v = String(valor || '').trim();
+  if (!v) return null;
+  const upper = v.toUpperCase();
+  if (PERFIL_LETRAS.includes(upper)) return upper;
+  const semAcento = v.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return PERFIL_POR_EXTENSO[semAcento] || null;
+}
+// Incrementa a métrica base e, quando o perfil é conhecido, a fatia dele.
+function metricsIncrPerfil(base, perfil) {
+  metricsIncr(base).catch(() => {});
+  const letra = perfilLetra(perfil);
+  if (letra) metricsIncr(`${base}_${letra}`).catch(() => {});
+}
+
 function offerIdsDoEnv(nome) {
-  return String(process.env[nome] || '')
-    .split(',').map(s => s.trim()).filter(Boolean);
+  const bruto = String(process.env[nome] || '').trim();
+  if (!bruto) return OFFER_IDS_PADRAO[nome] || [];
+  return bruto.split(',').map(s => s.trim()).filter(Boolean);
 }
 function canalDaOferta(offerId) {
   const id = String(offerId || '').trim();
@@ -2368,6 +2436,11 @@ const DASH_METRICS = [
   'evt_PageView', 'evt_QuizView', 'evt_QuizStart', 'evt_QuizProgress', 'evt_ViewContent', 'evt_Lead', 'evt_CompleteRegistration',
   'evt_DossieView', 'evt_DossieCTA', 'evt_InitiateCheckout',
   'evt_RmktPageView', 'evt_RmktCTA',
+  // fatias por perfil do quiz (E=emocional, R=restritiva, S=sobrevivencia, A=desconectada)
+  ...['E','R','S','A'].flatMap(p => [
+    `evt_CompleteRegistration_${p}`, `evt_DossieView_${p}`, `evt_DossieCTA_${p}`,
+    `purchases_${p}`, `revenue_cents_${p}`,
+  ]),
   'abandoned_cart', 'waiting_payment',
   'purchases', 'revenue_cents', 'refunds',
   'recovery_sent', 'recovery_converted', 'recovery_revenue_cents',
@@ -2417,12 +2490,18 @@ app.get('/api/dash/data', async (req, res) => {
         backfill[d].revenue_cents += Math.round((rec.value || 0) * 100);
         if (rec.status === 'refunded' || rec.status === 'chargeback') backfill[d].refunds += 1;
 
-        // agrega por canal (só compras válidas)
+        // agrega por canal (só compras válidas) e, dentro dele, por perfil —
+        // permite cruzar as duas dimensões: qual perfil compra em qual canal
         if (rec.status !== 'refunded' && rec.status !== 'chargeback') {
           const canal = canalDaOferta(rec.offer_id);
-          porCanal[canal] = porCanal[canal] || { compras: 0, receita_cents: 0 };
+          porCanal[canal] = porCanal[canal] || { compras: 0, receita_cents: 0, por_perfil: {} };
           porCanal[canal].compras += 1;
           porCanal[canal].receita_cents += Math.round((rec.value || 0) * 100);
+          const letraCompra = perfilLetra(rec.perfil);
+          if (letraCompra) {
+            porCanal[canal].por_perfil[letraCompra] =
+              (porCanal[canal].por_perfil[letraCompra] || 0) + 1;
+          }
           // inventário de ofertas: permite mapear novos checkouts sem adivinhar.
           // Guarda a distribuição por dia porque é ela que identifica o canal —
           // cruzando com o volume conhecido de cada canal num dia específico.
