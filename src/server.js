@@ -2423,10 +2423,17 @@ app.get('/api/dash/data', async (req, res) => {
           porCanal[canal] = porCanal[canal] || { compras: 0, receita_cents: 0 };
           porCanal[canal].compras += 1;
           porCanal[canal].receita_cents += Math.round((rec.value || 0) * 100);
-          // inventário de ofertas: permite mapear novos checkouts sem adivinhar
+          // inventário de ofertas: permite mapear novos checkouts sem adivinhar.
+          // Guarda a distribuição por dia porque é ela que identifica o canal —
+          // cruzando com o volume conhecido de cada canal num dia específico.
           const oid = String(rec.offer_id || 'sem_offer_id');
-          ofertasVistas[oid] = ofertasVistas[oid] || { compras: 0, canal, produto: rec.product_name || null };
-          ofertasVistas[oid].compras += 1;
+          const inv = ofertasVistas[oid] = ofertasVistas[oid] ||
+            { compras: 0, canal, produto: rec.product_name || null,
+              primeira: d, ultima: d, por_dia: {} };
+          inv.compras += 1;
+          inv.por_dia[d] = (inv.por_dia[d] || 0) + 1;
+          if (d < inv.primeira) inv.primeira = d;
+          if (d > inv.ultima)   inv.ultima = d;
         }
       } catch {}
     }
