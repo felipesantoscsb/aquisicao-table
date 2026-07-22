@@ -2333,17 +2333,20 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
 
 // ─── Atribuição de compra por canal ──────────────────────────────────────────
 // Cada canal manda para uma oferta diferente no checkout da Ticto — isolamento
-// concluído em 21/07/2026, quando remarketing e bio deixaram de dividir o mesmo
-// link (o OBEF2D02E, agora aposentado) e a compra passou a ser atribuível:
+// concluído em 21/07/2026, quando o remarketing ganhou link próprio (antes
+// dividia o da bio) e a compra passou a ser atribuível por canal:
 //   primário (quiz)      → O3EB65FBD   /raiz
-//   dossiê               → O9E1D1B1F   sdr-table/dossies/*
+//   dossiê               → O9E1D1B1F   dossiês disparados pelo sdr-table
+//   SDR conversa         → OBEF2D02E   link que o agente manda no WhatsApp
 //   remarketing          → O0704BE5A   /proximo-passo
 //   bio (via /links)     → O972A923C   /protocolo-raiz
+// OBEF2D02E ficou no SDR de propósito: as vendas históricas nesse link vieram
+// de conversa com o agente, então o histórico segue coerente com a atribuição.
 // O webhook da Ticto traz item.offer_id, que já gravamos em cada compra. Como o
 // offer_id da Ticto é um identificador interno (não o código do link), o mapa
 // vive em env para ser ajustado sem deploy:
-//   OFFER_IDS_PRIMARIO / OFFER_IDS_DOSSIE / OFFER_IDS_RMKT / OFFER_IDS_BIO
-//   (listas por vírgula)
+//   OFFER_IDS_PRIMARIO / OFFER_IDS_DOSSIE / OFFER_IDS_SDR / OFFER_IDS_RMKT /
+//   OFFER_IDS_BIO  (listas por vírgula)
 // Sem mapa configurado tudo cai em "nao_mapeado" — e o /api/dash/data devolve o
 // inventário de ofertas vistas para preencher o mapa com dado real.
 function offerIdsDoEnv(nome) {
@@ -2355,6 +2358,7 @@ function canalDaOferta(offerId) {
   if (!id) return 'sem_offer_id';
   if (offerIdsDoEnv('OFFER_IDS_PRIMARIO').includes(id)) return 'primario';
   if (offerIdsDoEnv('OFFER_IDS_DOSSIE').includes(id))   return 'dossie';
+  if (offerIdsDoEnv('OFFER_IDS_SDR').includes(id))      return 'sdr_conversa';
   if (offerIdsDoEnv('OFFER_IDS_RMKT').includes(id))     return 'remarketing';
   if (offerIdsDoEnv('OFFER_IDS_BIO').includes(id))      return 'bio';
   return 'nao_mapeado';
