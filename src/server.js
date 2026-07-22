@@ -2373,21 +2373,24 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
 // Sem mapa configurado tudo cai em "nao_mapeado" — e o /api/dash/data devolve o
 // inventário de ofertas vistas para preencher o mapa com dado real.
 // offer_ids identificados em 22/07/2026 cruzando o inventário de compras com o
-// volume conhecido por canal. Ficam como padrão para o relatório já nascer certo;
-// a env correspondente sobrescreve quando precisar (canal novo, oferta trocada).
-//   156277 → quiz (99 compras, o mais antigo)
+// volume conhecido por canal + compras teste do Felipe (rmkt e bio). Ficam como
+// padrão para o relatório já nascer certo; a env correspondente sobrescreve
+// quando precisar (canal novo, oferta trocada).
+//   156277 → quiz (100 compras, o mais antigo)
 //   164501 → dossiê (21)
-//   164550 → SDR conversa (15)
-// remarketing e bio ainda não têm venda: os links foram isolados em 21/07 e o
-// offer_id só aparece depois da primeira compra — revisar daqui a uma semana.
-//   165506 (1 compra) fica de fora de propósito: volume baixo demais para
-//   afirmar o canal sem chutar.
+//   164550 → SDR conversa (15, link OBEF2D02E)
+//   171930 → remarketing (O0704BE5A) — compra teste 22/07; checkout criado 21/07,
+//            então o id estreou junto: não há como ser outro canal
+//   165506 → bio (O972A923C) — compra teste 22/07. Atenção: a venda de 02/07
+//            nesse id foi de quando O972A923C era o link do prompt SDR; ela
+//            aparece retroativamente como "bio" (1 venda, R$97) — distorção
+//            conhecida e aceita, o corte por canal vale de 21/07 em diante.
 const OFFER_IDS_PADRAO = {
   OFFER_IDS_PRIMARIO: ['156277'],
   OFFER_IDS_DOSSIE:   ['164501'],
   OFFER_IDS_SDR:      ['164550'],
-  OFFER_IDS_RMKT:     [],
-  OFFER_IDS_BIO:      [],
+  OFFER_IDS_RMKT:     ['171930'],
+  OFFER_IDS_BIO:      ['165506'],
 };
 // ─── Perfil do quiz: normalização ────────────────────────────────────────────
 // O quiz manda a letra (E/R/S/A) e o dossiê manda por extenso (emocional...).
