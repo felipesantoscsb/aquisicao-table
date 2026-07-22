@@ -1321,14 +1321,14 @@ function showResult(){
 
   // Pixel: CompleteRegistration primeiro (evento principal, otimizável)
   // depois QuizCompleted (browser-only, audiences — sem value, sem CAPI par)
+  // Sem perfil/tier no pixel: dado psicológico fica só do nosso lado (Redis).
+  // content_name mantém o prefixo "quiz-" — conversões/públicos no Events
+  // Manager que filtrem por "contém quiz" continuam casando; só a letra sai.
   fbq('track','CompleteRegistration',{
-    content_name: 'quiz-' + top,
-    status: top,
+    content_name: 'quiz-completo',
     eventID: crEventId
   });
   fbq('trackCustom','QuizCompleted',{
-    perfil: top,
-    tier: tier,
     eventID: quizEventId
   });
   gtag('event', 'quiz_completed', {
