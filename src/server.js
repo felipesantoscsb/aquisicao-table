@@ -215,10 +215,20 @@ app.post('/api/capi', async (req, res) => {
   // Série diária p/ dashboard (fire-and-forget)
   metricsIncr('evt_' + (event_name || 'Lead')).catch(() => {});
 
-  // Visita à landing do quiz — o dossiê também manda ViewContent, então só o
-  // page-load do quiz (content_name QuizView) conta como "visitou a página".
-  if ((event_name || '') === 'ViewContent' && content_name === 'QuizView') {
+  // Separação de canal pelo content_name que cada front já envia — nenhuma
+  // página precisou mudar e nada disso altera o que vai para a Meta:
+  //   QuizView   → landing do quiz (o dossiê também manda ViewContent)
+  //   RmktPage   → página de remarketing (/proximo-passo)
+  //   ProtocoloRaiz → CTA da página de remarketing
+  const evt = event_name || '';
+  if (evt === 'ViewContent' && content_name === 'QuizView') {
     metricsIncr('evt_QuizView').catch(() => {});
+  }
+  if (evt === 'ViewContent' && content_name === 'RmktPage') {
+    metricsIncr('evt_RmktPageView').catch(() => {});
+  }
+  if (evt === 'InitiateCheckout' && content_name === 'ProtocoloRaiz') {
+    metricsIncr('evt_RmktCTA').catch(() => {});
   }
 
   // Perfil do quiz (E/R/S/A) indexado por telefone: o formulário de pré-sessão
@@ -2321,9 +2331,34 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
 // + backfill de vendas/faturamento dos registros ticto:purchase:* (TTL 90d).
 // Protegido por requireDashToken (aplicado no app.use lá em cima).
 
+// ─── Atribuição de compra por canal ──────────────────────────────────────────
+// Cada canal manda para uma oferta diferente no checkout da Ticto:
+//   primário (quiz)  → O3EB65FBD
+//   dossiê           → O9E1D1B1F
+//   remarketing      → OBEF2D02E
+// O webhook da Ticto traz item.offer_id, que já gravamos em cada compra. Como o
+// offer_id da Ticto é um identificador interno (não o código do link), o mapa
+// vive em env para ser ajustado sem deploy:
+//   OFFER_IDS_PRIMARIO / OFFER_IDS_DOSSIE / OFFER_IDS_RMKT (listas por vírgula)
+// Sem mapa configurado tudo cai em "nao_mapeado" — e o /api/dash/data devolve o
+// inventário de ofertas vistas para preencher o mapa com dado real.
+function offerIdsDoEnv(nome) {
+  return String(process.env[nome] || '')
+    .split(',').map(s => s.trim()).filter(Boolean);
+}
+function canalDaOferta(offerId) {
+  const id = String(offerId || '').trim();
+  if (!id) return 'sem_offer_id';
+  if (offerIdsDoEnv('OFFER_IDS_PRIMARIO').includes(id)) return 'primario';
+  if (offerIdsDoEnv('OFFER_IDS_DOSSIE').includes(id))   return 'dossie';
+  if (offerIdsDoEnv('OFFER_IDS_RMKT').includes(id))     return 'remarketing';
+  return 'nao_mapeado';
+}
+
 const DASH_METRICS = [
   'evt_PageView', 'evt_QuizView', 'evt_QuizStart', 'evt_QuizProgress', 'evt_ViewContent', 'evt_Lead', 'evt_CompleteRegistration',
   'evt_DossieView', 'evt_DossieCTA', 'evt_InitiateCheckout',
+  'evt_RmktPageView', 'evt_RmktCTA',
   'abandoned_cart', 'waiting_payment',
   'purchases', 'revenue_cents', 'refunds',
   'recovery_sent', 'recovery_converted', 'recovery_revenue_cents',
@@ -2354,6 +2389,11 @@ app.get('/api/dash/data', async (req, res) => {
     // anterior ao início dos contadores). Usa o MAIOR entre as duas fontes por
     // dia para não dobrar contagem no período de transição.
     const backfill = {};
+    // Atribuição de compra por canal: cada canal tem sua própria oferta no
+    // checkout da Ticto, e o payload traz item.offer_id — que já gravamos em
+    // cada registro. Como os registros ficam 90 dias, isto vale retroativamente.
+    const porCanal = {};
+    const ofertasVistas = {};
     const purchaseKeys = await redis.keys('ticto:purchase:*');
     for (const k of purchaseKeys) {
       try {
@@ -2367,6 +2407,18 @@ app.get('/api/dash/data', async (req, res) => {
         backfill[d].purchases += 1;
         backfill[d].revenue_cents += Math.round((rec.value || 0) * 100);
         if (rec.status === 'refunded' || rec.status === 'chargeback') backfill[d].refunds += 1;
+
+        // agrega por canal (só compras válidas)
+        if (rec.status !== 'refunded' && rec.status !== 'chargeback') {
+          const canal = canalDaOferta(rec.offer_id);
+          porCanal[canal] = porCanal[canal] || { compras: 0, receita_cents: 0 };
+          porCanal[canal].compras += 1;
+          porCanal[canal].receita_cents += Math.round((rec.value || 0) * 100);
+          // inventário de ofertas: permite mapear novos checkouts sem adivinhar
+          const oid = String(rec.offer_id || 'sem_offer_id');
+          ofertasVistas[oid] = ofertasVistas[oid] || { compras: 0, canal, produto: rec.product_name || null };
+          ofertasVistas[oid].compras += 1;
+        }
       } catch {}
     }
     for (const [d, b] of Object.entries(backfill)) {
@@ -2429,6 +2481,10 @@ app.get('/api/dash/data', async (req, res) => {
       timezone: 'America/Sao_Paulo',
       days,
       meta,
+      // Compras atribuídas por canal (via item.offer_id da Ticto) + inventário
+      // das ofertas encontradas, para mapear novos checkouts sem adivinhação.
+      compras_por_canal: porCanal,
+      ofertas_vistas: ofertasVistas,
       totals: { today: windowTotals(1), d7: windowTotals(7), d30: windowTotals(Math.min(30, daysN)) },
       recovery_lifetime: {
         enabled:   process.env.RECOVERY_ENABLED === 'true',
