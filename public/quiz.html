@@ -888,11 +888,17 @@ function startQuiz(){
   current = 0; scores = {E:0,R:0,S:0,A:0}; quizAnswers = [];
   // Início do quiz — sem isso o funil tem um vão entre "visitou a página" e
   // "completou o cadastro" e não dá para saber se a perda é na página ou no quiz.
-  // Telemetria interna: não vai à Meta (evita evento custom sem uso em campanha).
+  // Vai para os dois lados: pixel (para virar Conversão Personalizada na Meta e
+  // aparecer no Ads Manager, como o DossieCTA) e telemetria interna (contagem
+  // própria, imediata e sem depender de atribuição de anúncio).
+  // try/catch: telemetria nunca pode impedir a pessoa de começar o quiz
+  // (bloqueador de anúncio pode deixar fbq indefinido)
+  var _qsId = crypto.randomUUID();
+  try { if (typeof fbq === 'function') fbq('trackCustom','QuizStart',{eventID:_qsId}); } catch(e){}
   fetch('/api/capi/quiz-start',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({event_source_url:window.location.href})
+    body:JSON.stringify({event_id:_qsId, event_source_url:window.location.href})
   }).catch(()=>{});
   goTo('page-quiz');
   renderQuestion();
