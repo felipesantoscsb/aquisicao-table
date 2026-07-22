@@ -1045,7 +1045,15 @@ function selectAndAdvance(type, btn){
   setTimeout(()=>{
     scores[type]++;
     current++;
-    if(current === 4) fbq('trackCustom','QuizProgress',{step:4}); // Q4 respondida
+    // Metade do quiz (4ª de 8) — pixel + contagem própria, como no QuizStart
+    if(current === 4){
+      try { if (typeof fbq === 'function') fbq('trackCustom','QuizProgress',{step:4}); } catch(e){}
+      fetch('/api/capi/quiz-progress',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({step:4, event_source_url:window.location.href})
+      }).catch(()=>{});
+    }
     saveQuizState();
     renderQuestion();
   }, 340);

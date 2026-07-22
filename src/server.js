@@ -1247,12 +1247,19 @@ app.post('/api/capi/dossie-view', async (req, res) => {
   } catch {}
 });
 
-// ─── Quiz: início ─────────────────────────────────────────────────────────────
-// Telemetria interna (não vai à Meta): fecha o vão entre "visitou a página" e
-// "completou o cadastro" no funil de saúde.
+// ─── Quiz: início e meio ──────────────────────────────────────────────────────
+// Contagem própria (além do pixel): fecha o vão entre "visitou a página" e
+// "completou o cadastro" no funil de saúde, sem depender de atribuição a anúncio.
 app.post('/api/capi/quiz-start', async (req, res) => {
   res.json({ ok: true });
   metricsIncr('evt_QuizStart').catch(() => {});
+});
+
+// Metade do quiz (4ª de 8 respondida) — separa quem desistiu de cara de quem
+// engajou e largou no meio.
+app.post('/api/capi/quiz-progress', async (req, res) => {
+  res.json({ ok: true });
+  metricsIncr('evt_QuizProgress').catch(() => {});
 });
 
 // ─── CAPI Dossiê: InitiateCheckout ────────────────────────────────────────────
@@ -2315,7 +2322,7 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
 // Protegido por requireDashToken (aplicado no app.use lá em cima).
 
 const DASH_METRICS = [
-  'evt_PageView', 'evt_QuizView', 'evt_QuizStart', 'evt_ViewContent', 'evt_Lead', 'evt_CompleteRegistration',
+  'evt_PageView', 'evt_QuizView', 'evt_QuizStart', 'evt_QuizProgress', 'evt_ViewContent', 'evt_Lead', 'evt_CompleteRegistration',
   'evt_DossieView', 'evt_DossieCTA', 'evt_InitiateCheckout',
   'abandoned_cart', 'waiting_payment',
   'purchases', 'revenue_cents', 'refunds',
