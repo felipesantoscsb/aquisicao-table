@@ -2450,6 +2450,22 @@ app.get('/api/webhooks/cakto/health', async (req, res) => {
   }
   try {
     const redis = getRedis();
+
+    // ?id=<transaction_id> → dump do payload cru + registro normalizado.
+    // É o que uso p/ confirmar o campo do join key (sck) e descobrir o schema
+    // dos eventos que ainda não conhecemos (refund/chargeback/abandono).
+    const lookupId = (req.query.id || '').trim();
+    if (lookupId) {
+      const raw = await redis.get(`cakto:raw:${lookupId}`);
+      const pur = await redis.get(`cakto:purchase:${lookupId}`);
+      return res.json({
+        id: lookupId,
+        encontrado: !!raw,
+        raw: raw ? JSON.parse(raw) : null,
+        registro_normalizado: pur ? JSON.parse(pur) : null,
+      });
+    }
+
     const rawKeys = await redis.keys('cakto:raw:*');
     const purKeys = await redis.keys('cakto:purchase:*');
     const ultimos = [];
