@@ -1302,6 +1302,7 @@ function showResult(){
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       event_name: 'CompleteRegistration',
+      slug: 'raiz-cakto', // conta evt_qc_cakto p/ a conversão QuizComplete→checkout no /tictovscakto
       nome: window._leadName,
       email: window._leadEmail,
       whats: phoneForHash(window._leadPhone),

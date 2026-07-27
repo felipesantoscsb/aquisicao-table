@@ -1342,6 +1342,7 @@ function showResult(){
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       event_name: 'CompleteRegistration',
+      slug: 'raiz-vi', // conta evt_qc_vi p/ a conversão QuizComplete→checkout no /tictovscakto
       nome: window._leadName,
       email: window._leadEmail,
       whats: phoneForHash(window._leadPhone),
@@ -1405,7 +1406,7 @@ function goOffer(){
       external_id: window._leadExternalId || undefined,
       content_name:'InitiateCheckout_Raiz',
       perfil:'raiz',
-      source:'raiz-cakto', // sinaliza origem Cakto p/ o servidor (recuperação + contador de IC); NÃO altera o evento do Meta
+      source:'raiz-vi', // slug próprio: checkout Cakto (recuperação Cakto) mas conta em evt_ic_vi p/ o A/B de VSL; NÃO altera o evento do Meta
       lid: window._leadEventId, // join key: enriquece o IC e vai como sck na recuperação Cakto
       event_id: icEventId,
       event_source_url:window.location.href

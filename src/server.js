@@ -255,6 +255,10 @@ app.post('/api/capi', async (req, res) => {
   if (evt === 'CompleteRegistration') {
     const letra = perfilLetra(req.body.perfil);
     if (letra) metricsIncr(`evt_CompleteRegistration_${letra}`).catch(() => {});
+    // QuizComplete por slug → base da conversão QuizComplete→checkout no /tictovscakto
+    const slug = String(req.body.slug || '');
+    if (slug === 'raiz-cakto') metricsIncr('evt_qc_cakto').catch(() => {});
+    else if (slug === 'raiz-vi') metricsIncr('evt_qc_vi').catch(() => {});
   }
 
   // Perfil do quiz (E/R/S/A) indexado por telefone: o formulário de pré-sessão
@@ -1305,17 +1309,24 @@ app.post('/api/capi/initiate-checkout', async (req, res) => {
   res.json({ ok: true });
 
   const enriched = await enrichFromLid(lid, { phone, em, fbc, fbp, fn });
-  const isCakto = String(source || '') === 'raiz-cakto'; // A/B: checkout Cakto (/raiz-cakto)
+  const src = String(source || '');
+  // 'raiz-cakto' e 'raiz-vi' redirecionam ambos pro checkout Cakto (recuperação
+  // Cakto), mas contam em métricas separadas: raiz-cakto = teste de checkout,
+  // raiz-vi = teste de VSL por perfil (mesma oferta Cakto).
+  const isCaktoCheckout = src === 'raiz-cakto' || src === 'raiz-vi';
 
   // Série diária p/ dashboard (fire-and-forget)
   metricsIncr('evt_InitiateCheckout').catch(() => {});
 
-  // Contadores por checkout para o A/B Ticto vs Cakto (/tictovscakto). Não
-  // mexem no evento do Meta — são só métricas internas. evt_ic_cakto vem do
-  // slug /raiz-cakto; evt_ic_raiz é o checkout que sai direto do quiz /raiz
-  // (exclui os CTAs do dossiê, que usam content_name InitiateCheckout_Dossie).
-  if (isCakto) {
+  // Contadores de IC por slug (internos, não mexem no evento do Meta):
+  //   evt_ic_cakto → /raiz-cakto (teste de checkout Ticto vs Cakto)
+  //   evt_ic_vi    → /raiz-vi    (teste de VSL por perfil)
+  //   evt_ic_raiz  → /raiz       (checkout que sai direto do quiz; exclui os
+  //                  CTAs do dossiê, que usam content_name InitiateCheckout_Dossie)
+  if (src === 'raiz-cakto') {
     metricsIncr('evt_ic_cakto').catch(() => {});
+  } else if (src === 'raiz-vi') {
+    metricsIncr('evt_ic_vi').catch(() => {});
   } else if (String(content_name || '') === 'InitiateCheckout_Raiz') {
     metricsIncr('evt_ic_raiz').catch(() => {});
   }
@@ -1335,7 +1346,7 @@ app.post('/api/capi/initiate-checkout', async (req, res) => {
     name:  enriched.fn,
     lid,
     stage: 'ic',
-    provider: isCakto ? 'cakto' : 'ticto',
+    provider: isCaktoCheckout ? 'cakto' : 'ticto',
   }).catch(() => {});
 
   sendCapiEvent({
@@ -2633,12 +2644,19 @@ app.get('/tictovscakto', async (req, res) => {
     const redis = await ensureRedisReady();
     const since = String(req.query.since || process.env.AB_START_DATE || spDate());
     const primario = (process.env.OFFER_IDS_PRIMARIO || '156277').split(',').map(s => s.trim()).filter(Boolean);
-    const [ticIc, cakIc, tic, cak] = await Promise.all([
+    const [ticIc, cakIc, viIc, qcCakto, qcVi, tic, cak] = await Promise.all([
       abSumIc(redis, 'evt_ic_raiz', since),
       abSumIc(redis, 'evt_ic_cakto', since),
+      abSumIc(redis, 'evt_ic_vi', since),
+      abSumIc(redis, 'evt_qc_cakto', since),
+      abSumIc(redis, 'evt_qc_vi', since),
       abSumPurchases(redis, 'ticto:purchase', since, primario),
       abSumPurchases(redis, 'cakto:purchase', since, null),
     ]);
+    // O checkout Cakto recebe tráfego de /raiz-cakto E /raiz-vi (mesma oferta),
+    // então o denominador do teste de checkout soma os dois — casa com as compras
+    // Cakto, que também vêm dos dois (o webhook não distingue slug).
+    const cakIcTotal = cakIc + viIc;
     const brl = (n) => 'R$ ' + Number(n || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const pct = (c, ic) => ic > 0 ? (Math.round((c / ic) * 1000) / 10).toLocaleString('pt-BR') + '%' : '—';
     const ticket = (g, c) => c > 0 ? brl(g / c) : '—';
@@ -2654,12 +2672,24 @@ app.get('/tictovscakto', async (req, res) => {
           <tr><td>Ticket médio</td><td>${ticket(p.gross, p.count)}</td></tr>
         </table>
       </div>`;
+    const colVsl = (label, qc, ic) => `
+      <div class="card">
+        <h2>${label}</h2>
+        <div class="big">${pct(ic, qc)}</div>
+        <div class="lbl">QuizComplete → checkout iniciado</div>
+        <table>
+          <tr><td>QuizComplete</td><td>${qc.toLocaleString('pt-BR')}</td></tr>
+          <tr><td>Checkout iniciado</td><td>${ic.toLocaleString('pt-BR')}</td></tr>
+        </table>
+      </div>`;
     res.set('Content-Type', 'text/html; charset=utf-8').send(`<!doctype html><html lang="pt-BR"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ticto vs Cakto</title>
 <style>
   body{font-family:system-ui,-apple-system,sans-serif;background:#f4f1ec;color:#2c2018;margin:0;padding:32px 16px}
   h1{text-align:center;font-weight:600;font-size:22px;margin:0 0 4px}
-  .since{text-align:center;color:#8a7d6f;font-size:13px;margin-bottom:28px}
+  h2.sec{text-align:center;font-weight:600;font-size:16px;margin:36px 0 4px;color:#2c2018}
+  .since{text-align:center;color:#8a7d6f;font-size:13px;margin-bottom:20px}
+  .subtitle{text-align:center;color:#8a7d6f;font-size:13px;margin:0 0 18px}
   .wrap{display:flex;gap:20px;max-width:720px;margin:0 auto;flex-wrap:wrap;justify-content:center}
   .card{background:#fff;border-radius:12px;padding:28px 24px;box-shadow:0 2px 20px rgba(44,32,24,.07);flex:1;min-width:260px}
   .card h2{margin:0 0 14px;font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:#b97040}
@@ -2669,11 +2699,21 @@ app.get('/tictovscakto', async (req, res) => {
   td{padding:8px 0;border-top:1px solid #eee}
   td:last-child{text-align:right;font-weight:600}
 </style></head><body>
-  <h1>Ticto vs Cakto — checkout</h1>
+  <h1>Testes A/B — Raiz</h1>
   <div class="since">desde ${since} · atualiza a cada refresh</div>
+
+  <h2 class="sec">Checkout — Ticto vs Cakto</h2>
+  <div class="subtitle">quem inicia o checkout, quanto compra</div>
   <div class="wrap">
     ${col('Ticto (/raiz)', ticIc, tic)}
-    ${col('Cakto (/raiz-cakto)', cakIc, cak)}
+    ${col('Cakto (/raiz-cakto + /raiz-vi)', cakIcTotal, cak)}
+  </div>
+
+  <h2 class="sec">VSL — única vs por perfil</h2>
+  <div class="subtitle">quem completa o quiz, quanto vai pro checkout</div>
+  <div class="wrap">
+    ${colVsl('VSL única (/raiz-cakto)', qcCakto, cakIc)}
+    ${colVsl('VSL por perfil (/raiz-vi)', qcVi, viIc)}
   </div>
 </body></html>`);
   } catch (e) {
