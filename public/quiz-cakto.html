@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Quiz Table: Descubra Sua Raiz</title>
+<meta name="description" content="Qual dos 4 padrões está por trás da sua relação com a comida? Descubra sua Raiz em 3 minutos: diagnóstico personalizado, gratuito."/>
+<meta property="og:title" content="Qual dos 4 padrões é o seu? Descubra agora."/>
+<meta property="og:description" content="Em menos de 3 minutos, identifique o padrão emocional que comanda sua relação com a comida, e o que fazer a partir de hoje."/>
+<meta property="og:image" content="https://evelynliu.com.br/images/quiz-og.jpg"/>
+<meta property="og:url" content="https://evelynliu.com.br/quiz"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Table · Evelyn Liu"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Qual dos 4 padrões é o seu?"/>
+<meta name="twitter:description" content="Em 3 minutos, descubra a raiz emocional da sua relação com a comida."/>
+<meta name="twitter:image" content="https://evelynliu.com.br/images/quiz-og.jpg"/>
+<script>
+// ── Captura fbclid e força criação do cookie _fbc antes do init ──
+(function(){
+  function getCookie(name){
+    const m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return m ? m[2] : null;
+  }
+  const fbclid = new URLSearchParams(window.location.search).get('fbclid');
+  if(fbclid && !getCookie('_fbc')){
+    const fbc = 'fb.1.' + Date.now() + '.' + fbclid;
+    document.cookie = '_fbc=' + fbc + '; path=/; max-age=7776000; SameSite=Lax; domain=.evelynliu.com.br';
+  }
+})();
+
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window,document,"script",
+"https://connect.facebook.net/en_US/fbevents.js");
+fbq('init', '989971718548782');
+// PageView com eventID disparado abaixo no IIFE async (para par CAPI com eventID)
+
+// QuizView — dispara ao carregar a página
+(async function(){
+  function _gc(name){const m=document.cookie.match(new RegExp('(^| )'+name+'=([^;]+)'));return m?m[2]:null;}
+  const qvEventId = crypto.randomUUID();
+  const pvEventId = crypto.randomUUID(); // par server-side do PageView browser
+  fbq('track','PageView',{eventID:pvEventId}); // sobrescreve o fbq('track','PageView') acima com eventID
+  fbq('track','ViewContent',{content_name:'QuizView',eventID:qvEventId});
+  fetch('/api/capi',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      event_name:'ViewContent',
+      content_name:'QuizView',
+      lead_event_id:qvEventId,
+      pageview_event_id:pvEventId,
+      fbc: _gc('_fbc') || null,
+      fbp: _gc('_fbp') || null,
+      event_source_url:window.location.href
+    })
+  }).catch(()=>{});
+})();
+</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=989971718548782&ev=PageView&noscript=1"/></noscript>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--moss:#3D4A35;--moss-mid:#4E5E42;--moss-lt:#6B7D5C;--moss-pale:#E8EDE4;--cream:#F8F4EE;--warm:#EDE5D8;--sand:#D8CCBA;--terra:#B97040;--terra-dk:#8A4F28;--terra-lt:#F5EAE0;--brown:#2C2018;--muted:#7A6E64;--soft:#A89E94;--white:#FFFFFF;--line:#DDD4C4}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--brown);min-height:100vh;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");opacity:.35}
+.page{display:none;min-height:100vh;position:relative;z-index:1}
+.page.active{display:flex;flex-direction:column}
+#page-intro{background:var(--moss);align-items:center;justify-content:center;padding:56px 24px;text-align:center;position:relative;overflow:hidden}
+#page-intro::before{content:'';position:absolute;top:-100px;right:-100px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.06) 0%,transparent 65%);pointer-events:none}
+#page-intro::after{content:'';position:absolute;bottom:-80px;left:-80px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(185,112,64,.15) 0%,transparent 65%);pointer-events:none}
+.intro-logo{font-family:'Cormorant Garamond',serif;font-size:12px;letter-spacing:.35em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:44px;opacity:0;animation:fadeUp .8s ease .1s forwards}
+/* Badge com linhas laterais */
+.intro-eyebrow{display:flex;align-items:center;gap:12px;font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.45);font-weight:400;margin-bottom:28px;opacity:0;animation:fadeUp .8s ease .25s forwards}
+.intro-eyebrow::before,.intro-eyebrow::after{content:'';width:32px;height:1px;background:rgba(185,112,64,.35);flex-shrink:0}
+/* Título com hierarquia clara */
+.intro-title{font-family:'Cormorant Garamond',serif;font-size:clamp(30px,6.5vw,50px);line-height:1.18;color:var(--white);margin-bottom:0;max-width:520px;font-weight:500;opacity:0;animation:fadeUp .8s ease .35s forwards}
+.intro-title em{color:var(--terra);font-style:italic;font-size:.91em}
+/* Separador entre título e corpo */
+.intro-divider{width:28px;height:1px;background:rgba(185,112,64,.35);margin:28px auto;opacity:0;animation:fadeUp .8s ease .43s forwards}
+/* Coluna de texto com largura controlada */
+.intro-sub{font-size:15px;line-height:1.8;color:rgba(255,255,255,.58);max-width:380px;margin:0 auto 36px;opacity:0;animation:fadeUp .8s ease .5s forwards}
+.intro-sub strong{color:rgba(255,255,255,.88)}
+.intro-promises{display:flex;flex-direction:column;gap:10px;margin-bottom:40px;max-width:320px;opacity:0;animation:fadeUp .8s ease .62s forwards}
+.promise-item{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.5)}
+.promise-dot{width:4px;height:4px;border-radius:50%;background:var(--terra);flex-shrink:0}
+/* CTA com respiro generoso */
+.btn-primary{display:inline-block;background:var(--terra);color:var(--white);font-family:'Jost',sans-serif;font-size:14px;font-weight:500;letter-spacing:.08em;padding:18px 52px;border-radius:3px;border:none;cursor:pointer;text-decoration:none;transition:background .25s,transform .25s,box-shadow .25s,letter-spacing .25s;opacity:0;animation:fadeUp .8s ease .75s forwards}
+.btn-primary:hover{background:var(--terra-dk);transform:translateY(-2px);box-shadow:0 12px 36px rgba(185,112,64,.45);letter-spacing:.10em}
+.intro-fine{margin-top:18px;font-size:11px;color:rgba(255,255,255,.3);opacity:0;animation:fadeUp .8s ease .85s forwards}
+#page-capture{background:var(--cream);align-items:center;justify-content:center;padding:56px 24px}
+.capture-inner{max-width:460px;width:100%;text-align:center}
+.capture-tag{display:inline-block;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--moss);border:1px solid var(--moss-lt);padding:5px 14px;border-radius:2px;margin-bottom:28px}
+.capture-title{font-family:'Cormorant Garamond',serif;font-size:clamp(26px,5vw,38px);line-height:1.2;margin-bottom:12px;color:var(--brown)}
+.capture-title em{color:var(--moss);font-style:italic}
+.capture-sub{font-size:15px;color:var(--muted);line-height:1.65;margin-bottom:36px}
+.form-field{width:100%;background:var(--white);border:1.5px solid var(--line);border-radius:4px;padding:14px 18px;font-family:'Jost',sans-serif;font-size:15px;color:var(--brown);margin-bottom:10px;transition:border-color .2s;outline:none;display:block}
+.form-field:focus{border-color:var(--moss)}
+.form-field::placeholder{color:var(--soft)}
+.btn-capture{width:100%;background:var(--terra);color:var(--white);font-family:'Jost',sans-serif;font-size:15px;font-weight:500;padding:17px;border-radius:3px;border:none;cursor:pointer;margin-top:6px;transition:all .25s;letter-spacing:.03em}
+.btn-capture:hover{background:var(--terra-dk)}
+.capture-fine{font-size:11px;color:var(--soft);margin-top:12px;line-height:1.6}
+.field-error{font-size:12px;color:#c0392b;min-height:16px;margin:-4px 0 6px 2px;line-height:1.4}
+.form-field.error{border-color:#c0392b}
+#page-quiz{background:var(--cream);align-items:center;padding:40px 24px;justify-content:flex-start}
+.quiz-inner{max-width:560px;width:100%;margin:0 auto}
+.quiz-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px}
+.quiz-logo-sm{font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:.25em;text-transform:uppercase;color:var(--moss)}
+.quiz-progress-wrap{display:flex;align-items:center;gap:12px}
+.quiz-progress-bar{width:120px;height:3px;background:var(--sand);border-radius:2px;overflow:hidden}
+.quiz-progress-fill{height:100%;background:var(--moss);border-radius:2px;transition:width .5s ease}
+.quiz-counter{font-size:12px;color:var(--muted);white-space:nowrap}
+.question-card{background:var(--white);border-radius:8px;padding:40px 36px;box-shadow:0 2px 24px rgba(44,32,24,.07);animation:fadeUp .4s ease}
+.q-number{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--moss-lt);margin-bottom:14px;font-weight:500}
+.q-text{font-family:'Cormorant Garamond',serif;font-size:clamp(19px,4vw,25px);line-height:1.4;color:var(--brown);margin-bottom:32px}
+.q-hint{font-size:12px;color:var(--muted);margin-bottom:16px;font-style:italic}
+.options-list{display:flex;flex-direction:column;gap:10px}
+.option-btn{display:flex;align-items:flex-start;gap:14px;padding:16px 18px;background:var(--cream);border:1.5px solid transparent;border-radius:6px;cursor:pointer;text-align:left;font-family:'Jost',sans-serif;font-size:14px;line-height:1.5;color:var(--brown);transition:all .2s}
+.option-btn:hover{border-color:var(--moss);background:var(--moss-pale)}
+.option-btn.selected{border-color:var(--moss);background:var(--moss-pale)}
+.option-letter{width:24px;height:24px;border-radius:50%;background:var(--sand);color:var(--brown);font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.option-btn.selected .option-letter,.option-btn:hover .option-letter{background:var(--moss);color:var(--white)}
+.option-check{background:var(--sand)!important;color:transparent!important}
+.option-btn.selected .option-check{background:var(--moss)!important;color:var(--white)!important}
+.q-nav{display:flex;justify-content:flex-end;margin-top:28px;min-height:44px}
+.btn-next{background:var(--brown);color:var(--white);font-family:'Jost',sans-serif;font-size:14px;font-weight:500;padding:13px 32px;border-radius:3px;border:none;cursor:pointer;transition:all .2s}
+.btn-next.enabled:hover{background:var(--moss);transform:translateY(-1px)}
+#page-loading{background:var(--moss);align-items:center;justify-content:center;padding:48px 24px;text-align:center}
+.loading-title{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--white);margin-bottom:10px}
+.loading-sub{font-size:14px;color:rgba(255,255,255,.55);margin-bottom:48px}
+.loading-bar-wrap{width:240px;height:3px;background:rgba(255,255,255,.15);border-radius:2px;overflow:hidden}
+.loading-bar-fill{height:100%;background:var(--terra);border-radius:2px;animation:loadingFill 2.5s ease forwards}
+.loading-steps{margin-top:40px;display:flex;flex-direction:column;gap:12px}
+.loading-step{font-size:13px;color:rgba(255,255,255,.3);opacity:0;transition:all .4s}
+.loading-step.visible{opacity:1;color:rgba(255,255,255,.6)}
+#page-result{background:var(--cream);align-items:center;padding:0}
+.result-hero{width:100%;background:var(--moss);padding:56px 24px 48px;text-align:center;position:relative;overflow:hidden}
+.result-hero::before{content:'';position:absolute;top:-100px;right:-100px;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.06) 0%,transparent 65%)}
+.result-tag{display:inline-block;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--terra);border:1px solid rgba(185,112,64,.4);padding:5px 14px;border-radius:2px;margin-bottom:24px}
+.result-type{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,6vw,46px);line-height:1.15;color:var(--white);margin-bottom:16px}
+.result-type em{color:var(--terra);font-style:italic}
+.result-headline{font-size:16px;color:rgba(255,255,255,.6);line-height:1.65;max-width:480px;margin:0 auto}
+.result-body{width:100%;max-width:600px;margin:0 auto;padding:48px 24px 32px}
+.result-desc{font-size:15px;line-height:1.85;color:var(--brown);margin-bottom:28px}
+.result-signals{background:var(--warm);border-radius:8px;padding:28px;margin-bottom:28px}
+.signals-title{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--moss);margin-bottom:16px;font-weight:500}
+.signal-item{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--brown);line-height:1.55;margin-bottom:10px}
+.signal-item:last-child{margin-bottom:0}
+.signal-dot{width:5px;height:5px;border-radius:50%;background:var(--moss);margin-top:7px;flex-shrink:0}
+.video-section,.gracinha-section,.author-section,.book-strip,.offer-divider,.quiz-faq{width:100%;max-width:600px;margin:0 auto;padding:0 24px 40px}
+.book-strip{padding-bottom:16px}
+.offer-divider{padding-bottom:56px}
+.video-intro{text-align:center;margin-bottom:20px}
+.video-eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--moss);font-weight:500;margin-bottom:8px}
+.video-headline{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--brown);line-height:1.35}
+.video-headline em{color:var(--moss);font-style:italic}
+.video-wrap{
+  position:relative;
+  width:100%;
+  border-radius:24px;
+  overflow:hidden;
+  background:transparent;
+  box-shadow:0 8px 40px rgba(44,32,24,.15);
+}
+
+.video-wrap::before{
+  display:none;
+}
+
+.video-wrap iframe,
+.video-wrap video,
+.video-wrap wistia-player{
+  width:100%;
+  height:100%;
+  border:none;
+  display:block;
+  border-radius:24px;
+  overflow:hidden;
+}
+.video-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:linear-gradient(145deg,var(--moss) 0%,var(--moss-mid) 100%);cursor:pointer}
+.play-btn{width:64px;height:64px;border-radius:50%;background:var(--terra);display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s}
+.play-btn:hover{transform:scale(1.08);box-shadow:0 8px 28px rgba(185,112,64,.5)}
+.play-btn svg{margin-left:4px}
+.video-placeholder-text{font-family:'Cormorant Garamond',serif;font-size:16px;color:rgba(255,255,255,.7);text-align:center;max-width:220px;line-height:1.5}
+.video-placeholder-name{font-size:12px;color:var(--terra);letter-spacing:.08em}
+.video-caption{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:13px;color:var(--muted)}
+.video-caption::before{content:'';display:block;width:4px;height:4px;border-radius:50%;background:var(--moss);flex-shrink:0}
+.vsl-evelyn-tag{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px}
+.vsl-evelyn-dot{width:30px;height:30px;border-radius:50%;background:var(--moss-pale);border:2px solid var(--moss-lt);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--moss)}
+.vsl-evelyn-name{font-size:13px;color:var(--muted)}
+.vsl-evelyn-name strong{color:var(--brown);font-weight:500}
+.gracinha-eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--moss);font-weight:500;margin-bottom:8px}
+.gracinha-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--brown);line-height:1.3;margin-bottom:20px}
+.gracinha-title em{color:var(--moss);font-style:italic}
+.gracinha-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:440px){.gracinha-grid{grid-template-columns:1fr 1fr}}
+.gracinha-card{background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.gracinha-photo{width:100%;aspect-ratio:3/4;background:var(--warm);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.gracinha-photo img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.gracinha-photo-ph{font-size:11px;color:var(--muted);text-align:center;padding:8px;line-height:1.5}
+.gracinha-kg-tag{position:absolute;bottom:6px;right:6px;background:var(--moss);color:var(--white);font-size:10px;font-weight:500;padding:3px 8px;border-radius:3px;letter-spacing:.03em}
+.gracinha-body{padding:10px}
+.gracinha-quote{font-size:11px;color:var(--muted);line-height:1.55;font-style:italic}
+.gracinha-note{font-size:12px;color:var(--muted);text-align:center;line-height:1.6;border-top:1px solid var(--line);padding-top:12px}
+.author-card{background:var(--warm);border-radius:8px;padding:32px 28px;border-left:3px solid var(--moss)}
+.author-eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--moss);margin-bottom:20px;font-weight:500}
+.author-row{display:flex;align-items:flex-start;gap:18px;margin-bottom:18px}
+.author-name{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--brown);margin-bottom:3px}
+.author-title-sm{font-size:13px;color:var(--muted);line-height:1.5}
+.author-creds{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px}
+.cred-pill{font-size:11px;padding:4px 10px;border-radius:20px;background:var(--white);border:1px solid var(--line);color:var(--brown);font-weight:500}
+.author-quote{font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;line-height:1.65;color:var(--brown);border-top:1px solid var(--sand);padding-top:18px}
+.author-quote cite{display:block;font-style:normal;font-family:'Jost',sans-serif;font-size:12px;color:var(--muted);margin-top:10px}
+.book-card{display:flex;align-items:center;gap:18px;background:var(--moss);border-radius:8px;padding:20px 24px;margin-bottom:12px}
+.book-label{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--terra);margin-bottom:4px}
+.book-title{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--white);line-height:1.3;margin-bottom:4px}
+.book-desc{font-size:13px;color:rgba(255,255,255,.55);line-height:1.5}
+.book-included{font-size:11px;font-weight:500;color:var(--terra);background:rgba(185,112,64,.15);padding:4px 10px;border-radius:3px;white-space:nowrap;flex-shrink:0}
+.quiz-faq-title{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--brown);margin-bottom:20px}
+.quiz-faq-title em{color:var(--moss);font-style:italic}
+.quiz-faq-item{border-bottom:1px solid var(--line);padding:16px 0;cursor:pointer}
+.quiz-faq-item:first-of-type{border-top:1px solid var(--line)}
+.quiz-faq-q{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;font-weight:500;color:var(--brown);line-height:1.4}
+.quiz-faq-arrow{font-size:16px;color:var(--moss);flex-shrink:0;transition:transform .25s}
+.quiz-faq-item.open .quiz-faq-arrow{transform:rotate(45deg)}
+.quiz-faq-a{font-size:13px;color:var(--muted);line-height:1.75;max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s}
+.quiz-faq-item.open .quiz-faq-a{max-height:300px;padding-top:12px}
+.offer-card{background:var(--moss);border-radius:10px;overflow:hidden}
+.offer-top{background:var(--moss-mid);padding:20px 28px}
+.offer-eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:5px}
+.offer-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--white);line-height:1.25}
+.offer-body{padding:28px}
+.offer-desc{font-size:14px;color:rgba(255,255,255,.6);line-height:1.75;margin-bottom:22px}
+.offer-urgency{display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(185,112,64,.12);border:1px solid rgba(185,112,64,.25);border-radius:4px;padding:9px 16px;margin-bottom:20px;font-size:13px;color:var(--terra)}
+.offer-includes{display:flex;flex-direction:column;gap:10px;margin-bottom:26px}
+.include-item{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--white)}
+.include-check{width:20px;height:20px;border-radius:50%;background:rgba(185,112,64,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:var(--terra)}
+.offer-price-row{display:flex;align-items:flex-end;gap:10px;margin-bottom:18px}
+.price-from{font-size:12px;color:rgba(255,255,255,.3);text-decoration:line-through;margin-bottom:4px}
+.price-main{font-family:'Cormorant Garamond',serif;font-size:40px;color:var(--white);line-height:1}
+.price-note{font-size:12px;color:rgba(255,255,255,.45);margin-bottom:4px}
+.btn-offer{display:block;width:100%;background:var(--terra);color:var(--white);font-family:'Jost',sans-serif;font-size:15px;font-weight:500;padding:18px;border-radius:4px;border:none;cursor:pointer;transition:all .25s;text-align:center;letter-spacing:.04em}
+.btn-offer:hover{background:var(--terra-dk);transform:translateY(-2px);box-shadow:0 8px 24px rgba(185,112,64,.4)}
+.offer-guarantee{text-align:center;font-size:12px;color:rgba(255,255,255,.35);margin-top:12px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes loadingFill{0%{width:0%}40%{width:60%}80%{width:85%}100%{width:100%}}
+@media(max-width:480px){.question-card{padding:28px 20px}.offer-body{padding:20px}.result-body{padding:36px 16px 24px}.video-section,.gracinha-section,.author-section,.book-strip,.offer-divider,.quiz-faq{padding-left:16px;padding-right:16px}}
+</style>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-14817731667"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-14817731667');
+</script>
+
+<script type="text/javascript">
+  (function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+  })(window, document, "clarity", "script", "wmg9jtptjq");
+</script>
+
+</head>
+<body>
+<div id="page-intro" class="page active">
+  <p class="intro-logo">Table</p>
+  <p class="intro-eyebrow">Mapeamento de raiz · gratuito</p>
+  <h1 class="intro-title">Toda relação difícil com a comida tem uma raiz.<br>Existem 4.<br><em>Em 3 minutos, você descobre a sua.</em></h1>
+  <div class="intro-divider"></div>
+  <p class="intro-sub">Cada padrão tem uma raiz diferente, e uma solução diferente. Descubra qual está por trás da sua relação com a comida <strong>e o que fazer a partir de agora.</strong></p>
+  <div class="intro-promises">
+    <div class="promise-item"><div class="promise-dot"></div><span>8 perguntas diretas, sem enrolação</span></div>
+    <div class="promise-item"><div class="promise-dot"></div><span>Resultado personalizado para o seu perfil</span></div>
+    <div class="promise-item"><div class="promise-dot"></div><span>Desenvolvido pela equipe da Table</span></div>
+  </div>
+  <button class="btn-primary" onclick="startQuiz()">Quero descobrir minha raiz →</button>
+  <p class="intro-fine">Gratuito · 3 minutos · Sem spam</p>
+</div>
+
+
+<!-- PAGE 2: CAPTURE -->
+
+
+<div id="page-capture" class="page">
+  <div class="capture-inner">
+    <span class="capture-tag">Seu mapeamento está pronto</span>
+    <h2 class="capture-title">Para onde enviamos<br>seu <em>resultado personalizado?</em></h2>
+    <p class="capture-sub">Você respondeu as perguntas. Seu perfil já foi identificado. Só precisamos saber para onde enviar.</p>
+    <input class="form-field" type="text" id="user-name" placeholder="Seu primeiro nome" autocomplete="given-name" oninput="clearFieldError('user-name')"/>
+    <p class="field-error" id="err-name"></p>
+    <input class="form-field" type="email" id="user-email" placeholder="Seu melhor e-mail" autocomplete="email" oninput="clearFieldError('user-email')"/>
+    <p class="field-error" id="err-email"></p>
+    <input class="form-field" type="tel" id="user-phone" placeholder="(11) 99999-9999" autocomplete="tel" oninput="formatPhone(this);clearFieldError('user-phone')" maxlength="15"/>
+    <p class="field-error" id="err-phone"></p>
+    <button class="btn-capture" onclick="submitCapture()">Ver meu resultado →</button>
+    <p class="capture-fine">Seus dados estão seguros. Ao continuar, você aceita o uso de cookies para personalizar sua experiência e concorda com a nossa <a href="https://evelynliu.com.br/legal" target="_blank" style="color:inherit;text-decoration:underline">Política de Privacidade</a>.</p>
+  </div>
+</div>
+
+
+<!-- PAGE 3: QUIZ -->
+
+
+<div id="page-quiz" class="page">
+  <div class="quiz-inner">
+    <div class="quiz-header">
+      <span class="quiz-logo-sm">Table</span>
+      <div class="quiz-progress-wrap">
+        <div class="quiz-progress-bar">
+          <div class="quiz-progress-fill" id="progress-fill" style="width:0%"></div>
+        </div>
+        <span class="quiz-counter" id="quiz-counter">1 de 8</span>
+      </div>
+    </div>
+    <div class="question-card" id="question-card">
+      <p class="q-number" id="q-number">Pergunta 1</p>
+      <p class="q-text" id="q-text"></p>
+      <div class="options-list" id="options-list"></div>
+      <div class="q-nav" id="q-nav"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- PAGE 4: LOADING -->
+
+
+<div id="page-loading" class="page">
+  <p class="loading-title">Analisando suas respostas...</p>
+  <p class="loading-sub">Identificando o padrão por trás das suas escolhas</p>
+  <div class="loading-bar-wrap"><div class="loading-bar-fill"></div></div>
+  <div class="loading-steps">
+    <p class="loading-step" id="ls1">Cruzando suas respostas com os 4 perfis...</p>
+    <p class="loading-step" id="ls2">Identificando sua raiz dominante...</p>
+    <p class="loading-step" id="ls3">Montando seu diagnóstico personalizado...</p>
+    <p class="loading-step" id="ls4">Seu mapeamento está pronto.</p>
+  </div>
+</div>
+
+
+
+
+<!-- PAGE 5: RESULT -->
+
+
+<div id="page-result" class="page">
+
+  <!-- 1. HERO — nome + perfil -->
+  <div class="result-hero">
+    <span class="result-tag" id="result-tag">Sua Raiz</span>
+    <p id="result-name-greeting" style="font-family:'Jost',sans-serif;font-size:15px;color:rgba(255,255,255,.55);margin-bottom:8px;letter-spacing:.03em"></p>
+    <h2 class="result-type" id="result-type"></h2>
+    <p class="result-headline" id="result-headline"></p>
+  </div>
+
+  <!-- 2. DIAGNÓSTICO + SINAIS + BRIDGE -->
+  <div class="result-body">
+    <p class="result-desc" id="result-desc"></p>
+    <div class="result-signals">
+      <p class="signals-title">Sinais que confirmam esse padrão em você</p>
+      <p id="result-mirror" style="display:none;font-size:14px;font-style:italic;color:var(--brown);line-height:1.7;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--sand)"></p>
+      <div id="result-signals-list"></div>
+    </div>
+    <p class="result-desc" id="result-bridge"></p>
+  </div>
+
+  <!-- 3. VÍDEO DA EVELYN — ponte emocional -->
+  <div class="video-section">
+    <div class="video-intro" style="margin-bottom:16px">
+      <p class="video-eyebrow">Uma mensagem da Evelyn para você</p>
+      <h3 class="video-headline" style="margin-bottom:0">
+        Agora que você conhece seu padrão,<br><em>quero te falar pessoalmente.</em>
+      </h3>
+    </div>
+    <div class="video-wrap" style="margin-top:0">
+      <script src="https://fast.wistia.com/player.js" async></script>
+      <script src="https://fast.wistia.com/embed/zrfwtube87.js" async type="module"></script>
+      <style>
+        .video-wrap{background:transparent!important;padding:0!important;box-shadow:none!important;border:none!important}
+        wistia-player[media-id='zrfwtube87']:not(:defined){background:center/cover no-repeat url('https://fast.wistia.com/embed/medias/zrfwtube87/swatch');display:block;filter:blur(5px);padding-top:177.78%;border-radius:24px;overflow:hidden}
+        wistia-player{display:block;width:100%;border-radius:24px;overflow:hidden;box-shadow:0 12px 35px rgba(0,0,0,.12)}
+        .video-placeholder{display:none!important}
+      </style>
+      <wistia-player media-id="zrfwtube87" aspect="0.5625"></wistia-player>
+    </div>
+    <p class="video-caption">86 segundos · sem enrolação · só o que importa para você agora</p>
+    <div class="vsl-evelyn-tag">
+      <div class="vsl-evelyn-dot">E</div>
+      <p class="vsl-evelyn-name"><strong>Evelyn Liu</strong> · Nutricionista comportamental · Fundadora da Table</p>
+    </div>
+    <div style="text-align:center;margin-top:28px">
+      <a id="video-cta-btn" href="#offer-anchor" onclick="event.preventDefault();document.getElementById('offer-anchor').scrollIntoView({behavior:'smooth'})" class="btn-offer" style="display:inline-block;width:auto;padding:16px 36px;font-size:14px;border-radius:4px;text-decoration:none">Quero começar pelo Protocolo Raiz →</a>
+    </div>
+  </div>
+
+  <!-- 4. PROVA SOCIAL — Ação da Gracinha -->
+  <div class="gracinha-section">
+    <p class="gracinha-eyebrow">Ação da Gracinha · Table</p>
+    <h3 class="gracinha-title">Cada conquista virou<br><em>um ato de amor.</em></h3>
+    <p style="font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:18px">Mulheres que passaram pela Table doam, em alimentos, o equivalente ao que transformaram. Porque transformação real transborda.</p>
+    <div class="gracinha-grid">
+      <div class="gracinha-card">
+        <div class="gracinha-photo">
+          <img src="/images/Juliana Moreno.png" alt="Juliana com sua doação de alimentos"/>
+          <span class="gracinha-kg-tag">Juliana</span>
+        </div>
+        <div class="gracinha-body"><p class="gracinha-quote">"Depois de 12 anos tentando dietas, foi a primeira vez que me senti em paz com minhas escolhas."</p></div>
+      </div>
+      <div class="gracinha-card">
+        <div class="gracinha-photo">
+          <img src="/images/Adriana.png" alt="Adriana com sua doação de alimentos"/>
+          <span class="gracinha-kg-tag">Adriana</span>
+        </div>
+        <div class="gracinha-body"><p class="gracinha-quote">"Em 6 semanas entendi o que 3 nutricionistas não conseguiram me explicar: não era falta de força de vontade."</p></div>
+      </div>
+      <div class="gracinha-card">
+        <div class="gracinha-photo">
+          <img src="/images/Iracema.png" alt="Iracema com sua doação de alimentos"/>
+          <span class="gracinha-kg-tag">Iracema</span>
+        </div>
+        <div class="gracinha-body"><p class="gracinha-quote">"Aprendi a me ouvir de um jeito que nunca tinha conseguido antes."</p></div>
+      </div>
+      <div class="gracinha-card">
+        <div class="gracinha-photo">
+          <img src="/images/Gracinha.png" alt="Gracinha com sua doação de alimentos"/>
+          <span class="gracinha-kg-tag">Gracinha</span>
+        </div>
+        <div class="gracinha-body"><p class="gracinha-quote">"Aprendi a me ouvir antes de abrir a geladeira."</p></div>
+      </div>
+      <div class="gracinha-card">
+        <div class="gracinha-photo">
+          <img src="/images/Cris.png" alt="Cris com sua doação de alimentos"/>
+          <span class="gracinha-kg-tag">Cris</span>
+        </div>
+        <div class="gracinha-body"><p class="gracinha-quote">"Finalmente me sinto em equilíbrio com o meu corpo."</p></div>
+      </div>
+      <div class="gracinha-card">
+        <div class="gracinha-photo">
+          <img src="/images/Liliane.png" alt="Liliane com sua doação de alimentos"/>
+          <span class="gracinha-kg-tag">Liliane</span>
+        </div>
+        <div class="gracinha-body"><p class="gracinha-quote">"Nunca pensei que ia me sentir assim de novo."</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. QUEM É A EVELYN — autoridade -->
+  <div class="author-section">
+    <div class="author-card">
+      <p class="author-eyebrow">Quem desenvolveu este método</p>
+      <div class="author-row">
+        <img src="/images/Vestido Verde Olhar amistoso.jpg" alt="Evelyn Liu" style="width:60px;height:60px;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid var(--moss);flex-shrink:0"/>
+        <div>
+          <p class="author-name">Evelyn Liu</p>
+          <p class="author-title-sm">Nutricionista comportamental · Fundadora da Table · Autora · Palestrante</p>
+        </div>
+      </div>
+      <div class="author-creds">
+        <span class="cred-pill">Autora: "Gordura Não Existe"</span>
+        <span class="cred-pill">Table · Moema, SP</span>
+        <span class="cred-pill">Palestrante para nutricionistas</span>
+        <span class="cred-pill">Nutrição comportamental</span>
+      </div>
+      <p class="author-quote">
+        "Depois de anos acompanhando mulheres, percebi que a relação difícil com a comida era sempre o reflexo de uma dor que não tinha encontrado outra forma de existir. Quando a gente acolhe essa dor, tudo muda."
+        <cite>Evelyn Liu, do livro "Gordura Não Existe"</cite>
+      </p>
+    </div>
+  </div>
+
+  <!-- 6. O QUE ESTÁ INCLUSO — ancoragem de valor -->
+  <div class="book-strip">
+    <div class="book-card">
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(107,125,92,.2);border:2px solid var(--moss-lt);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px">🌱</div>
+      <div>
+        <p class="book-label">Incluído no Protocolo Raiz</p>
+        <p class="book-title">12 Exercícios Guiados por Evelyn Liu</p>
+        <p class="book-desc">Trabalham sua relação com o corpo, consigo mesma e com as crenças que moldam seu padrão, para construir algo novo de dentro pra fora.</p>
+      </div>
+      <span class="book-included">INCLUSO</span>
+    </div>
+  </div>
+  <div class="book-strip" style="padding-top:0">
+    <div class="book-card">
+      <img src="/images/Mockup 1.png" alt="Gordura Não Existe — Evelyn Liu" style="width:52px;height:52px;object-fit:contain;flex-shrink:0"/>
+      <div>
+        <p class="book-label">Incluído no Protocolo Raiz</p>
+        <p class="book-title">Gordura Não Existe: O que Existe é Dor</p>
+        <p class="book-desc">A tese que fundamenta todo o método da Table, em PDF, com você para sempre.</p>
+      </div>
+      <span class="book-included">INCLUSO</span>
+    </div>
+  </div>
+  <div class="book-strip" style="padding-top:0">
+    <div class="book-card">
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(185,112,64,.2);border:2px solid var(--terra);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px">🎯</div>
+      <div>
+        <p class="book-label">Incluído no Protocolo Raiz</p>
+        <p class="book-title">Sessão Individual de Direcionamento</p>
+        <p class="book-desc">Com uma nutricionista comportamental da Table: olhar específico para o seu caso. Avulsa custa R$ 237.</p>
+      </div>
+      <span class="book-included">INCLUSO</span>
+    </div>
+  </div>
+
+  <!-- 7. GARANTIA — com copy variável por tier -->
+  <div style="width:100%;max-width:600px;margin:0 auto;padding:0 24px 40px">
+    <div style="background:var(--warm);border-radius:8px;padding:28px;text-align:center;border:1px solid var(--line)">
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--moss-pale);border:2px solid var(--moss);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:22px">🔒</div>
+      <p style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--moss);font-weight:500;margin-bottom:8px">Sem risco para você</p>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--brown);line-height:1.3;margin-bottom:10px">Garantia incondicional de <em style="color:var(--moss)">7 dias.</em></p>
+      <p id="offer-guarantee-copy" style="font-size:13px;color:var(--muted);line-height:1.7">Se por qualquer motivo não fizer sentido, basta nos avisar em até 7 dias e devolvemos 100% do valor. Sem perguntas, sem burocracia.</p>
+    </div>
+  </div>
+
+  <!-- 7b. SESSÃO INDIVIDUAL — bloco dedicado com escassez real -->
+  <div style="width:100%;max-width:600px;margin:0 auto;padding:0 24px 40px">
+    <div style="background:var(--moss);border-radius:10px;overflow:hidden">
+      <div style="background:var(--moss-mid);padding:18px 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div>
+          <p style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:4px">Inclusa no Protocolo Raiz</p>
+          <p style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--white);line-height:1.2">Sessão individual de direcionamento</p>
+        </div>
+        <div style="background:rgba(185,112,64,.18);border:1px solid rgba(185,112,64,.35);border-radius:4px;padding:6px 14px;white-space:nowrap;flex-shrink:0">
+          <p style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--terra);font-weight:500">Valor avulso</p>
+          <p style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--white);line-height:1">R$ 237</p>
+        </div>
+      </div>
+      <div style="padding:22px 28px">
+        <p style="font-size:14px;color:rgba(255,255,255,.7);line-height:1.75;margin-bottom:18px">45 minutos com uma nutricionista comportamental da Table, por videochamada. Olhar direto para o seu caso, sem roteiro genérico. A sessão está garantida na sua compra. Nossa equipe entra em contato pelo seu WhatsApp para agendar no melhor horário para você.</p>
+        <div style="background:rgba(185,112,64,.10);border:1px solid rgba(185,112,64,.25);border-radius:6px;padding:12px 16px;display:flex;align-items:flex-start;gap:10px">
+          <span style="font-size:16px;flex-shrink:0;margin-top:1px">🗓</span>
+          <div>
+            <p style="font-size:13px;font-weight:500;color:var(--terra);margin-bottom:3px">Disponibilidade limitada</p>
+            <p style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.6">Atendemos <strong style="color:var(--white)">30 pessoas por semana</strong>. Nossa equipe entra em contato pelo WhatsApp para garantir seu horário enquanto há vagas disponíveis.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. OFERTA FINAL — uma vez, com todas as personalizações -->
+  <div class="offer-divider" id="offer-anchor">
+
+    <!-- Linha de transição personalizada por histórico -->
+    <p id="offer-transition" style="font-size:15px;line-height:1.8;color:var(--muted);margin-bottom:28px;text-align:center;font-style:italic;padding:0 8px"></p>
+
+    <div class="offer-card">
+      <div class="offer-top">
+        <p class="offer-eyebrow">Próximo passo recomendado para o seu perfil</p>
+        <p id="offer-profile-title" class="offer-title">Protocolo Raiz<br><span style="font-size:14px;opacity:.7">by Evelyn Liu · Table</span></p>
+      </div>
+      <div class="offer-body">
+
+        <!-- 1. Justificativa (tier copy) -->
+        <p id="offer-tier-copy" style="font-size:13px;color:rgba(255,255,255,.65);line-height:1.75;margin-bottom:22px;padding:12px 14px;background:rgba(255,255,255,.05);border-radius:6px;border-left:2px solid var(--terra)"></p>
+
+        <!-- 2. Entregáveis com valores individuais -->
+        <div class="offer-includes" style="margin-bottom:0">
+          <div class="include-item" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px;flex:1">
+              <div class="include-check">✓</div>
+              <span id="offer-include-1">Exercícios psicoemocionais guiados <strong>para o seu perfil</strong></span>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,.4);white-space:nowrap;margin-left:12px">R$ 97</span>
+          </div>
+          <div class="include-item" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px;flex:1">
+              <div class="include-check">✓</div>
+              <span>Livro <em style="color:var(--terra)">"Gordura Não Existe"</em> em PDF</span>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,.4);white-space:nowrap;margin-left:12px">R$ 57</span>
+          </div>
+          <div class="include-item" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px;flex:1">
+              <div class="include-check">✓</div>
+              <span>Sessão individual com nutricionista comportamental da Table <em style="color:rgba(255,255,255,.4);font-size:11px">· 45 min · videochamada · agendamos pelo WhatsApp</em></span>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,.4);white-space:nowrap;margin-left:12px">R$ 237</span>
+          </div>
+        </div>
+
+        <!-- 3. Soma → anomalia de preço -->
+        <div style="border-top:1px solid rgba(255,255,255,.1);margin:14px 0;padding-top:14px;display:flex;justify-content:space-between;align-items:baseline">
+          <span style="font-size:12px;color:rgba(255,255,255,.4)">Valor total dos componentes</span>
+          <span style="font-size:14px;color:rgba(255,255,255,.35);text-decoration:line-through">R$ 391</span>
+        </div>
+
+        <!-- 4. Preço -->
+        <div class="offer-price-row" style="margin-bottom:16px">
+          <div><p class="price-main">R$ 97</p></div>
+          <p class="price-note">pagamento único · Pix ou cartão<br>ou 12× de R$ 10,03 · acesso imediato</p>
+        </div>
+
+        <!-- 5. Escassez -->
+        <div class="offer-urgency" style="align-items:flex-start;margin-bottom:20px">
+          <span style="flex-shrink:0;margin-top:1px">⏳</span>
+          <span><strong style="color:var(--terra)">Vagas limitadas para a sessão:</strong> a equipe da Table atende no máximo 30 pessoas por semana. Quando as vagas fecham, o próximo horário disponível fica para a semana seguinte.</span>
+        </div>
+
+        <!-- 6. CTA -->
+        <button class="btn-offer" onclick="goOffer()">Quero começar pelo Protocolo Raiz →</button>
+
+        <!-- 7. Garantia — único elemento pós-CTA -->
+        <p class="offer-guarantee" style="margin-top:12px">🔒 Garantia de 7 dias · 100% do valor de volta se não fizer sentido</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. FAQ -->
+  <div class="quiz-faq">
+    <p class="quiz-faq-title">Perguntas <em>frequentes</em></p>
+    <div class="quiz-faq-item" onclick="this.classList.toggle('open')">
+      <div class="quiz-faq-q">Os exercícios são realmente personalizados para o meu perfil? <span class="quiz-faq-arrow">+</span></div>
+      <p class="quiz-faq-a">Sim. O Protocolo Raiz foi desenvolvido com base nos 4 padrões identificados pelo quiz, e os exercícios trabalham as raízes específicas de cada perfil. Você não recebe um material genérico: recebe o que foi construído para o que está acontecendo com você.</p>
+    </div>
+    <div class="quiz-faq-item" onclick="this.classList.toggle('open')">
+      <div class="quiz-faq-q">Isso é mais uma dieta disfarçada? <span class="quiz-faq-arrow">+</span></div>
+      <p class="quiz-faq-a">Não. O Protocolo Raiz não tem cardápio, lista de alimentos proibidos ou metas de calorias. Ele trabalha com os padrões emocionais que estão por trás do seu comportamento alimentar. Antes de mudar o que você come, precisamos entender por que você come.</p>
+    </div>
+    <div class="quiz-faq-item" onclick="this.classList.toggle('open')">
+      <div class="quiz-faq-q">O trabalho combina com o acompanhamento de saúde que já faço? <span class="quiz-faq-arrow">+</span></div>
+      <p class="quiz-faq-a">Sim. O trabalho da Table é comportamental e emocional, e soma ao acompanhamento de saúde que você já faz. Não substitui orientação médica. Trabalha a camada emocional, que costuma ficar de fora.</p>
+    </div>
+    <div class="quiz-faq-item" onclick="this.classList.toggle('open')">
+      <div class="quiz-faq-q">O que acontece depois do Protocolo Raiz? <span class="quiz-faq-arrow">+</span></div>
+      <p class="quiz-faq-a">A sessão individual existe exatamente para responder essa pergunta de forma personalizada. Depois de entender seu padrão e trabalhar os primeiros exercícios, a sessão define os próximos passos, que podem incluir acompanhamento contínuo com a equipe da Table.</p>
+    </div>
+    <div class="quiz-faq-item" onclick="this.classList.toggle('open')">
+      <div class="quiz-faq-q">Em quanto tempo recebo o acesso? <span class="quiz-faq-arrow">+</span></div>
+      <p class="quiz-faq-a">Imediatamente após a confirmação do pagamento. Você recebe o acesso ao material e o link para agendar sua sessão no horário que melhor funcionar para você.</p>
+    </div>
+    <div class="quiz-faq-item" onclick="this.classList.toggle('open')">
+      <div class="quiz-faq-q">Como funciona a sessão individual? <span class="quiz-faq-arrow">+</span></div>
+      <p class="quiz-faq-a">45 minutos por videochamada com uma nutricionista comportamental da equipe da Table. Após a compra, nossa equipe entra em contato pelo seu WhatsApp em até 48h para agendar no horário mais conveniente para você.</p>
+    </div>
+    <div class="quiz-faq-item" onclick="this.classList.toggle('open')">
+      <div class="quiz-faq-q">E se não funcionar para mim? <span class="quiz-faq-arrow">+</span></div>
+      <p class="quiz-faq-a">Você tem 7 dias de garantia total. Se por qualquer motivo o Protocolo Raiz não fizer sentido, basta entrar em contato e devolvemos 100% do valor. Sem perguntas, sem burocracia.</p>
+    </div>
+    <div style="text-align:center;margin-top:32px">
+      <a href="#offer-anchor" onclick="event.preventDefault();document.getElementById('offer-anchor').scrollIntoView({behavior:'smooth'})" class="btn-offer" style="display:inline-block;width:auto;padding:16px 36px;font-size:14px;border-radius:4px;text-decoration:none">Quero começar pelo Protocolo Raiz →</a>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px">🔒 Garantia de 7 dias · R$ 97 pagamento único</p>
+    </div>
+  </div>
+
+</div><!-- /page-result -->
+<script>
+const questions = [
+  {
+    text: "Quando você pensa em mudar sua alimentação, qual é o primeiro sentimento que aparece?",
+    options: [
+      { text: "Cansaço: já tentei tantas vezes e nada funciona a longo prazo", type: "E" },
+      { text: "Medo de errar e estragar tudo de novo", type: "R" },
+      { text: "Desânimo: minha rotina não me deixa nem espaço para pensar nisso", type: "S" },
+      { text: "Indiferença: estou no automático, não sei nem o que sinto", type: "A" }
+    ]
+  },
+  {
+    text: "Em que momento do dia você mais perde o controle com a comida?",
+    options: [
+      { text: "À noite, quando a agitação do dia finalmente para", type: "E" },
+      { text: "Quando estou sozinha e ninguém está olhando", type: "R" },
+      { text: "Quando estou esgotada: no fim de um dia pesado, como qualquer coisa pra repor energia", type: "S" },
+      { text: "Em qualquer momento, como sem nem perceber que estou comendo", type: "A" }
+    ]
+  },
+  {
+    text: "Como você se sente depois de comer além do que planejou?",
+    options: [
+      { text: "Uma vergonha enorme, de mim mesma", type: "R" },
+      { text: "Um alívio momentâneo, seguido de culpa pesada", type: "E" },
+      { text: "Nada. Continuo como se nada tivesse acontecido", type: "A" },
+      { text: "Cansaço: aconteceu porque eu estava exausta demais pra resistir", type: "S" }
+    ]
+  },
+  {
+    text: "Qual das frases a seguir mais te representa hoje?",
+    options: [
+      { text: '"Eu uso a comida pra me sentir melhor em momentos difíceis"', type: "E" },
+      { text: '"Eu me proíbo de certos alimentos e aí quando começo não paro"', type: "R" },
+      { text: '"Minha rotina é tão pesada que comer bem é o último da lista"', type: "S" },
+      { text: '"Eu como no automático, não presto atenção no que coloco na boca"', type: "A" }
+    ]
+  },
+  {
+    text: "Se você pudesse resolver UMA coisa na sua relação com a comida, o que seria?",
+    options: [
+      { text: "Parar de usar comida pra lidar com minhas emoções", type: "E" },
+      { text: "Me libertar da culpa constante e comer sem medo", type: "R" },
+      { text: "Encontrar consistência: começar e não largar", type: "S" },
+      { text: "Reconectar com o meu corpo, entender o que ele realmente precisa", type: "A" }
+    ]
+  },
+  {
+    text: "Como você descreveria sua relação com o seu corpo agora?",
+    options: [
+      { text: "De guerra: ele me decepciona e eu o castigo", type: "R" },
+      { text: "De abandono: parei de cuidar porque não me sinto merecedora", type: "E" },
+      { text: "De sobrevivência: cuido o mínimo pra funcionar", type: "S" },
+      { text: "De distância: não sinto meu corpo, vivo desconectada dele", type: "A" }
+    ]
+  },
+  {
+    text: "O que mais te impede de manter uma mudança na alimentação?",
+    options: [
+      { text: "A ansiedade: quando ela aumenta, tudo vai por água abaixo", type: "E" },
+      { text: "O pensamento de tudo ou nada: qualquer erro vira desistência", type: "R" },
+      { text: "A falta de tempo e energia: a rotina não me deixa espaço", type: "S" },
+      { text: "Não sei, acontece sem eu perceber", type: "A" }
+    ]
+  },
+  {
+    // QUALIFICAÇÃO — múltipla escolha, sem auto-advance
+    qualification: true,
+    text: "Última pergunta: ela completa o seu mapeamento.",
+    hint: "O que você já tentou em relação à sua alimentação até hoje?",
+    options: [
+      { text: "Dieta de restrição calórica ou corte de carboidratos", value: "dieta_calorias" },
+      { text: "Jejum intermitente", value: "jejum" },
+      { text: "Acompanhamento com nutricionista convencional", value: "nutri_convencional" },
+      { text: "Nutrição comportamental ou psicologia alimentar", value: "nutri_comportamental" },
+      { text: "Psicólogo ou psiquiatra", value: "psicologo" },
+      { text: "Medicação prescrita", value: "remedios" },
+      { text: "Coach ou programa online", value: "coach" },
+      { text: "Cirurgia bariátrica", value: "cirurgia" },
+      { text: "Nunca fiz nenhum acompanhamento profissional", value: "nenhum" }
+    ]
+  }
+];
+
+const profiles = {
+  E: {
+    tag: "Sua Raiz",
+    type: "A Comedora <em>Emocional</em>",
+    headline: "Você não come por fome. Você come para sobreviver emocionalmente ao que está sentindo.",
+    desc: "Desde cedo você aprendeu que a comida consola, acalma e preenche. Ela virou seu anestésico para a ansiedade, o estresse, a solidão e o cansaço. Não é fraqueza: é uma resposta que seu sistema nervoso criou para te proteger. Com o tempo, essa resposta passou a custar caro no seu corpo e na sua autoestima.",
+    signals: [
+      "Você come mais à noite, quando a correria do dia para",
+      "Sente culpa intensa depois de comer fora do planejado",
+      "Já tentou várias dietas e sempre funciona no começo, mas não sustenta",
+      "Sente que a comida é a única coisa que 'pertence a você' no dia",
+      "Reconhece que come mais quando está ansiosa, triste ou sozinha"
+    ],
+    bridge: "A maioria das mulheres com esse padrão já tentou monitorar o que come. Já criou regras. Já apostou na força de vontade. E funcionou por alguns dias. Porque monitorar comportamento sem entender o gatilho emocional por baixo é como secar o chão com a torneira aberta. O padrão emocional não mora na comida, mora no sistema nervoso. E sistema nervoso não muda com lista de regras. O Protocolo Raiz foi construído para ir exatamente onde nenhuma dieta foi antes."
+  },
+  R: {
+    tag: "Sua Raiz",
+    type: "A Comedora <em>Restritiva</em>",
+    headline: "Você alterna entre controle e descontrole, e acredita que falta disciplina. Não é isso.",
+    desc: "Você vive em ciclos: restringe com rigor, 'escorrega', acha que estragou tudo e recomeça do zero. O que parece fraqueza é o efeito direto da restrição excessiva. Quanto mais você proíbe, mais o cérebro deseja. Você não tem dificuldade com disciplina. Você tem um relacionamento muito rígido com suas próprias regras.",
+    signals: [
+      "Você tem alimentos 'proibidos' e sente prazer culpado ao comê-los",
+      "Quando começa a 'errar', vai até o fim: 'já que estraguei tudo...'",
+      "Já fez dietas restritivas de calorias, carboidratos, jejum",
+      "Se sente envergonhada do seu corpo em situações sociais",
+      "Tem dificuldade de comer na frente de outras pessoas sem julgamento interno"
+    ],
+    bridge: "A maioria das mulheres com esse padrão já tentou ser menos rígida. Já ouviu que precisava relaxar. E quando tentou, o descontrole veio, e a conclusão foi a mesma de sempre: a culpa é dela. Não é. O ciclo restritivo não quebra com mais flexibilidade. Ele quebra quando a raiz da restrição é tratada. A Comedora Restritiva não tem dificuldade com comida. Tem crenças muito arraigadas sobre si mesma quando come. O Protocolo Raiz vai onde esse trabalho precisa acontecer."
+  },
+  S: {
+    tag: "Sua Raiz",
+    type: "A Comedora em <em>Modo Sobrevivência</em>",
+    headline: "Você vive tão sobrecarregada que cuidar de você mesma ficou em último lugar. O corpo está cobrando essa conta.",
+    desc: "Filhos, trabalho, casa, outros. Você cuida de tudo e de todos, menos de si mesma. A alimentação virou algo funcional: o que é mais rápido, o que cabe no intervalo, o que sobrou. Não é falta de vontade. É exaustão real. Seu corpo está pedindo atenção há muito tempo.",
+    signals: [
+      "Pula refeições ou come em pé, correndo, no trabalho",
+      "Come os restos do prato dos filhos ou da família",
+      "Seu maior inimigo é a falta de tempo e de energia",
+      "Já tentou se organizar mas a rotina derruba qualquer plano",
+      "Sente que merece cuidado mas não sabe por onde começar"
+    ],
+    bridge: "A maioria das mulheres com esse padrão já tentou se organizar. Já colocou a alimentação no planejamento. E a vida engoliu tudo, de novo. Não porque faltou compromisso. Porque nenhum plano alimentar foi construído para funcionar dentro de uma rotina de sobrevivência. O padrão de sobrevivência não muda com mais organização. Muda quando você entende por que colocar a si mesma em último lugar virou automático. O Protocolo Raiz começa exatamente aí."
+  },
+  A: {
+    tag: "Sua Raiz",
+    type: "A Comedora <em>Desconectada</em>",
+    headline: "Você come no automático, e há muito tempo não sente seu próprio corpo de verdade.",
+    desc: "Você come sem fome real, para sem perceber, e muitas vezes nem recorda o que comeu. Não é negligência: é uma forma de desconexão. Você aprendeu, ao longo do tempo, a se afastar do próprio corpo como forma de se proteger de uma dor que parecia grande demais.",
+    signals: [
+      "Come sem perceber: de repente a embalagem está vazia",
+      "Não consegue identificar com clareza quando está com fome de verdade",
+      "Sente-se distante do próprio corpo, como se olhasse de longe",
+      "Já buscou apoio profissional para questões emocionais",
+      "Não lembra das refeições do dia com clareza"
+    ],
+    bridge: "A maioria das mulheres com esse padrão já tentou prestar mais atenção no que come. Já tentou comer devagar, com presença. Durou alguns dias, depois o automático voltou. Não porque faltou disciplina. A desconexão não é defeito de caráter. É uma resposta que o sistema nervoso criou para se proteger. E ela não se desfaz com atenção forçada. Desfaz-se com um processo gradual, seguro e guiado. O Protocolo Raiz começa criando as condições para que o retorno ao seu corpo aconteça. Com segurança. Com método."
+  }
+};
+
+// Restaura estado salvo (refresh no meio do quiz)
+function loadQuizState(){
+  try{
+    const s = sessionStorage.getItem('tq');
+    if(s) return JSON.parse(s);
+  }catch(e){}
+  return null;
+}
+function saveQuizState(){
+  try{ sessionStorage.setItem('tq', JSON.stringify({current, scores, quizAnswers})); }catch(e){}
+}
+function clearQuizState(){ try{ sessionStorage.removeItem('tq'); }catch(e){} }
+
+const _saved = loadQuizState();
+let current = _saved ? _saved.current : 0;
+let scores = _saved ? _saved.scores : { E:0, R:0, S:0, A:0 };
+let qualificationAnswer = null;
+let quizAnswers = _saved ? _saved.quizAnswers : [];
+
+// Qualification scoring — quanto mais investiu antes, maior o score
+const qualificationScore = {
+  nutri_convencional: 1,
+  jejum: 1,
+  dieta_calorias: 1,
+  psicologo: 2,
+  remedios: 2,
+  nutri_comportamental: 3,
+  cirurgia: 4,
+  coach: 2,
+  nenhum: 0
+};
+
+// ── FORMATAÇÃO WHATSAPP ──
+function formatPhone(input){
+  let v = input.value.replace(/\D/g,'');
+  if(v.length > 11) v = v.slice(0,11);
+  if(v.length <= 2) v = v.replace(/(\d{0,2})/,'($1');
+  else if(v.length <= 7) v = v.replace(/(\d{2})(\d{0,5})/,'($1) $2');
+  else v = v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3');
+  input.value = v;
+}
+
+function normalizePhone(raw){
+  // Remove tudo que não é dígito
+  let digits = raw.replace(/\D/g,'');
+  // Se começar com 0, remove
+  if(digits.startsWith('0')) digits = digits.slice(1);
+  // Se não tiver 55 no início, adiciona
+  if(!digits.startsWith('55')) digits = '55' + digits;
+  return digits; // ex: 5511999999999
+}
+
+function goTo(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function generateEventId(){
+  return 'ev_' + Date.now() + '_' + Math.random().toString(36).substr(2,9);
+}
+
+function getCookie(name){
+  const m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return m ? m[2] : null;
+}
+
+// Remove codigo de pais (55) para o Make hashar corretamente
+function phoneForHash(normalized){
+  return normalized.startsWith('55') ? normalized.slice(2) : normalized;
+}
+
+// SHA-256 do e-mail normalizado → external_id estável para Meta CAPI
+async function sha256Email(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str.toLowerCase().trim()));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// ── CHECKOUT CAKTO (cópia do quiz p/ o teste A/B em /raiz-cakto) ──────────────
+// Só o goOffer() muda em relação ao /raiz (Ticto); todo o resto é idêntico.
+// Params de pré-preenchimento: nomes best-guess — o checkout ignora params
+// desconhecidos (como o Ticto), então mandar a mais não quebra; confirmar os
+// nomes exatos com a Cakto no 1º teste (o pior caso é só não pré-preencher).
+// src → 'sck': é o campo que volta no webhook (data.sck) e casa com o
+// _leadEventId do quiz — a JOIN KEY da atribuição. CONFIRMAR no 1º teste real.
+const CAKTO_PARAMS = {
+  email: 'email',   // best-guess
+  phone: 'phone',   // best-guess (Cakto manda phone como DDD+numero no webhook)
+  name:  'name',    // best-guess
+  src:   'sck'      // join key — volta em data.sck (a confirmar)
+};
+
+function startQuiz(){
+  clearQuizState();
+  current = 0; scores = {E:0,R:0,S:0,A:0}; quizAnswers = [];
+  // Início do quiz — sem isso o funil tem um vão entre "visitou a página" e
+  // "completou o cadastro" e não dá para saber se a perda é na página ou no quiz.
+  // Só contagem própria: nada de sinal novo para a Meta, para não mexer no
+  // aprendizado das campanhas que já estão rodando.
+  fetch('/api/capi/quiz-start',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({event_source_url:window.location.href})
+  }).catch(()=>{});
+  goTo('page-quiz');
+  renderQuestion();
+}
+
+// Se há estado salvo, retoma quiz automaticamente (refresh)
+if(_saved && _saved.current > 0 && _saved.current < questions.length){
+  goTo('page-quiz');
+  renderQuestion();
+}
+
+function showFieldError(fieldId, errId, msg){
+  const el = document.getElementById(fieldId);
+  el.classList.add('error');
+  document.getElementById(errId).textContent = msg;
+  el.focus();
+}
+function clearFieldError(fieldId){
+  const el = document.getElementById(fieldId);
+  if(!el) return;
+  el.classList.remove('error');
+  const errEl = document.getElementById('err-' + fieldId.replace('user-',''));
+  if(errEl) errEl.textContent = '';
+}
+
+async function submitCapture(){
+  const name = document.getElementById('user-name').value.trim();
+  const email = document.getElementById('user-email').value.trim();
+  const rawPhone = document.getElementById('user-phone').value.trim();
+  // Limpa erros anteriores
+  ['user-name','user-email','user-phone'].forEach(id => clearFieldError(id));
+  let valid = true;
+  if(!name){ showFieldError('user-name','err-name','Por favor, informe seu nome.'); valid=false; }
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showFieldError('user-email','err-email','Insira um e-mail válido.'); valid=false; }
+  const digits = rawPhone.replace(/\D/g,'');
+  if(digits.length < 10 || digits.length > 11){ showFieldError('user-phone','err-phone','Informe um WhatsApp válido com DDD (ex: 11 99999-9999).'); valid=false; }
+  if(!valid) return;
+  const phone = normalizePhone(rawPhone);
+  window._leadPhone = phone;
+  window._leadName = name;
+  window._leadEmail = email;
+  window._leadEventId = generateEventId();
+  window._leadFbc = getCookie('_fbc') || null;
+  window._leadFbp = getCookie('_fbp') || null;
+  // external_id: SHA-256 do email normalizado — identificador estável cross-evento
+  window._leadExternalId = await sha256Email(email);
+  // Advanced Matching: nome/email/telefone/external_id ao pixel browser
+  fbq('init','989971718548782',{
+    em: email,
+    ph: phone,
+    fn: name.trim().split(/\s+/)[0],
+    external_id: window._leadExternalId
+  });
+  // Lead browser — sem value/currency (Lead não carrega valor monetário)
+  fbq('track','Lead',{
+    content_name:'quiz-lead',
+    eventID: window._leadEventId
+  });
+  gtag('event','generate_lead');
+  // CAPI Lead server-side — par do browser para dedup. Cobre abandono pré-resultado.
+  fetch('/api/capi',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      event_name:'Lead',
+      content_name:'quiz-lead',
+      nome: name,
+      email: email,
+      whats: phoneForHash(phone),
+      fbc: window._leadFbc,
+      fbp: window._leadFbp,
+      external_id: window._leadExternalId,
+      lead_event_id: window._leadEventId,
+      event_source_url: window.location.href
+    })
+  }).catch(()=>{});
+  showLoading();
+}
+function renderQuestion(){
+  const q = questions[current];
+  document.getElementById('q-number').textContent = `Pergunta ${current+1}`;
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('quiz-counter').textContent = `${current+1} de ${questions.length}`;
+  document.getElementById('progress-fill').style.width = `${((current+1)/questions.length)*100}%`;
+
+  const list = document.getElementById('options-list');
+  list.innerHTML = '';
+
+  // Remove hint anterior se existir
+  const oldHint = document.querySelector('.q-hint');
+  if(oldHint) oldHint.remove();
+
+  // Última pergunta é de qualificação — multiple choice diferente
+  if(q.qualification){
+    const hintText = q.hint || 'Selecione tudo que já tentou. Pode ser mais de uma opção.';
+    list.insertAdjacentHTML('beforebegin', `<p class="q-hint">${hintText}<br><span style="font-size:11px;color:var(--soft)">Pode ser mais de uma opção.</span></p>`);
+    q.options.forEach((opt,i)=>{
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.dataset.value = opt.value;
+      btn.innerHTML = `<span class="option-letter option-check">✓</span><span>${opt.text}</span>`;
+      btn.onclick = ()=>toggleQualification(opt.value, btn);
+      list.appendChild(btn);
+    });
+    // Botão confirmar para última pergunta
+    const nav = document.getElementById('q-nav');
+    nav.innerHTML = `<button class="btn-next enabled" onclick="finishQualification()">Ver meu resultado →</button>`;
+  } else {
+    const letters = ['A','B','C','D'];
+    q.options.forEach((opt,i)=>{
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerHTML = `<span class="option-letter">${letters[i]}</span><span>${opt.text}</span>`;
+      // Auto-advance ao selecionar
+      btn.onclick = ()=>selectAndAdvance(opt.type, btn);
+      list.appendChild(btn);
+    });
+    const nav = document.getElementById('q-nav');
+    nav.innerHTML = ''; // sem botão nas perguntas normais
+  }
+
+  const card = document.getElementById('question-card');
+  card.style.animation='none';card.offsetHeight;card.style.animation='fadeUp .4s ease';
+}
+
+function selectAndAdvance(type, btn){
+  // Marca visualmente
+  document.querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  // Salva a resposta individual para enviar ao Make
+  const questionText = questions[current].text;
+  const answerText = btn.querySelector('span:last-child').textContent;
+  quizAnswers.push({
+    pergunta: questionText,
+    resposta: answerText,
+    tipo: type
+  });
+
+  // Desabilita cliques durante animação
+  document.querySelectorAll('.option-btn').forEach(b=>b.style.pointerEvents='none');
+
+  // Avança após pequeno delay para feedback visual
+  setTimeout(()=>{
+    scores[type]++;
+    current++;
+    // Metade do quiz (4ª de 8) — pixel + contagem própria, como no QuizStart
+    if(current === 4){
+      try { if (typeof fbq === 'function') fbq('trackCustom','QuizProgress',{step:4}); } catch(e){}
+      fetch('/api/capi/quiz-progress',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({step:4, event_source_url:window.location.href})
+      }).catch(()=>{});
+    }
+    saveQuizState();
+    renderQuestion();
+  }, 340);
+}
+
+// Multiple select para qualificação
+const selectedQual = new Set();
+function toggleQualification(value, btn){
+  if(value === 'nenhum'){
+    // Nenhum deseleciona tudo
+    selectedQual.clear();
+    document.querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected'));
+    selectedQual.add('nenhum');
+    btn.classList.add('selected');
+    return;
+  }
+  // Deseleciona "nenhum" se existir
+  selectedQual.delete('nenhum');
+  document.querySelectorAll('[data-value="nenhum"]').forEach(b=>b.classList.remove('selected'));
+
+  if(selectedQual.has(value)){
+    selectedQual.delete(value);
+    btn.classList.remove('selected');
+  } else {
+    selectedQual.add(value);
+    btn.classList.add('selected');
+  }
+}
+
+function finishQualification(){
+  if(selectedQual.size === 0){
+    // Erro inline abaixo das opções
+    let errEl = document.getElementById('qual-error');
+    if(!errEl){
+      errEl = document.createElement('p');
+      errEl.id = 'qual-error';
+      errEl.style.cssText = 'font-size:13px;color:#c0392b;margin-top:12px;text-align:center';
+      document.getElementById('q-nav').insertAdjacentElement('beforebegin', errEl);
+    }
+    errEl.textContent = 'Selecione ao menos uma opção para continuar.';
+    return;
+  }
+  // Calcula score de qualificação
+  let qScore = 0;
+  selectedQual.forEach(v => { qScore += qualificationScore[v] || 0; });
+  qualificationAnswer = {
+    items: Array.from(selectedQual),
+    score: qScore,
+    // hot = já investiu em coisas caras antes
+    tier: qScore >= 4 ? 'hot' : qScore >= 2 ? 'warm' : 'cold'
+  };
+  clearQuizState(); // sessão completa — limpa estado persistido
+  // Captura depois do quiz — curiosidade no pico, custo afundado
+  goTo('page-capture');
+}
+
+function nextQuestion(){
+  // mantido para compatibilidade mas não usado nas perguntas normais
+  showLoading();
+}
+
+function showLoading(){
+  goTo('page-loading');
+  ['ls1','ls2','ls3','ls4'].forEach((id,i)=>{
+    setTimeout(()=>document.getElementById(id).classList.add('visible'), 600+i*600);
+  });
+  setTimeout(showResult, 3200);
+}
+
+// Extrai a parte descritiva da resposta (após o em-dash, ou resposta inteira)
+function extractContent(text){
+  const parts = text.split('—');
+  return (parts[1] || parts[0]).trim().toLowerCase().replace(/\.$/, '');
+}
+
+// Gera frase espelho a partir das 2 primeiras respostas que batem com o perfil
+function buildMirrorIntro(top, answers){
+  const profileLabel = {E:'Comedora Emocional',R:'Comedora Restritiva',S:'Comedora em Modo Sobrevivência',A:'Comedora Desconectada'};
+  const matched = answers.filter(a => a.tipo === top);
+  if(matched.length < 2) return null;
+  const c1 = extractContent(matched[0].resposta);
+  const c2 = extractContent(matched[1].resposta);
+  return `Você marcou que ${c1}, e que ${c2}. Esses dois padrões juntos são a assinatura da ${profileLabel[top]}.`;
+}
+
+// Gera lista de sinais: prioritiza respostas reais da lead, completa com estáticos
+function buildSignals(top, answers){
+  const qTemplates = [
+    r => `Seu primeiro sentimento ao pensar em mudança: ${extractContent(r)}.`,
+    r => `Você perde o controle quando ${extractContent(r)}.`,
+    r => `Depois de comer além do planejado, você sente ${extractContent(r)}.`,
+    r => `Você se identificou com: ${r.trim()}.`,
+    r => `O que mais quer resolver: ${extractContent(r)}.`,
+    r => `Sua relação com o corpo agora: ${extractContent(r)}.`,
+    r => `O que mais te impede de manter mudanças: ${extractContent(r)}.`,
+  ];
+  const result = [];
+  answers.forEach((a, i) => {
+    if(a.tipo === top && qTemplates[i]) result.push({personal:true, text:qTemplates[i](a.resposta)});
+  });
+  const statics = profiles[top].signals;
+  let si = 0;
+  while(result.length < 5 && si < statics.length){ result.push({personal:false, text:statics[si++]}); }
+  return result;
+}
+
+function showResult(){
+  const sorted = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  let top = sorted[0][0];
+  // Tiebreak: se empate no topo, usar Q5 ("resolver UMA coisa") ou Q6 ("relação com o corpo") — mais diagnósticas
+  if(sorted[1] && sorted[0][1] === sorted[1][1]){
+    const maxScore = sorted[0][1];
+    const tied = sorted.filter(([,v])=>v===maxScore).map(([k])=>k);
+    const q5 = quizAnswers[4]; // Q5 index 4
+    const q6 = quizAnswers[5]; // Q6 index 5
+    if(q5 && tied.includes(q5.tipo)) top = q5.tipo;
+    else if(q6 && tied.includes(q6.tipo)) top = q6.tipo;
+  }
+  const p = profiles[top];
+  const name = (window._leadName || '').trim();
+  const firstName = name.split(' ')[0];
+  const tier = qualificationAnswer ? qualificationAnswer.tier : 'cold';
+  const qualItems = qualificationAnswer ? qualificationAnswer.items : [];
+
+  // 1. Nome no hero
+  if(firstName){
+    document.getElementById('result-name-greeting').textContent = firstName + ', mapeamos seu perfil:';
+  }
+
+  document.getElementById('result-tag').textContent = p.tag;
+  document.getElementById('result-type').innerHTML = p.type;
+  document.getElementById('result-headline').textContent = p.headline;
+  document.getElementById('result-desc').textContent = p.desc;
+  document.getElementById('result-bridge').textContent = p.bridge;
+
+  // Espelho: frase que ecoa respostas reais da lead
+  const mirrorEl = document.getElementById('result-mirror');
+  const mirrorText = buildMirrorIntro(top, quizAnswers);
+  if(mirrorText){ mirrorEl.textContent = mirrorText; mirrorEl.style.display='block'; }
+
+  // Sinais: respostas reais primeiro, estáticos como fallback
+  const sigList = document.getElementById('result-signals-list');
+  sigList.innerHTML = '';
+  buildSignals(top, quizAnswers).forEach(s => {
+    const dot = s.personal ? 'background:var(--terra)' : '';
+    const weight = s.personal ? 'font-weight:500' : '';
+    sigList.innerHTML += `<div class="signal-item"><div class="signal-dot" style="${dot}"></div><span style="${weight}">${s.text}</span></div>`;
+  });
+
+  // 2. Nome do perfil no título do card de oferta
+  const profileNameClean = p.type.replace(/<[^>]*>/g,'');
+  document.getElementById('offer-profile-title').innerHTML =
+    `Protocolo Raiz: <em style="color:var(--terra);font-style:italic">${profileNameClean}</em><br><span style="font-size:14px;color:rgba(255,255,255,.5)">by Evelyn Liu · Table</span>`;
+
+  // 3. Include 1 com nome do perfil — artigo minúsculo
+  document.getElementById('offer-include-1').innerHTML =
+    `Exercícios psicoemocionais guiados para <strong style="color:var(--white)">${profileNameClean.replace(/^(A|O) /, (m,a) => a.toLowerCase()+' ')}</strong>`;
+
+  // 4. CTA principal com perfil interpolado ("Começar pelo meu perfil →")
+  // Extrai só o tipo sem o artigo: "Comedora Emocional", "Modo Sobrevivência", etc.
+  const profileShort = profileNameClean.replace(/^(A |O )/, '');
+  const ctaLabel = `Começar pelo meu perfil ${profileShort} →`;
+  document.querySelectorAll('.btn-offer').forEach(btn => {
+    if(btn.getAttribute('onclick') === 'goOffer()') btn.textContent = ctaLabel;
+  });
+  const videoCta = document.getElementById('video-cta-btn');
+  if(videoCta) videoCta.textContent = ctaLabel;
+
+  // 4. Linha personalizada de qualificação antes da oferta
+  const qualLabels = {
+    nutri_convencional: 'nutricionista convencional',
+    jejum: 'jejum intermitente',
+    dieta_calorias: 'dieta restritiva',
+    psicologo: 'psicólogo ou psiquiatra',
+    remedios: 'medicação prescrita',
+    nutri_comportamental: 'nutrição comportamental',
+    cirurgia: 'cirurgia bariátrica',
+    coach: 'coach ou programa online',
+    nenhum: null
+  };
+  const validItems = qualItems.filter(v => v !== 'nenhum' && qualLabels[v]);
+  let transitionText = '';
+  if(validItems.length > 0){
+    const tried = validItems.map(v => qualLabels[v]);
+    const triedStr = tried.length === 1 ? tried[0] :
+      tried.slice(0,-1).join(', ') + ' e ' + tried[tried.length-1];
+    transitionText = `Você já tentou ${triedStr}. Não foi falta de esforço. Foi falta da camada certa. O Protocolo Raiz trabalha onde nenhuma dessas abordagens foi.`;
+  } else if(firstName){
+    transitionText = `${firstName}, você chegou até aqui porque sente que existe algo mais profundo por trás. Existe. E o Protocolo Raiz foi construído para ir exatamente lá.`;
+  } else {
+    transitionText = `Você chegou até aqui porque sente que existe algo mais profundo por trás. Existe. E o Protocolo Raiz foi construído para ir exatamente lá.`;
+  }
+  document.getElementById('offer-transition').textContent = transitionText;
+
+  // 5. Copy variável por tier no card
+  const tierCopy = {
+    hot: 'Você já investiu antes em soluções sérias. Sabe que não é falta de comprometimento. O Protocolo Raiz é a camada que faltava: o trabalho emocional que nenhuma das outras abordagens tocou.',
+    warm: 'Você já tentou algumas coisas. Já sabe que força de vontade sozinha não resolve. O Protocolo Raiz começa exatamente onde as outras abordagens pararam.',
+    cold: 'Este é um primeiro passo concreto, sem restrições, sem julgamento, sem mais uma lista de regras. Só o trabalho real com o que está por trás do seu padrão com a comida.'
+  };
+  document.getElementById('offer-tier-copy').textContent = tierCopy[tier] || tierCopy.cold;
+
+  // 6. Garantia com copy conectado ao histórico
+  let guaranteeCopy = '';
+  if(tier === 'hot'){
+    guaranteeCopy = 'Você já investiu antes e não teve o retorno que esperava. Por isso a garantia existe: se em 7 dias o Protocolo Raiz não fizer sentido, devolvemos 100%. Sem perguntas, sem burocracia.';
+  } else if(tier === 'warm'){
+    guaranteeCopy = 'Você já tentou outras abordagens. Se em 7 dias este método não fizer diferença para você, devolvemos 100% do valor. Sem perguntas, sem burocracia.';
+  } else {
+    guaranteeCopy = 'Se por qualquer motivo o Protocolo Raiz não fizer sentido em até 7 dias, devolvemos 100% do valor. Sem perguntas, sem burocracia.';
+  }
+  document.getElementById('offer-guarantee-copy').textContent = guaranteeCopy;
+
+  const crEventId = crypto.randomUUID();   // CompleteRegistration — browser + CAPI par
+  const quizEventId = generateEventId();    // QuizCompleted — browser-only, só para audiences
+
+  // Make: payload completo para automações CRM (intacto)
+  const makePayload = {
+    nome: window._leadName,
+    email: window._leadEmail,
+    whats: phoneForHash(window._leadPhone),
+    fbc: window._leadFbc || getCookie('_fbc') || null,
+    fbp: window._leadFbp || getCookie('_fbp') || null,
+    external_id: window._leadExternalId || null,
+    lead_event_id: window._leadEventId,
+    quiz_completed_event_id: quizEventId,
+    event_source_url: window.location.href,
+    source: "quiz_evelynliu",
+    profile: top,
+    profileName: p.type.replace(/<[^>]*>/g, ''),
+    qualification: qualificationAnswer,
+    scores: scores,
+    respostas: quizAnswers,
+    created_at: new Date().toISOString()
+  };
+
+  fetch("https://hook.us2.make.com/tfxlcbxavrfroywhwnqc5qmo8t1rkb3n", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(makePayload)
+  })
+  .then(r => console.log("Quiz enviado para o Make:", r.status))
+  .catch(e => console.error("Erro ao enviar quiz para o Make:", e));
+
+  // CAPI CompleteRegistration — payload separado do Make, event_id próprio para dedup
+  fetch("/api/capi", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      event_name: 'CompleteRegistration',
+      nome: window._leadName,
+      email: window._leadEmail,
+      whats: phoneForHash(window._leadPhone),
+      fbc: window._leadFbc || getCookie('_fbc') || null,
+      fbp: window._leadFbp || getCookie('_fbp') || null,
+      external_id: window._leadExternalId || null,
+      lead_event_id: crEventId,
+      quiz_lead_event_id: window._leadEventId,
+      perfil: top,
+      tier: tier,
+      event_source_url: window.location.href,
+      // Campos consumidos pelo SDR-forward no servidor (ignorados pela Meta CAPI)
+      profileName: p.type.replace(/<[^>]*>/g, ''),
+      qualification: qualificationAnswer,
+      respostas: quizAnswers
+    })
+  })
+  .then(r => console.log("[CAPI] CompleteRegistration enviado:", r.status))
+  .catch(() => {});
+
+  // Pixel: CompleteRegistration primeiro (evento principal, otimizável)
+  // depois QuizCompleted (browser-only, audiences — sem value, sem CAPI par)
+  // Sem perfil/tier no pixel: dado psicológico fica só do nosso lado (Redis).
+  // content_name mantém o prefixo "quiz-" — conversões/públicos no Events
+  // Manager que filtrem por "contém quiz" continuam casando; só a letra sai.
+  fbq('track','CompleteRegistration',{
+    content_name: 'quiz-completo',
+    eventID: crEventId
+  });
+  fbq('trackCustom','QuizCompleted',{
+    eventID: quizEventId
+  });
+  gtag('event', 'quiz_completed', {
+    perfil: top,
+    tier: qualificationAnswer?.tier
+  });
+  goTo('page-result');
+}
+
+function goOffer(){
+  gtag('event', 'begin_checkout', {value: 97, currency: 'BRL'});
+
+  // InitiateCheckout — Pixel browser
+  const icEventId = crypto.randomUUID();
+  fbq('track','InitiateCheckout',{
+    content_name:'InitiateCheckout_Raiz',
+    currency:'BRL',
+    value:97,
+    eventID:icEventId
+  });
+
+  // InitiateCheckout — CAPI server-side (mesmo event_id do pixel p/ dedup)
+  // keepalive: logo abaixo há um window.location.href para o checkout, e o
+  // navegador cancela requisições em voo ao descarregar a página — sem isso a
+  // maior parte destes POSTs nunca chega e a contagem fica bem abaixo do real.
+  fetch('/api/capi/initiate-checkout',{
+    method:'POST',
+    keepalive:true,
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      phone: window._leadPhone,
+      em: window._leadEmail,
+      fbp: window._leadFbp,
+      fbc: window._leadFbc || undefined,
+      external_id: window._leadExternalId || undefined,
+      content_name:'InitiateCheckout_Raiz',
+      perfil:'raiz',
+      event_id: icEventId,
+      event_source_url:window.location.href
+    })
+  }).catch(()=>{});
+
+  // Redirect p/ o checkout CAKTO com params de identidade + join key (sck).
+  // URL da oferta do Protocolo Raiz na Cakto (ainda não customizada — atualizar
+  // esta linha quando personalizar o checkout).
+  const checkoutUrl = new URL('https://pay.cakto.com.br/pjgpde8_1000061');
+  if(window._leadEmail)   checkoutUrl.searchParams.set(CAKTO_PARAMS.email, window._leadEmail);
+  // Phone sem DDI 55 (mesmo formato local do Ticto)
+  const phoneForCakto = window._leadPhone ? phoneForHash(window._leadPhone) : null;
+  if(phoneForCakto) checkoutUrl.searchParams.set(CAKTO_PARAMS.phone, phoneForCakto);
+  if(window._leadName)    checkoutUrl.searchParams.set(CAKTO_PARAMS.name,  window._leadName);
+  // join key: volta no webhook em data.sck → casa com o lead:{_leadEventId} do Redis
+  if(window._leadEventId) checkoutUrl.searchParams.set(CAKTO_PARAMS.src,   window._leadEventId);
+  window.location.href = checkoutUrl.toString();
+}
+</script>
+</body>
+</html>

@@ -69,6 +69,9 @@ const pub   = path.join(__dirname, '..', 'public');
 
 app.get('/raiz',       (req, res) => res.sendFile(path.join(pub,   'quiz.html')));
 app.get('/quiz',       (req, res) => res.redirect(301, '/raiz' + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '')));
+// Teste A/B da migração de pagamento: mesmo quiz, checkout CAKTO (cópia isolada).
+// /raiz continua no Ticto; o tráfego que o Felipe direcionar pra cá vai pro Cakto.
+app.get('/raiz-cakto', (req, res) => res.sendFile(path.join(pub,   'quiz-cakto.html')));
 app.get('/legal',      (req, res) => res.sendFile(path.join(funil, 'privacidade_termos_evelynliu.html')));
 app.get('/mediakit',   (req, res) => res.sendFile(path.join(pub,   'mediakit.html')));
 app.get('/protocolo-raiz', (req, res) => res.sendFile(path.join(funil, 'protocolo_raiz_bio.html')));
@@ -2346,6 +2349,123 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
     recovery,
     sequence,
   });
+});
+
+// ─── Webhook Cakto (pay.cakto.com.br) — MIGRAÇÃO GRADUAL, fase captura ─────────
+//
+// Nova plataforma de pagamento rodando em PARALELO ao Ticto (teste A/B no slug
+// /raiz-cacto). Este handler é ISOLADO do Ticto de propósito:
+//   - persiste todo payload cru em cakto:raw:<id> (p/ descobrir os outros eventos:
+//     reembolso, chargeback, pix, abandono — só temos o purchase_approved por ora)
+//   - registra a compra em cakto:purchase:<id> (prefixo próprio → não polui o
+//     dashboard Ticto até a dimensão de provider ser ligada, passo #5 do plano)
+//   - NÃO incrementa os contadores do funil nem dispara Purchase CAPI ainda:
+//     fase de captura/validação primeiro
+//
+// Campos do payload Cakto (confirmados pelo exemplo do Felipe, jul/2026):
+//   secret            → autenticação (fixa no corpo, como o token do Ticto)
+//   event             → purchase_approved | (refund/chargeback/pix/abandono: ver no teste)
+//   data.id           → id da transação (idempotência)
+//   data.amount       → valor pago em REAIS (não centavos!) — já com desconto
+//   data.fees         → taxa da Cakto em reais → líquido exato = amount - fees
+//   data.offer.id     → oferta (atribuição por canal)
+//   data.customer     → name/email/phone (phone = DDD+numero, sem 55)
+//   data.fbc/fbp      → capturados pela Cakto (bom p/ o Purchase CAPI depois)
+//   data.sck / utm_*  → candidatos à JOIN KEY (o _leadEventId que o quiz manda).
+// IMPORTANTE: só entram como join key campos que NÓS mandamos no checkout (sck e
+// utms). data.refId é referência INTERNA do Cakto (sempre existe) — se entrasse,
+// toda compra ganharia um "join key" falso que nunca casa com lead:{_leadEventId}.
+// refId é só logado, nunca usado como src.
+const CAKTO_SRC_CANDIDATES = ['sck', 'utm_content', 'utm_term'];
+
+app.post('/api/webhooks/cakto', async (req, res) => {
+  res.sendStatus(200); // responde já; processa depois (async não pode rejeitar aqui)
+  try {
+    const body = req.body || {};
+
+    // Auth: se CAKTO_WEBHOOK_SECRET estiver definido, exige bater. Sem env
+    // (primeiro teste), captura mesmo assim mas avisa.
+    const expected = process.env.CAKTO_WEBHOOK_SECRET;
+    if (expected && body.secret !== expected) {
+      console.warn('[Cakto] secret inválido — payload rejeitado.');
+      return;
+    }
+    if (!expected) console.warn('[Cakto] CAKTO_WEBHOOK_SECRET não configurado — capturando sem validar.');
+
+    const d = body.data || {};
+    const id = d.id || d.refId;
+    const event = body.event || d.status || 'desconhecido';
+    if (!id) {
+      console.warn('[Cakto] payload sem data.id — não dá p/ garantir idempotência. Ignorado.', JSON.stringify(body).slice(0, 300));
+      return;
+    }
+
+    // 1) Persiste o cru de QUALQUER evento (descoberta de schema)
+    await redisSet(`cakto:raw:${id}`, JSON.stringify(body), 'EX', 60 * 60 * 24 * 30);
+
+    // Loga os candidatos a join key — é o que precisamos confirmar no 1º teste.
+    // refId vai junto no log (só p/ referência), mas NÃO é usado como src.
+    const srcCand = Object.fromEntries(CAKTO_SRC_CANDIDATES.map(k => [k, d[k] ?? null]));
+    console.log(`[Cakto] evento=${event} id=${id} amount=${d.amount} fees=${d.fees} offer=${d.offer?.id} joinKeyCandidatos=${JSON.stringify(srcCand)} refId=${d.refId ?? null}`);
+
+    // 2) Compra aprovada → registra normalizado (isolado, prefixo cakto:)
+    const aprovado = event === 'purchase_approved' || d.status === 'paid';
+    if (aprovado) {
+      const srcLeadId = CAKTO_SRC_CANDIDATES.map(k => d[k]).find(v => v && v !== 'Não Informado') || null;
+      const value = typeof d.amount === 'number' ? d.amount : Number(d.amount) || null; // REAIS
+      const fees  = typeof d.fees === 'number' ? d.fees : Number(d.fees) || 0;
+      const record = {
+        provider:       'cakto',
+        transaction_id: id,
+        status:         d.status || 'paid',
+        value,                                   // reais
+        fees,                                    // reais
+        net_value:      value != null ? Math.round((value - fees) * 100) / 100 : null, // líquido exato
+        email:          d.customer?.email || null,
+        phone:          normalizePhone(d.customer?.phone || ''),
+        src_lead_id:    srcLeadId,               // join key (a confirmar qual campo)
+        fbc:            d.fbc || null,
+        fbp:            d.fbp || null,
+        offer_id:       d.offer?.id || null,
+        offer_name:     d.offer?.name || null,
+        product_name:   d.product?.name || null,
+        payment_method: d.paymentMethod || null,
+        raw_tracking:   srcCand,                 // guarda todos p/ auditoria
+        capi_sent_at:   null,                    // Purchase CAPI só na fase #5
+        created_at:     d.paidAt || d.createdAt || new Date().toISOString(),
+      };
+      await redisSet(`cakto:purchase:${id}`, JSON.stringify(record), 'EX', 60 * 60 * 24 * 90);
+      console.log(`[Cakto] compra registrada: ${id} | R$${value} (líq R$${record.net_value}) | src=${srcLeadId || '(sem join key!)'} | offer=${record.offer_id}`);
+    }
+  } catch (err) {
+    console.error('[Cakto] erro ao processar webhook:', err.message);
+  }
+});
+
+// Health/debug do Cakto: últimos payloads capturados, p/ validar sem acesso ao Redis
+app.get('/api/webhooks/cakto/health', async (req, res) => {
+  const token = process.env.HEALTH_TOKEN;
+  if (token && req.headers['x-health-token'] !== token) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  try {
+    const redis = getRedis();
+    const rawKeys = await redis.keys('cakto:raw:*');
+    const purKeys = await redis.keys('cakto:purchase:*');
+    const ultimos = [];
+    for (const k of rawKeys.slice(-5)) {
+      const raw = await redis.get(k);
+      if (raw) { try { const b = JSON.parse(raw); ultimos.push({ id: b.data?.id, event: b.event, amount: b.data?.amount, sck: b.data?.sck, utm_content: b.data?.utm_content }); } catch {} }
+    }
+    res.json({
+      secret_configurado: !!process.env.CAKTO_WEBHOOK_SECRET,
+      payloads_capturados: rawKeys.length,
+      compras_registradas: purKeys.length,
+      ultimos_eventos: ultimos,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // ─── Dashboard /dash — funil, faturamento e recuperação ──────────────────────
