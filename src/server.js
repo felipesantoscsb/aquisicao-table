@@ -2678,6 +2678,32 @@ app.get('/tictovscakto', async (req, res) => {
   }
 });
 
+// Reset do A/B (protegido por token) — zera SÓ os dados de teste do Cakto e os
+// contadores de IC por slug. NÃO toca em ticto:* nem nos contadores do /dash.
+// Uso: POST /api/tictovscakto/reset?token=SEU_DASH_TOKEN&confirm=1
+app.post('/api/tictovscakto/reset', requireDashToken, async (req, res) => {
+  if (req.query.confirm !== '1') {
+    return res.status(400).json({
+      error: 'Faltou &confirm=1. Isto apaga cakto:raw:*, cakto:purchase:* e os contadores evt_ic_raiz/evt_ic_cakto. Ticto e o funil principal (/dash) não são tocados.',
+    });
+  }
+  try {
+    const redis = await ensureRedisReady();
+    const patterns = ['cakto:raw:*', 'cakto:purchase:*', 'metrics:*:evt_ic_raiz', 'metrics:*:evt_ic_cakto'];
+    const detail = {};
+    let deleted = 0;
+    for (const p of patterns) {
+      const keys = await redis.keys(p);
+      detail[p] = keys.length;
+      if (keys.length) { await redis.del(...keys); deleted += keys.length; }
+    }
+    console.log(`[A/B reset] apagados ${deleted} keys:`, JSON.stringify(detail));
+    res.json({ ok: true, deleted, detail });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ─── Dashboard /dash — funil, faturamento e recuperação ──────────────────────
 //
 // Série temporal vem dos contadores metrics:{date}:{nome} (a partir de jul/2026)
