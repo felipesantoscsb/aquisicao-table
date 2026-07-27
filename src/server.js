@@ -1283,13 +1283,24 @@ app.post('/api/capi/quiz-progress', async (req, res) => {
 // ─── CAPI Dossiê: InitiateCheckout ────────────────────────────────────────────
 
 app.post('/api/capi/initiate-checkout', async (req, res) => {
-  const { phone, content_name, perfil, event_source_url, event_id, em, fbp, fbc, fn, lid } = req.body || {};
+  const { phone, content_name, perfil, source, event_source_url, event_id, em, fbp, fbc, fn, lid } = req.body || {};
   res.json({ ok: true });
 
   const enriched = await enrichFromLid(lid, { phone, em, fbc, fbp, fn });
+  const isCakto = String(source || '') === 'raiz-cakto'; // A/B: checkout Cakto (/raiz-cakto)
 
   // Série diária p/ dashboard (fire-and-forget)
   metricsIncr('evt_InitiateCheckout').catch(() => {});
+
+  // Contadores por checkout para o A/B Ticto vs Cakto (/tictovscakto). Não
+  // mexem no evento do Meta — são só métricas internas. evt_ic_cakto vem do
+  // slug /raiz-cakto; evt_ic_raiz é o checkout que sai direto do quiz /raiz
+  // (exclui os CTAs do dossiê, que usam content_name InitiateCheckout_Dossie).
+  if (isCakto) {
+    metricsIncr('evt_ic_cakto').catch(() => {});
+  } else if (String(content_name || '') === 'InitiateCheckout_Raiz') {
+    metricsIncr('evt_ic_raiz').catch(() => {});
+  }
 
   // CTA do dossiê separado do checkout que sai direto do quiz — os dois caem
   // neste mesmo endpoint, e sem separar a performance do dossiê fica inflada.
@@ -1297,14 +1308,16 @@ app.post('/api/capi/initiate-checkout', async (req, res) => {
     metricsIncrPerfil('evt_DossieCTA', perfil);
   }
 
-  // Agenda recuperação de checkout: se o Purchase não chegar via webhook Ticto
-  // em RECOVERY_DELAY_MIN, o sweep dispara o WhatsApp (authorized cancela)
+  // Agenda recuperação de checkout: se o Purchase não chegar via webhook em
+  // RECOVERY_DELAY_MIN, o sweep dispara o WhatsApp (authorized cancela).
+  // provider decide o template + a base do link (Ticto vs Cakto).
   scheduleCheckoutRecovery({
     phone: enriched.phone,
     email: enriched.em,
     name:  enriched.fn,
     lid,
     stage: 'ic',
+    provider: isCakto ? 'cakto' : 'ticto',
   }).catch(() => {});
 
   sendCapiEvent({
@@ -1420,8 +1433,26 @@ function buildCheckoutSuffix({ email, phone, name, lid }) {
   return qs ? `${path}?${qs}` : path;
 }
 
+// Sufixo do link de recuperação Cakto (base fixa https://pay.cakto.com.br/ no
+// template recuperacao_checkout_cakto, URL dinâmica). Params confirmados no
+// /raiz-cakto: email, phone (E.164 com +55), name, e sck = join key para
+// atribuir a venda recuperada de volta ao lead.
+function buildCaktoCheckoutSuffix({ email, phone, name, lid }) {
+  const path = process.env.CAKTO_CHECKOUT_PATH || 'pjgpde8_1000061';
+  const params = new URLSearchParams();
+  if (email) params.set('email', email);
+  if (phone) {
+    const norm = normalizePhone(String(phone)); // garante 55 na frente
+    if (norm) params.set('phone', '+' + norm);  // E.164; URLSearchParams codifica + como %2B
+  }
+  if (name) params.set('name', name);
+  if (lid)  params.set('sck', lid);
+  const qs = params.toString();
+  return qs ? `${path}?${qs}` : path;
+}
+
 async function scheduleCheckoutRecovery({
-  phone, email, name, lid, stage, checkoutSuffix,
+  phone, email, name, lid, stage, checkoutSuffix, provider,
   paymentMethod, bankSlipUrl, bankSlipCode, pixCode, pixUrl,
 }) {
   const phoneNorm = normalizePhone(phone);
@@ -1437,6 +1468,9 @@ async function scheduleCheckoutRecovery({
       email:           email || prev?.email || null,
       name:            name  || prev?.name  || null,
       lid:             lid   || prev?.lid   || null,
+      // provider do checkout: 'cakto' (origem /raiz-cakto) escolhe o template
+      // recuperacao_checkout_cakto + link pay.cakto.com.br; default 'ticto'.
+      provider:        provider || prev?.provider || 'ticto',
       // Reservado p/ um link de sessão específica melhor que o nosso, se algum
       // evento futuro trouxer um — hoje nenhum gatilho popula isto (ver abandoned_cart)
       checkout_suffix: checkoutSuffix || prev?.checkout_suffix || null,
@@ -1470,22 +1504,27 @@ async function cancelCheckoutRecovery(phone, reason) {
 async function sendRecoveryMessage(rec) {
   const TOKEN     = process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
   const PHONE_ID  = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const TEMPLATE  = process.env.WHATSAPP_RECOVERY_TEMPLATE || 'recuperacao_checkout_raizv2';
   const ENABLED   = process.env.RECOVERY_ENABLED === 'true';
-  // O template aprovado usa botão com URL FIXA (magic link de recuperação da
-  // Ticto — link único que resolve a sessão da lead via cookies no aparelho
-  // dela). Botão fixo NÃO aceita parâmetro: enviar um faz a API rejeitar a
-  // mensagem inteira. Se um dia o template mudar para URL dinâmica
-  // (https://checkout.ticto.app/{{1}}), setar RECOVERY_BUTTON_MODE=dynamic
-  // para voltar a enviar o sufixo com prefill por lead.
-  const BUTTON_MODE = process.env.RECOVERY_BUTTON_MODE || 'static';
+  const isCakto   = rec.provider === 'cakto';
+
+  // Ticto: template aprovado usa botão com URL FIXA (magic link de recuperação
+  // — resolve a sessão da lead via cookies no aparelho dela). Botão fixo NÃO
+  // aceita parâmetro; por isso o default é 'static' (RECOVERY_BUTTON_MODE=dynamic
+  // só se o template mudar para https://checkout.ticto.app/{{1}}).
+  // Cakto: template recuperacao_checkout_cakto tem URL DINÂMICA
+  // (https://pay.cakto.com.br/{{1}}) — sempre manda o sufixo por lead.
+  const TEMPLATE = isCakto
+    ? (process.env.WHATSAPP_RECOVERY_TEMPLATE_CAKTO || 'recuperacao_checkout_cakto')
+    : (process.env.WHATSAPP_RECOVERY_TEMPLATE || 'recuperacao_checkout_raizv2');
+  const BUTTON_MODE = isCakto ? 'dynamic' : (process.env.RECOVERY_BUTTON_MODE || 'static');
 
   const components = [
     { type: 'body', parameters: [{ type: 'text', text: firstName(rec.name) || 'querida' }] },
   ];
   if (BUTTON_MODE === 'dynamic') {
-    const suffix = rec.checkout_suffix
-      || buildCheckoutSuffix({ email: rec.email, phone: rec.phone, name: rec.name, lid: rec.lid });
+    const suffix = isCakto
+      ? buildCaktoCheckoutSuffix({ email: rec.email, phone: rec.phone, name: rec.name, lid: rec.lid })
+      : (rec.checkout_suffix || buildCheckoutSuffix({ email: rec.email, phone: rec.phone, name: rec.name, lid: rec.lid }));
     components.push({ type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: suffix }] });
   }
 
@@ -2447,11 +2486,44 @@ app.post('/api/webhooks/cakto', async (req, res) => {
         product_name:   d.product?.name || null,
         payment_method: d.paymentMethod || null,
         raw_tracking:   srcCand,                 // guarda todos p/ auditoria
-        capi_sent_at:   null,                    // Purchase CAPI só na fase #5
+        capi_sent_at:   null,                    // preenchido abaixo se o Purchase CAPI disparar
         created_at:     d.paidAt || d.createdAt || new Date().toISOString(),
       };
       await redisSet(`cakto:purchase:${id}`, JSON.stringify(record), 'EX', 60 * 60 * 24 * 90);
       console.log(`[Cakto] compra registrada: ${id} | R$${value} (líq R$${record.net_value}) | src=${srcLeadId || '(sem join key!)'} | offer=${record.offer_id}`);
+
+      // Comprou → cancela a recuperação de checkout pendente desse telefone
+      // (senão o sweep manda o WhatsApp de recuperação pra quem já pagou).
+      if (record.phone) cancelCheckoutRecovery(record.phone, 'compra Cakto').catch(() => {});
+
+      // Purchase CAPI (A/B Cakto): sem pixel na Cakto, a compra vai ao Meta SÓ
+      // por aqui. event_id = id da transação → o Meta deduplica retries do
+      // webhook (mesma ideia do order.hash do Ticto). Enriquece pelo join key
+      // (lead:{sck}) p/ fbc/fbp/external_id — é o que dá EMQ alto. Sem perfil/
+      // tier no payload (dado psicológico fica só no Redis).
+      const CAKTO_PURCHASE_CAPI = process.env.CAKTO_PURCHASE_CAPI_ENABLED === 'true';
+      if (CAKTO_PURCHASE_CAPI && value != null) {
+        const enr = await enrichFromLid(srcLeadId, {
+          phone: record.phone, em: record.email, fbc: record.fbc, fbp: record.fbp,
+        });
+        sendCapiEvent({
+          eventName: 'Purchase',
+          phone: enr.phone, em: enr.em, fbc: enr.fbc, fbp: enr.fbp, fn: enr.fn,
+          external_id: enr.external_id || (record.email ? sha256(record.email) : undefined),
+          customData: {
+            value,
+            currency: 'BRL',
+            content_name: record.product_name || 'Protocolo Raiz',
+            content_ids: record.offer_id ? [record.offer_id] : undefined,
+          },
+          eventSourceUrl: 'https://www.evelynliu.com.br/raiz-cakto',
+          eventId: id,
+        }).catch((e) => console.error('[Cakto] Purchase CAPI erro:', e.message));
+        await redisSet(`cakto:purchase:${id}`, JSON.stringify({ ...record, capi_sent_at: new Date().toISOString() }), 'EX', 60 * 60 * 24 * 90);
+        console.log(`[Cakto] Purchase CAPI enviado: ${id} | R$${value} | src=${srcLeadId || '(sem join key)'}`);
+      } else if (!CAKTO_PURCHASE_CAPI) {
+        console.log(`[Cakto] Purchase CAPI desligado (CAKTO_PURCHASE_CAPI_ENABLED != true) — ${id} só registrado.`);
+      }
     }
   } catch (err) {
     console.error('[Cakto] erro ao processar webhook:', err.message);
@@ -2497,6 +2569,97 @@ app.get('/api/webhooks/cakto/health', async (req, res) => {
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
+  }
+});
+
+// ─── /tictovscakto — comparativo A/B dos checkouts (PÚBLICO, sem token) ───────
+//
+// Simples de propósito: quantitativos + conversão de cada checkout. Maçã com
+// maçã: lado Ticto = compras do checkout do /raiz (offer primário) ÷ IC do
+// /raiz (evt_ic_raiz); lado Cakto = compras Cakto ÷ IC do /raiz-cakto
+// (evt_ic_cakto). Contado a partir do início do teste (?since=YYYY-MM-DD ou env
+// AB_START_DATE; default = hoje, já que os contadores por slug nascem agora).
+async function abSumIc(redis, name, since) {
+  const keys = await redis.keys(`metrics:*:${name}`);
+  if (!keys.length) return 0;
+  const vals = await redis.mget(keys);
+  let total = 0;
+  keys.forEach((k, i) => {
+    const date = k.split(':')[1]; // metrics:{YYYY-MM-DD}:{name}
+    if (date >= since) total += Number(vals[i]) || 0;
+  });
+  return total;
+}
+async function abSumPurchases(redis, prefix, since, offerFilter) {
+  const keys = await redis.keys(`${prefix}:*`);
+  let count = 0, gross = 0;
+  if (keys.length) {
+    const vals = await redis.mget(keys);
+    for (const v of vals) {
+      if (!v) continue;
+      let r; try { r = JSON.parse(v); } catch { continue; }
+      const day = String(r.created_at || '').slice(0, 10);
+      if (day && day < since) continue;
+      const st = String(r.status || '');
+      if (st === 'refunded' || st === 'chargeback') continue;
+      if (offerFilter && offerFilter.length && !offerFilter.includes(String(r.offer_id || ''))) continue;
+      count++;
+      gross += Number(r.value) || 0;
+    }
+  }
+  return { count, gross };
+}
+
+app.get('/tictovscakto', async (req, res) => {
+  try {
+    const redis = getRedis();
+    const since = String(req.query.since || process.env.AB_START_DATE || spDate());
+    const primario = (process.env.OFFER_IDS_PRIMARIO || '156277').split(',').map(s => s.trim()).filter(Boolean);
+    const [ticIc, cakIc, tic, cak] = await Promise.all([
+      abSumIc(redis, 'evt_ic_raiz', since),
+      abSumIc(redis, 'evt_ic_cakto', since),
+      abSumPurchases(redis, 'ticto:purchase', since, primario),
+      abSumPurchases(redis, 'cakto:purchase', since, null),
+    ]);
+    const brl = (n) => 'R$ ' + Number(n || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const pct = (c, ic) => ic > 0 ? (Math.round((c / ic) * 1000) / 10).toLocaleString('pt-BR') + '%' : '—';
+    const ticket = (g, c) => c > 0 ? brl(g / c) : '—';
+    const col = (label, ic, p) => `
+      <div class="card">
+        <h2>${label}</h2>
+        <div class="big">${pct(p.count, ic)}</div>
+        <div class="lbl">conversão (compras ÷ checkout iniciado)</div>
+        <table>
+          <tr><td>Checkout iniciado</td><td>${ic.toLocaleString('pt-BR')}</td></tr>
+          <tr><td>Compras</td><td>${p.count.toLocaleString('pt-BR')}</td></tr>
+          <tr><td>Receita bruta</td><td>${brl(p.gross)}</td></tr>
+          <tr><td>Ticket médio</td><td>${ticket(p.gross, p.count)}</td></tr>
+        </table>
+      </div>`;
+    res.set('Content-Type', 'text/html; charset=utf-8').send(`<!doctype html><html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ticto vs Cakto</title>
+<style>
+  body{font-family:system-ui,-apple-system,sans-serif;background:#f4f1ec;color:#2c2018;margin:0;padding:32px 16px}
+  h1{text-align:center;font-weight:600;font-size:22px;margin:0 0 4px}
+  .since{text-align:center;color:#8a7d6f;font-size:13px;margin-bottom:28px}
+  .wrap{display:flex;gap:20px;max-width:720px;margin:0 auto;flex-wrap:wrap;justify-content:center}
+  .card{background:#fff;border-radius:12px;padding:28px 24px;box-shadow:0 2px 20px rgba(44,32,24,.07);flex:1;min-width:260px}
+  .card h2{margin:0 0 14px;font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:#b97040}
+  .big{font-size:44px;font-weight:600;line-height:1}
+  .lbl{color:#8a7d6f;font-size:12px;margin:6px 0 18px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  td{padding:8px 0;border-top:1px solid #eee}
+  td:last-child{text-align:right;font-weight:600}
+</style></head><body>
+  <h1>Ticto vs Cakto — checkout</h1>
+  <div class="since">desde ${since} · atualiza a cada refresh</div>
+  <div class="wrap">
+    ${col('Ticto (/raiz)', ticIc, tic)}
+    ${col('Cakto (/raiz-cakto)', cakIc, cak)}
+  </div>
+</body></html>`);
+  } catch (e) {
+    res.status(500).send('Erro: ' + e.message);
   }
 });
 
