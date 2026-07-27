@@ -87,6 +87,9 @@ app.get('/quiz',       (req, res) => res.redirect(301, '/raiz' + (req.url.includ
 // Teste A/B da migração de pagamento: mesmo quiz, checkout CAKTO (cópia isolada).
 // /raiz continua no Ticto; o tráfego que o Felipe direcionar pra cá vai pro Cakto.
 app.get('/raiz-cakto', (req, res) => res.sendFile(path.join(pub,   'quiz-cakto.html')));
+// Variante da VSL: cópia do /raiz-cakto (mesmo checkout Cakto) com VSL interpolada
+// por perfil (Desconectada/Sobrevivência/Emocional/Restritiva) — ver injectVSL em quiz-vi.html.
+app.get('/raiz-vi',    (req, res) => res.sendFile(path.join(pub,   'quiz-vi.html')));
 app.get('/legal',      (req, res) => res.sendFile(path.join(funil, 'privacidade_termos_evelynliu.html')));
 app.get('/mediakit',   (req, res) => res.sendFile(path.join(pub,   'mediakit.html')));
 app.get('/protocolo-raiz', (req, res) => res.sendFile(path.join(funil, 'protocolo_raiz_bio.html')));
