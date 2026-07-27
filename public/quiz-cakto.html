@@ -881,10 +881,10 @@ async function sha256Email(str){
 // src → 'sck': é o campo que volta no webhook (data.sck) e casa com o
 // _leadEventId do quiz — a JOIN KEY da atribuição. CONFIRMAR no 1º teste real.
 const CAKTO_PARAMS = {
-  email: 'email',   // best-guess
-  phone: 'phone',   // best-guess (Cakto manda phone como DDD+numero no webhook)
-  name:  'name',    // best-guess
-  src:   'sck'      // join key — volta em data.sck (a confirmar)
+  email: 'email',   // CONFIRMADO no 1º teste (preencheu)
+  phone: 'phone',   // CONFIRMADO (preencheu) — valor precisa ir em E.164 c/ +55 (ver goOffer)
+  name:  'name',    // CONFIRMADO (preencheu)
+  src:   'sck'      // join key — volta em data.sck (a confirmar no 1º teste válido)
 };
 
 function startQuiz(){
@@ -1381,7 +1381,11 @@ function goOffer(){
   const checkoutUrl = new URL('https://pay.cakto.com.br/pjgpde8_1000061');
   if(window._leadEmail)   checkoutUrl.searchParams.set(CAKTO_PARAMS.email, window._leadEmail);
   // Phone sem DDI 55 (mesmo formato local do Ticto)
-  const phoneForCakto = window._leadPhone ? phoneForHash(window._leadPhone) : null;
+  // Cakto usa input de telefone internacional: sem código de país ele assume
+  // +1 (EUA) e desconfigura o número (visto no 1º teste — campo veio "+1 (191)
+  // 825-3788"). Enviar em E.164 com '+55' faz o campo detectar o Brasil.
+  // (O Ticto era o oposto: queria DDD+numero SEM o 55, via phoneForHash.)
+  const phoneForCakto = window._leadPhone ? '+' + window._leadPhone : null;
   if(phoneForCakto) checkoutUrl.searchParams.set(CAKTO_PARAMS.phone, phoneForCakto);
   if(window._leadName)    checkoutUrl.searchParams.set(CAKTO_PARAMS.name,  window._leadName);
   // join key: volta no webhook em data.sck → casa com o lead:{_leadEventId} do Redis
