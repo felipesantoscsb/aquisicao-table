@@ -45,8 +45,8 @@ fbq('init', '989971718548782');
   function _gc(name){const m=document.cookie.match(new RegExp('(^| )'+name+'=([^;]+)'));return m?m[2]:null;}
   const qvEventId = crypto.randomUUID();
   const pvEventId = crypto.randomUUID(); // par server-side do PageView browser
-  fbq('track','PageView',{eventID:pvEventId}); // sobrescreve o fbq('track','PageView') acima com eventID
-  fbq('track','ViewContent',{content_name:'QuizView',eventID:qvEventId});
+  fbq('track','PageView',{},{eventID:pvEventId}); // eventID no 4º arg = chave de dedup canônica do Meta
+  fbq('track','ViewContent',{content_name:'QuizView'},{eventID:qvEventId});
   fetch('/api/capi',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
@@ -953,9 +953,8 @@ async function submitCapture(){
   });
   // Lead browser — sem value/currency (Lead não carrega valor monetário)
   fbq('track','Lead',{
-    content_name:'quiz-lead',
-    eventID: window._leadEventId
-  });
+    content_name:'quiz-lead'
+  },{eventID: window._leadEventId});
   gtag('event','generate_lead');
   // CAPI Lead server-side — par do browser para dedup. Cobre abandono pré-resultado.
   fetch('/api/capi',{
@@ -1329,12 +1328,9 @@ function showResult(){
   // content_name mantém o prefixo "quiz-" — conversões/públicos no Events
   // Manager que filtrem por "contém quiz" continuam casando; só a letra sai.
   fbq('track','CompleteRegistration',{
-    content_name: 'quiz-completo',
-    eventID: crEventId
-  });
-  fbq('trackCustom','QuizCompleted',{
-    eventID: quizEventId
-  });
+    content_name: 'quiz-completo'
+  },{eventID: crEventId});
+  fbq('trackCustom','QuizCompleted',{},{eventID: quizEventId});
   gtag('event', 'quiz_completed', {
     perfil: top,
     tier: qualificationAnswer?.tier
@@ -1350,9 +1346,8 @@ function goOffer(){
   fbq('track','InitiateCheckout',{
     content_name:'InitiateCheckout_Raiz',
     currency:'BRL',
-    value:97,
-    eventID:icEventId
-  });
+    value:97
+  },{eventID:icEventId});
 
   // InitiateCheckout — CAPI server-side (mesmo event_id do pixel p/ dedup)
   // keepalive: logo abaixo há um window.location.href para o checkout, e o
