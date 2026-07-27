@@ -2372,11 +2372,27 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
 //   data.customer     → name/email/phone (phone = DDD+numero, sem 55)
 //   data.fbc/fbp      → capturados pela Cakto (bom p/ o Purchase CAPI depois)
 //   data.sck / utm_*  → candidatos à JOIN KEY (o _leadEventId que o quiz manda).
-// IMPORTANTE: só entram como join key campos que NÓS mandamos no checkout (sck e
-// utms). data.refId é referência INTERNA do Cakto (sempre existe) — se entrasse,
-// toda compra ganharia um "join key" falso que nunca casa com lead:{_leadEventId}.
-// refId é só logado, nunca usado como src.
-const CAKTO_SRC_CANDIDATES = ['sck', 'utm_content', 'utm_term'];
+// JOIN KEY do Cakto — SÓ o `sck`. É o único campo que NÓS injetamos no checkout
+// do /raiz-cakto (goOffer seta ?sck=<_leadEventId>). utm_content/utm_term/refId
+// NÃO entram: refId é ref interna do Cakto (sempre existe) e os utm vêm do
+// anúncio/Cakto — no payload de teste utm_content veio "example" e virou um
+// join key falso que nunca casaria com lead:{_leadEventId}. Confirmado no 1º
+// teste real (b6f6325f): sck=null, utm_content="example" → src saía "example".
+// Fallback robusto: se a Cakto não copiar o sck para data.sck, ele ainda vive na
+// query string de data.checkoutUrl (a Cakto ecoa a URL de checkout com os params).
+const CAKTO_SRC_CANDIDATES = ['sck', 'utm_content', 'utm_term']; // só p/ auditoria (raw_tracking)
+
+function extractCaktoJoinKey(d) {
+  const direct = d.sck && d.sck !== 'Não Informado' ? String(d.sck) : null;
+  if (direct) return direct;
+  if (d.checkoutUrl) {
+    try {
+      const s = new URL(d.checkoutUrl).searchParams.get('sck');
+      if (s && s !== 'Não Informado') return s;
+    } catch { /* checkoutUrl malformada — ignora */ }
+  }
+  return null;
+}
 
 app.post('/api/webhooks/cakto', async (req, res) => {
   res.sendStatus(200); // responde já; processa depois (async não pode rejeitar aqui)
@@ -2411,7 +2427,7 @@ app.post('/api/webhooks/cakto', async (req, res) => {
     // 2) Compra aprovada → registra normalizado (isolado, prefixo cakto:)
     const aprovado = event === 'purchase_approved' || d.status === 'paid';
     if (aprovado) {
-      const srcLeadId = CAKTO_SRC_CANDIDATES.map(k => d[k]).find(v => v && v !== 'Não Informado') || null;
+      const srcLeadId = extractCaktoJoinKey(d); // só sck (direto ou via checkoutUrl)
       const value = typeof d.amount === 'number' ? d.amount : Number(d.amount) || null; // REAIS
       const fees  = typeof d.fees === 'number' ? d.fees : Number(d.fees) || 0;
       const record = {
