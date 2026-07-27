@@ -21,6 +21,21 @@ function getRedis() {
   }
   return _redis;
 }
+// Garante a conexão pronta antes de comandos crus (keys/mget). Necessário porque
+// o client usa lazyConnect + enableOfflineQueue:false: um comando disparado com a
+// conexão fora do ar estoura na hora. Os wrappers redisGet/Set engolem isso, mas
+// rotas que leem keys/mget cru (ex.: /tictovscakto) precisam esperar o 'ready'.
+async function ensureRedisReady(timeoutMs = 4000) {
+  const redis = getRedis();
+  if (redis.status === 'ready') return redis;
+  if (redis.status === 'wait' || redis.status === 'end') redis.connect().catch(() => {});
+  await new Promise((resolve) => {
+    if (redis.status === 'ready') return resolve();
+    const timer = setTimeout(resolve, timeoutMs);
+    redis.once('ready', () => { clearTimeout(timer); resolve(); });
+  });
+  return redis;
+}
 async function redisGet(key) { try { return await getRedis().get(key); } catch { return null; } }
 async function redisSet(key, value, ...args) { try { return await getRedis().set(key, value, ...args); } catch { return null; } }
 async function redisDel(key) { try { return await getRedis().del(key); } catch { return null; } }
@@ -2612,7 +2627,7 @@ async function abSumPurchases(redis, prefix, since, offerFilter) {
 
 app.get('/tictovscakto', async (req, res) => {
   try {
-    const redis = getRedis();
+    const redis = await ensureRedisReady();
     const since = String(req.query.since || process.env.AB_START_DATE || spDate());
     const primario = (process.env.OFFER_IDS_PRIMARIO || '156277').split(',').map(s => s.trim()).filter(Boolean);
     const [ticIc, cakIc, tic, cak] = await Promise.all([
