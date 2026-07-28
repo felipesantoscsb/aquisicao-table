@@ -2727,12 +2727,16 @@ app.get('/tictovscakto', async (req, res) => {
 app.post('/api/tictovscakto/reset', requireDashToken, async (req, res) => {
   if (req.query.confirm !== '1') {
     return res.status(400).json({
-      error: 'Faltou &confirm=1. Isto apaga cakto:raw:*, cakto:purchase:* e os contadores evt_ic_raiz/evt_ic_cakto. Ticto e o funil principal (/dash) não são tocados.',
+      error: 'Faltou &confirm=1. Isto apaga cakto:raw:*, cakto:purchase:* e os contadores do A/B (evt_ic_raiz/cakto/vi, evt_qc_cakto/vi). Ticto e o funil principal (/dash) não são tocados.',
     });
   }
   try {
     const redis = await ensureRedisReady();
-    const patterns = ['cakto:raw:*', 'cakto:purchase:*', 'metrics:*:evt_ic_raiz', 'metrics:*:evt_ic_cakto'];
+    const patterns = [
+      'cakto:raw:*', 'cakto:purchase:*',
+      'metrics:*:evt_ic_raiz', 'metrics:*:evt_ic_cakto', 'metrics:*:evt_ic_vi',
+      'metrics:*:evt_qc_cakto', 'metrics:*:evt_qc_vi',
+    ];
     const detail = {};
     let deleted = 0;
     for (const p of patterns) {
