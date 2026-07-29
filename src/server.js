@@ -82,7 +82,10 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 const funil = path.join(__dirname, '..', 'public', 'Funil');
 const pub   = path.join(__dirname, '..', 'public');
 
-app.get('/raiz',       (req, res) => res.sendFile(path.join(pub,   'quiz.html')));
+// /raiz agora serve o funil CAKTO (checkout mais barato — pix 0%). Mesmo quiz de
+// sempre; só o goOffer muda (Ticto→Cakto). Campanhas seguem apontando p/ /raiz.
+// REVERTER: trocar 'quiz-cakto.html' de volta por 'quiz.html' (1 linha).
+app.get('/raiz',       (req, res) => res.sendFile(path.join(pub,   'quiz-cakto.html')));
 app.get('/quiz',       (req, res) => res.redirect(301, '/raiz' + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '')));
 // Teste A/B da migração de pagamento: mesmo quiz, checkout CAKTO (cópia isolada).
 // /raiz continua no Ticto; o tráfego que o Felipe direcionar pra cá vai pro Cakto.
