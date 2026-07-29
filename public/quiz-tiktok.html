@@ -963,6 +963,8 @@ async function submitCapture(){
     body:JSON.stringify({
       event_name:'Lead',
       channel:'tiktok', // isolamento: server faz SDR/Redis mas pula envio à Meta
+      ttclid: ttParam('ttclid') || getCookie('ttclid') || null, // p/ atribuir Purchase (webhook Cakto→TikTok)
+      ttp: getCookie('_ttp') || null,
       content_name:'quiz-lead',
       nome: name,
       email: email,

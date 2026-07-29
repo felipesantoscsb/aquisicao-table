@@ -307,6 +307,9 @@ app.post('/api/capi', async (req, res) => {
       external_id:   req.body.external_id || null,
       fbc:           req.body.fbc         || null,
       fbp:           req.body.fbp         || null,
+      channel:       req.body.channel     || null,  // 'tiktok'/'google' → atribuição de canal no webhook Cakto
+      ttclid:        req.body.ttclid      || null,  // TikTok click id (Purchase server-side)
+      ttp:           req.body.ttp         || null,  // TikTok cookie _ttp
       saved_at:      new Date().toISOString(),
     };
     getRedis().set(
@@ -2604,7 +2607,12 @@ app.post('/api/webhooks/cakto', async (req, res) => {
       // (lead:{sck}) p/ fbc/fbp/external_id — é o que dá EMQ alto. Sem perfil/
       // tier no payload (dado psicológico fica só no Redis).
       const CAKTO_PURCHASE_CAPI = process.env.CAKTO_PURCHASE_CAPI_ENABLED === 'true';
-      if (CAKTO_PURCHASE_CAPI && value != null) {
+      // Isolamento: vendas do funil TikTok NÃO vão pro Meta (têm webhook próprio,
+      // /api/webhooks/cakto-tiktok). Guard só age quando o lead é channel:'tiktok'.
+      let _leadChannel = null;
+      try { const _lr = await getRedis().get('lead:' + srcLeadId); if (_lr) _leadChannel = JSON.parse(_lr).channel || null; } catch {}
+      if (_leadChannel === 'tiktok') console.log('[Cakto] venda do funil TikTok — Purchase Meta pulado (isolado).');
+      if (CAKTO_PURCHASE_CAPI && value != null && _leadChannel !== 'tiktok') {
         const enr = await enrichFromLid(srcLeadId, {
           phone: record.phone, em: record.email, fbc: record.fbc, fbp: record.fbp,
         });
@@ -2629,6 +2637,79 @@ app.post('/api/webhooks/cakto', async (req, res) => {
     }
   } catch (err) {
     console.error('[Cakto] erro ao processar webhook:', err.message);
+  }
+});
+
+// ─── Webhook Cakto → TikTok (CompletePayment) ────────────────────────────────
+// Endpoint DEDICADO ao funil TikTok. Crie um webhook novo na Cakto apontando pra
+// cá. Recebe as vendas e só dispara CompletePayment no TikTok quando a venda veio
+// do canal TikTok (lead:{sck}.channel === 'tiktok'). Isolado do Meta.
+// VALIDAR com Cakto (modo teste) + TikTok Test Events antes de confiar.
+app.post('/api/webhooks/cakto-tiktok', async (req, res) => {
+  res.sendStatus(200);
+  try {
+    const body = req.body || {};
+    const expected = process.env.CAKTO_WEBHOOK_SECRET;
+    if (expected && body.secret !== expected) { console.warn('[Cakto-TT] secret inválido — ignorado.'); return; }
+
+    const d = body.data || {};
+    const id = d.id || d.refId;
+    const aprovado = (body.event || d.status) === 'purchase_approved' || d.status === 'paid';
+    if (!id || !aprovado) return;
+
+    const srcLeadId = extractCaktoJoinKey(d);
+    if (!srcLeadId) { console.warn('[Cakto-TT] venda sem join key (sck) — não atribui.'); return; }
+
+    // Só age se o lead veio do funil TikTok
+    let lead = null;
+    try { const lr = await getRedis().get('lead:' + srcLeadId); if (lr) lead = JSON.parse(lr); } catch {}
+    if (!lead || lead.channel !== 'tiktok') {
+      console.log('[Cakto-TT] venda não-TikTok (' + (lead?.channel || 'sem lead') + ') — ignorada.');
+      return;
+    }
+
+    const TOKEN = process.env.TIKTOK_CAPI_TOKEN;
+    const PIXEL = process.env.TIKTOK_PIXEL_ID || 'D9KG3FBC77U751E5R0AG';
+    if (!TOKEN) { console.error('[Cakto-TT] TIKTOK_CAPI_TOKEN ausente — evento não enviado.'); return; }
+
+    const value = typeof d.amount === 'number' ? d.amount : Number(d.amount) || null;
+    const email = d.customer?.email || lead.email || null;
+    const phone = normalizePhone(d.customer?.phone || lead.phone || '');
+
+    const user = {};
+    if (email)            user.email = sha256(String(email).toLowerCase().trim());
+    if (phone)            user.phone = sha256('+' + phone);
+    if (lead.external_id) user.external_id = lead.external_id;
+    if (lead.ttclid)      user.ttclid = lead.ttclid;
+    if (lead.ttp)         user.ttp = lead.ttp;
+
+    const payload = {
+      event_source: 'web',
+      event_source_id: PIXEL,
+      data: [{
+        event:      'CompletePayment',
+        event_time: Math.floor(Date.now() / 1000),
+        event_id:   String(id),   // dedup por transação (retries do webhook)
+        user,
+        page:       { url: 'https://www.evelynliu.com.br/raiz-tiktok' },
+        properties: {
+          value:    value != null ? value : undefined,
+          currency: 'BRL',
+          contents: [{ content_id: 'protocolo-raiz', content_type: 'product', content_name: d.product?.name || 'Protocolo Raiz' }],
+        },
+      }],
+    };
+
+    const r = await fetch('https://business-api.tiktok.com/open_api/v1.3/event/track/', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Access-Token': TOKEN },
+      body:    JSON.stringify(payload),
+    });
+    const j = await r.json();
+    if (j.code !== 0) console.error('[Cakto-TT] Erro TikTok:', JSON.stringify(j));
+    else console.log('[Cakto-TT] CompletePayment TikTok enviado:', id, '· R$' + value);
+  } catch (err) {
+    console.error('[Cakto-TT] erro:', err.message);
   }
 });
 
