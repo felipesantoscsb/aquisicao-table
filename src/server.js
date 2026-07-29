@@ -90,6 +90,12 @@ app.get('/raiz-cakto', (req, res) => res.sendFile(path.join(pub,   'quiz-cakto.h
 // Variante da VSL: cópia do /raiz-cakto (mesmo checkout Cakto) com VSL interpolada
 // por perfil (Desconectada/Sobrevivência/Emocional/Restritiva) — ver injectVSL em quiz-vi.html.
 app.get('/raiz-vi',    (req, res) => res.sendFile(path.join(pub,   'quiz-vi.html')));
+// Google Ads (Search/YouTube): cópia do quiz-cakto (checkout CAKTO, mais barato).
+// Slug isolado p/ separar o tráfego Google do Meta. Tracking/isolamento de
+// métricas (evt_qc_cakto ainda conta como raiz-cakto) fica p/ a fase de tracking.
+app.get('/raiz-google', (req, res) => res.sendFile(path.join(pub,   'quiz-google.html')));
+// TikTok: cópia isolada (pixel TikTok, sem Meta), checkout CAKTO. channel:'tiktok'.
+app.get('/raiz-tiktok', (req, res) => res.sendFile(path.join(pub,   'quiz-tiktok.html')));
 app.get('/legal',      (req, res) => res.sendFile(path.join(funil, 'privacidade_termos_evelynliu.html')));
 app.get('/mediakit',   (req, res) => res.sendFile(path.join(pub,   'mediakit.html')));
 app.get('/protocolo-raiz', (req, res) => res.sendFile(path.join(funil, 'protocolo_raiz_bio.html')));
@@ -127,6 +133,9 @@ app.get('/rmkt',       (req, res) => res.redirect(301, '/proximo-passo' + (req.u
 app.get('/links',      (req, res) => res.sendFile(path.join(funil, 'links-bio.html')));
 app.get('/table',      (req, res) => res.sendFile(path.join(funil, 'site_table.html')));
 app.get('/conversa',   (req, res) => res.sendFile(path.join(funil, 'formulario_captacao_table.html')));
+// Google Ads (Search fundo de funil): versão enxuta do /conversa — sem mapeamento
+// longo, direto pra conversa com a nutri. Mesmo backend (/api/captacao/conversa).
+app.get('/conversa-google', (req, res) => res.sendFile(path.join(funil, 'formulario_conversa_google.html')));
 app.get('/evelyn',     (req, res) => res.sendFile(path.join(funil, 'formulario_consulta_evelyn.html')));
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -418,6 +427,13 @@ app.post('/api/capi', async (req, res) => {
   // Em produção, deixe META_TEST_EVENT_CODE ausente ou vazia no ambiente.
   const TEST_CODE = process.env.META_TEST_EVENT_CODE;
   if (TEST_CODE) metaPayload.test_event_code = TEST_CODE;
+
+  // Isolamento Google/TikTok: a origem já fez Redis + contagem interna acima;
+  // aqui apenas NÃO envia à Meta CAPI (esses funis são isolados do Meta).
+  if (['google', 'tiktok'].includes(String(req.body.channel || '').toLowerCase())) {
+    console.log('[CAPI] Origem isolada (' + req.body.channel + ') — envio à Meta pulado.');
+    return res.json({ ok: true, skipped: 'meta_isolated' });
+  }
 
   console.log('[CAPI] Enviando para a Meta:', JSON.stringify(metaPayload, null, 2));
 
@@ -1305,7 +1321,7 @@ app.post('/api/capi/quiz-progress', async (req, res) => {
 // ─── CAPI Dossiê: InitiateCheckout ────────────────────────────────────────────
 
 app.post('/api/capi/initiate-checkout', async (req, res) => {
-  const { phone, content_name, perfil, source, event_source_url, event_id, em, fbp, fbc, fn, lid } = req.body || {};
+  const { phone, content_name, perfil, source, event_source_url, event_id, em, fbp, fbc, fn, lid, channel } = req.body || {};
   res.json({ ok: true });
 
   const enriched = await enrichFromLid(lid, { phone, em, fbc, fbp, fn });
@@ -1349,6 +1365,10 @@ app.post('/api/capi/initiate-checkout', async (req, res) => {
     provider: isCaktoCheckout ? 'cakto' : 'ticto',
   }).catch(() => {});
 
+  // Isolamento Google/TikTok: métricas e recuperação de checkout acima rodam
+  // normalmente; só o envio à Meta CAPI é pulado quando a origem é isolada.
+  if (['google', 'tiktok'].includes(String(channel || '').toLowerCase())) return;
+
   sendCapiEvent({
     eventName: 'InitiateCheckout',
     phone:       enriched.phone,
@@ -1366,6 +1386,59 @@ app.post('/api/capi/initiate-checkout', async (req, res) => {
     eventId: event_id,
     req,
   }).catch(() => {});
+});
+
+// ─── TikTok Events API (server-side, par de dedup do pixel) ──────────────────
+// Isolado do Meta. Token em TIKTOK_CAPI_TOKEN (Railway). email/phone chegam já
+// hasheados em SHA-256 do client. VALIDAR com o Test Events do TikTok antes de
+// confiar na atribuição.
+app.post('/api/tiktok-capi', async (req, res) => {
+  res.json({ ok: true });
+
+  const TOKEN = process.env.TIKTOK_CAPI_TOKEN;
+  const PIXEL = process.env.TIKTOK_PIXEL_ID || 'D9KG3FBC77U751E5R0AG';
+  if (!TOKEN) { console.error('[TT CAPI] TIKTOK_CAPI_TOKEN ausente — evento não enviado.'); return; }
+
+  const b = req.body || {};
+  const user = {};
+  if (b.email)       user.email = b.email;             // SHA-256 (client)
+  if (b.phone)       user.phone = b.phone;             // SHA-256 (client)
+  if (b.external_id) user.external_id = b.external_id;
+  if (b.ttclid)      user.ttclid = b.ttclid;
+  if (b.ttp)         user.ttp = b.ttp;
+  const ip = getClientIp(req);            if (ip) user.ip = ip;
+  const ua = req.headers['user-agent'];   if (ua) user.user_agent = ua;
+
+  const properties = { value: b.value, currency: b.currency || 'BRL' };
+  if (b.content_id) {
+    properties.contents = [{ content_id: b.content_id, content_type: 'product', content_name: b.content_name || undefined }];
+  }
+
+  const payload = {
+    event_source: 'web',
+    event_source_id: PIXEL,
+    data: [{
+      event:      b.event,
+      event_time: Math.floor(Date.now() / 1000),
+      event_id:   b.event_id || undefined,
+      user,
+      page:       { url: b.event_source_url || undefined },
+      properties,
+    }],
+  };
+
+  try {
+    const r = await fetch('https://business-api.tiktok.com/open_api/v1.3/event/track/', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Access-Token': TOKEN },
+      body:    JSON.stringify(payload),
+    });
+    const j = await r.json();
+    if (j.code !== 0) console.error('[TT CAPI] Erro TikTok:', JSON.stringify(j));
+    else console.log('[TT CAPI] OK:', b.event, '·', j.request_id || '');
+  } catch (e) {
+    console.error('[TT CAPI] rede:', e.message);
+  }
 });
 
 // ─── Ticto Webhook ───────────────────────────────────────────────────────────
