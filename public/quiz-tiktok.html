@@ -947,17 +947,7 @@ async function submitCapture(){
   window._leadFbp = getCookie('_fbp') || null;
   // external_id: SHA-256 do email normalizado — identificador estável cross-evento
   window._leadExternalId = await sha256Email(email);
-  // Advanced Matching: nome/email/telefone/external_id ao pixel browser
-  fbq('init','989971718548782',{
-    em: email,
-    ph: phone,
-    fn: name.trim().split(/\s+/)[0],
-    external_id: window._leadExternalId
-  });
-  // Lead browser — sem value/currency (Lead não carrega valor monetário)
-  fbq('track','Lead',{
-    content_name:'quiz-lead'
-  },{eventID: window._leadEventId});
+  // (Pixel Meta removido — funil TikTok isolado; Lead segue via /api/capi server-side)
   gtag('event','generate_lead');
   // TikTok — advanced matching HASHEADO em SHA-256 no client + CompleteRegistration
   window._leadPhoneHash = await sha256Email('+' + phone);
@@ -1056,7 +1046,7 @@ function selectAndAdvance(type, btn){
     current++;
     // Metade do quiz (4ª de 8) — pixel + contagem própria, como no QuizStart
     if(current === 4){
-      try { if (typeof fbq === 'function') fbq('trackCustom','QuizProgress',{step:4}); } catch(e){}
+      // (Meta QuizProgress removido — funil TikTok isolado)
       fetch('/api/capi/quiz-progress',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
@@ -1340,10 +1330,7 @@ function showResult(){
   // Sem perfil/tier no pixel: dado psicológico fica só do nosso lado (Redis).
   // content_name mantém o prefixo "quiz-" — conversões/públicos no Events
   // Manager que filtrem por "contém quiz" continuam casando; só a letra sai.
-  fbq('track','CompleteRegistration',{
-    content_name: 'quiz-completo'
-  },{eventID: crEventId});
-  fbq('trackCustom','QuizCompleted',{},{eventID: quizEventId});
+  // (Pixel Meta CompleteRegistration/QuizCompleted removido — funil TikTok isolado)
   try { ttq.track('ViewContent', { contents: [TT_PRODUCT], value: 97, currency: 'BRL' }); } catch(e){}
   gtag('event', 'quiz_completed', {
     perfil: top,
@@ -1358,13 +1345,7 @@ function goOffer(){
   try { ttq.track('InitiateCheckout', { contents: [TT_PRODUCT], value: 97, currency: 'BRL' }, { event_id: ttIcId }); } catch(e){}
   ttCapi('InitiateCheckout', ttIcId); // par server-side (dedup)
 
-  // InitiateCheckout — Pixel browser
-  const icEventId = crypto.randomUUID();
-  fbq('track','InitiateCheckout',{
-    content_name:'InitiateCheckout_Raiz',
-    currency:'BRL',
-    value:97
-  },{eventID:icEventId});
+  // (Pixel Meta InitiateCheckout removido — funil TikTok isolado; IC vai via TikTok acima)
 
   // InitiateCheckout — CAPI server-side (mesmo event_id do pixel p/ dedup)
   // keepalive: logo abaixo há um window.location.href para o checkout, e o
@@ -1385,7 +1366,7 @@ function goOffer(){
       source:'raiz-cakto', // sinaliza origem Cakto p/ o servidor (recuperação + contador de IC); NÃO altera o evento do Meta
       channel:'tiktok', // isolamento: server faz recuperação/contagem mas pula envio à Meta
       lid: window._leadEventId, // join key: enriquece o IC e vai como sck na recuperação Cakto
-      event_id: icEventId,
+      event_id: ttIcId,
       event_source_url:window.location.href
     })
   }).catch(()=>{});
