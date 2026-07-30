@@ -1601,6 +1601,7 @@ function buildCaktoCheckoutSuffix({ email, phone, name, lid }) {
 async function scheduleCheckoutRecovery({
   phone, email, name, lid, stage, checkoutSuffix, provider,
   paymentMethod, bankSlipUrl, bankSlipCode, pixCode, pixUrl,
+  dueAt, touch2At, pixExpiration,
 }) {
   const phoneNorm = normalizePhone(phone);
   if (!phoneNorm) return;
@@ -1628,8 +1629,12 @@ async function scheduleCheckoutRecovery({
       bank_slip_code:  bankSlipCode  || prev?.bank_slip_code || null,
       pix_code:        pixCode       || prev?.pix_code       || null,
       pix_url:         pixUrl        || prev?.pix_url        || null,
+      pix_expiration:  pixExpiration || prev?.pix_expiration || null,
       stage,                                                        // ic | abandoned_cart | waiting_payment
-      due_at:          prev?.due_at || (Date.now() + recoveryDelayMs()),
+      // Cadência: pix_gerado usa 2 toques (touch_no 1→2); abandono usa 1.
+      touch_no:        prev?.touch_no || 1,
+      touch2_at:       touch2At || prev?.touch2_at || null,
+      due_at:          dueAt || prev?.due_at || (Date.now() + recoveryDelayMs()),
       created_at:      prev?.created_at || new Date().toISOString(),
     };
     await redis.set(`recovery:pending:${phoneNorm}`, JSON.stringify(record), 'EX', RECOVERY_TTL_PENDING);
@@ -1649,55 +1654,40 @@ async function cancelCheckoutRecovery(phone, reason) {
 }
 
 async function sendRecoveryMessage(rec) {
-  const TOKEN     = process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
-  const PHONE_ID  = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const ENABLED   = process.env.RECOVERY_ENABLED === 'true';
-  const isCakto   = rec.provider === 'cakto';
+  const ENABLED = process.env.RECOVERY_ENABLED === 'true';
+  const URL     = process.env.SDR_RECOVERY_URL;    // endpoint do sdr-table (Karina/Z-API)
+  const TOKEN   = process.env.SDR_RECOVERY_TOKEN;  // segredo compartilhado
 
-  // Ticto: template aprovado usa botão com URL FIXA (magic link de recuperação
-  // — resolve a sessão da lead via cookies no aparelho dela). Botão fixo NÃO
-  // aceita parâmetro; por isso o default é 'static' (RECOVERY_BUTTON_MODE=dynamic
-  // só se o template mudar para https://checkout.ticto.app/{{1}}).
-  // Cakto: template recuperacao_checkout_cakto tem URL DINÂMICA
-  // (https://pay.cakto.com.br/{{1}}) — sempre manda o sufixo por lead.
-  const TEMPLATE = isCakto
-    ? (process.env.WHATSAPP_RECOVERY_TEMPLATE_CAKTO || 'recuperacao_checkout_cakto')
-    : (process.env.WHATSAPP_RECOVERY_TEMPLATE || 'recuperacao_checkout_raizv2');
-  const BUTTON_MODE = isCakto ? 'dynamic' : (process.env.RECOVERY_BUTTON_MODE || 'static');
-
-  const components = [
-    { type: 'body', parameters: [{ type: 'text', text: firstName(rec.name) || 'querida' }] },
-  ];
-  if (BUTTON_MODE === 'dynamic') {
-    const suffix = isCakto
-      ? buildCaktoCheckoutSuffix({ email: rec.email, phone: rec.phone, name: rec.name, lid: rec.lid })
-      : (rec.checkout_suffix || buildCheckoutSuffix({ email: rec.email, phone: rec.phone, name: rec.name, lid: rec.lid }));
-    components.push({ type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: suffix }] });
-  }
+  // Link do checkout: pix usa a URL do próprio evento (mantém o pix vivo);
+  // abandono monta um link novo com o join key (sck) para atribuição.
+  const checkoutUrl = rec.pix_url
+    || ('https://pay.cakto.com.br/' + buildCaktoCheckoutSuffix({
+         email: rec.email, phone: rec.phone, name: rec.name, lid: rec.lid,
+       }));
 
   const payload = {
-    messaging_product: 'whatsapp',
-    to: rec.phone,
-    type: 'template',
-    template: {
-      name: TEMPLATE,
-      language: { code: 'pt_BR' },
-      components,
-    },
+    phone:          rec.phone,
+    name:           rec.name || null,
+    stage:          rec.stage,            // waiting_payment | ic | abandoned_cart
+    touch:          rec.touch_no || 1,    // pix: 1 ou 2; abandono: sempre 1
+    pix_code:       rec.pix_code || null,
+    pix_expiration: rec.pix_expiration || null,
+    checkout_url:   checkoutUrl,
+    lid:            rec.lid || null,
   };
 
-  if (!ENABLED || !TOKEN || !PHONE_ID) {
-    console.log('[Recovery] SOMBRA — payload WhatsApp:', JSON.stringify(payload));
+  if (!ENABLED || !URL || !TOKEN) {
+    console.log('[Recovery] SOMBRA — payload SDR:', JSON.stringify(payload));
     return { shadow: true };
   }
 
-  const resp = await fetch(`https://graph.facebook.com/v21.0/${PHONE_ID}/messages`, {
+  const resp = await fetch(URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
+    headers: { 'Content-Type': 'application/json', 'x-recovery-token': TOKEN },
     body: JSON.stringify(payload),
   });
   const json = await resp.json().catch(() => ({}));
-  if (!resp.ok) throw new Error(`WhatsApp API ${resp.status}: ${JSON.stringify(json.error || json)}`);
+  if (!resp.ok) throw new Error(`SDR recovery ${resp.status}: ${JSON.stringify(json)}`);
   return json;
 }
 
@@ -1791,15 +1781,27 @@ async function recoverySweep() {
         continue;
       }
 
+      // Pix com 2º toque ainda pendente e dentro da validade → reagenda em vez
+      // de finalizar. NÃO seta o lock de 24h aqui, senão o toque 2 (mesmo
+      // telefone) seria bloqueado.
+      if (rec.stage === 'waiting_payment' && (rec.touch_no || 1) === 1 && rec.touch2_at && rec.touch2_at > Date.now()) {
+        rec.touch_no = 2;
+        rec.due_at = rec.touch2_at;
+        await redis.set(key, JSON.stringify(rec), 'EX', RECOVERY_TTL_PENDING);
+        await redis.del(`recovery:sending:${rec.phone}`);
+        await redisIncrStats(`recovery_sent_${rec.stage}_t1`);
+        console.log(`[Recovery] Toque 1 enviado; toque 2 agendado (${rec.stage}): ${rec.phone} para ${new Date(rec.due_at).toISOString()}`);
+        continue;
+      }
+
       const sentLock = await redis.set(`recovery:sent:${rec.phone}`, rec.stage, 'EX', RECOVERY_TTL_SENT, 'NX');
       await redis.del(`recovery:sending:${rec.phone}`);
       if (!sentLock) continue;
 
       await redis.del(key);
-      registerRecoveryTemplateInHub(rec, provider).catch(() => {});
       await redisIncrStats(`recovery_sent_${rec.stage}`);
       metricsIncr('recovery_sent').catch(() => {});
-      console.log(`[Recovery] Enviada (${rec.stage}): ${rec.phone}`);
+      console.log(`[Recovery] Enviada (${rec.stage} toque ${rec.touch_no || 1}): ${rec.phone}`);
     } catch (e) {
       console.error('[Recovery] Erro no envio:', e.message);
       await redisIncrStats('recovery_errors');
@@ -2618,7 +2620,10 @@ app.post('/api/webhooks/cakto', async (req, res) => {
     console.log(`[Cakto] evento=${event} id=${id} amount=${d.amount} fees=${d.fees} offer=${d.offer?.id} joinKeyCandidatos=${JSON.stringify(srcCand)} refId=${d.refId ?? null}`);
 
     // 2) Compra aprovada → registra normalizado (isolado, prefixo cakto:)
-    const aprovado = event === 'purchase_approved' || d.status === 'paid';
+    // Só o event 'purchase_approved' conta como venda. NÃO confiar em
+    // d.status === 'paid': o payload-teste da Cakto e o pix_gerado chegam com
+    // status 'paid'/'waiting_payment' e causariam Purchase CAPI falso.
+    const aprovado = event === 'purchase_approved';
     if (aprovado) {
       const srcLeadId = extractCaktoJoinKey(d); // só sck (direto ou via checkoutUrl)
       const value = typeof d.amount === 'number' ? d.amount : Number(d.amount) || null; // REAIS
@@ -2682,6 +2687,39 @@ app.post('/api/webhooks/cakto', async (req, res) => {
         console.log(`[Cakto] Purchase CAPI enviado: ${id} | R$${value} | src=${srcLeadId || '(sem join key)'}`);
       } else if (!CAKTO_PURCHASE_CAPI) {
         console.log(`[Cakto] Purchase CAPI desligado (CAKTO_PURCHASE_CAPI_ENABLED != true) — ${id} só registrado.`);
+      }
+    }
+
+    // 3) Pix gerado e NÃO pago (status waiting_payment) → recuperação de
+    // checkout com 2 toques: t+15min e ~10min antes do pix expirar. O
+    // purchase_approved posterior cancela a pendência (não manda se pagar).
+    if (event === 'pix_gerado' && d.status === 'waiting_payment') {
+      const phone   = normalizePhone(d.customer?.phone || '');
+      const pixCode = d.pix?.qrCode || null;
+      const srcLeadId = extractCaktoJoinKey(d);
+      // expirationDate vem "YYYY-MM-DD HH:MM:SS.ffffff+00:00" (UTC) → Date
+      const expMs = d.pix?.expirationDate
+        ? new Date(String(d.pix.expirationDate).replace(' ', 'T')).getTime()
+        : null;
+      if (phone && pixCode) {
+        const t1 = Date.now() + 15 * 60 * 1000;                              // toque 1
+        const t2 = (expMs && !isNaN(expMs) && (expMs - 10 * 60 * 1000) > t1) // toque 2
+          ? (expMs - 10 * 60 * 1000) : null;
+        await scheduleCheckoutRecovery({
+          phone,
+          email: d.customer?.email || null,
+          name:  d.customer?.name  || null,
+          lid:   srcLeadId,
+          stage: 'waiting_payment',
+          provider: 'cakto',
+          paymentMethod: 'pix',
+          pixCode,
+          pixUrl: d.checkoutUrl || null,
+          dueAt: t1,
+          touch2At: t2,
+          pixExpiration: d.pix?.expirationDate || null,
+        });
+        console.log(`[Cakto] pix_gerado não pago → recuperação agendada: ${phone} | t1=${new Date(t1).toISOString()} | t2=${t2 ? new Date(t2).toISOString() : '(sem)'}`);
       }
     }
   } catch (err) {
