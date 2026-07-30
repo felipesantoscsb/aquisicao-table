@@ -1268,6 +1268,45 @@ app.get('/api/lead-context', async (req, res) => {
   }
 });
 
+// Semente de atribuição: grava lead:{sck} com fbc/fbp para o Purchase CAPI
+// enriquecer depois. NÃO dispara nada à Meta — só persiste a identidade do
+// clique de anúncio. Usada pelas páginas de venda (RMKT/Bio) no tráfego frio
+// (sem lid do quiz), para que a compra Cakto vinda desse sck seja atribuível.
+app.post('/api/attribution/seed', async (req, res) => {
+  res.json({ ok: true });
+  const { sck, fbc, fbp, em, ph } = req.body || {};
+  if (!sck) return;
+  try {
+    const key = `lead:${sck}`;
+    const existing = await getRedis().get(key);
+    if (existing) {
+      // Já existe (ex.: lead do quiz, que tem PII) — só completa fbc/fbp
+      // faltantes; nunca sobrescreve email/phone/external_id.
+      const lead = JSON.parse(existing);
+      let changed = false;
+      if (!lead.fbc && fbc) { lead.fbc = fbc; changed = true; }
+      if (!lead.fbp && fbp) { lead.fbp = fbp; changed = true; }
+      if (changed) await redisSet(key, JSON.stringify(lead), 'EX', 60 * 60 * 24 * 90);
+      return;
+    }
+    const leadRecord = {
+      lead_event_id: sck,
+      email:         em  || null,
+      phone:         ph  || null,
+      external_id:   null,
+      fbc:           fbc || null,
+      fbp:           fbp || null,
+      channel:       null,
+      saved_at:      new Date().toISOString(),
+      source:        'attribution-seed',
+    };
+    await redisSet(key, JSON.stringify(leadRecord), 'EX', 60 * 60 * 24 * 90);
+    console.log(`[Attr-seed] lead semeado: ${sck} | fbc:${fbc ? 'sim' : 'nao'}`);
+  } catch (e) {
+    console.error('[Attr-seed] erro:', e.message);
+  }
+});
+
 // Helper: enriquece dados de evento a partir do lid (lookup Redis)
 async function enrichFromLid(lid, base = {}) {
   if (!lid) return base;
@@ -1671,17 +1710,24 @@ async function registerRecoveryTemplateInHub(rec, provider) {
     return null;
   }
 
+  // Espelha a escolha de template do sendRecoveryMessage (Cakto vs Ticto) para
+  // que o hub registre o modelo realmente enviado — senão o filtro do módulo
+  // Conversa nunca vê recuperacao_checkout_cakto.
+  const templateName = rec.provider === 'cakto'
+    ? (process.env.WHATSAPP_RECOVERY_TEMPLATE_CAKTO || 'recuperacao_checkout_cakto')
+    : (process.env.WHATSAPP_RECOVERY_TEMPLATE || 'recuperacao_checkout_raizv2');
+
   const payload = {
     phone: rec.phone,
     nome: rec.name || 'Lead',
-    template_name: process.env.WHATSAPP_RECOVERY_TEMPLATE || 'recuperacao_checkout_raizv2',
+    template_name: templateName,
     params: [firstName(rec.name) || 'querida'],
     provider,
     provider_message_id: provider?.messages?.[0]?.id || null,
     source: 'checkout_recovery',
     tier: null,
     funnel: 'quiz',
-    body_text: 'recuperacao_checkout_raizv2',
+    body_text: templateName,
   };
 
   try {
