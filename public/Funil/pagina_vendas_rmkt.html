@@ -332,7 +332,7 @@ document,'script','https://connect.facebook.net/en_US/fbevents.js');
         <p class="oferta-price-note">pagamento único · Pix ou cartão<br>ou 12× de R$ 10,03 · acesso imediato</p>
       </div>
       <div class="oferta-urgency"><span style="flex-shrink:0;margin-top:1px">⏳</span><span><strong style="color:var(--terra)">Vagas limitadas para a sessão:</strong> a equipe da Table atende no máximo 30 pessoas por semana. Quando as vagas fecham, o próximo horário disponível fica para a semana seguinte.</span></div>
-      <a href="https://checkout.ticto.app/O0704BE5A" class="btn-oferta" onclick="trackCta('offer_card')">Quero começar pelo Protocolo Raiz →</a>
+      <a href="https://pay.cakto.com.br/vuq4djv" class="btn-oferta" onclick="trackCta('offer_card')">Quero começar pelo Protocolo Raiz →</a>
       <p class="oferta-guarantee">🔒 Garantia de 7 dias — se não fizer sentido, devolvemos 100% do valor. Sem questionamentos.</p>
       <div class="oferta-sessao-note"><strong>Sobre a sessão:</strong> 45 minutos com uma nutricionista comportamental da Table, por videochamada. Após a compra, nossa equipe entra em contato pelo seu WhatsApp para agendar no melhor horário para você.</div>
     </div>
@@ -444,7 +444,7 @@ document,'script','https://connect.facebook.net/en_US/fbevents.js');
     </div>
   </div>
   <div class="container" style="text-align:center; margin-top:32px">
-    <a href="https://checkout.ticto.app/O0704BE5A"
+    <a href="https://pay.cakto.com.br/vuq4djv"
        class="btn-cta btn-cta-posvsl"
        id="cta-posvsl"
        onclick="trackCta('post_video')">
@@ -507,7 +507,7 @@ document,'script','https://connect.facebook.net/en_US/fbevents.js');
     <p class="fech-body reveal"><strong>Você já deu o primeiro passo quando fez o quiz. O Protocolo Raiz é o segundo.</strong></p>
     <p class="fech-assinatura reveal">Com carinho, Evelyn.</p>
     <div class="reveal">
-      <a href="https://checkout.ticto.app/O0704BE5A" class="btn-cta" onclick="trackCta('closing')">Quero começar pelo Protocolo Raiz →</a>
+      <a href="https://pay.cakto.com.br/vuq4djv" class="btn-cta" onclick="trackCta('closing')">Quero começar pelo Protocolo Raiz →</a>
     </div>
     <p class="hero-fine reveal" style="margin-top:14px;color:var(--muted)">R$ 97 · Acesso imediato · Garantia de 7 dias</p>
   </div>
@@ -520,7 +520,7 @@ document,'script','https://connect.facebook.net/en_US/fbevents.js');
 
 <div class="sticky-bar" id="sticky-bar">
   <p class="sticky-text"><strong>Protocolo Raiz</strong> · Evelyn Liu · Table</p>
-  <a href="https://checkout.ticto.app/O0704BE5A" class="btn-sticky" id="cta-sticky" onclick="trackCta('sticky')">Começar por R$ 97 →</a>
+  <a href="https://pay.cakto.com.br/vuq4djv" class="btn-sticky" id="cta-sticky" onclick="trackCta('sticky')">Começar por R$ 97 →</a>
 </div>
 
 <script>
@@ -544,17 +544,34 @@ function toggleFaq(el){
   if(!open)el.classList.add('open');
 }
 
-// Checkout: adiciona src aos links da Ticto. URLs base inalteradas.
-// Prioridade: lid (fluxo WhatsApp/e-mail, faz join com o lead no Redis) →
-// utm_campaign (clique de anúncio) → 'rmkt-meta' (fallback, identifica o canal).
+// Checkout: adiciona sck (join key) aos links da Cakto. URL base inalterada.
+// Prioridade do join key:
+//   1. lid (fluxo WhatsApp/e-mail) → já casa com um lead do quiz (tem fbc).
+//   2. clique de anúncio (tem fbc): gera um sck próprio e SEMEIA um lead com o
+//      fbc do clique, para o Purchase CAPI conseguir atribuir a venda ao anúncio.
+//   3. fallback utm_campaign|'rmkt-meta' (só rótulo de canal; não atribui).
+// O 'sck' volta no webhook Cakto em data.sck → enrichFromLid(sck) no Purchase.
 document.addEventListener('DOMContentLoaded', function() {
-  var base = 'https://checkout.ticto.app/O0704BE5A';
+  var base = 'https://pay.cakto.com.br/vuq4djv';
   var qs = new URLSearchParams(location.search);
-  var src = window._rmktLid || qs.get('utm_campaign') || 'rmkt-meta';
+  function ck(n){var m=document.cookie.match('(^|;)\\s*'+n+'\\s*=\\s*([^;]+)');return m?m.pop():''}
+  var sck;
+  if (window._rmktLid) {
+    sck = window._rmktLid;
+  } else if (window._rmktFbc) {
+    sck = ck('tc_sck') || ('rmkt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8));
+    document.cookie = 'tc_sck=' + sck + '; path=/; max-age=7776000; SameSite=Lax';
+    fetch('/api/attribution/seed', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sck: sck, fbc: window._rmktFbc, fbp: window._rmktFbp })
+    }).catch(function(){});
+  } else {
+    sck = qs.get('utm_campaign') || 'rmkt-meta';
+  }
   var params = new URLSearchParams();
-  params.set('src', src);
+  params.set('sck', sck);
   var suffix = '?' + params.toString();
-  document.querySelectorAll('a[href^="https://checkout.ticto.app/O0704BE5A"]')
+  document.querySelectorAll('a[href^="https://pay.cakto.com.br/vuq4djv"]')
     .forEach(function(a){ a.href = base + suffix; });
 });
 
