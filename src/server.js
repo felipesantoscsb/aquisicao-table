@@ -2475,8 +2475,8 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
   let recovery = {};
   try {
     const redis = getRedis();
-    const [pending, sentIc, sentAb, sentWp, errors, optouts, converted, convertedCents, dropped, lastError] = await Promise.all([
-      redis.keys('recovery:pending:*').then(k => k.length),
+    const [pendingKeys, sentIc, sentAb, sentWp, errors, optouts, converted, convertedCents, dropped, lastError] = await Promise.all([
+      redis.keys('recovery:pending:*'),
       redis.get('ticto:stats:recovery_sent_ic'),
       redis.get('ticto:stats:recovery_sent_abandoned_cart'),
       redis.get('ticto:stats:recovery_sent_waiting_payment'),
@@ -2488,9 +2488,45 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
       redis.get('ticto:stats:recovery_last_error'),
     ]);
     const totalSent = (Number(sentIc) || 0) + (Number(sentAb) || 0) + (Number(sentWp) || 0);
+
+    // Dump da fila (mascarado) para diagnóstico: o que são as pendências e se
+    // estão vencidas (deviam ter saído no último sweep) ou agendadas p/ o futuro.
+    const now = Date.now();
+    const maskPhone = (p) => String(p || '').replace(/^(\d{2,4}).*(\d{4})$/, '$1***$2');
+    const pendingRaw = pendingKeys.length
+      ? await redis.mget(pendingKeys)
+      : [];
+    const pendingItems = pendingRaw.map((raw, idx) => {
+      let r = null;
+      try { r = JSON.parse(raw); } catch {}
+      return { r, ttl: null, key: pendingKeys[idx] };
+    }).filter(x => x.r);
+    // TTL de cada chave (detecta entradas velhas prestes a expirar)
+    await Promise.all(pendingItems.map(async (x) => {
+      try { x.ttl = await redis.ttl(x.key); } catch {}
+    }));
+    const pendingDetail = pendingItems.map(({ r, ttl }) => ({
+      phone:     maskPhone(r.phone),
+      stage:     r.stage || null,
+      provider:  r.provider || null,
+      touch_no:  r.touch_no || 1,
+      attempts:  r.attempts || 0,
+      overdue:   typeof r.due_at === 'number' ? (r.due_at <= now) : null,
+      due_in_min:   typeof r.due_at === 'number' ? Math.round((r.due_at - now) / 60000) : null,
+      age_h:        r.created_at ? Math.round((now - new Date(r.created_at).getTime()) / 3600000 * 10) / 10 : null,
+      ttl_h:        typeof ttl === 'number' && ttl >= 0 ? Math.round(ttl / 3600 * 10) / 10 : null,
+    })).sort((a, b) => (a.due_in_min ?? 0) - (b.due_in_min ?? 0));
+    const breakdown = pendingDetail.reduce((acc, it) => {
+      const k = `${it.stage || 'unknown'}${it.overdue ? '_overdue' : '_scheduled'}`;
+      acc[k] = (acc[k] || 0) + 1;
+      return acc;
+    }, {});
+
     recovery = {
       enabled: process.env.RECOVERY_ENABLED === 'true',
-      pending,
+      pending: pendingKeys.length,
+      pending_breakdown: breakdown,
+      pending_detail:    pendingDetail,
       sent_ic:              Number(sentIc) || 0,
       sent_abandoned_cart:  Number(sentAb) || 0,
       sent_waiting_payment: Number(sentWp) || 0,
