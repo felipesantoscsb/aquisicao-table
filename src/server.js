@@ -2522,8 +2522,17 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
       return acc;
     }, {});
 
+    // Diagnóstico do canal de envio: se url/token do SDR faltam, o
+    // sendRecoveryMessage cai em modo SOMBRA e a fila nunca drena (attempts 0).
+    const sendReady = process.env.RECOVERY_ENABLED === 'true'
+      && !!process.env.SDR_RECOVERY_URL && !!process.env.SDR_RECOVERY_TOKEN;
     recovery = {
       enabled: process.env.RECOVERY_ENABLED === 'true',
+      send_mode: sendReady ? 'live' : 'shadow',
+      send_channel: {
+        url_configured:   !!process.env.SDR_RECOVERY_URL,
+        token_configured: !!process.env.SDR_RECOVERY_TOKEN,
+      },
       pending: pendingKeys.length,
       pending_breakdown: breakdown,
       pending_detail:    pendingDetail,
