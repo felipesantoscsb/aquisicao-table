@@ -2711,8 +2711,9 @@ app.post('/api/webhooks/cakto', async (req, res) => {
       // /api/webhooks/cakto-tiktok). Guard só age quando o lead é channel:'tiktok'.
       let _leadChannel = null;
       try { const _lr = await getRedis().get('lead:' + srcLeadId); if (_lr) _leadChannel = JSON.parse(_lr).channel || null; } catch {}
-      if (_leadChannel === 'tiktok') console.log('[Cakto] venda do funil TikTok — Purchase Meta pulado (isolado).');
-      if (CAKTO_PURCHASE_CAPI && value != null && _leadChannel !== 'tiktok') {
+      const _isolatedChannel = ['tiktok', 'google'].includes(_leadChannel);
+      if (_isolatedChannel) console.log('[Cakto] venda do funil ' + _leadChannel + ' — Purchase Meta pulado (isolado).');
+      if (CAKTO_PURCHASE_CAPI && value != null && !_isolatedChannel) {
         const enr = await enrichFromLid(srcLeadId, {
           phone: record.phone, em: record.email, fbc: record.fbc, fbp: record.fbp,
         });
@@ -2843,6 +2844,84 @@ app.post('/api/webhooks/cakto-tiktok', async (req, res) => {
     else console.log('[Cakto-TT] CompletePayment TikTok enviado:', id, '· R$' + value);
   } catch (err) {
     console.error('[Cakto-TT] erro:', err.message);
+  }
+});
+
+// ─── Webhook Cakto → Google Ads (offline click conversion) ───────────────────
+// Endpoint DEDICADO ao funil Google. Só sobe a conversão de compra pro Google Ads
+// quando a venda veio do canal Google (lead:{sck}.channel === 'google') e tem gclid.
+// Isolado de Meta/TikTok. Usa a Google Ads API (uploadClickConversions) — precisa
+// das credenciais GOOGLE_ADS_* (só quando a conta estiver ATIVA; developer token
+// exige aprovação). VALIDAR com o diagnóstico de conversões do Google Ads.
+app.post('/api/webhooks/cakto-google', async (req, res) => {
+  res.sendStatus(200);
+  try {
+    const body = req.body || {};
+    const expected = process.env.CAKTO_WEBHOOK_SECRET;
+    if (expected && body.secret !== expected) { console.warn('[Cakto-GG] secret inválido — ignorado.'); return; }
+
+    const d = body.data || {};
+    const id = d.id || d.refId;
+    const aprovado = (body.event || d.status) === 'purchase_approved' || d.status === 'paid';
+    if (!id || !aprovado) return;
+
+    const srcLeadId = extractCaktoJoinKey(d);
+    if (!srcLeadId) { console.warn('[Cakto-GG] venda sem join key (sck) — não atribui.'); return; }
+
+    let lead = null;
+    try { const lr = await getRedis().get('lead:' + srcLeadId); if (lr) lead = JSON.parse(lr); } catch {}
+    if (!lead || lead.channel !== 'google') { console.log('[Cakto-GG] venda não-Google (' + (lead?.channel || 'sem lead') + ') — ignorada.'); return; }
+    if (!lead.gclid) { console.warn('[Cakto-GG] lead Google sem gclid — não dá p/ atribuir ao clique.'); return; }
+
+    const DEV_TOKEN   = process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
+    const CLIENT_ID   = process.env.GOOGLE_ADS_CLIENT_ID;
+    const CLIENT_SEC  = process.env.GOOGLE_ADS_CLIENT_SECRET;
+    const REFRESH     = process.env.GOOGLE_ADS_REFRESH_TOKEN;
+    const CUSTOMER_ID = (process.env.GOOGLE_ADS_CUSTOMER_ID || '').replace(/-/g, '');
+    const LOGIN_CID   = (process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID || '').replace(/-/g, '');
+    const ACTION_ID   = process.env.GOOGLE_ADS_PURCHASE_ACTION_ID; // id numérico da conversion action de importação
+    if (!DEV_TOKEN || !CLIENT_ID || !CLIENT_SEC || !REFRESH || !CUSTOMER_ID || !ACTION_ID) {
+      console.error('[Cakto-GG] credenciais Google Ads ausentes — conversão não enviada. Configure GOOGLE_ADS_* no Railway.');
+      return;
+    }
+
+    const value = typeof d.amount === 'number' ? d.amount : Number(d.amount) || null;
+
+    // 1) OAuth: refresh_token → access_token
+    const tokRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ client_id: CLIENT_ID, client_secret: CLIENT_SEC, refresh_token: REFRESH, grant_type: 'refresh_token' }),
+    });
+    const tok = await tokRes.json();
+    if (!tok.access_token) { console.error('[Cakto-GG] OAuth falhou:', JSON.stringify(tok)); return; }
+
+    // 2) conversionDateTime no formato 'yyyy-mm-dd hh:mm:ss+00:00' (UTC)
+    const dt = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '+00:00');
+
+    // 3) upload da click conversion
+    const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok.access_token, 'developer-token': DEV_TOKEN };
+    if (LOGIN_CID) headers['login-customer-id'] = LOGIN_CID;
+
+    const payload = {
+      conversions: [{
+        gclid: lead.gclid,
+        conversionAction: `customers/${CUSTOMER_ID}/conversionActions/${ACTION_ID}`,
+        conversionDateTime: dt,
+        conversionValue: value != null ? value : undefined,
+        currencyCode: 'BRL',
+        orderId: String(id), // dedup por transação
+      }],
+      partialFailure: true,
+    };
+
+    const url = `https://googleads.googleapis.com/v17/customers/${CUSTOMER_ID}:uploadClickConversions`;
+    const r = await fetch(url, { method: 'POST', headers, body: JSON.stringify(payload) });
+    const j = await r.json();
+    if (j.partialFailureError || !r.ok) console.error('[Cakto-GG] Erro Google Ads:', JSON.stringify(j));
+    else console.log('[Cakto-GG] Conversão Google enviada:', id, '· R$' + value);
+  } catch (err) {
+    console.error('[Cakto-GG] erro:', err.message);
   }
 });
 
