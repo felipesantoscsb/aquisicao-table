@@ -313,6 +313,7 @@ app.post('/api/capi', async (req, res) => {
       channel:       req.body.channel     || null,  // 'tiktok'/'google' → atribuição de canal no webhook Cakto
       ttclid:        req.body.ttclid      || null,  // TikTok click id (Purchase server-side)
       ttp:           req.body.ttp         || null,  // TikTok cookie _ttp
+      gclid:         req.body.gclid       || null,  // Google click id → import de conversão offline (Cakto→Google)
       saved_at:      new Date().toISOString(),
     };
     getRedis().set(

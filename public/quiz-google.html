@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KZQ99XGD');</script>
+<!-- End Google Tag Manager -->
+<script>window._gclid = new URLSearchParams(location.search).get('gclid') || null;</script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Quiz Table: Descubra Sua Raiz</title>
@@ -237,6 +245,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
 
 </head>
 <body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KZQ99XGD"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 <div id="page-intro" class="page active">
   <p class="intro-logo">Table</p>
   <p class="intro-eyebrow">Mapeamento de raiz · gratuito</p>
@@ -924,6 +936,13 @@ async function submitCapture(){
     content_name:'quiz-lead'
   },{eventID: window._leadEventId});
   gtag('event','generate_lead');
+  // GTM: lead capturado (Enhanced Conversions via user_data). Amarre sua tag
+  // de conversão do Google Ads no evento 'lead'.
+  window.dataLayer.push({
+    event: 'lead',
+    gclid: window._gclid || undefined,
+    user_data: { email: email, phone_number: '+' + phone }
+  });
   // CAPI Lead server-side — par do browser para dedup. Cobre abandono pré-resultado.
   fetch('/api/capi',{
     method:'POST',
@@ -931,6 +950,7 @@ async function submitCapture(){
     body:JSON.stringify({
       event_name:'Lead',
       channel:'google', // isolamento: server faz SDR/Redis mas pula envio à Meta
+      gclid: window._gclid || null, // persistido no lead p/ import de conversão offline (Cakto→Google)
       content_name:'quiz-lead',
       nome: name,
       email: email,
@@ -1302,6 +1322,13 @@ function showResult(){
     content_name: 'quiz-completo'
   },{eventID: crEventId});
   fbq('trackCustom','QuizCompleted',{},{eventID: quizEventId});
+  // GTM: quiz completo (registro). Amarre a conversão de 'CompleteRegistration'
+  // do Google Ads no evento 'quiz_complete'.
+  window.dataLayer.push({
+    event: 'quiz_complete', value: 97, currency: 'BRL',
+    gclid: window._gclid || undefined,
+    user_data: { email: window._leadEmail, phone_number: window._leadPhone ? '+' + window._leadPhone : undefined }
+  });
   gtag('event', 'quiz_completed', {
     perfil: top,
     tier: qualificationAnswer?.tier
@@ -1311,6 +1338,12 @@ function showResult(){
 
 function goOffer(){
   gtag('event', 'begin_checkout', {value: 97, currency: 'BRL'});
+  // GTM: início de checkout. Amarre a conversão de 'InitiateCheckout' no evento 'begin_checkout'.
+  window.dataLayer.push({
+    event: 'begin_checkout', value: 97, currency: 'BRL',
+    gclid: window._gclid || undefined,
+    user_data: { email: window._leadEmail, phone_number: window._leadPhone ? '+' + window._leadPhone : undefined }
+  });
 
   // InitiateCheckout — Pixel browser
   const icEventId = crypto.randomUUID();
