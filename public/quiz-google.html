@@ -1361,10 +1361,9 @@ function goOffer(){
     })
   }).catch(()=>{});
 
-  // Redirect p/ o checkout CAKTO com params de identidade + join key (sck).
-  // URL da oferta do Protocolo Raiz na Cakto (ainda não customizada — atualizar
-  // esta linha quando personalizar o checkout).
-  const checkoutUrl = new URL('https://pay.cakto.com.br/pjgpde8_1000061');
+  // Redirect p/ o checkout CAKTO DEDICADO do funil Google (pixel Google Ads só
+  // aqui → sem poluir com venda Meta). sck = join key; gclid = atribuição da compra.
+  const checkoutUrl = new URL('https://pay.cakto.com.br/5n62wpr');
   if(window._leadEmail)   checkoutUrl.searchParams.set(CAKTO_PARAMS.email, window._leadEmail);
   // Phone sem DDI 55 (mesmo formato local do Ticto)
   // Cakto usa input de telefone internacional: sem código de país ele assume
@@ -1376,6 +1375,8 @@ function goOffer(){
   if(window._leadName)    checkoutUrl.searchParams.set(CAKTO_PARAMS.name,  window._leadName);
   // join key: volta no webhook em data.sck → casa com o lead:{_leadEventId} do Redis
   if(window._leadEventId) checkoutUrl.searchParams.set(CAKTO_PARAMS.src,   window._leadEventId);
+  // gclid → pra Cakto capturar e atribuir a compra ao clique do Google Ads
+  if(window._gclid) checkoutUrl.searchParams.set('gclid', window._gclid);
   window.location.href = checkoutUrl.toString();
 }
 </script>
