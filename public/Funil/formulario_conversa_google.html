@@ -8,9 +8,14 @@
 <title>Table — Fale com uma nutricionista comportamental</title>
 <meta name="description" content="Atendimento humano em nutrição comportamental para comer emocional, compulsão e o ciclo de começar e desistir. Fale com a equipe da Table."/>
 
-<!-- ===== Google Ads / GA4 conversion tag: INSERIR NA FASE DE TRACKING ===== -->
-<!-- Placeholder: gtag config + evento de conversão no submit (ver submitForm). -->
-<!-- ======================================================================== -->
+<!-- Google Ads (funil Google — formulário de lead) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-850159009"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-850159009');
+</script>
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
@@ -214,9 +219,11 @@ async function submitForm(){
     });
     if(!response.ok) throw new Error(`Status ${response.status}`);
 
-    // ===== Conversão Google Ads: DISPARAR AQUI na fase de tracking =====
-    // Ex.: gtag('event','conversion',{send_to:'AW-XXX/YYY'});
-    // ===================================================================
+    // Conversão Google Ads: Lead do formulário. TROCAR REPLACE_LABEL_LEAD_FORM pelo label real.
+    try {
+      gtag('set', 'user_data', { phone_number: '+' + whats }); // Enhanced Conversions (só telefone — form não pede email)
+      gtag('event', 'conversion', { send_to: 'AW-850159009/REPLACE_LABEL_LEAD_FORM' });
+    } catch(e){}
 
     console.log("Lead (Google) enviado para o SDR:", response.status);
   } catch (error) {
