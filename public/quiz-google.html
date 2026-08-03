@@ -1,13 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-KZQ99XGD');</script>
-<!-- End Google Tag Manager -->
 <script>window._gclid = new URLSearchParams(location.search).get('gclid') || null;</script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -233,6 +226,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', 'G-14817731667');
+  gtag('config', 'AW-850159009'); // Google Ads (funil Google)
 </script>
 
 <script type="text/javascript">
@@ -245,10 +239,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
 
 </head>
 <body>
-<!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KZQ99XGD"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
 <div id="page-intro" class="page active">
   <p class="intro-logo">Table</p>
   <p class="intro-eyebrow">Mapeamento de raiz · gratuito</p>
@@ -938,11 +928,9 @@ async function submitCapture(){
   gtag('event','generate_lead');
   // GTM: lead capturado (Enhanced Conversions via user_data). Amarre sua tag
   // de conversão do Google Ads no evento 'lead'.
-  window.dataLayer.push({
-    event: 'lead',
-    gclid: window._gclid || undefined,
-    user_data: { email: email, phone_number: '+' + phone }
-  });
+  // Conversão Google Ads: Lead. TROCAR REPLACE_LABEL_LEAD pelo label da ação.
+  gtag('set', 'user_data', { email: email, phone_number: '+' + phone }); // Enhanced Conversions
+  gtag('event', 'conversion', { send_to: 'AW-850159009/REPLACE_LABEL_LEAD' });
   // CAPI Lead server-side — par do browser para dedup. Cobre abandono pré-resultado.
   fetch('/api/capi',{
     method:'POST',
@@ -1324,11 +1312,9 @@ function showResult(){
   fbq('trackCustom','QuizCompleted',{},{eventID: quizEventId});
   // GTM: quiz completo (registro). Amarre a conversão de 'CompleteRegistration'
   // do Google Ads no evento 'quiz_complete'.
-  window.dataLayer.push({
-    event: 'quiz_complete', value: 97, currency: 'BRL',
-    gclid: window._gclid || undefined,
-    user_data: { email: window._leadEmail, phone_number: window._leadPhone ? '+' + window._leadPhone : undefined }
-  });
+  // Conversão Google Ads: Registro (quiz completo). TROCAR REPLACE_LABEL_REGISTRO.
+  gtag('set', 'user_data', { email: window._leadEmail, phone_number: window._leadPhone ? '+' + window._leadPhone : undefined });
+  gtag('event', 'conversion', { send_to: 'AW-850159009/REPLACE_LABEL_REGISTRO', value: 97, currency: 'BRL' });
   gtag('event', 'quiz_completed', {
     perfil: top,
     tier: qualificationAnswer?.tier
@@ -1339,11 +1325,9 @@ function showResult(){
 function goOffer(){
   gtag('event', 'begin_checkout', {value: 97, currency: 'BRL'});
   // GTM: início de checkout. Amarre a conversão de 'InitiateCheckout' no evento 'begin_checkout'.
-  window.dataLayer.push({
-    event: 'begin_checkout', value: 97, currency: 'BRL',
-    gclid: window._gclid || undefined,
-    user_data: { email: window._leadEmail, phone_number: window._leadPhone ? '+' + window._leadPhone : undefined }
-  });
+  // Conversão Google Ads: Início de checkout. TROCAR REPLACE_LABEL_CHECKOUT.
+  gtag('set', 'user_data', { email: window._leadEmail, phone_number: window._leadPhone ? '+' + window._leadPhone : undefined });
+  gtag('event', 'conversion', { send_to: 'AW-850159009/REPLACE_LABEL_CHECKOUT', value: 97, currency: 'BRL' });
 
   // InitiateCheckout — Pixel browser
   const icEventId = crypto.randomUUID();
