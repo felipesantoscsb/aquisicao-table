@@ -4,16 +4,16 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Qual é a sua cor? | A Cor de Cada Pessoa</title>
-<meta name="description" content="Nos vídeos você descobre a cor das pessoas que ama. Agora inverte: qual é a SUA cor pra quem ama você? Descubra em 2 minutos."/>
-<meta property="og:title" content="Qual é a sua cor pra quem te ama?"/>
-<meta property="og:description" content="Nos vídeos você descobre a cor das pessoas. Agora descubra a sua. Um teste afetivo de 2 minutos."/>
+<meta name="description" content="Toda pessoa tem uma cor. Descubra a sua num teste afetivo de 2 minutos: o que você representa na vida de quem te ama."/>
+<meta property="og:title" content="Toda pessoa tem uma cor. Qual é a sua?"/>
+<meta property="og:description" content="Um teste afetivo de 2 minutos pra descobrir o que você representa na vida de quem te ama."/>
 <meta property="og:image" content="https://evelynliu.com.br/images/cores-og.jpg"/>
 <meta property="og:url" content="https://evelynliu.com.br/cores"/>
 <meta property="og:type" content="website"/>
 <meta property="og:site_name" content="A Cor de Cada Pessoa · Evelyn Liu"/>
 <meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:title" content="Qual é a sua cor pra quem te ama?"/>
-<meta name="twitter:description" content="Descubra em 2 minutos a cor que você é na vida de quem ama você."/>
+<meta name="twitter:title" content="Toda pessoa tem uma cor. Qual é a sua?"/>
+<meta name="twitter:description" content="Descubra em 2 minutos o que você representa na vida de quem te ama."/>
 <meta name="twitter:image" content="https://evelynliu.com.br/images/cores-og.jpg"/>
 
 <style>
@@ -40,7 +40,7 @@ body{min-height:100vh;overflow-x:hidden;position:relative}
 h1{font-family:var(--serif);font-weight:400;line-height:1.12;letter-spacing:-.01em}
 
 /* INTRO */
-.avatar{width:88px;height:88px;border-radius:50%;object-fit:cover;border:4px solid #fff;box-shadow:0 8px 24px rgba(0,0,0,.12);margin-bottom:18px;background:#eee}
+.avatar{width:88px;height:88px;border-radius:50%;object-fit:cover;object-position:50% 12%;border:4px solid #fff;box-shadow:0 8px 24px rgba(0,0,0,.12);margin-bottom:18px;background:#eee}
 .avatar-wrap{display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .avatar-name{font-size:14px;font-weight:600}.avatar-name span{display:block;color:var(--muted);font-weight:400;font-size:12.5px}
 .intro h1{font-size:clamp(32px,8vw,46px);margin-bottom:14px}
@@ -105,7 +105,7 @@ h1{font-family:var(--serif);font-weight:400;line-height:1.12;letter-spacing:-.01
 .scarcity{font-size:13px;color:#c9531f;font-weight:600;margin-bottom:6px}
 /* autora */
 .author{display:flex;gap:14px;align-items:center;background:#fff;border:2px solid var(--line);border-radius:18px;padding:16px;margin:22px 0}
-.author img{width:64px;height:64px;border-radius:50%;object-fit:cover;flex:0 0 auto}
+.author img{width:64px;height:64px;border-radius:50%;object-fit:cover;object-position:50% 12%;flex:0 0 auto}
 .author .n{font-weight:700;font-size:15px}
 .author .b{font-size:13.5px;color:var(--muted);line-height:1.45}
 .cta-wrap{position:sticky;bottom:0;padding:14px 0 6px;background:linear-gradient(transparent,var(--bg) 32%)}
@@ -128,9 +128,8 @@ h1{font-family:var(--serif);font-weight:400;line-height:1.12;letter-spacing:-.01
       <div class="avatar-name">Evelyn Liu<span>criadora de “A Cor de Cada Pessoa”</span></div>
     </div>
     <div class="kicker">🎨 Teste afetivo</div>
-    <h1>Qual é a <span class="hl">sua cor?</span></h1>
-    <p class="lead">Nos vídeos, você descobre a cor das pessoas que você ama.</p>
-    <p class="flip">Agora inverte: qual é a <strong>sua</strong> cor pra quem ama você?</p>
+    <h1>Toda pessoa tem uma cor.<br>Qual é a <span class="hl">sua?</span></h1>
+    <p class="lead" style="margin:14px 0 28px;max-width:34ch">Um teste afetivo de 2 minutos pra descobrir o que você representa na vida de quem te ama.</p>
     <button class="btn primary" onclick="Quiz.start()">Descobrir minha cor ✨</button>
     <p class="meta">8 perguntas · menos de 2 minutos · sem cadastro</p>
   </section>
