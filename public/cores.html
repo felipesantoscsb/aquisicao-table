@@ -18,11 +18,11 @@
 
 <style>
 :root{
-  --bg:#FBF6EF; --ink:#2b2630; --muted:#8a8290; --card:#ffffff; --line:#efe7db;
-  --p1:#FF7A67; --p2:#E6712B; --pink:#E597AD; --gold:#E9B949;
-  --radius:22px;
-  --serif:'Georgia','Times New Roman',serif;
-  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+ --bg:#FBF6EF; --ink:#2b2630; --muted:#8a8290; --card:#ffffff; --line:#efe7db;
+ --p1:#FF7A67; --p2:#E6712B; --pink:#E597AD; --gold:#E9B949;
+ --radius:22px;
+ --serif:'Georgia','Times New Roman',serif;
+ --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;line-height:1.55}
@@ -40,7 +40,7 @@ body{min-height:100vh;overflow-x:hidden;position:relative}
 h1{font-family:var(--serif);font-weight:400;line-height:1.12;letter-spacing:-.01em}
 
 /* INTRO */
-.avatar{width:88px;height:88px;border-radius:50%;object-fit:cover;object-position:50% 12%;border:4px solid #fff;box-shadow:0 8px 24px rgba(0,0,0,.12);margin-bottom:18px;background:#eee}
+.avatar{width:88px;height:88px;border-radius:50%;object-fit:cover;object-position:50% 5%;border:4px solid #fff;box-shadow:0 8px 24px rgba(0,0,0,.12);margin-bottom:18px;background:#eee}
 .avatar-wrap{display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .avatar-name{font-size:14px;font-weight:600}.avatar-name span{display:block;color:var(--muted);font-weight:400;font-size:12.5px}
 .intro h1{font-size:clamp(32px,8vw,46px);margin-bottom:14px}
@@ -84,7 +84,7 @@ h1{font-family:var(--serif);font-weight:400;line-height:1.12;letter-spacing:-.01
 .share-row .wpp{background:#25D366;color:#fff}
 .divider{height:2px;background:repeating-linear-gradient(90deg,#efe7db 0 8px,transparent 8px 16px);margin:30px 0}
 
-/* SALES — cara de lançamento */
+/* SALES, cara de lançamento */
 .launch-badge{display:inline-flex;align-items:center;gap:8px;background:#fff3e9;color:#c9531f;font-weight:700;font-size:13px;padding:8px 14px;border-radius:999px;margin-bottom:16px}
 .launch-badge .pulse{width:9px;height:9px;border-radius:50%;background:#E6712B;animation:pulse 1.4s ease-in-out infinite}
 @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.5}}
@@ -105,10 +105,10 @@ h1{font-family:var(--serif);font-weight:400;line-height:1.12;letter-spacing:-.01
 .scarcity{font-size:13px;color:#c9531f;font-weight:600;margin-bottom:6px}
 /* autora */
 .author{display:flex;gap:14px;align-items:center;background:#fff;border:2px solid var(--line);border-radius:18px;padding:16px;margin:22px 0}
-.author img{width:64px;height:64px;border-radius:50%;object-fit:cover;object-position:50% 12%;flex:0 0 auto}
+.author img{width:64px;height:64px;border-radius:50%;object-fit:cover;object-position:50% 5%;flex:0 0 auto}
 .author .n{font-weight:700;font-size:15px}
 .author .b{font-size:13.5px;color:var(--muted);line-height:1.45}
-/* barra de compra FIXA — sempre visível no resultado */
+/* barra de compra FIXA, sempre visível no resultado */
 .cta-wrap{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:11px 18px calc(11px + env(safe-area-inset-bottom));background:rgba(251,246,239,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.06)}
 .cta-wrap .inner{max-width:560px;margin:0 auto}
 .cta-wrap .btn{width:100%;padding:16px;font-size:17px}
@@ -131,276 +131,277 @@ h1{font-family:var(--serif);font-weight:400;line-height:1.12;letter-spacing:-.01
 <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
 <div class="wrap">
 
-  <!-- INTRO -->
-  <section id="intro" class="stage intro fade">
-    <div class="avatar-wrap">
-      <img class="avatar" src="images/evelyn-mediakit-hero.jpg" alt="Evelyn Liu"/>
-      <div class="avatar-name">Evelyn Liu<span>criadora de “A Cor de Cada Pessoa”</span></div>
-    </div>
-    <div class="kicker">🎨 Teste afetivo</div>
-    <h1>Toda pessoa tem uma cor.<br>Qual é a <span class="hl">sua?</span></h1>
-    <p class="lead" style="margin:14px 0 28px;max-width:34ch">Um teste afetivo de 2 minutos pra descobrir o que você representa na vida de quem te ama.</p>
-    <button class="btn primary" onclick="Quiz.start()">Descobrir minha cor ✨</button>
-    <p class="meta">8 perguntas · menos de 2 minutos · sem cadastro</p>
-  </section>
+ <!-- INTRO -->
+ <section id="intro" class="stage intro fade">
+ <div class="avatar-wrap">
+ <img class="avatar" src="images/evelyn-mediakit-hero.jpg" alt="Evelyn Liu"/>
+ <div class="avatar-name">Evelyn Liu<span>criadora de “A Cor de Cada Pessoa”</span></div>
+ </div>
+ <div class="kicker">🎨 Teste afetivo</div>
+ <h1>Toda pessoa tem uma cor.<br>Qual é a <span class="hl">sua?</span></h1>
+ <p class="lead" style="margin:14px 0 28px;max-width:34ch">Um teste afetivo de 2 minutos pra descobrir o que você representa na vida de quem te ama.</p>
+ <button class="btn primary" onclick="Quiz.start()">Descobrir minha cor ✨</button>
+ <p class="meta">8 perguntas · menos de 2 minutos · sem cadastro</p>
+ </section>
 
-  <!-- QUESTION -->
-  <section id="quiz" class="stage hidden">
-    <div class="progress"><i id="bar"></i></div>
-    <div class="qnum" id="qnum"></div>
-    <div class="qtext" id="qtext"></div>
-    <div class="opts" id="opts"></div>
-    <button class="back" id="back" onclick="Quiz.back()">← voltar</button>
-  </section>
+ <!-- QUESTION -->
+ <section id="quiz" class="stage hidden">
+ <div class="progress"><i id="bar"></i></div>
+ <div class="qnum" id="qnum"></div>
+ <div class="qtext" id="qtext"></div>
+ <div class="opts" id="opts"></div>
+ <button class="back" id="back" onclick="Quiz.back()">← voltar</button>
+ </section>
 
-  <!-- RESULT + SALES -->
-  <section id="result" class="hidden fade">
-    <div class="kicker">✨ A sua cor é</div>
-    <div class="swatch" id="swatch">
-      <div class="num" id="r-num"></div>
-      <div class="code" id="r-code"></div>
-      <div class="emoji" id="r-emoji"></div>
-      <div class="cname" id="r-name"></div>
-      <div class="ess" id="r-ess"></div>
-    </div>
-    <div class="teaser" id="r-teaser"></div>
+ <!-- RESULT + SALES -->
+ <section id="result" class="hidden fade">
+ <div class="kicker">✨ A sua cor é</div>
+ <div class="swatch" id="swatch">
+ <div class="num" id="r-num"></div>
+ <div class="code" id="r-code"></div>
+ <div class="emoji" id="r-emoji"></div>
+ <div class="cname" id="r-name"></div>
+ <div class="ess" id="r-ess"></div>
+ </div>
+ <div class="teaser" id="r-teaser"></div>
 
-    <!-- gancho de oferta imediato (antes do compartilhar) -->
-    <a class="offer-hook" onclick="Quiz.toOffer(event)" href="#oferta">
-      <div>
-        <strong>As outras 34 cores estão no livro.</strong>
-        <span>Inclusive as das pessoas que você ama — ver a oferta ↓</span>
-      </div>
-      <span class="oh-arrow">→</span>
-    </a>
+ <!-- gancho de oferta imediato (antes do compartilhar) -->
+ <a class="offer-hook" onclick="Quiz.toOffer(event)" href="#oferta">
+ <div>
+ <strong>E as pessoas que você ama? Cada uma tem a sua.</strong>
+ <span>Descubra todas as 35 cores no livro, ver a oferta ↓</span>
+ </div>
+ <span class="oh-arrow">→</span>
+ </a>
 
-    <div class="share-row">
-      <a class="btn wpp" id="share-wpp" href="#">Mandar pra minha pessoa 💬</a>
-      <button class="btn ghost" onclick="Quiz.restart()">Refazer o teste</button>
-    </div>
+ <div class="share-row">
+ <a class="btn wpp" id="share-wpp" href="#">Mandar pra minha pessoa 💬</a>
+ <button class="btn ghost" onclick="Quiz.restart()">Refazer o teste</button>
+ </div>
 
-    <div class="divider"></div>
+ <div class="divider"></div>
 
-    <!-- SALES -->
-    <div class="sale" id="oferta">
-      <div class="launch-badge"><span class="pulse"></span> Oferta de lançamento</div>
-      <h2>Essa é só a <em>sua</em> cor. Faltam mais de 30 — inclusive as das pessoas que você ama.</h2>
-      <p>Você acabou de descobrir a sua. Mas cada pessoa que passa pela sua vida tem uma: a amarela, com quem você pode ser inteiro; a vermelha, que te tira do lugar; a que cura, a que acalma, a que fica.</p>
-      <p><em>A Cor de Cada Pessoa</em> dá nome a todos esses vínculos — e é uma forma de dizer a cada pessoa o que ela é pra você.</p>
+ <!-- SALES -->
+ <div class="sale" id="oferta">
+ <div class="launch-badge"><span class="pulse"></span> Oferta de lançamento</div>
+ <h2>Agora imagina descobrir a cor de cada pessoa que você ama.</h2>
+ <p>Tem a pessoa com quem você pode ser inteiro. A que te acalma no meio do caos. A que te tira do lugar. A que ficou quando todo mundo foi embora.</p>
+ <p>Cada uma delas é uma cor. E dar nome a isso muda a forma como você enxerga, e cuida, de quem importa.</p>
+ <p>É isso que <em>A Cor de Cada Pessoa</em> faz: <strong>35 retratos</strong> pra você reconhecer as suas pessoas, e uma página feita pra fotografar e mandar pra elas. Porque a gente sente gratidão em silêncio e quase nunca diz.</p>
 
-      <div class="book">
-        <h3>📖 A Cor de Cada Pessoa</h3>
-        <p style="font-size:14px;margin:0">Ebook · entrega imediata em PDF</p>
-        <ul>
-          <li>35 cores, 35 retratos afetivos pra ler e se reconhecer</li>
-          <li>Cada capítulo desenhado na própria cor — feito pra fotografar e enviar</li>
-          <li>Um mapa das pessoas que acalmam, aquecem, movem, fazem crescer e marcam você</li>
-          <li>Leia no celular, tablet ou computador, pra sempre</li>
-        </ul>
-        <div class="bonus">🎁 <b>Bônus de lançamento:</b> os <b>Cartões das Cores</b> — as 35 páginas em alta pra imprimir e presentear.</div>
-        <div class="price">
-          <span class="from" id="p-from">R$ 47</span>
-          <span class="now" id="p-now">R$ 19,90<small> à vista</small></span>
-        </div>
-        <p class="scarcity">🔥 Preço de lançamento — sobe após as primeiras vendas.</p>
-      </div>
+ <div class="book">
+ <h3>📖 A Cor de Cada Pessoa</h3>
+ <p style="font-size:14px;margin:0">Ebook · entrega imediata em PDF</p>
+ <ul>
+ <li>35 cores, 35 retratos afetivos pra ler e se reconhecer</li>
+ <li>Cada capítulo desenhado na própria cor, feito pra fotografar e enviar</li>
+ <li>Um mapa das pessoas que acalmam, aquecem, movem, fazem crescer e marcam você</li>
+ <li>Leia no celular, tablet ou computador, pra sempre</li>
+ </ul>
+ <div class="bonus">🎁 <b>Bônus de lançamento:</b> os <b>Cartões das Cores</b>, as 35 páginas em alta pra imprimir e presentear.</div>
+ <div class="price">
+ <span class="from" id="p-from">R$ 47</span>
+ <span class="now" id="p-now">R$ 19,90<small> à vista</small></span>
+ </div>
+ <p class="scarcity">🔥 Preço de lançamento, sobe após as primeiras vendas.</p>
+ </div>
 
-      <div class="author">
-        <img src="images/evelyn-mediakit-hero.jpg" alt="Evelyn Liu"/>
-        <div>
-          <div class="n">Evelyn Liu</div>
-          <div class="b">Criadora da série “A Cor de Cada Pessoa”, que emocionou milhões de pessoas ao dar nome aos vínculos que a gente sente mas não sabe explicar.</div>
-        </div>
-      </div>
-    </div>
+ <div class="author">
+ <img src="images/evelyn-mediakit-hero.jpg" alt="Evelyn Liu"/>
+ <div>
+ <div class="n">Evelyn Liu</div>
+ <div class="b">Criadora da série “A Cor de Cada Pessoa”, que emocionou milhões de pessoas ao dar nome aos vínculos que a gente sente mas não sabe explicar.</div>
+ </div>
+ </div>
+ </div>
 
-    <div class="cta-wrap">
-      <div class="inner">
-        <a class="btn gold" id="buy" href="#" onclick="Quiz.checkout()">Quero o livro por R$ 19,90 →</a>
-        <p class="guarantee">🔒 Compra segura · 7 dias de garantia · acesso imediato</p>
-      </div>
-    </div>
+ <div class="cta-wrap">
+ <div class="inner">
+ <a class="btn gold" id="buy" href="#" onclick="Quiz.checkout()">Quero o livro por R$ 19,90 →</a>
+ <p class="guarantee">🔒 Compra segura · 7 dias de garantia · acesso imediato</p>
+ </div>
+ </div>
 
-    <p class="disc"><strong>Um aviso honesto:</strong> isto não é ciência. Não há estudo que prove que existe “gente amarela” ou “gente roxa”. Pense nas cores como um horóscopo dos afetos — uma linguagem pra enxergar e nomear os vínculos que a gente sente, mas nem sempre consegue explicar. Se ressoar, é porque falou de algo verdadeiro em você.</p>
-  </section>
+ <p class="disc"><strong>Um aviso honesto:</strong> isto não é ciência. Não há estudo que prove que existe “gente amarela” ou “gente roxa”. Pense nas cores como um horóscopo dos afetos, uma linguagem pra enxergar e nomear os vínculos que a gente sente, mas nem sempre consegue explicar. Se ressoar, é porque falou de algo verdadeiro em você.</p>
+ </section>
 
 </div>
 
 <script>
 /* ============================================================
-   A COR DE CADA PESSOA — quiz "Qual é a sua cor?"
-   Resultado = página de venda do ebook.
-   ------------------------------------------------------------
-   CONFIG:
-   - CHECKOUT_URL: link do checkout do ebook (Cakto/Ticto).
-   - PIXEL_ID: DEIXAR VAZIO até criar o pixel novo (dedicado ao
-     projeto Cores). Enquanto vazio, NENHUM tracking dispara —
-     não contamina o pixel principal de emagrecimento.
-   ============================================================ */
+ A COR DE CADA PESSOA, quiz "Qual é a sua cor?"
+ Resultado = página de venda do ebook.
+ ------------------------------------------------------------
+ CONFIG:
+ - CHECKOUT_URL: link do checkout do ebook (Cakto/Ticto).
+ - PIXEL_ID: DEIXAR VAZIO até criar o pixel novo (dedicado ao
+ projeto Cores). Enquanto vazio, NENHUM tracking dispara, 
+ não contamina o pixel principal de emagrecimento.
+ ============================================================ */
 var CONFIG = {
-  CHECKOUT_URL: "https://pay.cakto.com.br/exrc2pi_1023060",
-  SITE: "https://evelynliu.com.br/cores",
-  PIXEL_ID: "1622316864923664" // pixel dedicado ao projeto Cores (não é o principal)
+ CHECKOUT_URL: "https://pay.cakto.com.br/exrc2pi_1023060",
+ SITE: "https://evelynliu.com.br/cores",
+ PIXEL_ID: "1622316864923664" // pixel dedicado ao projeto Cores (não é o principal)
 };
 
 /* Tracking desligado enquanto PIXEL_ID vazio. Ao preencher, o
-   bloco abaixo inicializa o pixel novo e track() passa a disparar. */
+ bloco abaixo inicializa o pixel novo e track() passa a disparar. */
 function track(){ if(window.fbq && CONFIG.PIXEL_ID){ try{ fbq.apply(null, arguments); }catch(e){} } }
 (function(){
-  if(!CONFIG.PIXEL_ID) return;
-  var fbclid=new URLSearchParams(location.search).get('fbclid');
-  function gc(n){var m=document.cookie.match(new RegExp('(^| )'+n+'=([^;]+)'));return m?m[2]:null;}
-  if(fbclid&&!gc('_fbc')){document.cookie='_fbc=fb.1.'+Date.now()+'.'+fbclid+'; path=/; max-age=7776000; SameSite=Lax; domain=.evelynliu.com.br';}
-  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
-  fbq('init',CONFIG.PIXEL_ID); fbq('track','PageView');
+ if(!CONFIG.PIXEL_ID) return;
+ var fbclid=new URLSearchParams(location.search).get('fbclid');
+ function gc(n){var m=document.cookie.match(new RegExp('(^| )'+n+'=([^;]+)'));return m?m[2]:null;}
+ if(fbclid&&!gc('_fbc')){document.cookie='_fbc=fb.1.'+Date.now()+'.'+fbclid+'; path=/; max-age=7776000; SameSite=Lax; domain=.evelynliu.com.br';}
+ !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
+ fbq('init',CONFIG.PIXEL_ID); fbq('track','PageView');
 })();
 
 /* ---- 35 cores ---- */
 var COLORS = {
-  azul:{n:"Azul",hex:"#5E82AE",dark:1,fam:"paz",emoji:"💙",code:"paz · presença",ess:"A presença que desacelera você.",tz:"Você não entra na vida das pessoas com intensidade caótica — entra com constância. É de você que procuram quando tudo está demais, porque perto de você o mundo desacelera."},
-  azul_glacial:{n:"Azul Glacial",hex:"#A9C6DB",dark:0,fam:"paz",emoji:"💙",code:"paz · profundidade calma",ess:"A calma que age em silêncio.",tz:"Você pode parecer distante — mas é só profundidade que nem todo mundo alcança. No meio do caos, você não aumenta o barulho: você diminui a tempestade."},
-  azul_ardosia:{n:"Azul-Ardósia",hex:"#48586A",dark:1,fam:"paz",emoji:"💙",code:"paz · base",ess:"A base que sustenta sem aparecer.",tz:"Você não ocupa o ambiente — você sustenta o ambiente. Escuta pra compreender, não pra responder. Faz base, não barulho. E são as bases que fazem falta quando somem."},
-  turquesa:{n:"Turquesa",hex:"#38B2A8",dark:0,fam:"paz",emoji:"💠",code:"paz · leveza",ess:"Leveza que não vira superficialidade.",tz:"Você acalma o caos sem fingir que ele não existe. É porto, mas também horizonte: conforto, mas também coragem."},
-  verde_menta:{n:"Verde-Menta",hex:"#9CE0C4",dark:0,fam:"paz",emoji:"💚",code:"paz · alívio",ess:"O alívio de respirar de novo.",tz:"Perto de você a ansiedade desacelera e a pressa perde a força. Você não faz esquecer os problemas — faz lembrar que eles não são maiores que a pessoa."},
-  branco:{n:"Branco",hex:"#EDEBE4",dark:0,fam:"paz",emoji:"🤍",code:"paz · luz",ess:"A paz que entra como luz.",tz:"Você chega sem fazer barulho, mas muda o ambiente inteiro por dentro. Enquanto alguns entram como tempestade, você entra como luz."},
-  amarelo:{n:"Amarelo",hex:"#F4C948",dark:0,fam:"calor",emoji:"💛",code:"calor · segurança",ess:"A pessoa com quem não se precisa editar.",tz:"Com você as pessoas podem ser inteiras — sem filtro, sem medo de julgamento. Você as encontra no bruto, e fica. Não pra resolver: pra sustentar."},
-  marrom:{n:"Marrom",hex:"#6E4B36",dark:1,fam:"calor",emoji:"🤎",code:"calor · lar",ess:"O cheiro de lar em pessoa.",tz:"Você não é a mais intensa — é a que permanece. Ama sem barulho, nos detalhes, na constância. Faz a pessoa sentir que encontrou um lugar seguro pra ficar."},
-  cafe_com_leite:{n:"Café com Leite",hex:"#C4A17B",dark:0,fam:"calor",emoji:"☕",code:"calor · aconchego",ess:"O aconchego do simples.",tz:"Você transforma o comum em aconchego. Não acelera a vida — desacelera o coração. Nunca faz ninguém sentir que precisa merecer amor."},
-  caramelo:{n:"Caramelo",hex:"#C57B3C",dark:0,fam:"calor",emoji:"🍮",code:"calor · doçura madura",ess:"A doçura que amadureceu na dor.",tz:"Você é doce não porque nunca sofreu, mas porque escolheu não endurecer. As pessoas saem de perto de você melhores do que chegaram."},
-  ocre:{n:"Ocre",hex:"#C4892C",dark:0,fam:"calor",emoji:"🌾",code:"calor · permanência",ess:"O amor que se prova permanecendo.",tz:"Sua força nunca esteve no brilho — sempre esteve na constância. Como uma árvore centenária: não impressiona pelas flores, e sim pelas raízes."},
-  amarelo_manteiga:{n:"Amarelo-Manteiga",hex:"#F0D488",dark:0,fam:"calor",emoji:"💛",code:"calor · delicadeza",ess:"A força que mora na delicadeza.",tz:"Você não entra como um raio de sol — entra como a luz da manhã. Não ocupa espaço: aquece o espaço. Sua força está na ternura."},
-  amarelo_champagne:{n:"Amarelo Champagne",hex:"#EADFB4",dark:0,fam:"calor",emoji:"🥂",code:"calor · elegância",ess:"A luz elegante que não ofusca ninguém.",tz:"Você não chama atenção pelo excesso — chama pela presença. Uma luz discreta, daquelas que aquecem mais do que brilham."},
-  rosa:{n:"Rosa",hex:"#E597AD",dark:0,fam:"calor",emoji:"🩷",code:"calor · afeto leve",ess:"O afeto que faz o amor parecer leve.",tz:"Você faz o amor parecer leve — sem jogos, sem medo. Mora nos detalhes. Chega pra virar sentimento permanente."},
-  rosa_bebe:{n:"Rosa Bebê",hex:"#F3C4D1",dark:0,fam:"calor",emoji:"🌸",code:"calor · gentileza",ess:"A gentileza como forma de força.",tz:"Sua delicadeza não é fragilidade — é firmeza sem dureza. Você decidiu não devolver ao mundo a dureza que recebeu."},
-  vermelho:{n:"Vermelho",hex:"#CE3F39",dark:1,fam:"movimento",emoji:"❤️",code:"movimento · intensidade",ess:"A intensidade que te tira do lugar.",tz:"Você não é neutro na vida de ninguém. Não deixa as pessoas se acomodarem na versão reduzida delas. Você é sobre transformação."},
-  laranja:{n:"Laranja",hex:"#E6712B",dark:0,fam:"movimento",emoji:"🧡",code:"movimento · leveza viva",ess:"A leveza que te devolve à vida.",tz:"Você faz rir quem nem estava com vontade. Não resolve tudo — mas muda o clima. E às vezes isso já basta pra continuar."},
-  coral:{n:"Coral",hex:"#FF7A67",dark:0,fam:"movimento",emoji:"🪸",code:"movimento · esperança",ess:"A prova de que a leveza ainda existe.",tz:"Você muda o clima do ambiente sem perceber. Depois de uma conversa com você, os problemas não somem — mas já não têm o mesmo tamanho."},
-  dourado:{n:"Dourado",hex:"#D4AF37",dark:0,fam:"movimento",emoji:"✨",code:"movimento · brilho raro",ess:"O brilho raro que aquece quem ama.",tz:"Você ilumina lugares apagados nas pessoas. Não brilha pra aparecer — brilha pra aquecer quem ama, inclusive nas fases escuras."},
-  prata:{n:"Prata",hex:"#B9C0C7",dark:0,fam:"movimento",emoji:"🤍",code:"movimento · espelho",ess:"O espelho sereno que te clareia.",tz:"Se o dourado aquece, você clareia. Você reflete a pessoa de volta pra ela mesma, e a ajuda a se enxergar com mais nitidez."},
-  verde:{n:"Verde",hex:"#4C9857",dark:0,fam:"crescimento",emoji:"💚",code:"crescimento · raiz",ess:"Quem cresce junto com você.",tz:"Você respeita o tempo, não apressa nem deixa estagnar. Não quer a versão final — valoriza quem a pessoa está se tornando."},
-  verde_abacate:{n:"Verde Abacate",hex:"#9CB55E",dark:0,fam:"crescimento",emoji:"🥑",code:"crescimento · florescer",ess:"Quem faz a sua vida florescer.",tz:"Você acredita nas pessoas antes de elas acreditarem. Não empurra, cultiva. E comemora cada florescer como se fosse seu."},
-  verde_e_amarelo:{n:"Verde e Amarelo",hex:"#5CA544",dark:0,fam:"crescimento",emoji:"💛",code:"crescimento · fé no outro",ess:"Quem acredita até você acreditar.",tz:"Você enxerga versões que a pessoa ainda não vê. Não usa o passado como sentença. É abrigo, mas também solo fértil."},
-  verde_pinho:{n:"Verde-Pinho",hex:"#2C4B39",dark:1,fam:"crescimento",emoji:"🌲",code:"crescimento · constância",ess:"Quem faz da constância uma forma de amar.",tz:"Num mundo onde tudo muda rápido, você permanece. Sua permanência faz alguém se sentir seguro outra vez."},
-  verde_pistache:{n:"Verde-Pistache",hex:"#BCD59B",dark:0,fam:"crescimento",emoji:"🌱",code:"crescimento · leveza corajosa",ess:"A leveza que teve coragem de não endurecer.",tz:"Você já conheceu dias difíceis e não deixou a vida endurecer o seu coração. Espalha luz por onde passa, quase sem perceber."},
-  roxo:{n:"Roxo",hex:"#7A4C9E",dark:1,fam:"profundidade",emoji:"💜",code:"profundidade · conexão",ess:"A conexão que se sente antes de entender.",tz:"Com você a conversa aprofunda rápido e o silêncio não é estranho. Você acessa lugares que nem todo mundo alcança."},
-  lilas:{n:"Lilás",hex:"#B49AD6",dark:0,fam:"profundidade",emoji:"🪻",code:"profundidade · abrigo",ess:"O abrigo que acredita em você.",tz:"Você acredita na pessoa quando nem ela acredita. Não julga, não compete, não desaparece. Você é abrigo."},
-  ameixa:{n:"Ameixa",hex:"#6C3A5A",dark:1,fam:"profundidade",emoji:"🫐",code:"profundidade · sensibilidade",ess:"Quem sente o mundo fundo demais.",tz:"Você ri alto, mas sente fundo. Percebe quando o “tô bem” significa o contrário. Cuida de um jeito tão silencioso que às vezes nem percebem."},
-  indigo:{n:"Índigo",hex:"#454592",dark:1,fam:"profundidade",emoji:"💙",code:"profundidade · intuição",ess:"Quem sabe sem você precisar dizer.",tz:"Você sente antes de entender. Enxerga o que não foi dito. Faz as pessoas se sentirem lidas — e, finalmente, compreendidas."},
-  preto:{n:"Preto",hex:"#1c1c22",dark:1,fam:"profundidade",emoji:"🖤",code:"profundidade · enigma",ess:"O enigma que magnetiza e respeita limites.",tz:"Você não se entrega fácil — e é isso que magnetiza. Tem densidade, elegância e limites. Quem se aproxima descobre uma profundidade rara."},
-  vinho:{n:"Vinho",hex:"#7A2138",dark:1,fam:"profundidade",emoji:"🍷",code:"profundidade · amor maduro",ess:"O amor maduro, intenso e contido.",tz:"Você ama com intensidade, mas sem descontrole. Um vínculo denso, que não precisa gritar pra ser sentido — envelhece, e fica melhor."},
-  ferrugem:{n:"Ferrugem",hex:"#A85832",dark:1,fam:"cura",emoji:"🍁",code:"cura · cicatriz",ess:"Quem transformou cicatriz em abrigo.",tz:"Você não esconde as marcas — elas viraram prova de que você sobreviveu. Perto de você ninguém precisa parecer forte."},
-  barro_molhado:{n:"Barro Molhado",hex:"#8A6850",dark:1,fam:"cura",emoji:"🌧️",code:"cura · recomeço",ess:"A vida que volta depois da tempestade.",tz:"Você chega depois das tempestades pra lembrar que a vida ainda floresce. Como a terra depois da chuva: continua fértil."},
-  laranja_por_do_sol:{n:"Laranja Pôr do Sol",hex:"#F08E49",dark:0,fam:"cura",emoji:"🌅",code:"cura · descanso",ess:"Quem desacelera o seu coração.",tz:"Tem gente que é nascer do sol; você é pôr do sol. Oferece presença em vez de respostas. É o lugar de paz onde alguém descansa."},
-  arco_iris:{n:"Arco-Íris",hex:"linear-gradient(120deg,#e6712b,#d4af37,#4c9857,#38b2a8,#5e82ae,#7a4c9e,#e597ad)",grad:1,dark:1,fam:"especial",emoji:"🌈",code:"todas as cores · síntese",ess:"A pessoa que é todas as cores.",tz:"Você não cabe numa cor só. Em uns dias é paz, em outros intensidade. Você aceita as pessoas inteiras — e nunca faz ninguém se sentir perdido."}
+ azul:{n:"Azul",hex:"#5E82AE",dark:1,fam:"paz",emoji:"💙",code:"paz · presença",ess:"A presença que desacelera você.",tz:"Você não entra na vida das pessoas com intensidade caótica, entra com constância. É de você que procuram quando tudo está demais, porque perto de você o mundo desacelera."},
+ azul_glacial:{n:"Azul Glacial",hex:"#A9C6DB",dark:0,fam:"paz",emoji:"💙",code:"paz · profundidade calma",ess:"A calma que age em silêncio.",tz:"Você pode parecer distante, mas é só profundidade que nem todo mundo alcança. No meio do caos, você não aumenta o barulho: você diminui a tempestade."},
+ azul_ardosia:{n:"Azul-Ardósia",hex:"#48586A",dark:1,fam:"paz",emoji:"💙",code:"paz · base",ess:"A base que sustenta sem aparecer.",tz:"Você não ocupa o ambiente, você sustenta o ambiente. Escuta pra compreender, não pra responder. Faz base, não barulho. E são as bases que fazem falta quando somem."},
+ turquesa:{n:"Turquesa",hex:"#38B2A8",dark:0,fam:"paz",emoji:"💠",code:"paz · leveza",ess:"Leveza que não vira superficialidade.",tz:"Você acalma o caos sem fingir que ele não existe. É porto, mas também horizonte: conforto, mas também coragem."},
+ verde_menta:{n:"Verde-Menta",hex:"#9CE0C4",dark:0,fam:"paz",emoji:"💚",code:"paz · alívio",ess:"O alívio de respirar de novo.",tz:"Perto de você a ansiedade desacelera e a pressa perde a força. Você não faz esquecer os problemas, faz lembrar que eles não são maiores que a pessoa."},
+ branco:{n:"Branco",hex:"#EDEBE4",dark:0,fam:"paz",emoji:"🤍",code:"paz · luz",ess:"A paz que entra como luz.",tz:"Você chega sem fazer barulho, mas muda o ambiente inteiro por dentro. Enquanto alguns entram como tempestade, você entra como luz."},
+ amarelo:{n:"Amarelo",hex:"#F4C948",dark:0,fam:"calor",emoji:"💛",code:"calor · segurança",ess:"A pessoa com quem não se precisa editar.",tz:"Com você as pessoas podem ser inteiras, sem filtro, sem medo de julgamento. Você as encontra no bruto, e fica. Não pra resolver: pra sustentar."},
+ marrom:{n:"Marrom",hex:"#6E4B36",dark:1,fam:"calor",emoji:"🤎",code:"calor · lar",ess:"O cheiro de lar em pessoa.",tz:"Você não é a mais intensa, é a que permanece. Ama sem barulho, nos detalhes, na constância. Faz a pessoa sentir que encontrou um lugar seguro pra ficar."},
+ cafe_com_leite:{n:"Café com Leite",hex:"#C4A17B",dark:0,fam:"calor",emoji:"☕",code:"calor · aconchego",ess:"O aconchego do simples.",tz:"Você transforma o comum em aconchego. Não acelera a vida, desacelera o coração. Nunca faz ninguém sentir que precisa merecer amor."},
+ caramelo:{n:"Caramelo",hex:"#C57B3C",dark:0,fam:"calor",emoji:"🍮",code:"calor · doçura madura",ess:"A doçura que amadureceu na dor.",tz:"Você é doce não porque nunca sofreu, mas porque escolheu não endurecer. As pessoas saem de perto de você melhores do que chegaram."},
+ ocre:{n:"Ocre",hex:"#C4892C",dark:0,fam:"calor",emoji:"🌾",code:"calor · permanência",ess:"O amor que se prova permanecendo.",tz:"Sua força nunca esteve no brilho, sempre esteve na constância. Como uma árvore centenária: não impressiona pelas flores, e sim pelas raízes."},
+ amarelo_manteiga:{n:"Amarelo-Manteiga",hex:"#F0D488",dark:0,fam:"calor",emoji:"💛",code:"calor · delicadeza",ess:"A força que mora na delicadeza.",tz:"Você não entra como um raio de sol, entra como a luz da manhã. Não ocupa espaço: aquece o espaço. Sua força está na ternura."},
+ amarelo_champagne:{n:"Amarelo Champagne",hex:"#EADFB4",dark:0,fam:"calor",emoji:"🥂",code:"calor · elegância",ess:"A luz elegante que não ofusca ninguém.",tz:"Você não chama atenção pelo excesso, chama pela presença. Uma luz discreta, daquelas que aquecem mais do que brilham."},
+ rosa:{n:"Rosa",hex:"#E597AD",dark:0,fam:"calor",emoji:"🩷",code:"calor · afeto leve",ess:"O afeto que faz o amor parecer leve.",tz:"Você faz o amor parecer leve, sem jogos, sem medo. Mora nos detalhes. Chega pra virar sentimento permanente."},
+ rosa_bebe:{n:"Rosa Bebê",hex:"#F3C4D1",dark:0,fam:"calor",emoji:"🌸",code:"calor · gentileza",ess:"A gentileza como forma de força.",tz:"Sua delicadeza não é fragilidade, é firmeza sem dureza. Você decidiu não devolver ao mundo a dureza que recebeu."},
+ vermelho:{n:"Vermelho",hex:"#CE3F39",dark:1,fam:"movimento",emoji:"❤️",code:"movimento · intensidade",ess:"A intensidade que te tira do lugar.",tz:"Você não é neutro na vida de ninguém. Não deixa as pessoas se acomodarem na versão reduzida delas. Você é sobre transformação."},
+ laranja:{n:"Laranja",hex:"#E6712B",dark:0,fam:"movimento",emoji:"🧡",code:"movimento · leveza viva",ess:"A leveza que te devolve à vida.",tz:"Você faz rir quem nem estava com vontade. Não resolve tudo, mas muda o clima. E às vezes isso já basta pra continuar."},
+ coral:{n:"Coral",hex:"#FF7A67",dark:0,fam:"movimento",emoji:"🪸",code:"movimento · esperança",ess:"A prova de que a leveza ainda existe.",tz:"Você muda o clima do ambiente sem perceber. Depois de uma conversa com você, os problemas não somem, mas já não têm o mesmo tamanho."},
+ dourado:{n:"Dourado",hex:"#D4AF37",dark:0,fam:"movimento",emoji:"✨",code:"movimento · brilho raro",ess:"O brilho raro que aquece quem ama.",tz:"Você ilumina lugares apagados nas pessoas. Não brilha pra aparecer, brilha pra aquecer quem ama, inclusive nas fases escuras."},
+ prata:{n:"Prata",hex:"#B9C0C7",dark:0,fam:"movimento",emoji:"🤍",code:"movimento · espelho",ess:"O espelho sereno que te clareia.",tz:"Se o dourado aquece, você clareia. Você reflete a pessoa de volta pra ela mesma, e a ajuda a se enxergar com mais nitidez."},
+ verde:{n:"Verde",hex:"#4C9857",dark:0,fam:"crescimento",emoji:"💚",code:"crescimento · raiz",ess:"Quem cresce junto com você.",tz:"Você respeita o tempo, não apressa nem deixa estagnar. Não quer a versão final, valoriza quem a pessoa está se tornando."},
+ verde_abacate:{n:"Verde Abacate",hex:"#9CB55E",dark:0,fam:"crescimento",emoji:"🥑",code:"crescimento · florescer",ess:"Quem faz a sua vida florescer.",tz:"Você acredita nas pessoas antes de elas acreditarem. Não empurra, cultiva. E comemora cada florescer como se fosse seu."},
+ verde_e_amarelo:{n:"Verde e Amarelo",hex:"#5CA544",dark:0,fam:"crescimento",emoji:"💛",code:"crescimento · fé no outro",ess:"Quem acredita até você acreditar.",tz:"Você enxerga versões que a pessoa ainda não vê. Não usa o passado como sentença. É abrigo, mas também solo fértil."},
+ verde_pinho:{n:"Verde-Pinho",hex:"#2C4B39",dark:1,fam:"crescimento",emoji:"🌲",code:"crescimento · constância",ess:"Quem faz da constância uma forma de amar.",tz:"Num mundo onde tudo muda rápido, você permanece. Sua permanência faz alguém se sentir seguro outra vez."},
+ verde_pistache:{n:"Verde-Pistache",hex:"#BCD59B",dark:0,fam:"crescimento",emoji:"🌱",code:"crescimento · leveza corajosa",ess:"A leveza que teve coragem de não endurecer.",tz:"Você já conheceu dias difíceis e não deixou a vida endurecer o seu coração. Espalha luz por onde passa, quase sem perceber."},
+ roxo:{n:"Roxo",hex:"#7A4C9E",dark:1,fam:"profundidade",emoji:"💜",code:"profundidade · conexão",ess:"A conexão que se sente antes de entender.",tz:"Com você a conversa aprofunda rápido e o silêncio não é estranho. Você acessa lugares que nem todo mundo alcança."},
+ lilas:{n:"Lilás",hex:"#B49AD6",dark:0,fam:"profundidade",emoji:"🪻",code:"profundidade · abrigo",ess:"O abrigo que acredita em você.",tz:"Você acredita na pessoa quando nem ela acredita. Não julga, não compete, não desaparece. Você é abrigo."},
+ ameixa:{n:"Ameixa",hex:"#6C3A5A",dark:1,fam:"profundidade",emoji:"🫐",code:"profundidade · sensibilidade",ess:"Quem sente o mundo fundo demais.",tz:"Você ri alto, mas sente fundo. Percebe quando o “tô bem” significa o contrário. Cuida de um jeito tão silencioso que às vezes nem percebem."},
+ indigo:{n:"Índigo",hex:"#454592",dark:1,fam:"profundidade",emoji:"💙",code:"profundidade · intuição",ess:"Quem sabe sem você precisar dizer.",tz:"Você sente antes de entender. Enxerga o que não foi dito. Faz as pessoas se sentirem lidas, e, finalmente, compreendidas."},
+ preto:{n:"Preto",hex:"#1c1c22",dark:1,fam:"profundidade",emoji:"🖤",code:"profundidade · enigma",ess:"O enigma que magnetiza e respeita limites.",tz:"Você não se entrega fácil, e é isso que magnetiza. Tem densidade, elegância e limites. Quem se aproxima descobre uma profundidade rara."},
+ vinho:{n:"Vinho",hex:"#7A2138",dark:1,fam:"profundidade",emoji:"🍷",code:"profundidade · amor maduro",ess:"O amor maduro, intenso e contido.",tz:"Você ama com intensidade, mas sem descontrole. Um vínculo denso, que não precisa gritar pra ser sentido, envelhece, e fica melhor."},
+ ferrugem:{n:"Ferrugem",hex:"#A85832",dark:1,fam:"cura",emoji:"🍁",code:"cura · cicatriz",ess:"Quem transformou cicatriz em abrigo.",tz:"Você não esconde as marcas, elas viraram prova de que você sobreviveu. Perto de você ninguém precisa parecer forte."},
+ barro_molhado:{n:"Barro Molhado",hex:"#8A6850",dark:1,fam:"cura",emoji:"🌧️",code:"cura · recomeço",ess:"A vida que volta depois da tempestade.",tz:"Você chega depois das tempestades pra lembrar que a vida ainda floresce. Como a terra depois da chuva: continua fértil."},
+ laranja_por_do_sol:{n:"Laranja Pôr do Sol",hex:"#F08E49",dark:0,fam:"cura",emoji:"🌅",code:"cura · descanso",ess:"Quem desacelera o seu coração.",tz:"Tem gente que é nascer do sol; você é pôr do sol. Oferece presença em vez de respostas. É o lugar de paz onde alguém descansa."},
+ arco_iris:{n:"Arco-Íris",hex:"linear-gradient(120deg,#e6712b,#d4af37,#4c9857,#38b2a8,#5e82ae,#7a4c9e,#e597ad)",grad:1,dark:1,fam:"especial",emoji:"🌈",code:"todas as cores · síntese",ess:"A pessoa que é todas as cores.",tz:"Você não cabe numa cor só. Em uns dias é paz, em outros intensidade. Você aceita as pessoas inteiras, e nunca faz ninguém se sentir perdido."}
 };
 
 /* ---- 8 perguntas ---- */
 var Q = [
  {q:"Quando alguém que você ama está mal, o seu instinto é…",
-  o:[{t:"Ficar do lado em silêncio. Presença já acalma.",fam:"paz",b:["azul","azul_ardosia","branco"]},
-     {t:"Cuidar, aquecer, fazer a pessoa se sentir em casa.",fam:"calor",b:["amarelo","caramelo","marrom"]},
-     {t:"Chacoalhar com carinho e lembrar a força dela.",fam:"movimento",b:["vermelho","dourado"]},
-     {t:"Escutar fundo o que ela nem conseguiu dizer.",fam:"profundidade",b:["indigo","roxo","ameixa"]}]},
+ o:[{t:"Ficar do lado em silêncio. Presença já acalma.",fam:"paz",b:["azul","azul_ardosia","branco"]},
+ {t:"Cuidar, aquecer, fazer a pessoa se sentir em casa.",fam:"calor",b:["amarelo","caramelo","marrom"]},
+ {t:"Chacoalhar com carinho e lembrar a força dela.",fam:"movimento",b:["vermelho","dourado"]},
+ {t:"Escutar fundo o que ela nem conseguiu dizer.",fam:"profundidade",b:["indigo","roxo","ameixa"]}]},
  {q:"As pessoas te procuram, no fundo, pra…",
-  o:[{t:"Descansar. Respirar. Desacelerar.",fam:"paz",b:["verde_menta","turquesa","laranja_por_do_sol"]},
-     {t:"Se sentir acolhidas e pertencentes.",fam:"calor",b:["amarelo_manteiga","amarelo","lilas"]},
-     {t:"Ganhar coragem e sair do lugar.",fam:"movimento",b:["laranja","coral","vermelho"]},
-     {t:"Crescer e virar quem elas podem ser.",fam:"crescimento",b:["verde_abacate","verde_e_amarelo"]}]},
+ o:[{t:"Descansar. Respirar. Desacelerar.",fam:"paz",b:["verde_menta","turquesa","laranja_por_do_sol"]},
+ {t:"Se sentir acolhidas e pertencentes.",fam:"calor",b:["amarelo_manteiga","amarelo","lilas"]},
+ {t:"Ganhar coragem e sair do lugar.",fam:"movimento",b:["laranja","coral","vermelho"]},
+ {t:"Crescer e virar quem elas podem ser.",fam:"crescimento",b:["verde_abacate","verde_e_amarelo"]}]},
  {q:"A sua forma de amar é mais…",
-  o:[{t:"Constante e silenciosa.",fam:"crescimento",b:["verde_pinho","ocre","verde"]},
-     {t:"Calorosa e cuidadosa.",fam:"calor",b:["rosa","rosa_bebe","caramelo"]},
-     {t:"Intensa e presente.",fam:"movimento",b:["vermelho","vinho"]},
-     {t:"Profunda e difícil de explicar.",fam:"profundidade",b:["roxo","ameixa","preto"]}]},
+ o:[{t:"Constante e silenciosa.",fam:"crescimento",b:["verde_pinho","ocre","verde"]},
+ {t:"Calorosa e cuidadosa.",fam:"calor",b:["rosa","rosa_bebe","caramelo"]},
+ {t:"Intensa e presente.",fam:"movimento",b:["vermelho","vinho"]},
+ {t:"Profunda e difícil de explicar.",fam:"profundidade",b:["roxo","ameixa","preto"]}]},
  {q:"Um elogio que combina com você:",
-  o:[{t:"“Perto de você eu respiro.”",fam:"paz",b:["azul","verde_menta","branco"]},
-     {t:"“Você é o meu lar.”",fam:"calor",b:["marrom","cafe_com_leite","amarelo"]},
-     {t:"“Você me tira do lugar.”",fam:"movimento",b:["vermelho","laranja"]},
-     {t:"“Você me entende sem eu falar.”",fam:"profundidade",b:["indigo","roxo"]}]},
+ o:[{t:"“Perto de você eu respiro.”",fam:"paz",b:["azul","verde_menta","branco"]},
+ {t:"“Você é o meu lar.”",fam:"calor",b:["marrom","cafe_com_leite","amarelo"]},
+ {t:"“Você me tira do lugar.”",fam:"movimento",b:["vermelho","laranja"]},
+ {t:"“Você me entende sem eu falar.”",fam:"profundidade",b:["indigo","roxo"]}]},
  {q:"As dores que você viveu te deixaram…",
-  o:[{t:"Mais calmo e presente.",fam:"paz",b:["azul_glacial","azul_ardosia"]},
-     {t:"Com vontade de acolher os outros.",fam:"cura",b:["ferrugem","barro_molhado"]},
-     {t:"Mais corajoso e verdadeiro.",fam:"movimento",b:["vermelho","coral"]},
-     {t:"Mais profundo e sensível.",fam:"profundidade",b:["ameixa","vinho","preto"]}]},
+ o:[{t:"Mais calmo e presente.",fam:"paz",b:["azul_glacial","azul_ardosia"]},
+ {t:"Com vontade de acolher os outros.",fam:"cura",b:["ferrugem","barro_molhado"]},
+ {t:"Mais corajoso e verdadeiro.",fam:"movimento",b:["vermelho","coral"]},
+ {t:"Mais profundo e sensível.",fam:"profundidade",b:["ameixa","vinho","preto"]}]},
  {q:"No meio de um grupo, você costuma ser…",
-  o:[{t:"Quem sustenta o clima sem aparecer.",fam:"paz",b:["azul_ardosia","azul_glacial"]},
-     {t:"Quem aquece e faz todo mundo pertencer.",fam:"calor",b:["caramelo","amarelo","lilas"]},
-     {t:"Quem traz alegria e leveza.",fam:"movimento",b:["laranja","coral","turquesa","dourado"]},
-     {t:"Quem ninguém entende completamente.",fam:"profundidade",b:["preto","ameixa","roxo"]}]},
+ o:[{t:"Quem sustenta o clima sem aparecer.",fam:"paz",b:["azul_ardosia","azul_glacial"]},
+ {t:"Quem aquece e faz todo mundo pertencer.",fam:"calor",b:["caramelo","amarelo","lilas"]},
+ {t:"Quem traz alegria e leveza.",fam:"movimento",b:["laranja","coral","turquesa","dourado"]},
+ {t:"Quem ninguém entende completamente.",fam:"profundidade",b:["preto","ameixa","roxo"]}]},
  {q:"A sua presença lembra…",
-  o:[{t:"A luz suave da manhã.",fam:"calor",b:["amarelo_manteiga","branco","amarelo_champagne"]},
-     {t:"Um café quente num dia frio.",fam:"calor",b:["cafe_com_leite","caramelo","marrom"]},
-     {t:"Uma faísca, um fogo.",fam:"movimento",b:["vermelho","laranja","coral"]},
-     {t:"Um lago fundo e sereno.",fam:"profundidade",b:["azul_glacial","indigo","roxo","preto"]}]},
+ o:[{t:"A luz suave da manhã.",fam:"calor",b:["amarelo_manteiga","branco","amarelo_champagne"]},
+ {t:"Um café quente num dia frio.",fam:"calor",b:["cafe_com_leite","caramelo","marrom"]},
+ {t:"Uma faísca, um fogo.",fam:"movimento",b:["vermelho","laranja","coral"]},
+ {t:"Um lago fundo e sereno.",fam:"profundidade",b:["azul_glacial","indigo","roxo","preto"]}]},
  {q:"E, no fundo, o que mais te define é…",
-  o:[{t:"Elegância discreta.",fam:"movimento",b:["prata","amarelo_champagne","azul_ardosia","preto"]},
-     {t:"Otimismo que faz florescer.",fam:"crescimento",b:["verde_abacate","verde_pistache","verde_e_amarelo","verde"]},
-     {t:"Permanência que não desiste.",fam:"crescimento",b:["verde_pinho","ocre","marrom","vinho"]},
-     {t:"Recomeço depois da dor.",fam:"cura",b:["barro_molhado","ferrugem","laranja_por_do_sol"]}]}
+ o:[{t:"Elegância discreta.",fam:"movimento",b:["prata","amarelo_champagne","azul_ardosia","preto"]},
+ {t:"Otimismo que faz florescer.",fam:"crescimento",b:["verde_abacate","verde_pistache","verde_e_amarelo","verde"]},
+ {t:"Permanência que não desiste.",fam:"crescimento",b:["verde_pinho","ocre","marrom","vinho"]},
+ {t:"Recomeço depois da dor.",fam:"cura",b:["barro_molhado","ferrugem","laranja_por_do_sol"]}]}
 ];
 
 var Quiz = (function(){
-  var i=0, scores={}, famScore={}, answers=[];
-  var elIntro=document.getElementById('intro'),
-      elQuiz=document.getElementById('quiz'),
-      elRes=document.getElementById('result');
-  function reset(){i=0;answers=[];scores={};famScore={};for(var k in COLORS){if(!COLORS[k].grad&&COLORS[k].fam!=='especial')scores[k]=0;}}
-  function start(){reset();track('trackCustom','QuizStart',{content_name:'quiz_cores'});elIntro.classList.add('hidden');elQuiz.classList.remove('hidden');render();}
-  function render(){
-    var q=Q[i];
-    document.getElementById('bar').style.width=(i/Q.length*100)+'%';
-    document.getElementById('qnum').textContent='Pergunta '+(i+1)+' de '+Q.length;
-    document.getElementById('qtext').textContent=q.q;
-    var box=document.getElementById('opts');box.innerHTML='';
-    q.o.forEach(function(opt,idx){
-      var b=document.createElement('button');b.className='opt';
-      b.innerHTML='<span class="dot"></span><span>'+opt.t+'</span>';
-      b.onclick=function(){choose(idx);};box.appendChild(b);
-    });
-    document.getElementById('back').style.visibility=i===0?'hidden':'visible';
-    elQuiz.classList.remove('fade');void elQuiz.offsetWidth;elQuiz.classList.add('fade');
-    window.scrollTo(0,0);
-  }
-  function choose(idx){
-    answers[i]=idx;var opt=Q[i].o[idx];
-    for(var k in scores){if(COLORS[k].fam===opt.fam)scores[k]+=2;}
-    (opt.b||[]).forEach(function(c){if(scores[c]!=null)scores[c]+=3;});
-    famScore[opt.fam]=(famScore[opt.fam]||0)+1;
-    i++; if(i>=Q.length)finish();else render();
-  }
-  function back(){
-    if(i===0)return;i--;var idx=answers[i],opt=Q[i].o[idx];
-    for(var k in scores){if(COLORS[k].fam===opt.fam)scores[k]-=2;}
-    (opt.b||[]).forEach(function(c){if(scores[c]!=null)scores[c]-=3;});
-    famScore[opt.fam]--;render();
-  }
-  function topColor(){
-    var best=null,bv=-1;for(var k in scores){if(scores[k]>bv){bv=scores[k];best=k;}}
-    var fams=Object.keys(famScore).filter(function(f){return famScore[f]>0;});
-    if(fams.length>=5)return 'arco_iris';
-    return best;
-  }
-  function finish(){
-    document.getElementById('bar').style.width='100%';
-    var key=topColor(),c=COLORS[key];
-    var sw=document.getElementById('swatch');
-    sw.style.background=c.hex; sw.style.color=c.dark?'#fff':'#1a1a1a';
-    document.getElementById('r-code').textContent=c.code;
-    document.getElementById('r-emoji').textContent=c.emoji;
-    document.getElementById('r-name').textContent=c.n;
-    document.getElementById('r-ess').textContent=c.ess;
-    document.getElementById('r-num').textContent=c.grad?'∞':'';
-    document.getElementById('r-teaser').innerHTML='<p>'+c.tz+'</p><p class="muted">E essa é só a <em>sua</em> cor. As pessoas que você ama têm as delas.</p>';
-    var msg=encodeURIComponent('Fiz o teste e a minha cor é '+c.n+' '+c.emoji+' "'+c.ess+'"\nDescubra a sua: '+CONFIG.SITE);
-    document.getElementById('share-wpp').href='https://wa.me/?text='+msg;
-    document.getElementById('buy').href=CONFIG.CHECKOUT_URL;
-    elQuiz.classList.add('hidden');elRes.classList.remove('hidden');
-    track('track','Lead',{content_name:'quiz_cores_result',content_category:c.n});
-    window.scrollTo(0,0);
-  }
-  function checkout(){track('track','InitiateCheckout',{content_name:'ebook_cores'});}
-  function toOffer(e){if(e)e.preventDefault();var o=document.getElementById('oferta');if(o)o.scrollIntoView({behavior:'smooth',block:'start'});track('track','ViewContent',{content_name:'ebook_offer_view'});}
-  function restart(){elRes.classList.add('hidden');start();}
-  return {start:start,back:back,restart:restart,checkout:checkout,toOffer:toOffer};
+ var i=0, scores={}, famScore={}, answers=[];
+ var elIntro=document.getElementById('intro'),
+ elQuiz=document.getElementById('quiz'),
+ elRes=document.getElementById('result');
+ function reset(){i=0;answers=[];scores={};famScore={};for(var k in COLORS){if(!COLORS[k].grad&&COLORS[k].fam!=='especial')scores[k]=0;}}
+ function start(){reset();track('trackCustom','QuizStart',{content_name:'quiz_cores'});elIntro.classList.add('hidden');elQuiz.classList.remove('hidden');render();}
+ function render(){
+ var q=Q[i];
+ document.getElementById('bar').style.width=(i/Q.length*100)+'%';
+ document.getElementById('qnum').textContent='Pergunta '+(i+1)+' de '+Q.length;
+ document.getElementById('qtext').textContent=q.q;
+ var box=document.getElementById('opts');box.innerHTML='';
+ q.o.forEach(function(opt,idx){
+ var b=document.createElement('button');b.className='opt';
+ b.innerHTML='<span class="dot"></span><span>'+opt.t+'</span>';
+ b.onclick=function(){choose(idx);};box.appendChild(b);
+ });
+ document.getElementById('back').style.visibility=i===0?'hidden':'visible';
+ elQuiz.classList.remove('fade');void elQuiz.offsetWidth;elQuiz.classList.add('fade');
+ window.scrollTo(0,0);
+ }
+ function choose(idx){
+ answers[i]=idx;var opt=Q[i].o[idx];
+ for(var k in scores){if(COLORS[k].fam===opt.fam)scores[k]+=2;}
+ (opt.b||[]).forEach(function(c){if(scores[c]!=null)scores[c]+=3;});
+ famScore[opt.fam]=(famScore[opt.fam]||0)+1;
+ i++; if(i>=Q.length)finish();else render();
+ }
+ function back(){
+ if(i===0)return;i--;var idx=answers[i],opt=Q[i].o[idx];
+ for(var k in scores){if(COLORS[k].fam===opt.fam)scores[k]-=2;}
+ (opt.b||[]).forEach(function(c){if(scores[c]!=null)scores[c]-=3;});
+ famScore[opt.fam]--;render();
+ }
+ function topColor(){
+ var best=null,bv=-1;for(var k in scores){if(scores[k]>bv){bv=scores[k];best=k;}}
+ var fams=Object.keys(famScore).filter(function(f){return famScore[f]>0;});
+ if(fams.length>=5)return 'arco_iris';
+ return best;
+ }
+ function finish(){
+ document.getElementById('bar').style.width='100%';
+ var key=topColor(),c=COLORS[key];
+ var sw=document.getElementById('swatch');
+ sw.style.background=c.hex; sw.style.color=c.dark?'#fff':'#1a1a1a';
+ document.getElementById('r-code').textContent=c.code;
+ document.getElementById('r-emoji').textContent=c.emoji;
+ document.getElementById('r-name').textContent=c.n;
+ document.getElementById('r-ess').textContent=c.ess;
+ document.getElementById('r-num').textContent=c.grad?'∞':'';
+ document.getElementById('r-teaser').innerHTML='<p>'+c.tz+'</p><p class="muted">E essa é só a <em>sua</em> cor. As pessoas que você ama têm as delas.</p>';
+ var msg=encodeURIComponent('Fiz o teste e a minha cor é '+c.n+' '+c.emoji+' "'+c.ess+'"\nDescubra a sua: '+CONFIG.SITE);
+ document.getElementById('share-wpp').href='https://wa.me/?text='+msg;
+ document.getElementById('buy').href=CONFIG.CHECKOUT_URL;
+ elQuiz.classList.add('hidden');elRes.classList.remove('hidden');
+ track('track','Lead',{content_name:'quiz_cores_result',content_category:c.n});
+ window.scrollTo(0,0);
+ }
+ function checkout(){track('track','InitiateCheckout',{content_name:'ebook_cores'});}
+ function toOffer(e){if(e)e.preventDefault();var o=document.getElementById('oferta');if(o)o.scrollIntoView({behavior:'smooth',block:'start'});track('track','ViewContent',{content_name:'ebook_offer_view'});}
+ function restart(){elRes.classList.add('hidden');start();}
+ return {start:start,back:back,restart:restart,checkout:checkout,toOffer:toOffer};
 })();
 </script>
 </body>
