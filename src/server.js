@@ -151,6 +151,10 @@ app.get('/evelyn',     (req, res) => res.sendFile(path.join(funil, 'formulario_c
 app.get('/cores',      (req, res) => res.sendFile(path.join(pub,   'cores.html')));
 // Página de obrigado do ebook Cores: hospeda o PDF p/ download.
 app.get('/acesso-ebook', (req, res) => res.sendFile(path.join(pub, 'acesso-ebook.html')));
+// Página de vendas dedicada do ebook (hero + narrativa + oferta).
+app.get('/livro',      (req, res) => res.sendFile(path.join(pub, 'livro.html')));
+// Bio pré-links: 2 caminhos (Nutrição Comportamental | Evelyn e as Cores).
+app.get('/bio',        (req, res) => res.sendFile(path.join(pub, 'bio.html')));
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Evelyn Liu</title>
+<meta name="description" content="Escolha por onde começar: Nutrição Comportamental ou Evelyn e as Cores."/>
+<meta name="robots" content="noindex"/>
+<style>
+:root{--bg:#FBF6EF;--ink:#2b2630;--muted:#8a8290;--line:#efe7db;
+--serif:'Georgia','Times New Roman',serif;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;line-height:1.5}
+body{min-height:100vh;position:relative;overflow-x:hidden;display:flex;flex-direction:column;justify-content:center}
+.blob{position:fixed;border-radius:50%;filter:blur(44px);opacity:.34;z-index:0;pointer-events:none}
+.b1{width:280px;height:280px;background:#FFB39E;top:-80px;left:-70px}
+.b2{width:240px;height:240px;background:#9CD3E0;bottom:4%;right:-80px}
+.b3{width:200px;height:200px;background:#CDE3A6;bottom:-70px;left:26%}
+.wrap{max-width:440px;margin:0 auto;padding:40px 22px;position:relative;z-index:1;text-align:center;width:100%}
+.avatar{width:104px;height:104px;border-radius:50%;object-fit:cover;object-position:50% 5%;border:4px solid #fff;box-shadow:0 10px 28px rgba(0,0,0,.14);margin:0 auto 16px;display:block}
+.name{font-family:var(--serif);font-size:26px;font-weight:400;letter-spacing:-.01em}
+.tag{color:var(--muted);font-size:14px;margin:4px 0 30px}
+.opt{display:flex;align-items:center;gap:16px;background:#fff;border:2px solid var(--line);border-radius:20px;padding:18px 20px;margin-bottom:16px;text-decoration:none;color:var(--ink);text-align:left;transition:transform .14s,box-shadow .16s,border-color .16s}
+.opt:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(0,0,0,.08)}
+.opt .ic{width:52px;height:52px;border-radius:14px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:24px}
+.opt .tt{font-weight:700;font-size:17px;line-height:1.25}
+.opt .ss{font-size:13.5px;color:var(--muted);margin-top:2px}
+.opt .arr{margin-left:auto;color:var(--muted);font-size:20px}
+.o-nutri .ic{background:linear-gradient(135deg,#CDE3A6,#4C9857);color:#fff}
+.o-nutri:hover{border-color:#4C9857}
+.o-cores .ic{background:linear-gradient(135deg,#FF7A67,#E6712B);color:#fff}
+.o-cores:hover{border-color:#E6712B}
+.foot{margin-top:22px;font-size:12px;color:var(--muted)}
+.dots{display:inline-flex;gap:5px;margin-top:14px}
+.dots span{width:8px;height:8px;border-radius:50%}
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+<div class="wrap">
+  <img class="avatar" src="images/evelyn-mediakit-hero.jpg" alt="Evelyn Liu"/>
+  <div class="name">Evelyn Liu</div>
+  <div class="tag">Por onde você quer começar?</div>
+
+  <a class="opt o-nutri" href="/links">
+    <div class="ic">🌱</div>
+    <div>
+      <div class="tt">Nutrição Comportamental</div>
+      <div class="ss">Consultas, método e conteúdos da clínica</div>
+    </div>
+    <div class="arr">→</div>
+  </a>
+
+  <a class="opt o-cores" href="/cores">
+    <div class="ic">🎨</div>
+    <div>
+      <div class="tt">Evelyn e as Cores</div>
+      <div class="ss">O teste afetivo e o livro “A Cor de Cada Pessoa”</div>
+    </div>
+    <div class="arr">→</div>
+  </a>
+
+  <div class="dots">
+    <span style="background:#F4C948"></span><span style="background:#5E82AE"></span><span style="background:#CE3F39"></span><span style="background:#4C9857"></span><span style="background:#7A4C9E"></span><span style="background:#E597AD"></span><span style="background:#38B2A8"></span>
+  </div>
+  <div class="foot">evelynliu.com.br</div>
+</div>
+</body>
+</html>
