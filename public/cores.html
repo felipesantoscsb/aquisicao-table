@@ -169,8 +169,8 @@ h1{font-family:var(--serif);font-weight:400;line-height:1.12;letter-spacing:-.01
  <!-- gancho de oferta imediato (antes do compartilhar) -->
  <a class="offer-hook" onclick="Quiz.toOffer(event)" href="#oferta">
  <div>
- <strong>E as pessoas que você ama? Cada uma tem a sua.</strong>
- <span>Descubra todas as 35 cores no livro, ver a oferta ↓</span>
+ <strong>Agora imagina dizer isso pra alguém que você ama.</strong>
+ <span>Do jeito mais leve e divertido, ver a oferta ↓</span>
  </div>
  <span class="oh-arrow">→</span>
  </a>
@@ -185,19 +185,19 @@ h1{font-family:var(--serif);font-weight:400;line-height:1.12;letter-spacing:-.01
  <!-- SALES -->
  <div class="sale" id="oferta">
  <div class="launch-badge"><span class="pulse"></span> Oferta de lançamento</div>
- <h2>Agora imagina descobrir a cor de cada pessoa que você ama.</h2>
- <p>Tem a pessoa com quem você pode ser inteiro. A que te acalma no meio do caos. A que te tira do lugar. A que ficou quando todo mundo foi embora.</p>
- <p>Cada uma delas é uma cor. E dar nome a isso muda a forma como você enxerga, e cuida, de quem importa.</p>
- <p>É isso que <em>A Cor de Cada Pessoa</em> faz: <strong>35 retratos</strong> pra você reconhecer as suas pessoas, e uma página feita pra fotografar e mandar pra elas. Porque a gente sente gratidão em silêncio e quase nunca diz.</p>
+ <h2>O jeito mais divertido de dizer pra alguém: <em>você colore a minha vida.</em></h2>
+ <p>A gente passa a vida sentindo gratidão por certas pessoas e quase nunca diz. Fica estranho, fica pesado, nunca é a hora.</p>
+ <p>Com <em>A Cor de Cada Pessoa</em> vira leve: você descobre a cor de cada pessoa que ama e manda pra ela. Um "você faz diferença na minha vida" sem precisar de ocasião, sem cafonice.</p>
+ <p>São <strong>35 cores e 35 retratos</strong>, cada um numa página feita pra fotografar e enviar. É ler, se reconhecer e dizer, tudo junto.</p>
 
  <div class="book">
  <h3>📖 A Cor de Cada Pessoa</h3>
  <p style="font-size:14px;margin:0">Ebook · entrega imediata em PDF</p>
  <ul>
- <li>35 cores, 35 retratos afetivos pra ler e se reconhecer</li>
- <li>Cada capítulo desenhado na própria cor, feito pra fotografar e enviar</li>
- <li>Um mapa das pessoas que acalmam, aquecem, movem, fazem crescer e marcam você</li>
- <li>Leia no celular, tablet ou computador, pra sempre</li>
+ <li>35 cores pra reconhecer cada pessoa que você ama</li>
+ <li>Cada cor numa página desenhada, feita pra fotografar e mandar</li>
+ <li>Um jeito leve de dizer "você importa", sem precisar de ocasião</li>
+ <li>Entrega imediata em PDF: leia e envie hoje mesmo</li>
  </ul>
  <div class="bonus">🎁 <b>Bônus de lançamento:</b> os <b>Cartões das Cores</b>, as 35 páginas em alta pra imprimir e presentear.</div>
  <div class="price">
@@ -391,7 +391,7 @@ var Quiz = (function(){
  document.getElementById('r-name').textContent=c.n;
  document.getElementById('r-ess').textContent=c.ess;
  document.getElementById('r-num').textContent=c.grad?'∞':'';
- document.getElementById('r-teaser').innerHTML='<p>'+c.tz+'</p><p class="muted">E essa é só a <em>sua</em> cor. As pessoas que você ama têm as delas.</p>';
+ document.getElementById('r-teaser').innerHTML='<p>'+c.tz+'</p><p class="muted">Essa é a <em>sua</em> cor. Agora imagina descobrir, e dizer, a das pessoas que você ama.</p>';
  var msg=encodeURIComponent('Fiz o teste e a minha cor é '+c.n+' '+c.emoji+' "'+c.ess+'"\nDescubra a sua: '+CONFIG.SITE);
  document.getElementById('share-wpp').href='https://wa.me/?text='+msg;
  document.getElementById('buy').href=CONFIG.CHECKOUT_URL;
