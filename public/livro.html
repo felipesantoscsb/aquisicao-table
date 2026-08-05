@@ -17,7 +17,7 @@ function track(){if(window.fbq&&CONFIG.PIXEL_ID){try{fbq.apply(null,arguments);}
 (function(){if(!CONFIG.PIXEL_ID)return;var f=new URLSearchParams(location.search).get('fbclid');function gc(n){var m=document.cookie.match(new RegExp('(^| )'+n+'=([^;]+)'));return m?m[2]:null;}if(f&&!gc('_fbc')){document.cookie='_fbc=fb.1.'+Date.now()+'.'+f+'; path=/; max-age=7776000; SameSite=Lax; domain=.evelynliu.com.br';}
 !function(a,b,e,v,n,t,s){if(a.fbq)return;n=a.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!a._fbq)a._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
 fbq('init',CONFIG.PIXEL_ID);fbq('track','PageView');})();
-function buy(){track('track','InitiateCheckout',{content_name:'ebook_cores_vsl'});}
+function buy(){/* InitiateCheckout NAO disparado aqui: a Cakto ja envia esse evento (evita duplicidade) */}
 </script>
 <style>
 :root{--bg:#FBF6EF;--ink:#2b2630;--muted:#8a8290;--card:#fff;--line:#efe7db;--p1:#FF7A67;--p2:#E6712B;--gold:#E9B949;--radius:22px;

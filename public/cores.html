@@ -398,7 +398,7 @@ var Quiz = (function(){
  track('track','Lead',{content_name:'quiz_cores_result',content_category:c.n});
  window.scrollTo(0,0);
  }
- function checkout(){track('track','InitiateCheckout',{content_name:'ebook_cores'});}
+ function checkout(){/* InitiateCheckout NAO disparado aqui: a Cakto ja envia esse evento (evita duplicidade) */}
  function toOffer(e){if(e)e.preventDefault();var o=document.getElementById('oferta');if(o)o.scrollIntoView({behavior:'smooth',block:'start'});track('track','ViewContent',{content_name:'ebook_offer_view'});}
  function restart(){elRes.classList.add('hidden');start();}
  return {start:start,back:back,restart:restart,checkout:checkout,toOffer:toOffer};
