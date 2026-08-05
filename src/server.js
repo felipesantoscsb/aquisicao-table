@@ -146,6 +146,9 @@ app.get('/conversa',   (req, res) => res.sendFile(path.join(funil, 'formulario_c
 // longo, direto pra conversa com a nutri. Mesmo backend (/api/captacao/conversa).
 app.get('/conversa-google', (req, res) => res.sendFile(path.join(funil, 'formulario_conversa_google.html')));
 app.get('/evelyn',     (req, res) => res.sendFile(path.join(funil, 'formulario_consulta_evelyn.html')));
+// Quiz "Qual é a sua cor?" — funil do ebook "A Cor de Cada Pessoa".
+// Página de resultado = página de venda do ebook.
+app.get('/cores',      (req, res) => res.sendFile(path.join(pub,   'cores.html')));
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
