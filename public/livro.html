@@ -80,7 +80,8 @@ p.big{font-size:18px}
 .center{text-align:center}
 .guar{font-size:13px;color:var(--muted);margin-top:12px;text-align:center}
 .disc{font-size:12px;color:var(--muted);line-height:1.55;border-top:1px solid var(--line);padding:18px 0 50px}
-.cta-fixed{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:11px 18px calc(11px + env(safe-area-inset-bottom));background:rgba(251,246,239,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.06)}
+.cta-fixed{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:11px 18px calc(11px + env(safe-area-inset-bottom));background:rgba(251,246,239,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.06);transform:translateY(120%);transition:transform .28s ease}
+.cta-fixed.show{transform:none}
 .cta-fixed .inner{max-width:560px;margin:0 auto}
 .cta-fixed .btn{padding:16px}
 body{padding-bottom:96px}
@@ -202,8 +203,20 @@ body{padding-bottom:96px}
 
 </div>
 
-<div class="cta-fixed"><div class="inner">
+<div class="cta-fixed" id="ctaFixed"><div class="inner">
   <a class="btn gold" href="#" onclick="buy();window.location.href=CONFIG.CHECKOUT_URL;return false;">Quero o livro por R$ 19,90 →</a>
 </div></div>
+<script>
+// Barra fixa de preço aparece só depois da primeira dobra.
+(function(){
+  var bar=document.getElementById('ctaFixed');
+  function onScroll(){
+    if(window.pageYOffset > window.innerHeight*0.85) bar.classList.add('show');
+    else bar.classList.remove('show');
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
+  onScroll();
+})();
+</script>
 </body>
 </html>

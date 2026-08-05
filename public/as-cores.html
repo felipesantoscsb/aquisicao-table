@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Evelyn Liu</title>
-<meta name="description" content="Escolha por onde começar: Nutrição Comportamental ou Evelyn e as Cores."/>
+<title>Evelyn e as Cores</title>
+<meta name="description" content="Faça o teste afetivo ou conheça o livro A Cor de Cada Pessoa."/>
 <meta name="robots" content="noindex"/>
 <style>
 :root{--bg:#FBF6EF;--ink:#2b2630;--muted:#8a8290;--line:#efe7db;
@@ -17,7 +17,7 @@ body{min-height:100vh;position:relative;overflow-x:hidden;display:flex;flex-dire
 .b2{width:240px;height:240px;background:#9CD3E0;bottom:4%;right:-80px}
 .b3{width:200px;height:200px;background:#CDE3A6;bottom:-70px;left:26%}
 .wrap{max-width:440px;margin:0 auto;padding:40px 22px;position:relative;z-index:1;text-align:center;width:100%}
-.avatar{width:104px;height:104px;border-radius:50%;object-fit:cover;object-position:50% 5%;border:4px solid #fff;box-shadow:0 10px 28px rgba(0,0,0,.14);margin:0 auto 16px;display:block}
+.avatar{width:96px;height:96px;border-radius:50%;object-fit:cover;object-position:50% 5%;border:4px solid #fff;box-shadow:0 10px 28px rgba(0,0,0,.14);margin:0 auto 14px;display:block}
 .name{font-family:var(--serif);font-size:26px;font-weight:400;letter-spacing:-.01em}
 .tag{color:var(--muted);font-size:14px;margin:4px 0 30px}
 .opt{display:flex;align-items:center;gap:16px;background:#fff;border:2px solid var(--line);border-radius:20px;padding:18px 20px;margin-bottom:16px;text-decoration:none;color:var(--ink);text-align:left;transition:transform .14s,box-shadow .16s,border-color .16s}
@@ -26,12 +26,12 @@ body{min-height:100vh;position:relative;overflow-x:hidden;display:flex;flex-dire
 .opt .tt{font-weight:700;font-size:17px;line-height:1.25}
 .opt .ss{font-size:13.5px;color:var(--muted);margin-top:2px}
 .opt .arr{margin-left:auto;color:var(--muted);font-size:20px}
-.o-nutri .ic{background:linear-gradient(135deg,#CDE3A6,#4C9857);color:#fff}
-.o-nutri:hover{border-color:#4C9857}
-.o-cores .ic{background:linear-gradient(135deg,#FF7A67,#E6712B);color:#fff}
-.o-cores:hover{border-color:#E6712B}
-.foot{margin-top:22px;font-size:12px;color:var(--muted)}
-.dots{display:inline-flex;gap:5px;margin-top:14px}
+.o-teste .ic{background:linear-gradient(135deg,#FF7A67,#E9B949);color:#fff}
+.o-teste:hover{border-color:#FF7A67}
+.o-livro .ic{background:linear-gradient(135deg,#F0C35A,#E6712B);color:#fff}
+.o-livro:hover{border-color:#E6712B}
+.back{display:inline-block;margin-top:16px;font-size:13.5px;color:var(--muted);text-decoration:none}
+.dots{display:inline-flex;gap:5px;margin-top:16px}
 .dots span{width:8px;height:8px;border-radius:50%}
 </style>
 </head>
@@ -39,23 +39,23 @@ body{min-height:100vh;position:relative;overflow-x:hidden;display:flex;flex-dire
 <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
 <div class="wrap">
   <img class="avatar" src="images/evelyn-mediakit-hero.jpg" alt="Evelyn Liu"/>
-  <div class="name">Evelyn Liu</div>
+  <div class="name">Evelyn e as Cores</div>
   <div class="tag">Por onde você quer começar?</div>
 
-  <a class="opt o-nutri" href="/links">
-    <div class="ic">🌱</div>
+  <a class="opt o-teste" href="/cores">
+    <div class="ic">🎨</div>
     <div>
-      <div class="tt">Nutrição Comportamental</div>
-      <div class="ss">Consultas, método e conteúdos da clínica</div>
+      <div class="tt">Fazer o teste (grátis)</div>
+      <div class="ss">Descubra a sua cor em 2 minutos</div>
     </div>
     <div class="arr">→</div>
   </a>
 
-  <a class="opt o-cores" href="/as-cores">
-    <div class="ic">🎨</div>
+  <a class="opt o-livro" href="/livro">
+    <div class="ic">📖</div>
     <div>
-      <div class="tt">Evelyn e as Cores</div>
-      <div class="ss">O teste afetivo e o livro “A Cor de Cada Pessoa”</div>
+      <div class="tt">Conhecer o livro</div>
+      <div class="ss">A Cor de Cada Pessoa · 35 cores</div>
     </div>
     <div class="arr">→</div>
   </a>
@@ -63,7 +63,8 @@ body{min-height:100vh;position:relative;overflow-x:hidden;display:flex;flex-dire
   <div class="dots">
     <span style="background:#F4C948"></span><span style="background:#5E82AE"></span><span style="background:#CE3F39"></span><span style="background:#4C9857"></span><span style="background:#7A4C9E"></span><span style="background:#E597AD"></span><span style="background:#38B2A8"></span>
   </div>
-  <div class="foot">evelynliu.com.br</div>
+  <br>
+  <a class="back" href="/bio">← voltar</a>
 </div>
 </body>
 </html>

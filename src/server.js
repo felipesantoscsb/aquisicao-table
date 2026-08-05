@@ -155,6 +155,8 @@ app.get('/acesso-ebook', (req, res) => res.sendFile(path.join(pub, 'acesso-ebook
 app.get('/livro',      (req, res) => res.sendFile(path.join(pub, 'livro.html')));
 // Bio pré-links: 2 caminhos (Nutrição Comportamental | Evelyn e as Cores).
 app.get('/bio',        (req, res) => res.sendFile(path.join(pub, 'bio.html')));
+// Sub-menu das Cores: fazer o teste (/cores) ou conhecer o livro (/livro).
+app.get('/as-cores',   (req, res) => res.sendFile(path.join(pub, 'as-cores.html')));
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
