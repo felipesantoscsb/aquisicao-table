@@ -109,7 +109,8 @@ h1{font-family:var(--serif);font-weight:400;line-height:1.12;letter-spacing:-.01
 .author .n{font-weight:700;font-size:15px}
 .author .b{font-size:13.5px;color:var(--muted);line-height:1.45}
 /* barra de compra FIXA, sempre visível no resultado */
-.cta-wrap{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:11px 18px calc(11px + env(safe-area-inset-bottom));background:rgba(251,246,239,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.06)}
+.cta-wrap{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:11px 18px calc(11px + env(safe-area-inset-bottom));background:rgba(251,246,239,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.06);transform:translateY(120%);transition:transform .28s ease}
+.cta-wrap.show{transform:none}
 .cta-wrap .inner{max-width:560px;margin:0 auto}
 .cta-wrap .btn{width:100%;padding:16px;font-size:17px}
 .guarantee{font-size:12px;color:var(--muted);margin-top:8px;text-align:center}
@@ -402,6 +403,16 @@ var Quiz = (function(){
  function toOffer(e){if(e)e.preventDefault();var o=document.getElementById('oferta');if(o)o.scrollIntoView({behavior:'smooth',block:'start'});track('track','ViewContent',{content_name:'ebook_offer_view'});}
  function restart(){elRes.classList.add('hidden');start();}
  return {start:start,back:back,restart:restart,checkout:checkout,toOffer:toOffer};
+})();
+
+// Rodapé fixo de compra aparece só da 2a dobra em diante (na tela de resultado).
+(function(){
+  var bar=document.querySelector('.cta-wrap'), res=document.getElementById('result');
+  function onScroll(){
+    if(!res.classList.contains('hidden') && window.pageYOffset > window.innerHeight*0.85) bar.classList.add('show');
+    else bar.classList.remove('show');
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
 })();
 </script>
 </body>
