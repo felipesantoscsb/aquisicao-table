@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Seu livro está pronto | A Cor de Cada Pessoa</title>
+<meta name="robots" content="noindex"/>
+<style>
+:root{
+  --bg:#FBF6EF; --ink:#2b2630; --muted:#8a8290; --card:#fff; --line:#efe7db;
+  --p1:#FF7A67; --p2:#E6712B; --gold:#E9B949; --radius:22px;
+  --serif:'Georgia','Times New Roman',serif;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;line-height:1.55}
+body{min-height:100vh;position:relative;overflow-x:hidden}
+.blob{position:fixed;border-radius:50%;filter:blur(40px);opacity:.38;z-index:0;pointer-events:none}
+.b1{width:260px;height:260px;background:#FFB39E;top:-70px;left:-70px}
+.b2{width:220px;height:220px;background:#9CD3E0;bottom:6%;right:-70px}
+.b3{width:200px;height:200px;background:#CDE3A6;bottom:-70px;left:28%}
+.wrap{max-width:520px;margin:0 auto;padding:44px 22px 70px;position:relative;z-index:1;text-align:center}
+.badge{display:inline-flex;align-items:center;gap:8px;background:#e9f6ec;color:#2f7d43;font-weight:700;font-size:13px;padding:8px 15px;border-radius:999px;margin-bottom:22px}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(30px,7.5vw,42px);line-height:1.12;letter-spacing:-.01em;margin-bottom:12px}
+.sub{color:#5f5866;font-size:16.5px;max-width:34ch;margin:0 auto 26px}
+.cover{width:210px;max-width:60%;border-radius:12px;box-shadow:0 20px 46px rgba(0,0,0,.22);margin:0 auto 30px;display:block}
+.btn{display:inline-block;border:none;font:inherit;font-weight:700;font-size:17px;padding:18px 30px;border-radius:999px;cursor:pointer;text-decoration:none;transition:transform .15s,box-shadow .15s;width:100%;max-width:380px}
+.btn.gold{background:linear-gradient(135deg,#F0C35A,#E6712B);color:#fff;box-shadow:0 12px 26px rgba(230,113,43,.34)}
+.btn.gold:active{transform:scale(.98)}
+.hint{font-size:13px;color:var(--muted);margin-top:12px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:22px 22px;margin:34px auto 0;max-width:420px;text-align:left;box-shadow:0 10px 28px rgba(0,0,0,.05)}
+.card h2{font-family:var(--serif);font-weight:400;font-size:19px;margin-bottom:12px;text-align:center}
+.card ol{list-style:none;counter-reset:s}
+.card li{counter-increment:s;position:relative;padding:9px 0 9px 38px;font-size:14.5px;color:#3a3a46;border-bottom:1px solid var(--line)}
+.card li:last-child{border-bottom:none}
+.card li::before{content:counter(s);position:absolute;left:0;top:8px;width:24px;height:24px;background:#FF7A67;color:#fff;border-radius:50%;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.print-note{background:#fff4ec;border:1px dashed #e6b98c;border-radius:14px;padding:14px 16px;margin:24px auto 0;max-width:420px;font-size:14px;color:#7a5238;text-align:left}
+.print-note b{color:#c9531f}
+.sign{font-style:italic;color:var(--muted);font-size:14px;margin-top:30px}
+.support{font-size:12.5px;color:var(--muted);margin-top:8px}
+.support a{color:#c9531f;text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+<div class="wrap">
+  <div class="badge">✅ Compra confirmada</div>
+  <h1>Seu livro está pronto 🎉</h1>
+  <p class="sub">Obrigada por levar <em>A Cor de Cada Pessoa</em>. É só tocar no botão abaixo pra baixar o seu ebook.</p>
+
+  <img class="cover" src="images/cores-ebook-cover.png" alt="Capa — A Cor de Cada Pessoa"/>
+
+  <a class="btn gold" href="ebook/a-cor-de-cada-pessoa.pdf" download="A-Cor-de-Cada-Pessoa.pdf">⬇️ Baixar meu ebook (PDF)</a>
+  <p class="hint">Arquivo em PDF · abre no celular, tablet ou computador</p>
+
+  <div class="card">
+    <h2>Como aproveitar</h2>
+    <ol>
+      <li>Toque em <b>Baixar</b> e salve o PDF no seu aparelho.</li>
+      <li>Leia na ordem ou procure direto a cor de alguém — como preferir.</li>
+      <li>Quando uma cor te lembrar de alguém, é aí que a mágica acontece 👇</li>
+    </ol>
+  </div>
+
+  <div class="print-note">💌 <b>A parte mais bonita:</b> quando um retrato fizer você pensar em alguém, faça um <b>print daquela página</b> e mande pra pessoa. A gente passa tempo demais sentindo gratidão em silêncio — este livro é uma desculpa pra dizer.</div>
+
+  <p class="sign">Com carinho,<br>Evelyn 🤍</p>
+  <p class="support">Problemas com o download? Fale com a gente: <a href="https://wa.me/SEUNUMERO" target="_blank" rel="noopener">suporte no WhatsApp</a></p>
+</div>
+</body>
+</html>

@@ -149,6 +149,8 @@ app.get('/evelyn',     (req, res) => res.sendFile(path.join(funil, 'formulario_c
 // Quiz "Qual é a sua cor?" — funil do ebook "A Cor de Cada Pessoa".
 // Página de resultado = página de venda do ebook.
 app.get('/cores',      (req, res) => res.sendFile(path.join(pub,   'cores.html')));
+// Página de obrigado do ebook Cores: hospeda o PDF p/ download.
+app.get('/acesso-ebook', (req, res) => res.sendFile(path.join(pub, 'acesso-ebook.html')));
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
