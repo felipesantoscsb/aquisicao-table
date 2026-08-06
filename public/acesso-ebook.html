@@ -33,6 +33,22 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(30px,7.5vw,42px);lin
 .i-body p{font-size:14.5px;color:var(--muted);line-height:1.5;margin-bottom:14px}
 .i-body .btn{font-size:16px;padding:16px 22px}
 .mini{font-size:12.5px;color:var(--muted);margin:10px 0 0;text-align:center}
+.hidden{display:none}
+/* descobrir a cor de alguem */
+.finder{background:linear-gradient(135deg,#fff4ec,#ffe9dc);border:2px solid #f2ceb4;border-radius:18px;padding:20px 18px;margin:4px 0 16px;text-align:left}
+.fd-title{font-family:var(--serif);font-size:21px;line-height:1.25;margin-bottom:6px}
+.fd-sub{font-size:14px;color:#7a5238;line-height:1.5;margin-bottom:14px}
+.fd-name{display:block;width:100%;font:inherit;font-size:15px;padding:13px 15px;border:2px solid #f2ceb4;border-radius:13px;background:#fff;margin-bottom:11px;color:var(--ink)}
+.fd-name:focus{outline:none;border-color:#E6712B}
+.finder .btn{width:100%}
+.fd-num{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#b5623f;background:#fff;padding:5px 11px;border-radius:999px;margin-bottom:10px}
+.fd-q{font-family:var(--serif);font-size:19px;line-height:1.3;margin-bottom:12px}
+.fd-opts{display:flex;flex-direction:column;gap:9px}
+.fd-opt{background:#fff;border:2px solid #f2ceb4;border-radius:13px;padding:13px 15px;text-align:left;font:inherit;font-size:15px;color:var(--ink);cursor:pointer;transition:border-color .15s,transform .12s}
+.fd-opt:hover{border-color:#E6712B;transform:translateY(-2px)}
+.fd-opt:active{transform:scale(.99)}
+.fd-cancel{display:block;margin:12px auto 0;background:none;border:none;color:#a08a76;font:inherit;font-size:13px;cursor:pointer}
+.or{text-align:center;font-size:12.5px;color:var(--muted);margin:0 0 12px;text-transform:uppercase;letter-spacing:.1em}
 /* paleta de cores clicavel */
 .palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:9px;margin-top:6px}
 .sw{aspect-ratio:1;border-radius:13px;border:none;cursor:pointer;position:relative;padding:0;
@@ -94,6 +110,24 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(30px,7.5vw,42px);lin
         <h3>Os 35 Cartões</h3>
         <p>Escolha a cor da pessoa e envie. Sem baixar nada antes.</p>
       </div>
+
+      <!-- descobrir a cor de alguem (quantas vezes quiser) -->
+      <div class="finder" id="finder">
+        <div id="fd-intro">
+          <div class="fd-title">Não sabe a cor de alguém?</div>
+          <p class="fd-sub">Pensa nessa pessoa e responda 5 perguntas. A gente abre o cartão dela pronto pra enviar.</p>
+          <input class="fd-name" id="fd-name" type="text" maxlength="20" placeholder="Nome dela (opcional)" autocomplete="off"/>
+          <button class="btn gold" onclick="Finder.start()">🎨 Descobrir a cor dela</button>
+        </div>
+        <div id="fd-quiz" class="hidden">
+          <div class="fd-num" id="fd-num"></div>
+          <div class="fd-q" id="fd-q"></div>
+          <div class="fd-opts" id="fd-opts"></div>
+          <button class="fd-cancel" onclick="Finder.cancel()">cancelar</button>
+        </div>
+      </div>
+
+      <p class="or">ou escolha direto na paleta</p>
       <div class="palette" id="palette"></div>
       <p class="mini" id="pal-hint">👆 Toque na cor da sua pessoa</p>
     </div>
@@ -121,6 +155,78 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(30px,7.5vw,42px);lin
 <script>
 var CARTOES=[{"n":"Azul","f":"Azul","h":"#5E82AE","d":1,"e":"💙","file":"cartoes/01-azul.png"},{"n":"Azul Glacial","f":"Azul Glacial","h":"#A9C6DB","d":0,"e":"💙","file":"cartoes/02-azul-glacial.png"},{"n":"Azul-Ardósia","f":"Azul-Ardósia","h":"#48586A","d":1,"e":"💙","file":"cartoes/03-azul-ardosia.png"},{"n":"Turquesa","f":"Turquesa","h":"#38B2A8","d":0,"e":"💙","file":"cartoes/04-turquesa.png"},{"n":"Verde-Menta","f":"Verde-Menta","h":"#9CE0C4","d":0,"e":"💚","file":"cartoes/05-verde-menta.png"},{"n":"Branco","f":"Branca","h":"#EDEBE4","d":0,"e":"🤍","file":"cartoes/06-branco.png"},{"n":"Amarelo","f":"Amarela","h":"#F4C948","d":0,"e":"💛","file":"cartoes/07-amarelo.png"},{"n":"Marrom","f":"Marrom","h":"#6E4B36","d":1,"e":"🤎","file":"cartoes/08-marrom.png"},{"n":"Café com Leite","f":"Café com Leite","h":"#C4A17B","d":0,"e":"☕","file":"cartoes/09-cafe-com-leite.png"},{"n":"Caramelo","f":"Caramelo","h":"#C57B3C","d":0,"e":"🍮","file":"cartoes/10-caramelo.png"},{"n":"Ocre","f":"Ocre","h":"#C4892C","d":0,"e":"🌾","file":"cartoes/11-ocre.png"},{"n":"Amarelo-Manteiga","f":"Amarelo-Manteiga","h":"#F0D488","d":0,"e":"💛","file":"cartoes/12-amarelo-manteiga.png"},{"n":"Amarelo Champagne","f":"Amarelo Champagne","h":"#EADFB4","d":0,"e":"🥂","file":"cartoes/13-amarelo-champagne.png"},{"n":"Rosa","f":"Rosa","h":"#E597AD","d":0,"e":"🩷","file":"cartoes/14-rosa.png"},{"n":"Rosa Bebê","f":"Rosa Bebê","h":"#F3C4D1","d":0,"e":"🌸","file":"cartoes/15-rosa-bebe.png"},{"n":"Vermelho","f":"Vermelha","h":"#CE3F39","d":1,"e":"❤️","file":"cartoes/16-vermelho.png"},{"n":"Laranja","f":"Laranja","h":"#E6712B","d":0,"e":"🧡","file":"cartoes/17-laranja.png"},{"n":"Coral","f":"Coral","h":"#FF7A67","d":0,"e":"🪸","file":"cartoes/18-coral.png"},{"n":"Dourado","f":"Dourada","h":"#D4AF37","d":0,"e":"✨","file":"cartoes/19-dourado.png"},{"n":"Prata","f":"Prata","h":"#B9C0C7","d":0,"e":"🤍","file":"cartoes/20-prata.png"},{"n":"Verde","f":"Verde","h":"#4C9857","d":0,"e":"💚","file":"cartoes/21-verde.png"},{"n":"Verde Abacate","f":"Verde Abacate","h":"#9CB55E","d":0,"e":"🥑","file":"cartoes/22-verde-abacate.png"},{"n":"Verde e Amarelo","f":"Verde e Amarelo","h":"#5CA544","d":0,"e":"💛","file":"cartoes/23-verde-e-amarelo.png"},{"n":"Verde-Pinho","f":"Verde-Pinho","h":"#2C4B39","d":1,"e":"🌲","file":"cartoes/24-verde-pinho.png"},{"n":"Verde-Pistache","f":"Verde-Pistache","h":"#BCD59B","d":0,"e":"🌱","file":"cartoes/25-verde-pistache.png"},{"n":"Roxo","f":"Roxa","h":"#7A4C9E","d":1,"e":"💜","file":"cartoes/26-roxo.png"},{"n":"Lilás","f":"Lilás","h":"#B49AD6","d":0,"e":"🪻","file":"cartoes/27-lilas.png"},{"n":"Ameixa","f":"Ameixa","h":"#6C3A5A","d":1,"e":"🫐","file":"cartoes/28-ameixa.png"},{"n":"Índigo","f":"Índigo","h":"#454592","d":1,"e":"💙","file":"cartoes/29-indigo.png"},{"n":"Preto","f":"Preta","h":"#1C1C22","d":1,"e":"🖤","file":"cartoes/30-preto.png"},{"n":"Vinho","f":"Vinho","h":"#7A2138","d":1,"e":"🍷","file":"cartoes/31-vinho.png"},{"n":"Ferrugem","f":"Ferrugem","h":"#A85832","d":1,"e":"🍁","file":"cartoes/32-ferrugem.png"},{"n":"Barro Molhado","f":"Barro Molhado","h":"#8A6850","d":1,"e":"🌧️","file":"cartoes/33-barro-molhado.png"},{"n":"Laranja Pôr do Sol","f":"Laranja Pôr do Sol","h":"#F08E49","d":0,"e":"🌅","file":"cartoes/34-laranja-por-do-sol.png"},{"n":"Arco-Íris","f":"Arco-Íris","h":"linear-gradient(135deg,#CE3F39,#E6712B,#D4AF37,#4C9857,#38B2A8,#5E82AE,#7A4C9E,#E597AD)","d":1,"e":"🌈","file":"cartoes/35-arco-iris.png"}];
 
+var PQ=[
+ {q:"Perto dessa pessoa, o que você sente primeiro?",
+  o:[{t:"Calma. O mundo desacelera.",f:"paz",b:["azul", "azul_glacial", "azul_ardosia", "verde_pinho", "barro_molhado"]},
+     {t:"Aconchego. Parece casa.",f:"calor",b:["amarelo", "marrom", "cafe_com_leite", "amarelo_champagne", "rosa", "rosa_bebe"]},
+     {t:"Energia. Vontade de viver.",f:"movimento",b:["vermelho", "laranja", "coral"]},
+     {t:"Profundidade. Ela me lê.",f:"profundidade",b:["roxo", "lilas", "indigo", "preto", "vinho"]}]},
+ {q:"Quando você está mal, ela...",
+  o:[{t:"Fica. Em silêncio, do lado.",f:"paz",b:["azul", "turquesa", "verde_menta", "amarelo_champagne", "verde_pistache", "indigo", "laranja_por_do_sol"]},
+     {t:"Cuida: mensagem, comida, colo.",f:"calor",b:["amarelo", "caramelo", "ocre"]},
+     {t:"Me levanta e me põe pra andar.",f:"movimento",b:["vermelho", "dourado", "prata"]},
+     {t:"Entende antes de eu falar.",f:"profundidade",b:["roxo", "ameixa"]}]},
+ {q:"A presença dela lembra...",
+  o:[{t:"A luz suave da manhã.",f:"calor",b:["marrom", "caramelo", "amarelo_manteiga"]},
+     {t:"Chuva que renova a terra.",f:"cura",b:["ferrugem", "barro_molhado", "laranja_por_do_sol"]},
+     {t:"Uma faísca.",f:"movimento",b:["laranja", "dourado"]},
+     {t:"Raiz firme.",f:"crescimento",b:["verde", "verde_abacate", "verde_pinho", "verde_pistache"]}]},
+ {q:"Se fosse agradecer por uma coisa, seria...",
+  o:[{t:"Por me dar paz.",f:"paz",b:["azul_glacial", "turquesa", "branco", "rosa", "preto"]},
+     {t:"Por me fazer rir.",f:"movimento",b:["coral", "prata"]},
+     {t:"Por acreditar em mim.",f:"crescimento",b:["verde", "verde_e_amarelo"]},
+     {t:"Por ter ficado nos piores dias.",f:"cura",b:["ferrugem"]}]},
+ {q:"E o que ela tem que quase ninguém tem?",
+  o:[{t:"Serenidade. Nunca aumenta o caos.",f:"paz",b:["azul_ardosia", "verde_menta", "branco", "rosa_bebe", "vinho"]},
+     {t:"Delicadeza no jeito de cuidar.",f:"calor",b:["cafe_com_leite", "ocre", "amarelo_manteiga"]},
+     {t:"Profundidade difícil de explicar.",f:"profundidade",b:["lilas", "ameixa"]},
+     {t:"Constância. Ela permanece.",f:"crescimento",b:["verde_abacate", "verde_e_amarelo"]}]}
+];
+
+var FAM={"azul":"paz","azul_glacial":"paz","azul_ardosia":"paz","turquesa":"paz","verde_menta":"paz","branco":"paz","amarelo":"calor","marrom":"calor","cafe_com_leite":"calor","caramelo":"calor","ocre":"calor","amarelo_manteiga":"calor","amarelo_champagne":"calor","rosa":"calor","rosa_bebe":"calor","vermelho":"movimento","laranja":"movimento","coral":"movimento","dourado":"movimento","prata":"movimento","verde":"crescimento","verde_abacate":"crescimento","verde_e_amarelo":"crescimento","verde_pinho":"crescimento","verde_pistache":"crescimento","roxo":"profundidade","lilas":"profundidade","ameixa":"profundidade","indigo":"profundidade","preto":"profundidade","vinho":"profundidade","ferrugem":"cura","barro_molhado":"cura","laranja_por_do_sol":"cura"};
+
+var CHAVES=["azul","azul_glacial","azul_ardosia","turquesa","verde_menta","branco","amarelo","marrom","cafe_com_leite","caramelo","ocre","amarelo_manteiga","amarelo_champagne","rosa","rosa_bebe","vermelho","laranja","coral","dourado","prata","verde","verde_abacate","verde_e_amarelo","verde_pinho","verde_pistache","roxo","lilas","ameixa","indigo","preto","vinho","ferrugem","barro_molhado","laranja_por_do_sol","arco_iris"];
+
+var Finder=(function(){
+  var i=0, scores={}, nome='';
+  var elIntro=document.getElementById('fd-intro'),
+      elQuiz=document.getElementById('fd-quiz');
+  function reset(){i=0;scores={};for(var k in FAM){scores[k]=0;}}
+  function start(){
+    reset(); nome=(document.getElementById('fd-name').value||'').trim();
+    elIntro.classList.add('hidden'); elQuiz.classList.remove('hidden'); render();
+  }
+  function cancel(){elQuiz.classList.add('hidden');elIntro.classList.remove('hidden');}
+  function render(){
+    var q=PQ[i];
+    document.getElementById('fd-num').textContent='Pergunta '+(i+1)+' de '+PQ.length;
+    document.getElementById('fd-q').textContent=q.q;
+    var box=document.getElementById('fd-opts'); box.innerHTML='';
+    q.o.forEach(function(opt,idx){
+      var b=document.createElement('button');
+      b.className='fd-opt'; b.textContent=opt.t;
+      b.onclick=function(){escolher(idx);};
+      box.appendChild(b);
+    });
+  }
+  function escolher(idx){
+    var opt=PQ[i].o[idx];
+    for(var k in scores){if(FAM[k]===opt.f)scores[k]+=2;}
+    (opt.b||[]).forEach(function(c){if(scores[c]!=null)scores[c]+=3;});
+    i++;
+    if(i>=PQ.length) revelar(); else render();
+  }
+  function revelar(){
+    var best=null,bv=-1;
+    for(var k in scores){if(scores[k]>bv){bv=scores[k];best=k;}}
+    var idx=CHAVES.indexOf(best);
+    elQuiz.classList.add('hidden'); elIntro.classList.remove('hidden');
+    document.getElementById('fd-name').value='';
+    if(idx>=0) Cartoes.abrir(idx, nome);   // abre o cartao pronto pra enviar
+  }
+  return {start:start,cancel:cancel};
+})();
+
 var Cartoes=(function(){
   var atual=null;
   var modal=document.getElementById('modal'),
@@ -141,12 +247,13 @@ var Cartoes=(function(){
     });
   }
 
-  function abrir(i){
+  function abrir(i, nome){
     atual=CARTOES[i];
     img.src=atual.file; img.alt='Cartão: você é a minha pessoa '+atual.f;
     linkDl.href=atual.file;
     linkDl.setAttribute('download','pessoa-'+atual.f.toLowerCase().replace(/\s+/g,'-')+'.png');
-    note.textContent='Você é a minha pessoa '+atual.f+' '+atual.e;
+    note.textContent = nome ? (nome+' é a sua pessoa '+atual.f+' '+atual.e)
+                            : ('Você é a minha pessoa '+atual.f+' '+atual.e);
     modal.classList.add('open');
     document.body.style.overflow='hidden';
   }
@@ -169,7 +276,7 @@ var Cartoes=(function(){
 
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
   montaPaleta();
-  return {close:close};
+  return {close:close, abrir:abrir};
 })();
 </script>
 </body>
