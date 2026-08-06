@@ -184,7 +184,7 @@ h1{font-family:var(--serif);font-weight:400;line-height:1.12;letter-spacing:-.01
  <div id="pq-intro">
  <div class="pq-kick">✨ Agora a parte boa</div>
  <div class="pq-title">Quem veio na sua cabeça agora?</div>
- <p class="pq-sub">Pensa nessa pessoa. Em 4 perguntas a gente descobre a cor dela.</p>
+ <p class="pq-sub">Pensa nessa pessoa. Em menos de 1 minuto a gente descobre a cor dela.</p>
  <input class="pq-name" id="pq-name" type="text" maxlength="20" placeholder="Nome dela (opcional)" autocomplete="off"/>
  <button class="btn primary pq-btn" onclick="PQuiz.start()">Descobrir a cor dela 🎨</button>
  </div>
@@ -335,46 +335,46 @@ var COLORS = {
 
 /* ---- 8 perguntas ---- */
 var Q = [
- {q:"Quando alguém que você ama está mal, o seu instinto é…",
- o:[{t:"Ficar do lado em silêncio. Presença já acalma.",fam:"paz",b:["azul","azul_ardosia","branco"]},
- {t:"Cuidar, aquecer, fazer a pessoa se sentir em casa.",fam:"calor",b:["amarelo","caramelo","marrom"]},
- {t:"Chacoalhar com carinho e lembrar a força dela.",fam:"movimento",b:["vermelho","dourado"]},
- {t:"Escutar fundo o que ela nem conseguiu dizer.",fam:"profundidade",b:["indigo","roxo","ameixa"]}]},
- {q:"As pessoas te procuram, no fundo, pra…",
- o:[{t:"Descansar. Respirar. Desacelerar.",fam:"paz",b:["verde_menta","turquesa","laranja_por_do_sol"]},
- {t:"Se sentir acolhidas e pertencentes.",fam:"calor",b:["amarelo_manteiga","amarelo","lilas"]},
- {t:"Ganhar coragem e sair do lugar.",fam:"movimento",b:["laranja","coral","vermelho"]},
- {t:"Crescer e virar quem elas podem ser.",fam:"crescimento",b:["verde_abacate","verde_e_amarelo"]}]},
- {q:"A sua forma de amar é mais…",
- o:[{t:"Constante e silenciosa.",fam:"crescimento",b:["verde_pinho","ocre","verde"]},
- {t:"Calorosa e cuidadosa.",fam:"calor",b:["rosa","rosa_bebe","caramelo"]},
- {t:"Intensa e presente.",fam:"movimento",b:["vermelho","vinho"]},
- {t:"Profunda e difícil de explicar.",fam:"profundidade",b:["roxo","ameixa","preto"]}]},
+ {q:"Quando alguém que você ama está mal, o seu instinto é...",
+  o:[{t:"Ficar do lado em silêncio. Presença já acalma.",fam:"paz",b:["azul", "azul_glacial", "azul_ardosia", "turquesa"]},
+     {t:"Cuidar, aquecer, fazer a pessoa se sentir em casa.",fam:"calor",b:["amarelo", "marrom", "cafe_com_leite", "caramelo", "ocre"]},
+     {t:"Chacoalhar com carinho e lembrar a força dela.",fam:"movimento",b:["vermelho", "laranja", "coral", "dourado", "prata"]},
+     {t:"Escutar fundo o que ela nem conseguiu dizer.",fam:"profundidade",b:["roxo", "lilas", "ameixa", "indigo", "preto"]}]},
+ {q:"As pessoas te procuram, no fundo, pra...",
+  o:[{t:"Descansar. Respirar. Desacelerar.",fam:"paz",b:["azul", "verde_menta", "branco"]},
+     {t:"Se sentir acolhidas e pertencentes.",fam:"calor",b:["amarelo", "amarelo_manteiga", "amarelo_champagne", "rosa", "rosa_bebe"]},
+     {t:"Ganhar coragem e sair do lugar.",fam:"movimento",b:["vermelho"]},
+     {t:"Crescer e virar quem elas podem ser.",fam:"crescimento",b:["verde", "verde_abacate", "verde_e_amarelo"]}]},
+ {q:"A sua forma de amar é mais...",
+  o:[{t:"Constante e silenciosa.",fam:"crescimento",b:["verde", "verde_pinho", "verde_pistache"]},
+     {t:"Calorosa e cuidadosa.",fam:"calor",b:["marrom", "amarelo_manteiga"]},
+     {t:"Intensa e presente.",fam:"movimento",b:["laranja"]},
+     {t:"Profunda e difícil de explicar.",fam:"profundidade",b:["roxo", "vinho"]}]},
  {q:"Um elogio que combina com você:",
- o:[{t:"“Perto de você eu respiro.”",fam:"paz",b:["azul","verde_menta","branco"]},
- {t:"“Você é o meu lar.”",fam:"calor",b:["marrom","cafe_com_leite","amarelo"]},
- {t:"“Você me tira do lugar.”",fam:"movimento",b:["vermelho","laranja"]},
- {t:"“Você me entende sem eu falar.”",fam:"profundidade",b:["indigo","roxo"]}]},
- {q:"As dores que você viveu te deixaram…",
- o:[{t:"Mais calmo e presente.",fam:"paz",b:["azul_glacial","azul_ardosia"]},
- {t:"Com vontade de acolher os outros.",fam:"cura",b:["ferrugem","barro_molhado"]},
- {t:"Mais corajoso e verdadeiro.",fam:"movimento",b:["vermelho","coral"]},
- {t:"Mais profundo e sensível.",fam:"profundidade",b:["ameixa","vinho","preto"]}]},
- {q:"No meio de um grupo, você costuma ser…",
- o:[{t:"Quem sustenta o clima sem aparecer.",fam:"paz",b:["azul_ardosia","azul_glacial"]},
- {t:"Quem aquece e faz todo mundo pertencer.",fam:"calor",b:["caramelo","amarelo","lilas"]},
- {t:"Quem traz alegria e leveza.",fam:"movimento",b:["laranja","coral","turquesa","dourado"]},
- {t:"Quem ninguém entende completamente.",fam:"profundidade",b:["preto","ameixa","roxo"]}]},
- {q:"A sua presença lembra…",
- o:[{t:"A luz suave da manhã.",fam:"calor",b:["amarelo_manteiga","branco","amarelo_champagne"]},
- {t:"Um café quente num dia frio.",fam:"calor",b:["cafe_com_leite","caramelo","marrom"]},
- {t:"Uma faísca, um fogo.",fam:"movimento",b:["vermelho","laranja","coral"]},
- {t:"Um lago fundo e sereno.",fam:"profundidade",b:["azul_glacial","indigo","roxo","preto"]}]},
- {q:"E, no fundo, o que mais te define é…",
- o:[{t:"Elegância discreta.",fam:"movimento",b:["prata","amarelo_champagne","azul_ardosia","preto"]},
- {t:"Otimismo que faz florescer.",fam:"crescimento",b:["verde_abacate","verde_pistache","verde_e_amarelo","verde"]},
- {t:"Permanência que não desiste.",fam:"crescimento",b:["verde_pinho","ocre","marrom","vinho"]},
- {t:"Recomeço depois da dor.",fam:"cura",b:["barro_molhado","ferrugem","laranja_por_do_sol"]}]}
+  o:[{t:"“Perto de você eu respiro.”",fam:"paz",b:["azul_glacial", "verde_menta"]},
+     {t:"“Você é o meu lar.”",fam:"calor",b:["cafe_com_leite", "amarelo_champagne"]},
+     {t:"“Você me tira do lugar.”",fam:"movimento",b:["coral"]},
+     {t:"“Você me entende sem eu falar.”",fam:"profundidade",b:["lilas", "vinho"]}]},
+ {q:"As dores que você viveu te deixaram...",
+  o:[{t:"Mais calmo e presente.",fam:"paz",b:["azul_ardosia", "branco"]},
+     {t:"Com vontade de acolher os outros.",fam:"cura",b:["ferrugem", "barro_molhado"]},
+     {t:"Mais corajoso e verdadeiro.",fam:"movimento",b:["dourado"]},
+     {t:"Mais profundo e sensível.",fam:"profundidade",b:["ameixa"]}]},
+ {q:"No meio de um grupo, você costuma ser...",
+  o:[{t:"Quem sustenta o clima sem aparecer.",fam:"paz",b:["turquesa"]},
+     {t:"Quem aquece e faz todo mundo pertencer.",fam:"calor",b:["caramelo", "rosa"]},
+     {t:"Quem traz alegria e leveza.",fam:"movimento",b:["prata"]},
+     {t:"Quem ninguém entende completamente.",fam:"profundidade",b:["indigo"]}]},
+ {q:"A sua presença lembra...",
+  o:[{t:"A luz suave da manhã.",fam:"calor",b:["ocre", "rosa_bebe"]},
+     {t:"Chuva que devolve vida à terra.",fam:"cura",b:["ferrugem", "laranja_por_do_sol"]},
+     {t:"Uma faísca, um fogo.",fam:"movimento",b:[]},
+     {t:"Um lago fundo e sereno.",fam:"profundidade",b:["preto"]}]},
+ {q:"E, no fundo, o que mais te define é...",
+  o:[{t:"Elegância discreta.",fam:"movimento",b:[]},
+     {t:"Otimismo que faz florescer.",fam:"crescimento",b:["verde_abacate", "verde_pinho"]},
+     {t:"Permanência que não desiste.",fam:"crescimento",b:["verde_e_amarelo", "verde_pistache"]},
+     {t:"Recomeço depois da dor.",fam:"cura",b:["barro_molhado", "laranja_por_do_sol"]}]}
 ];
 
 var Quiz = (function(){
@@ -415,7 +415,8 @@ var Quiz = (function(){
  function topColor(){
  var best=null,bv=-1;for(var k in scores){if(scores[k]>bv){bv=scores[k];best=k;}}
  var fams=Object.keys(famScore).filter(function(f){return famScore[f]>0;});
- if(fams.length>=5)return 'arco_iris';
+ // Arco-Iris so quando a pessoa toca TODAS as 6 familias (easter egg raro)
+ if(fams.length>=6)return 'arco_iris';
  return best;
  }
  function finish(){
@@ -445,25 +446,30 @@ var Quiz = (function(){
 /* ---- P0: mini-quiz "a cor da sua pessoa" (respondido pensando em alguém) ---- */
 var PQ = [
  {q:"Perto dessa pessoa, o que você sente primeiro?",
-  o:[{t:"Calma. O mundo desacelera.",fam:"paz",b:["azul","verde_menta","branco"]},
-     {t:"Aconchego. Parece casa.",fam:"calor",b:["marrom","cafe_com_leite","amarelo"]},
-     {t:"Energia. Vontade de viver.",fam:"movimento",b:["laranja","coral","vermelho"]},
-     {t:"Profundidade. Ela me lê.",fam:"profundidade",b:["indigo","roxo","ameixa"]}]},
+  o:[{t:"Calma. O mundo desacelera.",fam:"paz",b:["azul", "azul_glacial", "azul_ardosia", "verde_pinho", "barro_molhado"]},
+     {t:"Aconchego. Parece casa.",fam:"calor",b:["amarelo", "marrom", "cafe_com_leite", "amarelo_champagne", "rosa", "rosa_bebe"]},
+     {t:"Energia. Vontade de viver.",fam:"movimento",b:["vermelho", "laranja", "coral"]},
+     {t:"Profundidade. Ela me lê.",fam:"profundidade",b:["roxo", "lilas", "indigo", "preto", "vinho"]}]},
  {q:"Quando você está mal, ela...",
-  o:[{t:"Fica. Em silêncio, do lado.",fam:"paz",b:["azul_ardosia","azul_glacial"]},
-     {t:"Cuida: mensagem, comida, colo.",fam:"calor",b:["caramelo","rosa","amarelo_manteiga"]},
-     {t:"Me levanta e me põe pra andar.",fam:"movimento",b:["vermelho","dourado"]},
-     {t:"Entende antes de eu falar.",fam:"profundidade",b:["indigo","ameixa","lilas"]}]},
+  o:[{t:"Fica. Em silêncio, do lado.",fam:"paz",b:["azul", "turquesa", "verde_menta", "amarelo_champagne", "verde_pistache", "indigo", "laranja_por_do_sol"]},
+     {t:"Cuida: mensagem, comida, colo.",fam:"calor",b:["amarelo", "caramelo", "ocre"]},
+     {t:"Me levanta e me põe pra andar.",fam:"movimento",b:["vermelho", "dourado", "prata"]},
+     {t:"Entende antes de eu falar.",fam:"profundidade",b:["roxo", "ameixa"]}]},
  {q:"A presença dela lembra...",
-  o:[{t:"A luz da manhã.",fam:"calor",b:["amarelo_manteiga","amarelo_champagne","branco"]},
-     {t:"Chuva que renova a terra.",fam:"cura",b:["barro_molhado","ferrugem","laranja_por_do_sol"]},
-     {t:"Uma faísca.",fam:"movimento",b:["vermelho","coral","laranja"]},
-     {t:"Raiz firme.",fam:"crescimento",b:["verde_pinho","ocre","verde"]}]},
+  o:[{t:"A luz suave da manhã.",fam:"calor",b:["marrom", "caramelo", "amarelo_manteiga"]},
+     {t:"Chuva que renova a terra.",fam:"cura",b:["ferrugem", "barro_molhado", "laranja_por_do_sol"]},
+     {t:"Uma faísca.",fam:"movimento",b:["laranja", "dourado"]},
+     {t:"Raiz firme.",fam:"crescimento",b:["verde", "verde_abacate", "verde_pinho", "verde_pistache"]}]},
  {q:"Se fosse agradecer por uma coisa, seria...",
-  o:[{t:"Por me dar paz.",fam:"paz",b:["turquesa","azul","verde_menta"]},
-     {t:"Por me fazer rir.",fam:"movimento",b:["laranja","coral"]},
-     {t:"Por acreditar em mim.",fam:"crescimento",b:["verde_abacate","verde_e_amarelo","lilas"]},
-     {t:"Por ter ficado nos piores dias.",fam:"cura",b:["barro_molhado","ferrugem","verde_pinho"]}]}
+  o:[{t:"Por me dar paz.",fam:"paz",b:["azul_glacial", "turquesa", "branco", "rosa", "preto"]},
+     {t:"Por me fazer rir.",fam:"movimento",b:["coral", "prata"]},
+     {t:"Por acreditar em mim.",fam:"crescimento",b:["verde", "verde_e_amarelo"]},
+     {t:"Por ter ficado nos piores dias.",fam:"cura",b:["ferrugem"]}]},
+ {q:"E o que ela tem que quase ninguém tem?",
+  o:[{t:"Serenidade. Nunca aumenta o caos.",fam:"paz",b:["azul_ardosia", "verde_menta", "branco", "rosa_bebe", "vinho"]},
+     {t:"Delicadeza no jeito de cuidar.",fam:"calor",b:["cafe_com_leite", "ocre", "amarelo_manteiga"]},
+     {t:"Profundidade difícil de explicar.",fam:"profundidade",b:["lilas", "ameixa"]},
+     {t:"Constância. Ela permanece.",fam:"crescimento",b:["verde_abacate", "verde_e_amarelo"]}]}
 ];
 
 var PQuiz = (function(){
@@ -498,7 +504,7 @@ var PQuiz = (function(){
  function topColor(){
   var best=null,bv=-1;
   for(var k in scores){if(scores[k]>bv){bv=scores[k];best=k;}}
-  if(Object.keys(fams).length>=4)return 'arco_iris';
+  // sem Arco-Iris aqui: 5 perguntas nao bastam pra dizer que alguem e todas as cores
   return best;
  }
  function reveal(){
