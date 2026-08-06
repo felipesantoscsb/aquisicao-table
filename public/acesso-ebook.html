@@ -24,8 +24,37 @@ body{min-height:100vh;position:relative;overflow-x:hidden}
 h1{font-family:var(--serif);font-weight:400;font-size:clamp(30px,7.5vw,42px);line-height:1.12;letter-spacing:-.01em;margin-bottom:12px}
 .sub{color:#5f5866;font-size:16.5px;max-width:34ch;margin:0 auto 26px}
 .cover{width:210px;max-width:60%;border-radius:12px;box-shadow:0 20px 46px rgba(0,0,0,.22);margin:0 auto 30px;display:block}
+/* entrega em 2 partes: livro + cartões */
+.items{display:flex;flex-direction:column;gap:18px;margin:6px 0 26px}
+.item{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:0 10px 28px rgba(0,0,0,.05);text-align:left}
+.thumb{width:100%;max-width:190px;display:block;margin:0 auto 18px;border-radius:12px;box-shadow:0 14px 34px rgba(0,0,0,.2)}
+.i-tag{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:#b5623f;background:#fdeee7;padding:5px 11px;border-radius:999px;margin-bottom:8px}
+.i-body h3{font-family:var(--serif);font-weight:400;font-size:23px;margin-bottom:6px}
+.i-body p{font-size:14.5px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+.i-body .btn{font-size:16px;padding:16px 22px}
+.mini{font-size:12.5px;color:var(--muted);margin:10px 0 0;text-align:center}
+/* paleta de cores clicavel */
+.palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:9px;margin-top:6px}
+.sw{aspect-ratio:1;border-radius:13px;border:none;cursor:pointer;position:relative;padding:0;
+    box-shadow:0 3px 10px rgba(0,0,0,.13);transition:transform .14s,box-shadow .14s}
+.sw:hover{transform:translateY(-3px) scale(1.06);box-shadow:0 8px 18px rgba(0,0,0,.2)}
+.sw:active{transform:scale(.96)}
+.sw span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:17px}
+/* modal */
+.modal{display:none;position:fixed;inset:0;z-index:60;background:rgba(28,20,14,.72);
+       backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:20px;overflow-y:auto}
+.modal.open{display:flex;align-items:center;justify-content:center}
+.modal-box{background:var(--card);border-radius:22px;padding:18px;max-width:340px;width:100%;position:relative;
+           box-shadow:0 24px 60px rgba(0,0,0,.4);animation:pop .22s ease}
+@keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+.modal-box img{width:100%;border-radius:14px;display:block;box-shadow:0 10px 26px rgba(0,0,0,.18)}
+.modal-x{position:absolute;top:-12px;right:-12px;width:36px;height:36px;border-radius:50%;border:none;
+         background:#fff;color:var(--ink);font-size:22px;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.m-actions{display:flex;flex-direction:column;gap:9px;margin-top:14px}
+.m-actions .btn{width:100%;font-size:16px;padding:15px}
 .btn{display:inline-block;border:none;font:inherit;font-weight:700;font-size:17px;padding:18px 30px;border-radius:999px;cursor:pointer;text-decoration:none;transition:transform .15s,box-shadow .15s;width:100%;max-width:380px}
 .btn.gold{background:linear-gradient(135deg,#F0C35A,#E6712B);color:#fff;box-shadow:0 12px 26px rgba(230,113,43,.34)}
+.btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:none}
 .btn.gold:active{transform:scale(.98)}
 .hint{font-size:13px;color:var(--muted);margin-top:12px}
 .card{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:22px 22px;margin:34px auto 0;max-width:420px;text-align:left;box-shadow:0 10px 28px rgba(0,0,0,.05)}
@@ -45,27 +74,103 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(30px,7.5vw,42px);lin
 <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
 <div class="wrap">
   <div class="badge">✅ Compra confirmada</div>
-  <h1>Seu livro está pronto 🎉</h1>
-  <p class="sub">Obrigada por levar <em>A Cor de Cada Pessoa</em>. É só tocar no botão abaixo pra baixar o seu ebook.</p>
+  <h1>Seu kit está pronto 🎉</h1>
+  <p class="sub">Obrigada por levar <em>A Cor de Cada Pessoa</em>. Seu kit tem duas partes, baixe as duas abaixo.</p>
 
-  <img class="cover" src="images/cores-ebook-cover.png" alt="Capa — A Cor de Cada Pessoa"/>
+  <div class="items">
+    <div class="item">
+      <img class="thumb book" src="images/cores-ebook-cover.png" alt="Capa do livro A Cor de Cada Pessoa"/>
+      <div class="i-body">
+        <div class="i-tag">Parte 1</div>
+        <h3>O livro</h3>
+        <p>35 cores, 35 retratos pra você reconhecer as suas pessoas.</p>
+        <a class="btn gold" href="ebook/a-cor-de-cada-pessoa.pdf" download="A-Cor-de-Cada-Pessoa.pdf">⬇️ Baixar o livro (PDF)</a>
+      </div>
+    </div>
 
-  <a class="btn gold" href="ebook/a-cor-de-cada-pessoa.pdf" download="A-Cor-de-Cada-Pessoa.pdf">⬇️ Baixar meu ebook (PDF)</a>
-  <p class="hint">Arquivo em PDF · abre no celular, tablet ou computador</p>
-
-  <div class="card">
-    <h2>Como aproveitar</h2>
-    <ol>
-      <li>Toque em <b>Baixar</b> e salve o PDF no seu aparelho.</li>
-      <li>Leia na ordem ou procure direto a cor de alguém — como preferir.</li>
-      <li>Quando uma cor te lembrar de alguém, é aí que a mágica acontece 👇</li>
-    </ol>
+    <div class="item">
+      <div class="i-body" style="text-align:center">
+        <div class="i-tag">Parte 2</div>
+        <h3>Os 35 Cartões</h3>
+        <p>Escolha a cor da pessoa e envie. Sem baixar nada antes.</p>
+      </div>
+      <div class="palette" id="palette"></div>
+      <p class="mini" id="pal-hint">👆 Toque na cor da sua pessoa</p>
+    </div>
   </div>
 
-  <div class="print-note">💌 <b>A parte mais bonita:</b> quando um retrato fizer você pensar em alguém, faça um <b>print daquela página</b> e mande pra pessoa. A gente passa tempo demais sentindo gratidão em silêncio — este livro é uma desculpa pra dizer.</div>
+  <div class="print-note">💌 <b>Como usar:</b> leia o livro pra descobrir a cor de cada pessoa que você ama. Depois é só pegar o cartão daquela cor e mandar pra ela. A gente passa tempo demais sentindo gratidão em silêncio, e esses cartões existem pra facilitar o dizer.</div>
+
+  <!-- modal do cartão escolhido -->
+  <div class="modal" id="modal" onclick="if(event.target===this)Cartoes.close()">
+    <div class="modal-box">
+      <button class="modal-x" onclick="Cartoes.close()" aria-label="Fechar">×</button>
+      <img id="m-img" src="" alt="Cartão"/>
+      <div class="m-actions">
+        <button class="btn gold" id="m-send">💬 Enviar pra essa pessoa</button>
+        <a class="btn ghost" id="m-download" href="#" download>⬇️ Salvar no aparelho</a>
+      </div>
+      <p class="mini" id="m-note"></p>
+    </div>
+  </div>
 
   <p class="sign">Com carinho,<br>Evelyn Liu</p>
   <p class="support">Problemas com o download? Fale com a gente: <a href="https://wa.me/5511977130088" target="_blank" rel="noopener">suporte no WhatsApp</a></p>
 </div>
+
+<script>
+var CARTOES=[{"n":"Azul","f":"Azul","h":"#5E82AE","d":1,"e":"💙","file":"cartoes/01-azul.png"},{"n":"Azul Glacial","f":"Azul Glacial","h":"#A9C6DB","d":0,"e":"💙","file":"cartoes/02-azul-glacial.png"},{"n":"Azul-Ardósia","f":"Azul-Ardósia","h":"#48586A","d":1,"e":"💙","file":"cartoes/03-azul-ardosia.png"},{"n":"Turquesa","f":"Turquesa","h":"#38B2A8","d":0,"e":"💙","file":"cartoes/04-turquesa.png"},{"n":"Verde-Menta","f":"Verde-Menta","h":"#9CE0C4","d":0,"e":"💚","file":"cartoes/05-verde-menta.png"},{"n":"Branco","f":"Branca","h":"#EDEBE4","d":0,"e":"🤍","file":"cartoes/06-branco.png"},{"n":"Amarelo","f":"Amarela","h":"#F4C948","d":0,"e":"💛","file":"cartoes/07-amarelo.png"},{"n":"Marrom","f":"Marrom","h":"#6E4B36","d":1,"e":"🤎","file":"cartoes/08-marrom.png"},{"n":"Café com Leite","f":"Café com Leite","h":"#C4A17B","d":0,"e":"☕","file":"cartoes/09-cafe-com-leite.png"},{"n":"Caramelo","f":"Caramelo","h":"#C57B3C","d":0,"e":"🍮","file":"cartoes/10-caramelo.png"},{"n":"Ocre","f":"Ocre","h":"#C4892C","d":0,"e":"🌾","file":"cartoes/11-ocre.png"},{"n":"Amarelo-Manteiga","f":"Amarelo-Manteiga","h":"#F0D488","d":0,"e":"💛","file":"cartoes/12-amarelo-manteiga.png"},{"n":"Amarelo Champagne","f":"Amarelo Champagne","h":"#EADFB4","d":0,"e":"🥂","file":"cartoes/13-amarelo-champagne.png"},{"n":"Rosa","f":"Rosa","h":"#E597AD","d":0,"e":"🩷","file":"cartoes/14-rosa.png"},{"n":"Rosa Bebê","f":"Rosa Bebê","h":"#F3C4D1","d":0,"e":"🌸","file":"cartoes/15-rosa-bebe.png"},{"n":"Vermelho","f":"Vermelha","h":"#CE3F39","d":1,"e":"❤️","file":"cartoes/16-vermelho.png"},{"n":"Laranja","f":"Laranja","h":"#E6712B","d":0,"e":"🧡","file":"cartoes/17-laranja.png"},{"n":"Coral","f":"Coral","h":"#FF7A67","d":0,"e":"🪸","file":"cartoes/18-coral.png"},{"n":"Dourado","f":"Dourada","h":"#D4AF37","d":0,"e":"✨","file":"cartoes/19-dourado.png"},{"n":"Prata","f":"Prata","h":"#B9C0C7","d":0,"e":"🤍","file":"cartoes/20-prata.png"},{"n":"Verde","f":"Verde","h":"#4C9857","d":0,"e":"💚","file":"cartoes/21-verde.png"},{"n":"Verde Abacate","f":"Verde Abacate","h":"#9CB55E","d":0,"e":"🥑","file":"cartoes/22-verde-abacate.png"},{"n":"Verde e Amarelo","f":"Verde e Amarelo","h":"#5CA544","d":0,"e":"💛","file":"cartoes/23-verde-e-amarelo.png"},{"n":"Verde-Pinho","f":"Verde-Pinho","h":"#2C4B39","d":1,"e":"🌲","file":"cartoes/24-verde-pinho.png"},{"n":"Verde-Pistache","f":"Verde-Pistache","h":"#BCD59B","d":0,"e":"🌱","file":"cartoes/25-verde-pistache.png"},{"n":"Roxo","f":"Roxa","h":"#7A4C9E","d":1,"e":"💜","file":"cartoes/26-roxo.png"},{"n":"Lilás","f":"Lilás","h":"#B49AD6","d":0,"e":"🪻","file":"cartoes/27-lilas.png"},{"n":"Ameixa","f":"Ameixa","h":"#6C3A5A","d":1,"e":"🫐","file":"cartoes/28-ameixa.png"},{"n":"Índigo","f":"Índigo","h":"#454592","d":1,"e":"💙","file":"cartoes/29-indigo.png"},{"n":"Preto","f":"Preta","h":"#1C1C22","d":1,"e":"🖤","file":"cartoes/30-preto.png"},{"n":"Vinho","f":"Vinho","h":"#7A2138","d":1,"e":"🍷","file":"cartoes/31-vinho.png"},{"n":"Ferrugem","f":"Ferrugem","h":"#A85832","d":1,"e":"🍁","file":"cartoes/32-ferrugem.png"},{"n":"Barro Molhado","f":"Barro Molhado","h":"#8A6850","d":1,"e":"🌧️","file":"cartoes/33-barro-molhado.png"},{"n":"Laranja Pôr do Sol","f":"Laranja Pôr do Sol","h":"#F08E49","d":0,"e":"🌅","file":"cartoes/34-laranja-por-do-sol.png"},{"n":"Arco-Íris","f":"Arco-Íris","h":"linear-gradient(135deg,#CE3F39,#E6712B,#D4AF37,#4C9857,#38B2A8,#5E82AE,#7A4C9E,#E597AD)","d":1,"e":"🌈","file":"cartoes/35-arco-iris.png"}];
+
+var Cartoes=(function(){
+  var atual=null;
+  var modal=document.getElementById('modal'),
+      img=document.getElementById('m-img'),
+      btnSend=document.getElementById('m-send'),
+      linkDl=document.getElementById('m-download'),
+      note=document.getElementById('m-note');
+
+  function montaPaleta(){
+    var p=document.getElementById('palette');
+    CARTOES.forEach(function(c,i){
+      var b=document.createElement('button');
+      b.className='sw'; b.style.background=c.h;
+      b.title='Pessoa '+c.f; b.setAttribute('aria-label','Cartão da pessoa '+c.f);
+      b.innerHTML='<span>'+c.e+'</span>';
+      b.onclick=function(){abrir(i);};
+      p.appendChild(b);
+    });
+  }
+
+  function abrir(i){
+    atual=CARTOES[i];
+    img.src=atual.file; img.alt='Cartão: você é a minha pessoa '+atual.f;
+    linkDl.href=atual.file;
+    linkDl.setAttribute('download','pessoa-'+atual.f.toLowerCase().replace(/\s+/g,'-')+'.png');
+    note.textContent='Você é a minha pessoa '+atual.f+' '+atual.e;
+    modal.classList.add('open');
+    document.body.style.overflow='hidden';
+  }
+  function close(){modal.classList.remove('open');document.body.style.overflow='';}
+
+  // Envio nativo: abre o compartilhamento do celular (WhatsApp, etc)
+  btnSend.addEventListener('click', function(){
+    if(!atual) return;
+    var txt='Você é a minha pessoa '+atual.f+' '+atual.e;
+    fetch(atual.file).then(function(r){return r.blob();}).then(function(blob){
+      var file=new File([blob], 'pessoa-'+atual.f.toLowerCase().replace(/\s+/g,'-')+'.png', {type:'image/png'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        return navigator.share({files:[file], text:txt});
+      }
+      // fallback desktop: baixa a imagem e abre o WhatsApp Web com o texto
+      linkDl.click();
+      window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank','noopener');
+    }).catch(function(){ /* usuario cancelou o compartilhamento */ });
+  });
+
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+  montaPaleta();
+  return {close:close};
+})();
+</script>
 </body>
 </html>
