@@ -115,13 +115,24 @@ h1{font-family:var(--serif);font-weight:400;line-height:1.12;letter-spacing:-.01
 .cta-wrap .btn{width:100%;padding:16px;font-size:17px}
 .guarantee{font-size:12px;color:var(--muted);margin-top:8px;text-align:center}
 /* gancho de oferta logo abaixo do resultado */
-.offer-hook{display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(135deg,#fff4ec,#ffe6d8);border:2px solid #f2ceb4;border-radius:16px;padding:15px 18px;margin:2px 0 16px;text-decoration:none;color:var(--ink);transition:transform .12s,box-shadow .15s}
-.offer-hook:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(230,113,43,.14)}
-.offer-hook strong{display:block;font-size:15.5px;line-height:1.3}
-.offer-hook span{font-size:13px;color:#a06a48}
-.oh-arrow{font-size:22px;color:#E6712B;flex:0 0 auto}
 /* espaço pro conteúdo não ficar atrás da barra fixa */
 #result{padding-bottom:104px}
+/* P0: mini-quiz "a cor dela" */
+.pquiz{background:linear-gradient(135deg,#fff4ec,#ffe9dc);border:2px solid #f2ceb4;border-radius:var(--radius);padding:24px 22px;margin:2px 0 18px}
+.pq-kick{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#b5623f;background:#fff;padding:6px 12px;border-radius:999px;font-weight:700;margin-bottom:12px}
+.pq-title{font-family:var(--serif);font-size:26px;line-height:1.2}
+.pq-sub{color:#7a5238;font-size:15px;margin:8px 0 14px}
+.pq-name{display:block;width:100%;font:inherit;font-size:16px;padding:14px 16px;border:2px solid #f2ceb4;border-radius:14px;background:#fff;margin-bottom:12px;color:var(--ink)}
+.pq-name:focus{outline:none;border-color:#E6712B}
+.pq-btn{width:100%}
+.pquiz .opt{background:#fff}
+.pq-swatch{border-radius:18px;padding:22px 20px;margin:4px 0 14px;box-shadow:0 12px 30px rgba(0,0,0,.15)}
+.pq-emoji{font-size:30px;margin-bottom:4px}
+.pq-cname{font-family:var(--serif);font-size:34px;line-height:1.05}
+.pq-ess{font-family:var(--serif);font-style:italic;font-size:16px;margin-top:8px;line-height:1.35}
+.pq-locked{background:#fff;border:1px dashed #e6b98c;border-radius:14px;padding:16px;margin-bottom:14px;position:relative}
+.pq-lock-lines i{display:block;height:11px;border-radius:6px;background:linear-gradient(90deg,#eadfd2,#f6efe6);margin-bottom:8px;filter:blur(1.5px)}
+.pq-lock-msg{font-size:14px;color:#7a5238;line-height:1.5;margin-top:10px}
 .disc{font-size:12px;color:var(--muted);line-height:1.55;margin-top:28px;border-top:1px solid var(--line);padding-top:18px}
 .hidden{display:none}
 .fade{animation:fade .45s ease}
@@ -166,17 +177,44 @@ h1{font-family:var(--serif);font-weight:400;line-height:1.12;letter-spacing:-.01
  </div>
  <div class="teaser" id="r-teaser"></div>
 
- <!-- gancho de oferta imediato (antes do compartilhar) -->
- <a class="offer-hook" onclick="Quiz.toOffer(event)" href="#oferta">
- <div>
- <strong>Agora imagina dizer isso pra alguém que você ama.</strong>
- <span>Do jeito mais leve e divertido, ver a oferta ↓</span>
+ <!-- P0: mini-quiz "a cor da sua pessoa" (continuação, não pitch) -->
+ <div class="pquiz" id="pquiz">
+
+ <!-- estado 1: convite -->
+ <div id="pq-intro">
+ <div class="pq-kick">✨ Agora a parte boa</div>
+ <div class="pq-title">Quem veio na sua cabeça agora?</div>
+ <p class="pq-sub">Pensa nessa pessoa. Em 4 perguntas a gente descobre a cor dela.</p>
+ <input class="pq-name" id="pq-name" type="text" maxlength="20" placeholder="Nome dela (opcional)" autocomplete="off"/>
+ <button class="btn primary pq-btn" onclick="PQuiz.start()">Descobrir a cor dela 🎨</button>
  </div>
- <span class="oh-arrow">→</span>
- </a>
+
+ <!-- estado 2: perguntas -->
+ <div id="pq-quiz" class="hidden">
+ <div class="pq-kick" id="pq-num"></div>
+ <div class="pq-title" id="pq-qtext" style="font-size:22px"></div>
+ <div class="opts" id="pq-opts" style="margin-top:14px"></div>
+ </div>
+
+ <!-- estado 3: reveal parcial -->
+ <div id="pq-reveal" class="hidden">
+ <div class="pq-kick" id="pq-owner">✨ E a cor dela é</div>
+ <div class="pq-swatch" id="pq-swatch">
+ <div class="pq-emoji" id="pq-emoji"></div>
+ <div class="pq-cname" id="pq-cname"></div>
+ <div class="pq-ess" id="pq-ess"></div>
+ </div>
+ <div class="pq-locked">
+ <div class="pq-lock-lines"><i></i><i style="width:92%"></i><i style="width:96%"></i><i style="width:74%"></i></div>
+ <div class="pq-lock-msg">🔒 <b>O retrato completo dela</b>, aquele texto que parece que foi escrito sobre vocês, está no livro. Junto com o cartão pronto pra enviar.</div>
+ </div>
+ <a class="btn gold pq-btn" href="#oferta" onclick="PQuiz.toOffer(event)">Quero enviar isso pra ela →</a>
+ </div>
+
+ </div>
 
  <div class="share-row">
- <a class="btn wpp" id="share-wpp" href="#">Mandar pra minha pessoa 💬</a>
+ <a class="btn ghost" id="share-wpp" href="#">Compartilhar a minha cor 💬</a>
  <button class="btn ghost" onclick="Quiz.restart()">Refazer o teste</button>
  </div>
 
@@ -188,18 +226,17 @@ h1{font-family:var(--serif);font-weight:400;line-height:1.12;letter-spacing:-.01
  <h2>O jeito mais divertido de dizer pra alguém: <em>você colore a minha vida.</em></h2>
  <p>A gente passa a vida sentindo gratidão por certas pessoas e quase nunca diz. Fica estranho, fica pesado, nunca é a hora.</p>
  <p>Com <em>A Cor de Cada Pessoa</em> vira leve: você descobre a cor de cada pessoa que ama e manda pra ela. Um "você faz diferença na minha vida" sem precisar de ocasião, sem cafonice.</p>
- <p>São <strong>35 cores e 35 retratos</strong>, cada um numa página feita pra fotografar e enviar. É ler, se reconhecer e dizer, tudo junto.</p>
+ <p id="offer-context">São <strong>35 cores e 35 retratos</strong>, cada um numa página feita pra fotografar e enviar. É ler, se reconhecer e dizer, tudo junto.</p>
 
  <div class="book">
- <h3>📖 A Cor de Cada Pessoa</h3>
- <p style="font-size:14px;margin:0">Ebook · entrega imediata em PDF</p>
+ <h3>🎁 Kit A Cor de Cada Pessoa</h3>
+ <p style="font-size:14px;margin:0">Livro + 35 Cartões prontos pra enviar · entrega imediata</p>
  <ul>
- <li>35 cores pra reconhecer cada pessoa que você ama</li>
- <li>Cada cor numa página desenhada, feita pra fotografar e mandar</li>
- <li>Um jeito leve de dizer "você importa", sem precisar de ocasião</li>
- <li>Entrega imediata em PDF: leia e envie hoje mesmo</li>
+ <li>Os <b>35 Cartões das Cores</b>: páginas desenhadas, prontas pra mandar no WhatsApp</li>
+ <li>O <b>retrato completo</b> de cada cor, pra acertar em cheio quem é quem na sua vida</li>
+ <li>Um jeito leve de dizer "você importa", sem esperar ocasião especial</li>
+ <li>Acesso imediato: dá pra enviar o primeiro cartão ainda hoje</li>
  </ul>
- <div class="bonus">🎁 <b>Bônus de lançamento:</b> os <b>Cartões das Cores</b>, as 35 páginas em alta pra imprimir e presentear.</div>
  <div class="price">
  <span class="from" id="p-from">R$ 47</span>
  <span class="now" id="p-now">R$ 19,90<small> à vista</small></span>
@@ -218,7 +255,7 @@ h1{font-family:var(--serif);font-weight:400;line-height:1.12;letter-spacing:-.01
 
  <div class="cta-wrap">
  <div class="inner">
- <a class="btn gold" id="buy" href="#" onclick="Quiz.checkout()">Quero o livro por R$ 19,90 →</a>
+ <a class="btn gold" id="buy" href="#" onclick="Quiz.checkout()">Quero o kit por R$ 19,90 →</a>
  <p class="guarantee">🔒 Compra segura · 7 dias de garantia · acesso imediato</p>
  </div>
  </div>
@@ -401,8 +438,89 @@ var Quiz = (function(){
  }
  function checkout(){/* InitiateCheckout NAO disparado aqui: a Cakto ja envia esse evento (evita duplicidade) */}
  function toOffer(e){if(e)e.preventDefault();var o=document.getElementById('oferta');if(o)o.scrollIntoView({behavior:'smooth',block:'start'});track('track','ViewContent',{content_name:'ebook_offer_view'});}
- function restart(){elRes.classList.add('hidden');start();}
+ function restart(){elRes.classList.add('hidden');if(window.PQuiz)PQuiz.reset();start();}
  return {start:start,back:back,restart:restart,checkout:checkout,toOffer:toOffer};
+})();
+
+/* ---- P0: mini-quiz "a cor da sua pessoa" (respondido pensando em alguém) ---- */
+var PQ = [
+ {q:"Perto dessa pessoa, o que você sente primeiro?",
+  o:[{t:"Calma. O mundo desacelera.",fam:"paz",b:["azul","verde_menta","branco"]},
+     {t:"Aconchego. Parece casa.",fam:"calor",b:["marrom","cafe_com_leite","amarelo"]},
+     {t:"Energia. Vontade de viver.",fam:"movimento",b:["laranja","coral","vermelho"]},
+     {t:"Profundidade. Ela me lê.",fam:"profundidade",b:["indigo","roxo","ameixa"]}]},
+ {q:"Quando você está mal, ela...",
+  o:[{t:"Fica. Em silêncio, do lado.",fam:"paz",b:["azul_ardosia","azul_glacial"]},
+     {t:"Cuida: mensagem, comida, colo.",fam:"calor",b:["caramelo","rosa","amarelo_manteiga"]},
+     {t:"Me levanta e me põe pra andar.",fam:"movimento",b:["vermelho","dourado"]},
+     {t:"Entende antes de eu falar.",fam:"profundidade",b:["indigo","ameixa","lilas"]}]},
+ {q:"A presença dela lembra...",
+  o:[{t:"A luz da manhã.",fam:"calor",b:["amarelo_manteiga","amarelo_champagne","branco"]},
+     {t:"Chuva que renova a terra.",fam:"cura",b:["barro_molhado","ferrugem","laranja_por_do_sol"]},
+     {t:"Uma faísca.",fam:"movimento",b:["vermelho","coral","laranja"]},
+     {t:"Raiz firme.",fam:"crescimento",b:["verde_pinho","ocre","verde"]}]},
+ {q:"Se fosse agradecer por uma coisa, seria...",
+  o:[{t:"Por me dar paz.",fam:"paz",b:["turquesa","azul","verde_menta"]},
+     {t:"Por me fazer rir.",fam:"movimento",b:["laranja","coral"]},
+     {t:"Por acreditar em mim.",fam:"crescimento",b:["verde_abacate","verde_e_amarelo","lilas"]},
+     {t:"Por ter ficado nos piores dias.",fam:"cura",b:["barro_molhado","ferrugem","verde_pinho"]}]}
+];
+
+var PQuiz = (function(){
+ var i=0, scores={}, fams={}, nome='';
+ var elIntro=document.getElementById('pq-intro'),
+     elQuiz=document.getElementById('pq-quiz'),
+     elRev=document.getElementById('pq-reveal');
+ function reset(){i=0;scores={};fams={};for(var k in COLORS){if(!COLORS[k].grad&&COLORS[k].fam!=='especial')scores[k]=0;}}
+ function start(){
+  reset();nome=(document.getElementById('pq-name').value||'').trim();
+  track('trackCustom','PersonQuizStart',{content_name:'quiz_cores_pessoa'});
+  elIntro.classList.add('hidden');elQuiz.classList.remove('hidden');render();
+ }
+ function render(){
+  var q=PQ[i];
+  document.getElementById('pq-num').textContent='Pergunta '+(i+1)+' de '+PQ.length;
+  document.getElementById('pq-qtext').textContent=q.q;
+  var box=document.getElementById('pq-opts');box.innerHTML='';
+  q.o.forEach(function(opt,idx){
+   var b=document.createElement('button');b.className='opt';
+   b.innerHTML='<span class="dot"></span><span>'+opt.t+'</span>';
+   b.onclick=function(){choose(idx);};box.appendChild(b);
+  });
+ }
+ function choose(idx){
+  var opt=PQ[i].o[idx];
+  for(var k in scores){if(COLORS[k].fam===opt.fam)scores[k]+=2;}
+  (opt.b||[]).forEach(function(c){if(scores[c]!=null)scores[c]+=3;});
+  fams[opt.fam]=(fams[opt.fam]||0)+1;
+  i++; if(i>=PQ.length)reveal(); else render();
+ }
+ function topColor(){
+  var best=null,bv=-1;
+  for(var k in scores){if(scores[k]>bv){bv=scores[k];best=k;}}
+  if(Object.keys(fams).length>=4)return 'arco_iris';
+  return best;
+ }
+ function reveal(){
+  var key=topColor(),c=COLORS[key];
+  var sw=document.getElementById('pq-swatch');
+  sw.style.background=c.hex; sw.style.color=c.dark?'#fff':'#1a1a1a';
+  document.getElementById('pq-emoji').textContent=c.emoji;
+  document.getElementById('pq-owner').textContent=nome?('✨ A cor de '+nome+' é'):'✨ E a cor dela é';
+  document.getElementById('pq-cname').textContent=c.n;
+  document.getElementById('pq-ess').textContent=c.ess;
+  var ctx=document.getElementById('offer-context');
+  if(ctx) ctx.innerHTML='O retrato completo da sua pessoa <strong>'+c.n+'</strong> '+c.emoji+' (e das outras 34 cores) vem no kit, com o cartão pronto pra você mandar '+(nome?('pra '+nome):'pra ela')+' hoje.';
+  elQuiz.classList.add('hidden');elRev.classList.remove('hidden');
+  track('trackCustom','PersonQuizResult',{content_name:'quiz_cores_pessoa',content_category:c.n});
+ }
+ function toOffer(e){if(e)e.preventDefault();var o=document.getElementById('oferta');if(o)o.scrollIntoView({behavior:'smooth',block:'start'});track('track','ViewContent',{content_name:'ebook_offer_view'});}
+ function reset0(){
+  reset();nome='';
+  document.getElementById('pq-name').value='';
+  elQuiz.classList.add('hidden');elRev.classList.add('hidden');elIntro.classList.remove('hidden');
+ }
+ return {start:start,toOffer:toOffer,reset:reset0};
 })();
 
 // Rodapé fixo de compra aparece só da 2a dobra em diante (na tela de resultado).
