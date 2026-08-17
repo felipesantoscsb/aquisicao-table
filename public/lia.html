@@ -41,9 +41,10 @@ var CONFIG = {
   BILLING_ENABLED: false,
 
   PRICING: {
-    monthly: { label: "Mensal",  price: "R$ 49,90", period: "/mês" },
+    monthly: { label: "Mensal",  price: "R$ 49,90", period: "/mês",
+               note: "Menos de R$ 1,70 por dia. Cancele quando quiser." },
     annual:  { label: "Anual",   price: "R$ 29,90", period: "/mês",
-               note: "cobrado R$ 358,80 uma vez por ano", badge: "economize 40%" }
+               note: "R$ 358,80 uma vez por ano · menos de R$ 1 por dia", badge: "economize 40%" }
   },
 
   // Vazio de propósito: a LIA ainda não tem pixel definido. Preencher só
@@ -98,7 +99,7 @@ h1,h2{font-family:var(--serif);font-weight:400;letter-spacing:-.025em;line-heigh
 h1{font-size:clamp(35px,9vw,58px)}
 h2{font-size:clamp(28px,6.6vw,44px);line-height:1.1}
 h3{font-size:16px;font-weight:600;letter-spacing:-.01em}
-.lead{font-size:clamp(17px,4.2vw,20px);color:var(--ink-2);line-height:1.52;margin-top:18px;max-width:34ch}
+.lead{font-size:clamp(17px,4.2vw,20px);color:var(--ink-2);line-height:1.52;margin-top:18px;max-width:38ch}
 .body{font-size:16.5px;color:var(--ink-2);line-height:1.62;margin-top:16px;max-width:44ch}
 .tiny{font-size:13px;color:var(--ink-3);line-height:1.5}
 .center{text-align:center}
@@ -206,9 +207,17 @@ h3{font-size:16px;font-weight:600;letter-spacing:-.01em}
 .insight-head::after{content:"✦";font-size:13px}
 .chain{list-style:none;position:relative}
 .chain li{position:relative;padding:0 0 0 24px;font-size:16px;color:var(--ink);line-height:1.35;min-height:34px;display:flex;align-items:center}
-.chain li::before{content:"";position:absolute;left:4px;top:calc(50% - 3.5px);width:7px;height:7px;border-radius:50%;background:var(--signal);opacity:.9}
-.chain li::after{content:"";position:absolute;left:7px;top:calc(50% + 7px);width:1px;height:calc(100% - 14px);background:var(--signal);opacity:.28}
+.chain li::before{content:"";position:absolute;left:4px;top:calc(50% - 3.5px);width:7px;height:7px;border-radius:50%;background:var(--signal);opacity:.9;transform:scale(0)}
+.chain li::after{content:"";position:absolute;left:7px;top:calc(50% + 7px);width:1px;height:calc(100% - 14px);background:var(--signal);opacity:.28;transform:scaleY(0);transform-origin:top}
 .chain li:last-child::after{display:none}
+.chain li span{opacity:0;transform:translateX(-7px)}
+/* "conecta os pontos" ao pé da letra: ponto surge, linha desce, texto entra */
+.insight.in .chain li::before{animation:dotIn .5s var(--ease) forwards;animation-delay:calc(var(--n,0) * 145ms)}
+.insight.in .chain li::after{animation:linkIn .42s var(--ease) forwards;animation-delay:calc(var(--n,0) * 145ms + 210ms)}
+.insight.in .chain li span{animation:txtIn .55s var(--ease) forwards;animation-delay:calc(var(--n,0) * 145ms + 90ms)}
+@keyframes dotIn{0%{transform:scale(0)}62%{transform:scale(1.4)}100%{transform:scale(1)}}
+@keyframes linkIn{to{transform:scaleY(1)}}
+@keyframes txtIn{to{opacity:1;transform:none}}
 .insight-note{font-size:14px;color:var(--ink-2);margin-top:13px;padding-top:13px;border-top:1px solid var(--line-soft);line-height:1.45}
 .sim{display:inline-block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-top:14px}
 
@@ -248,7 +257,10 @@ h3{font-size:16px;font-weight:600;letter-spacing:-.01em}
 .loop .orbit{transform-origin:100px 100px}
 .loop.run .orbit{animation:orbit 9s linear infinite}
 @keyframes orbit{to{transform:rotate(360deg)}}
-.loop .orbit circle{fill:var(--signal)}
+.loop .orbit .bead{fill:var(--signal)}
+/* rastro: arco curto logo atrás do ponto, gira junto com ele */
+.loop .orbit .trail{fill:none;stroke:var(--signal);stroke-width:3;stroke-linecap:round;
+  stroke-dasharray:46 394;stroke-dashoffset:-284;opacity:.26}
 
 .steps{display:grid;gap:14px;margin-top:30px}
 @media(min-width:820px){.steps{grid-template-columns:repeat(3,1fr);gap:18px}}
@@ -296,6 +308,18 @@ h3{font-size:16px;font-weight:600;letter-spacing:-.01em}
 .weekly dt{font-size:11.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--moss-lt);margin-top:18px}
 .weekly dd{font-size:16px;color:var(--ink);line-height:1.45;margin-top:6px}
 .weekly dd.sig{color:var(--signal)}
+.weekly dt,.weekly dd{opacity:0;transform:translateY(9px)}
+.weekly.in dt,.weekly.in dd{animation:txtUp .6s var(--ease) forwards;animation-delay:calc(var(--n,0) * 110ms + 180ms)}
+@keyframes txtUp{to{opacity:1;transform:none}}
+
+/* ── ecos: as frases internas da leitora ────────────────────────────────── */
+.echoes{display:flex;flex-direction:column;gap:12px;margin-bottom:26px}
+.echo{font-family:var(--serif);font-style:italic;font-size:clamp(19px,5vw,25px);
+  line-height:1.3;letter-spacing:-.01em;color:var(--ink-3)}
+.echo:nth-child(2){margin-left:36px}
+.echo:nth-child(3){margin-left:14px;color:var(--ink-2)}
+
+::selection{background:var(--moss-pale)}
 
 /* ── citação da ICP ─────────────────────────────────────────────────────── */
 .icp{font-family:var(--serif);font-size:clamp(21px,5.4vw,28px);line-height:1.28;letter-spacing:-.015em;
@@ -313,7 +337,8 @@ h3{font-size:16px;font-weight:600;letter-spacing:-.01em}
 /* ── preço ──────────────────────────────────────────────────────────────── */
 .plans{display:grid;gap:14px;margin-top:34px}
 @media(min-width:700px){.plans{grid-template-columns:1fr 1fr;gap:18px}}
-.plan{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:26px 24px;position:relative;box-shadow:var(--shadow-sm)}
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:26px 24px;position:relative;box-shadow:var(--shadow-sm);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+@media(hover:hover){.plan:hover{transform:translateY(-2px);box-shadow:var(--shadow)}}
 .plan.best{border-color:var(--moss);box-shadow:var(--shadow)}
 .plan .name{font-size:12px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
 .plan.best .name{color:var(--moss)}
@@ -336,20 +361,78 @@ footer a{color:var(--ink-2)}
 .foot-top b{font-family:var(--serif);font-size:19px;font-weight:400;letter-spacing:.06em}
 .foot-top span{font-size:12px;color:var(--ink-3)}
 
+/* ── ato 2 do demo: o follow-up dias depois ─────────────────────────────── */
+.later{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line)}
+.later-tag{display:block;font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:11px}
+.later .bubble{max-width:100%}
+
+/* ── momento "terça, 21h47" ─────────────────────────────────────────────── */
+.moment{position:relative;padding:52px 0 4px}
+.moment .clock{font-family:var(--serif);font-size:clamp(15px,3.8vw,17px);letter-spacing:.2em;
+  color:var(--ink-3);margin-bottom:22px;display:flex;align-items:center;gap:12px}
+.moment .clock::after{content:"";flex:1;height:1px;background:var(--line);transform:scaleX(0);transform-origin:left}
+.moment.in .clock::after{animation:swipe 1.2s var(--ease) .3s forwards}
+@keyframes swipe{to{transform:scaleX(1)}}
+.moment p{font-family:var(--serif);font-size:clamp(23px,5.8vw,32px);line-height:1.34;
+  letter-spacing:-.02em;color:var(--ink-2);max-width:21ch}
+.moment .clock{max-width:none}
+.moment p + p{margin-top:24px}
+.moment .punch{color:var(--ink)}
+.moment .punch b{font-weight:400;color:var(--moss);position:relative;white-space:nowrap}
+.moment .punch b::after{content:"";position:absolute;left:0;right:0;bottom:.06em;height:2px;
+  background:var(--moss);opacity:.28;transform:scaleX(0);transform-origin:left}
+.moment.in .punch b::after{animation:swipe .9s var(--ease) 1.5s forwards}
+
+/* ── carta da Evelyn ────────────────────────────────────────────────────── */
+.letter{display:grid;gap:26px;align-items:start}
+@media(min-width:760px){.letter{grid-template-columns:238px 1fr;gap:40px}}
+.letter figure{margin:0;position:relative;max-width:238px}
+.letter img{width:100%;height:auto;border-radius:20px;display:block;
+  box-shadow:0 2px 4px rgba(27,31,25,.05),0 24px 52px -20px rgba(36,44,31,.42)}
+.letter blockquote{margin:0;font-family:var(--serif);font-size:clamp(20px,4.9vw,26px);
+  line-height:1.4;letter-spacing:-.015em;color:var(--ink)}
+.letter blockquote em{font-style:normal;color:var(--signal)}
+.letter .after{font-size:16.5px;color:var(--ink-2);line-height:1.6;margin-top:20px;max-width:42ch}
+.letter .sig{display:flex;align-items:center;gap:11px;margin-top:22px}
+.letter .sig i{width:22px;height:1px;background:var(--moss-lt);font-style:normal}
+.letter .sig span{font-size:14px;color:var(--ink-3)}
+.letter .sig b{font-family:var(--serif);font-size:17px;font-weight:400;color:var(--ink)}
+
+/* ── "e quando você sumir" ──────────────────────────────────────────────── */
+.reassure{background:var(--moss-pale);border-radius:var(--radius);padding:30px 26px;margin-top:26px}
+.reassure h3{font-family:var(--serif);font-weight:400;font-size:clamp(22px,5.2vw,28px);
+  line-height:1.18;letter-spacing:-.02em;margin-bottom:16px}
+.reassure p{font-size:16.5px;color:var(--ink-2);line-height:1.6}
+.reassure .last{margin-top:16px;color:var(--moss);font-weight:600}
+
+/* ── barra de progresso do scroll (nav) ─────────────────────────────────── */
+.nav .prog{position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--moss-lt);
+  transform:scaleX(0);transform-origin:left;opacity:.55}
+
 /* ── revelação no scroll ────────────────────────────────────────────────── */
 .rv{opacity:0;transform:translateY(16px)}
 .rv.in{opacity:1;transform:none;transition:opacity .7s var(--ease),transform .7s var(--ease);transition-delay:calc(var(--i,0) * 85ms)}
+/* headlines entram com desfoque leve — leitura "revela" em vez de aparecer */
+h1.rv,h2.rv,.letter blockquote.rv{filter:blur(7px)}
+h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s var(--ease),transform .8s var(--ease),filter .8s var(--ease);transition-delay:calc(var(--i,0) * 85ms)}
 
 /* ── prefers-reduced-motion: estado final, sem movimento ────────────────── */
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation:none!important;transition:none!important}
-  .rv{opacity:1;transform:none}
+  .rv{opacity:1;transform:none;filter:none}
   .timeline::before{transform:scaleY(1)}
   .stage.s1,.stage.s2{opacity:0}
   .stage.s3{opacity:1}
   .loop .n1 circle{fill:var(--moss);stroke:var(--moss)}
   .loop .n1 text{fill:#fff}
+  /* estados finais do que é animado por keyframes */
+  .chain li::before{transform:scale(1)}
+  .chain li::after{transform:scaleY(1)}
+  .chain li span,.weekly dt,.weekly dd{opacity:1;transform:none}
+  .moment .clock::after,.moment .punch b::after{transform:scaleX(1)}
+  .nav .prog{display:none}
 }
 </style>
 </head>
@@ -361,6 +444,7 @@ footer a{color:var(--ink-2)}
     <a class="mark" href="#topo"><b>LIA</b><span>uma inteligência da Table</span></a>
     <a class="btn" href="#preco" data-cta="nav">Conhecer</a>
   </div>
+  <div class="prog" id="prog" aria-hidden="true"></div>
 </header>
 
 <main id="topo">
@@ -372,7 +456,7 @@ footer a{color:var(--ink-2)}
       <div>
         <span class="pill rv"><i></i>Funciona pelo WhatsApp</span>
         <h1 class="rv" style="--i:1">Você fala.<br>A LIA conecta os pontos.</h1>
-        <p class="lead rv" style="--i:2">Uma inteligência que aprende seus padrões e acompanha sua relação com a comida todos os dias.</p>
+        <p class="lead rv" style="--i:2">O difícil não é saber o que fazer. É o resto do dia. A LIA aprende seus padrões e acompanha sua relação com a comida, todos os dias.</p>
         <div class="hero-cta rv" style="--i:3">
           <a class="btn btn-wa" href="#" data-cta="hero" data-cfg="cta-primary">Começar</a>
           <span class="cta-note" data-cfg="cta-note"></span>
@@ -405,15 +489,40 @@ footer a{color:var(--ink-2)}
           <div class="insight rv" data-seq id="demoInsight" data-insight>
             <div class="insight-head">LIA percebeu</div>
             <ul class="chain">
-              <li class="rv" data-seq>Exaustão</li>
-              <li class="rv" data-seq>Fim do dia</li>
-              <li class="rv" data-seq>Comida</li>
-              <li class="rv" data-seq>Culpa</li>
+              <li style="--n:0"><span>Exaustão</span></li>
+              <li style="--n:1"><span>Fim do dia</span></li>
+              <li style="--n:2"><span>Comida</span></li>
+              <li style="--n:3"><span>Culpa</span></li>
             </ul>
+          </div>
+
+          <!-- Ato 2: o acompanhamento — é isso que nenhum assistente faz -->
+          <div class="later rv" data-seq id="demoLater">
+            <span class="later-tag">2 dias depois</span>
+            <p class="bubble lia">Oi. Ontem foi um dia parecido com aquele. Como você chegou em casa?</p>
           </div>
           <span class="sim">Exemplo ilustrativo</span>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Ecos — reconhecimento imediato da ICP ═════════════════════════════ -->
+<section style="padding-bottom:0" aria-label="Pensamentos que se repetem">
+  <div class="wrap">
+    <div class="echoes">
+      <p class="echo rv">“Segunda eu começo.”</p>
+      <p class="echo rv" style="--i:1">“Eu nem estava com fome.”</p>
+      <p class="echo rv" style="--i:2">“Depois fiquei me culpando.”</p>
+    </div>
+    <p class="body rv" style="--i:3">Frases assim não pedem mais informação. Pedem alguém que perceba o que se repete.</p>
+
+    <!-- Encena o minuto exato em que o produto existe -->
+    <div class="moment rv" id="moment">
+      <p class="clock">TERÇA, 21H47</p>
+      <p>Você comeu. Não era fome — e você sabia que não era.</p>
+      <p class="punch">Nenhuma consulta acontece nesse minuto.<br><b>A LIA acontece nesse minuto.</b></p>
     </div>
   </div>
 </section>
@@ -452,10 +561,10 @@ footer a{color:var(--ink-2)}
       <div class="insight rv" style="--i:3" data-insight>
         <div class="insight-head">LIA percebeu</div>
         <ul class="chain">
-          <li>Regra rígida</li>
-          <li>Quebra</li>
-          <li>Tudo ou nada</li>
-          <li>Culpa</li>
+          <li style="--n:0"><span>Regra rígida</span></li>
+          <li style="--n:1"><span>Quebra</span></li>
+          <li style="--n:2"><span>Tudo ou nada</span></li>
+          <li style="--n:3"><span>Culpa</span></li>
         </ul>
         <p class="insight-note">Três relatos parecidos em duas semanas. Sempre depois de sair do combinado.</p>
       </div>
@@ -478,7 +587,10 @@ footer a{color:var(--ink-2)}
         <g class="node n1"><circle cx="100" cy="30" r="21"/><text x="100" y="31">L</text></g>
         <g class="node n2"><circle cx="160.6" cy="135" r="21"/><text x="160.6" y="136">I</text></g>
         <g class="node n3"><circle cx="39.4" cy="135" r="21"/><text x="39.4" y="136">A</text></g>
-        <g class="orbit"><circle cx="100" cy="30" r="4.5"/></g>
+        <g class="orbit">
+          <circle class="trail" cx="100" cy="100" r="70"/>
+          <circle class="bead" cx="100" cy="30" r="4.5"/>
+        </g>
       </svg>
     </div>
 
@@ -505,6 +617,22 @@ footer a{color:var(--ink-2)}
       <p class="brand-sub">Leitura · Intervenção · Acompanhamento</p>
       <p class="body">A metodologia de Evelyn Liu transformada em uma inteligência que pode acompanhar você no dia a dia.</p>
       <p class="disclaim">A LIA é uma inteligência baseada na metodologia da Table. Você não está conversando pessoalmente com a Evelyn.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Carta da Evelyn — autoridade por reconhecimento, não por credencial ═══ -->
+<section>
+  <div class="wrap">
+    <div class="letter">
+      <figure class="rv">
+        <img src="/images/lia-evelyn-carta.jpg" alt="Evelyn Liu" width="465" height="620" loading="lazy" decoding="async"/>
+      </figure>
+      <div>
+        <blockquote class="rv" style="--i:1">“Eu passei anos ouvindo a mesma frase em consulta:<br><em>‘Evelyn, eu sei o que fazer. Eu só não consigo.’</em>”</blockquote>
+        <p class="after rv" style="--i:2">A LIA nasceu dessa frase. Ela não substitui ninguém. Ela fica no lugar onde ninguém conseguia ficar: o seu dia a dia.</p>
+        <p class="sig rv" style="--i:3"><i></i><span>Evelyn Liu · <b>Table</b></span></p>
+      </div>
     </div>
   </div>
 </section>
@@ -548,6 +676,13 @@ footer a{color:var(--ink-2)}
     </div>
 
     <p class="body rv">Quando aquele momento chega, você não precisa começar a explicar tudo de novo.</p>
+
+    <!-- A objeção real de compra não é preço: é "eu vou largar, como larguei tudo" -->
+    <div class="reassure rv">
+      <h3>E quando você sumir por uma semana?</h3>
+      <p>Acontece. A LIA não faz lista de faltas nem pergunta “cadê você” com tom de professora. Ela pode puxar assunto — mas nunca com culpa. E quando você voltar, ela continua de onde vocês pararam.</p>
+      <p class="last">Porque a história dela com você não zera.</p>
+    </div>
   </div>
 </section>
 
@@ -602,7 +737,7 @@ footer a{color:var(--ink-2)}
       <div class="plan rv" style="--i:2">
         <div class="name" data-cfg="m-label"></div>
         <div class="amt"><b data-cfg="m-price"></b><span data-cfg="m-period"></span></div>
-        <div class="sub">Cancele quando quiser.</div>
+        <div class="sub" data-cfg="m-note"></div>
       </div>
       <div class="plan best rv" style="--i:3">
         <span class="badge" data-cfg="a-badge"></span>
@@ -624,12 +759,14 @@ footer a{color:var(--ink-2)}
   <div class="wrap">
     <h2 class="rv">Perguntas</h2>
     <div class="faq" id="faq">
+      <details><summary>Já tentei de tudo. Por que isso seria diferente?</summary>
+        <p>Porque quase tudo que você tentou te dizia o que fazer. A LIA trabalha do outro lado: nos momentos em que saber não basta.</p></details>
       <details><summary>É a Evelyn que responde?</summary>
         <p>Não. A LIA é uma inteligência construída a partir da metodologia dela. Alguns conteúdos que você recebe são áudios gravados pela Evelyn para situações específicas.</p></details>
       <details><summary>A LIA passa dieta?</summary>
         <p>Não. Ela não prescreve cardápio, calorias nem plano alimentar. O trabalho dela é comportamental: entender seus padrões e acompanhar o dia a dia.</p></details>
-      <details><summary>Posso mandar áudio?</summary>
-        <p>Pode. Texto ou áudio, do jeito que for mais fácil no momento. É tudo pelo WhatsApp.</p></details>
+      <details><summary>O que eu conto fica entre a gente?</summary>
+        <p>Fica. O que você conta serve só para o seu acompanhamento. E se em algum momento a equipe Table precisar entrar, isso acontece com você sabendo.</p></details>
       <details><summary>Ela lembra do que eu conto?</summary>
         <p>Sim. É justamente isso que a diferencia: ela guarda seu contexto ao longo do tempo e usa o histórico para reconhecer o que se repete.</p></details>
       <details><summary>E se eu precisar de uma profissional?</summary>
@@ -646,7 +783,7 @@ footer a{color:var(--ink-2)}
       <p class="rv" style="margin-top:32px;--i:1">
         <a class="btn btn-wa" href="#" data-cta="final" data-cfg="cta-final">Começar com a LIA</a>
       </p>
-      <p class="cta-note rv">Direto pelo WhatsApp.</p>
+      <p class="cta-note rv">Direto pelo WhatsApp. Começa com um oi.</p>
     </div>
   </div>
 </section>
@@ -697,13 +834,16 @@ footer a{color:var(--ink-2)}
   var slots = {
     'cta-primary'  : trial ? 'Começar meus ' + days + ' dias' : 'Conhecer a LIA',
     'cta-final'    : trial ? 'Começar meus ' + days + ' dias com a LIA' : 'Conhecer a LIA',
-    'cta-note'     : trial ? 'Direto pelo WhatsApp. ' + days + ' dias grátis.' : 'Direto pelo WhatsApp.',
+    'cta-note'     : !trial ? 'Direto pelo WhatsApp.'
+                    : CONFIG.BILLING_ENABLED
+                      ? 'Direto pelo WhatsApp. ' + days + ' dias grátis.'
+                      : days + ' dias grátis, sem cartão. Direto pelo WhatsApp.',
     'pricing-title': trial ? 'Deixe a LIA conhecer você por ' + days + ' dias.' : 'Conheça a LIA.',
     'billing-note' : !trial ? 'Cancele quando quiser.'
                     : CONFIG.BILLING_ENABLED
                       ? 'Hoje R$ 0. A primeira cobrança acontece depois do período gratuito. Cancele antes e não será cobrado.'
-                      : 'Hoje R$ 0. Você começa pelo WhatsApp e escolhe o plano depois dos ' + days + ' dias.',
-    'm-label' : P.monthly.label, 'm-price': P.monthly.price, 'm-period': P.monthly.period,
+                      : 'Hoje R$ 0, sem cartão. Você começa pelo WhatsApp e escolhe o plano depois dos ' + days + ' dias.',
+    'm-label' : P.monthly.label, 'm-price': P.monthly.price, 'm-period': P.monthly.period, 'm-note': P.monthly.note,
     'a-label' : P.annual.label,  'a-price': P.annual.price,  'a-period': P.annual.period,
     'a-note'  : P.annual.note,   'a-badge': P.annual.badge
   };
@@ -760,7 +900,7 @@ footer a{color:var(--ink-2)}
       text   = document.getElementById('demoText'),
       typing = document.getElementById('demoTyping'),
       card   = document.getElementById('demoInsight'),
-      rows   = card ? card.querySelectorAll('.chain .rv') : [],
+      later  = document.getElementById('demoLater'),
       timers = [], running = false;
 
   function reset(){
@@ -769,11 +909,13 @@ footer a{color:var(--ink-2)}
     text.classList.remove('in');
     typing.hidden = true;
     card.classList.remove('in');
-    rows.forEach(function(r){ r.classList.remove('in'); });
+    later.classList.remove('in');
     running = false;
   }
   function at(ms, fn){ timers.push(setTimeout(fn, ms)); }
 
+  // Demo encenado em 2 atos. O ato 2 (follow-up dias depois) é o que nenhum
+  // assistente faz — por isso ele fica no hero, não escondido no meio da página.
   function playDemo(manual){
     if (reduced || running) return;
     reset(); running = true;
@@ -782,22 +924,38 @@ footer a{color:var(--ink-2)}
     wave.closest('.audio').classList.add('playing');
     at(1700, function(){ text.classList.add('in'); });
     at(2100, function(){ wave.closest('.audio').classList.remove('playing'); typing.hidden = false; });
-    at(3300, function(){ typing.hidden = true; card.classList.add('in'); });
-    at(3450, function(){ rows.forEach(function(r, i){ at(i * 110, function(){ r.classList.add('in'); }); }); });
-    at(4600, function(){ running = false; });
+    at(3300, function(){ typing.hidden = true; card.classList.add('in'); });   // ato 1: o padrão
+    at(5200, function(){ later.classList.add('in'); });                        // ato 2: a volta
+    at(6000, function(){ running = false; });
   }
 
   if (play){
     play.addEventListener('click', function(){ playDemo(true); });
-    // Autoplay uma vez quando o hero aparece, e repete devagar enquanto a aba
-    // estiver visível — quem chega scrollando ainda pega a demonstração.
-    onView(demo, function(){
-      playDemo(false);
-      setInterval(function(){
-        if (document.visibilityState === 'visible' && !running) playDemo(false);
-      }, 11000);
-    }, .35);
+    // Toca UMA vez quando o hero aparece e descansa no estado final. Repetir em
+    // laço obrigaria a apagar o card e remontá-lo no meio da leitura — o replay
+    // fica no botão, no tempo de quem está lendo.
+    onView(demo, function(){ playDemo(false); }, .22);
   }
+
+  /* ── Barra de progresso do scroll na nav ──────────────────────────────── */
+  var prog = document.getElementById('prog'), ticking = false;
+  function drawProgress(){
+    var max = document.documentElement.scrollHeight - innerHeight;
+    prog.style.transform = 'scaleX(' + (max > 0 ? Math.min(scrollY / max, 1) : 0) + ')';
+    ticking = false;
+  }
+  if (prog && !reduced){
+    addEventListener('scroll', function(){
+      if (!ticking){ ticking = true; requestAnimationFrame(drawProgress); }
+    }, { passive: true });
+    drawProgress();
+  }
+
+  /* ── Índice das linhas da revisão semanal (stagger via --n) ───────────── */
+  document.querySelectorAll('.weekly').forEach(function(el){
+    var n = 0;
+    el.querySelectorAll('dt,dd').forEach(function(x){ x.style.setProperty('--n', n++); });
+  });
 
   /* ── Player da Evelyn (fictício: só a onda anima) ─────────────────────── */
   var ev = document.getElementById('evelynPlay');
