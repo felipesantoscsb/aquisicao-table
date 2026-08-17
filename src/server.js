@@ -157,6 +157,9 @@ app.get('/livro',      (req, res) => res.sendFile(path.join(pub, 'livro.html')))
 app.get('/bio',        (req, res) => res.sendFile(path.join(pub, 'bio.html')));
 // Sub-menu das Cores: fazer o teste (/cores) ou conhecer o livro (/livro).
 app.get('/as-cores',   (req, res) => res.sendFile(path.join(pub, 'as-cores.html')));
+// LIA — landing do produto (Leitura · Intervenção · Acompanhamento). Página
+// auto-contida: preço, trial e destino do CTA vivem no CONFIG do topo do HTML.
+app.get('/lia',        (req, res) => res.sendFile(path.join(pub, 'lia.html')));
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

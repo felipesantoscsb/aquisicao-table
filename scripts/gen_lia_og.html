@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<!--
+  Gerador do card de compartilhamento da /lia (1200x630).
+  Render:
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+      --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=1 \
+      --window-size=1200,630 --screenshot=/tmp/lia-og.png \
+      file://$PWD/scripts/gen_lia_og.html
+  Depois: sips -s format jpeg -s formatOptions 88 /tmp/lia-og.png --out public/images/lia-og.jpg
+-->
+<html lang="pt-BR"><head><meta charset="utf-8"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1200px;height:630px;background:#242C1F;color:#F2F0E9;overflow:hidden;
+     font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
+     display:flex;align-items:center;gap:64px;padding:0 78px;position:relative}
+body::before{content:"";position:absolute;inset:auto auto -180px -140px;width:520px;height:520px;
+     border-radius:50%;background:radial-gradient(circle,rgba(107,125,92,.34),transparent 68%)}
+.left{flex:1;position:relative;z-index:1}
+.eyebrow{font-size:17px;letter-spacing:.2em;text-transform:uppercase;color:#9AAE8A;margin-bottom:26px}
+h1{font-family:ui-serif,'New York','Iowan Old Style',Palatino,Georgia,serif;font-weight:400;
+   font-size:96px;line-height:1;letter-spacing:.04em;margin-bottom:22px}
+.sub{font-size:20px;letter-spacing:.16em;text-transform:uppercase;color:#9AAE8A;margin-bottom:34px}
+.tag{font-size:27px;line-height:1.42;color:#D3D6CD;max-width:19ch}
+.card{width:376px;flex:0 0 auto;background:#fff;border-radius:24px;padding:28px 30px;
+      box-shadow:0 30px 70px -20px rgba(0,0,0,.55);position:relative;z-index:1}
+.ch{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:700;letter-spacing:.1em;
+    text-transform:uppercase;color:#B97040;margin-bottom:22px}
+ul{list-style:none}
+li{position:relative;padding-left:30px;font-size:25px;color:#1B1F19;height:52px;display:flex;align-items:center}
+li::before{content:"";position:absolute;left:4px;top:22px;width:9px;height:9px;border-radius:50%;background:#B97040}
+li::after{content:"";position:absolute;left:8px;top:34px;width:1px;height:26px;background:#B97040;opacity:.3}
+li:last-child::after{display:none}
+</style></head>
+<body>
+  <div class="left">
+    <div class="eyebrow">Table</div>
+    <h1>LIA</h1>
+    <div class="sub">Leitura · Intervenção · Acompanhamento</div>
+    <p class="tag">Você fala.<br/>A LIA conecta os pontos.</p>
+  </div>
+  <div class="card">
+    <div class="ch">LIA percebeu ✦</div>
+    <ul><li>Exaustão</li><li>Fim do dia</li><li>Comida</li><li>Culpa</li></ul>
+  </div>
+</body></html>
