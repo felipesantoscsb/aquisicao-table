@@ -141,6 +141,9 @@ textarea:focus,input:focus{outline:none;border-color:var(--moss-lt);box-shadow:0
 .phone-note b{font-weight:600}
 .err{color:#A6412B;font-size:14px;margin-top:10px;display:none}
 .err.on{display:block}
+.opt-note{font-size:13px;color:var(--ink-3);margin-top:9px;line-height:1.45}
+.skip{display:block;width:100%;background:none;border:none;font:inherit;font-size:14.5px;
+  color:var(--ink-3);cursor:pointer;padding:14px 4px;text-align:center;text-decoration:underline}
 
 /* ── transparência ──────────────────────────────────────────────────────── */
 .disc{background:var(--canvas-2);border-radius:var(--radius-sm);padding:20px 19px;margin-top:22px}
@@ -198,8 +201,9 @@ footer a{color:var(--ink-2)}
   <h1>Seu acompanhamento começa agora.</h1>
   <p class="lead">Antes de falar com você, a LIA precisa entender um pouco melhor o seu momento.</p>
   <p class="body">Você leva alguns minutos. Depois disso, ela continua a conversa direto pelo WhatsApp.</p>
+  <p class="body"><b style="color:var(--ink)">Nenhuma pergunta é obrigatória.</b> Responda só o que fizer sentido agora — o resto a LIA descobre conversando com você.</p>
   <div class="nav-row"><button class="btn" id="go">Começar</button></div>
-  <p class="tiny" style="margin-top:14px;text-align:center">Leva cerca de 5 minutos · dá pra parar e voltar depois</p>
+  <p class="tiny" style="margin-top:14px;text-align:center">Cerca de 5 minutos · dá pra parar e voltar depois</p>
 </section>
 
 <!-- ═══ 2. WhatsApp ══════════════════════════════════════════════════════ -->
@@ -229,6 +233,7 @@ footer a{color:var(--ink-2)}
     <button class="back" id="prev">Voltar</button>
     <button class="btn" id="next">Continuar</button>
   </div>
+  <button class="skip" id="skip" style="display:none">Pular esta pergunta</button>
 </section>
 
 <!-- ═══ 4. Processando ═══════════════════════════════════════════════════ -->
@@ -400,7 +405,11 @@ footer a{color:var(--ink-2)}
       html += '<div class="q"><div class="q-t">' + esc(q.t) + '</div>';
       if (q.h) html += '<div class="q-h">' + esc(q.h) + '</div>';
       if (q.type === 'open'){
-        html += '<textarea data-k="' + q.k + '" placeholder="' + esc(q.ph || '') + '">' + esc(answers[q.k] || '') + '</textarea>';
+        // Todo campo de texto é opcional e a página diz isso na cara: quem não
+        // quer escrever não pode travar aqui. O que ela contar, a LIA usa; o
+        // que ela pular, a LIA pergunta depois, na conversa.
+        html += '<textarea data-k="' + q.k + '" placeholder="' + esc(q.ph || '') + '">' + esc(answers[q.k] || '') + '</textarea>' +
+                '<p class="opt-note">Opcional — pode pular e contar pra LIA depois, se preferir.</p>';
       } else if (q.type === 'chips'){
         html += '<div class="chips">';
         q.o.forEach(function(o){
@@ -434,6 +443,11 @@ footer a{color:var(--ink-2)}
     $('progTxt').textContent = s.label + ' · ' + (step + 1) + ' de ' + STEPS.length;
     $('prev').style.visibility = step === 0 ? 'hidden' : 'visible';
     $('next').textContent = step === STEPS.length - 1 ? 'Finalizar' : 'Continuar';
+
+    // Atalho de pulo nas etapas que são só texto — são as que mais travam quem
+    // não está a fim de escrever. Nas de chip, marcar já é um clique só.
+    var soTexto = s.qs.every(function(q){ return q.type === 'open'; });
+    $('skip').style.display = (soTexto && !s.consent) ? 'block' : 'none';
     bind();
   }
 
@@ -483,11 +497,13 @@ footer a{color:var(--ink-2)}
     if (step > 0){ step--; renderStep(); saveDraft(); }
   });
 
-  $('next').addEventListener('click', function(){
-    analytics.track('onboarding_step_completed', { step: STEPS[step].id, index: step });
+  function advance(skipped){
+    analytics.track('onboarding_step_completed', { step: STEPS[step].id, index: step, skipped: !!skipped });
     if (step < STEPS.length - 1){ step++; renderStep(); saveDraft(); return; }
     submit();
-  });
+  }
+  $('next').addEventListener('click', function(){ advance(false); });
+  $('skip').addEventListener('click', function(){ advance(true); });
 
   /* ── Envio ────────────────────────────────────────────────────────────── */
   var LOAD_MSGS = ['Lendo o que você contou…','Conectando alguns pontos…','Preparando sua primeira conversa…'];
