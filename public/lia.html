@@ -44,16 +44,21 @@ var CONFIG = {
   REQUIRES_CARD: true,
 
   WHATSAPP_NUMBER: "5511977130088",
-  WHATSAPP_TEXT:   "Oi! Quero começar meus 7 dias com a LIA.",
+  WHATSAPP_TEXT:   "Oi! Quero começar com a LIA.",
 
-  // Trial. TRIAL_ENABLED:false esconde toda menção a "7 dias" e troca o CTA.
-  // ATENÇÃO à matemática: a página argumenta que padrão só aparece em semanas.
-  // 7 dias não provam isso. Por isso o trial agora promete um ENTREGÁVEL
-  // concreto (a primeira leitura da semana) em vez de prometer o padrão.
-  // Se a operação permitir, 14 dias resolvem a contradição de vez.
-  TRIAL_ENABLED: true,
-  TRIAL_DAYS: 7,
-  TRIAL_DELIVERABLE: "a primeira leitura da sua semana",
+  // A Cakto não tem trial, então a reversão de risco é GARANTIA: ela paga
+  // hoje e tem GUARANTEE_DAYS para pedir de volta.
+  //
+  // A janela fecha no mesmo dia em que o primeiro entregável chega (a leitura
+  // da semana). Isso é de propósito: dá a ela um ponto de decisão concreto em
+  // vez de um prazo abstrato.
+  //
+  // ATENÇÃO ao tom: pedir reembolso é ato carregado de vergonha nesse público.
+  // A copy tem que deixar explícito que não precisa explicar por quê. Se isso
+  // sair, a garantia vira enfeite: as pessoas não pedem, e a gente fica com o
+  // dinheiro de quem se sentiu mal.
+  GUARANTEE_DAYS: 7,
+  FIRST_DELIVERABLE: "a primeira leitura da sua semana",
 
   // Formas de pagamento mostradas no checkout (só aparece se CHECKOUT_URL existir)
   PAYMENT_METHODS: "Cartão, Apple Pay ou Google Pay",
@@ -426,6 +431,18 @@ h3{font-size:16px;font-weight:600;letter-spacing:-.01em}
 .badge{position:absolute;top:-9px;right:20px;background:var(--moss);color:#fff;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:5px 11px;border-radius:999px}
 .pay{margin-top:30px;text-align:center}
 .pay .btn{width:100%;max-width:400px}
+
+/* ── garantia ───────────────────────────────────────────────────────────── */
+.guarantee{background:var(--surface);border:1px solid var(--moss-lt);border-radius:var(--radius);
+  padding:24px 22px;margin-top:26px;box-shadow:var(--shadow-sm)}
+.g-head{display:flex;align-items:center;gap:9px;font-family:var(--serif);font-size:20px;
+  color:var(--moss);margin-bottom:12px}
+.g-head::before{content:"";width:19px;height:19px;flex:0 0 auto;border-radius:50%;
+  background:var(--moss);position:relative;
+  box-shadow:inset 0 0 0 2px var(--moss)}
+.guarantee p{font-size:16px;color:var(--ink);line-height:1.55}
+.g-why{font-size:14.5px;color:var(--ink-3);margin-top:13px;padding-top:13px;
+  border-top:1px solid var(--line-soft);line-height:1.5}
 
 /* ── final + footer ─────────────────────────────────────────────────────── */
 .final{background:var(--canvas-2);border-radius:28px;padding:58px 26px;text-align:center;margin:0 0 20px}
@@ -888,9 +905,15 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
       </div>
     </div>
 
+    <div class="guarantee rv">
+      <div class="g-head"><span data-cfg="g-headline">Garantia de 7 dias</span></div>
+      <p data-cfg="billing-note"></p>
+      <p class="g-why">A gente prefere devolver o dinheiro de quem não está sendo ajudada do que manter alguém pagando por algo que não serve.</p>
+    </div>
+
     <div class="pay">
       <a class="btn" href="#" data-cta="pricing" data-cfg="cta-primary">Começar</a>
-      <p class="cta-note" data-cfg="billing-note"></p>
+      <p class="cta-note" data-cfg="cta-note"></p>
     </div>
   </div>
 </section>
@@ -910,6 +933,8 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
         <p>Fica. O que você conta serve só para o seu acompanhamento. E se em algum momento a equipe Table precisar entrar, isso acontece com você sabendo.</p></details>
       <details><summary>Ela lembra do que eu conto?</summary>
         <p>Sim. É justamente isso que a diferencia: ela guarda seu contexto ao longo do tempo e usa o histórico para reconhecer o que se repete.</p></details>
+      <details><summary>E se eu não quiser continuar?</summary>
+        <p>Nos primeiros 7 dias, é só pedir e devolvemos o valor inteiro. Você não precisa explicar o motivo. Depois disso, pode cancelar a assinatura quando quiser, sem multa.</p></details>
       <details><summary>E se eu precisar de uma profissional?</summary>
         <p>Quando uma situação pede avaliação profissional, a LIA encaminha para a equipe da Table.</p></details>
     </div>
@@ -968,7 +993,7 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ── Render do CONFIG nos slots [data-cfg] ────────────────────────────── */
-  var trial = CONFIG.TRIAL_ENABLED, days = CONFIG.TRIAL_DAYS, P = CONFIG.PRICING;
+  var dias = CONFIG.GUARANTEE_DAYS, P = CONFIG.PRICING;
   var waHref = 'https://wa.me/' + CONFIG.WHATSAPP_NUMBER +
                '?text=' + encodeURIComponent(CONFIG.WHATSAPP_TEXT);
   var billing = !!CONFIG.REQUIRES_CARD;          // o que a página promete
@@ -976,22 +1001,16 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
   var destino = temCheckout ? CONFIG.CHECKOUT_URL : waHref;
 
   var slots = {
-    'cta-primary'  : trial ? 'Começar meus ' + days + ' dias' : 'Conhecer a LIA',
-    'cta-final'    : trial ? 'Começar meus ' + days + ' dias com a LIA' : 'Conhecer a LIA',
-    'cta-note'     : !trial ? 'Cancele quando quiser.'
-                    : billing
-                      ? days + ' dias grátis. ' + CONFIG.PAYMENT_METHODS + '.'
-                      : days + ' dias grátis. Cancele quando quiser.',
-    // Promete o ENTREGÁVEL do prazo, não o padrão: em 7 dias não existe padrão,
-    // mas existe amostra suficiente pra ela decidir se aquilo ajuda.
-    'pricing-title': trial ? 'Em ' + days + ' dias, ' + CONFIG.TRIAL_DELIVERABLE + '.' : 'Conheça a LIA.',
-    'billing-note' : !trial ? 'Cancele quando quiser.'
-                    : billing
-                      ? 'Hoje você paga R$ 0. A primeira cobrança acontece só depois dos ' + days + ' dias. Cancele antes e não será cobrado.'
-                      : 'Hoje R$ 0, sem cartão. Você começa pelo WhatsApp e escolhe o plano depois dos ' + days + ' dias.',
-    'step-1'       : billing
-                      ? 'Você assina em um minuto. ' + CONFIG.PAYMENT_METHODS + '.'
-                      : 'Você garante seu acesso. Leva um minuto.',
+    'cta-primary'  : 'Começar com a LIA',
+    'cta-final'    : 'Começar com a LIA',
+    'cta-note'     : 'Garantia de ' + dias + ' dias. ' + CONFIG.PAYMENT_METHODS + '.',
+    // O prazo da garantia fecha quando o primeiro entregável chega. Isso troca
+    // um prazo abstrato por um ponto de decisão com artefato na mão.
+    'pricing-title': 'Em ' + dias + ' dias, ' + CONFIG.FIRST_DELIVERABLE + '.',
+    'billing-note' : 'Se até lá não fizer sentido pra você, devolvemos o valor inteiro. '
+                   + 'Sem formulário, sem ligação, sem precisar explicar por quê.',
+    'step-1'       : 'Você assina em um minuto. ' + CONFIG.PAYMENT_METHODS + '.',
+    'g-headline'   : 'Garantia de ' + dias + ' dias',
     'proof-number' : CONFIG.SOCIAL.number,
     'proof-label'  : CONFIG.SOCIAL.numberLabel,
     'm-label' : P.monthly.label, 'm-price': P.monthly.price, 'm-period': P.monthly.period, 'm-note': P.monthly.note,
@@ -1026,7 +1045,7 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
 
   /* ── Nota de lançamento (só enquanto for verdade) ─────────────────────── */
   if (CONFIG.LAUNCH_NOTE){
-    document.querySelectorAll('[data-cfg="billing-note"]').forEach(function(el){
+    document.querySelectorAll('[data-cfg="cta-note"]').forEach(function(el){
       var s = document.createElement('span');
       s.textContent = ' ' + CONFIG.LAUNCH_NOTE;
       s.style.color = 'var(--signal)';
@@ -1164,7 +1183,7 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
       if (where === 'hero') analytics.track('hero_cta_clicked');
       if (where === 'nav' || where === 'hero') return;  // âncoras internas, não são intenção de compra
       analytics.track('trial_started', {
-        placement: where, trial: CONFIG.TRIAL_ENABLED,
+        placement: where, garantia_dias: CONFIG.GUARANTEE_DAYS,
         destino: temCheckout ? 'checkout' : 'whatsapp'
       });
     });
