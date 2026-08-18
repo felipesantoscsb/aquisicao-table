@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>Seu acompanhamento começa agora — LIA</title>
+<title>Seu acompanhamento começa agora · LIA</title>
 <meta name="description" content="Antes de falar com você, a LIA precisa entender um pouco melhor o seu momento."/>
 <meta name="theme-color" content="#FAF7F2"/>
 <meta name="robots" content="noindex,nofollow"/>
@@ -201,7 +201,7 @@ footer a{color:var(--ink-2)}
   <h1>Seu acompanhamento começa agora.</h1>
   <p class="lead">Antes de falar com você, a LIA precisa entender um pouco melhor o seu momento.</p>
   <p class="body">Você leva alguns minutos. Depois disso, ela continua a conversa direto pelo WhatsApp.</p>
-  <p class="body"><b style="color:var(--ink)">Nenhuma pergunta é obrigatória.</b> Responda só o que fizer sentido agora — o resto a LIA descobre conversando com você.</p>
+  <p class="body"><b style="color:var(--ink)">Nenhuma pergunta é obrigatória.</b> Responda só o que fizer sentido agora. O resto a LIA descobre conversando com você.</p>
   <div class="nav-row"><button class="btn" id="go">Começar</button></div>
   <p class="tiny" style="margin-top:14px;text-align:center">Cerca de 5 minutos · dá pra parar e voltar depois</p>
 </section>
@@ -252,11 +252,11 @@ footer a{color:var(--ink-2)}
 
   <div class="dest">
     <div class="k">Vamos falar com você em</div>
-    <div class="v" id="destPhone">—</div>
+    <div class="v" id="destPhone">···</div>
   </div>
 
   <div class="wait"><i></i><span id="waitTxt">Ela está preparando sua primeira conversa.</span></div>
-  <p class="body">Você não precisa mandar nada primeiro. Pode fechar esta página — a mensagem chega no seu WhatsApp.</p>
+  <p class="body">Você não precisa mandar nada primeiro. Pode fechar esta página. A mensagem chega no seu WhatsApp.</p>
 
   <div class="nav-row" style="flex-direction:column;gap:10px">
     <a class="btn wa" id="openWa" href="#">Abrir o WhatsApp</a>
@@ -346,7 +346,7 @@ footer a{color:var(--ink-2)}
       { k:'meds', type:'opts', single:true, t:'Você usa hoje algum medicamento para emagrecimento ou controle do apetite?',
         o:['sim','não','prefiro não responder'] },
       { k:'health_context', type:'open', t:'Existe algum contexto de saúde ou tratamento que seja importante a LIA saber?',
-        h:'Opcional. Isso não vira diagnóstico nem conduta — serve pra ela não sugerir algo inadequado.', ph:'' }
+        h:'Opcional. Isso não vira diagnóstico nem conduta. Serve pra ela não sugerir algo inadequado.', ph:'' }
     ]},
     { id:'routine', label:'Sua rotina', qs:[
       { k:'hard_period', type:'opts', single:true, t:'Em qual período sua rotina costuma ser mais difícil?',
@@ -409,7 +409,7 @@ footer a{color:var(--ink-2)}
         // quer escrever não pode travar aqui. O que ela contar, a LIA usa; o
         // que ela pular, a LIA pergunta depois, na conversa.
         html += '<textarea data-k="' + q.k + '" placeholder="' + esc(q.ph || '') + '">' + esc(answers[q.k] || '') + '</textarea>' +
-                '<p class="opt-note">Opcional — pode pular e contar pra LIA depois, se preferir.</p>';
+                '<p class="opt-note">Opcional. Pode pular e contar pra LIA depois, se preferir.</p>';
       } else if (q.type === 'chips'){
         html += '<div class="chips">';
         q.o.forEach(function(o){
@@ -567,7 +567,7 @@ footer a{color:var(--ink-2)}
   }
 
   $('closeIt').addEventListener('click', function(){
-    $('waitTxt').textContent = 'Tudo certo. Pode fechar — a LIA te chama.';
+    $('waitTxt').textContent = 'Tudo certo. Pode fechar. A LIA te chama.';
     $('closeIt').style.display = 'none';
   });
 
