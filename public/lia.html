@@ -32,8 +32,13 @@ var CONFIG = {
   WHATSAPP_TEXT:   "Oi! Quero começar meus 7 dias com a LIA.",
 
   // Trial. TRIAL_ENABLED:false esconde toda menção a "7 dias" e troca o CTA.
+  // ATENÇÃO à matemática: a página argumenta que padrão só aparece em semanas.
+  // 7 dias não provam isso. Por isso o trial agora promete um ENTREGÁVEL
+  // concreto (a primeira leitura da semana) em vez de prometer o padrão.
+  // Se a operação permitir, 14 dias resolvem a contradição de vez.
   TRIAL_ENABLED: true,
   TRIAL_DAYS: 7,
+  TRIAL_DELIVERABLE: "a primeira leitura da sua semana",
 
   // Cobrança. Enquanto BILLING_ENABLED for false a página NÃO afirma que
   // existe cartão/cobrança — mostra a linha neutra. Virar true só quando o
@@ -46,6 +51,32 @@ var CONFIG = {
     annual:  { label: "Anual",   price: "R$ 29,90", period: "/mês",
                note: "R$ 358,80 uma vez por ano · menos de R$ 1 por dia", badge: "economize 40%" }
   },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // PROVA SOCIAL — LER ANTES DE RODAR TRÁFEGO
+  // O número é da TABLE (metodologia), NÃO da LIA. A página diz isso com
+  // todas as letras: afirmar que 3.000 mulheres usaram a LIA seria falso.
+  // Os relatos abaixo são RASCUNHO de layout, escritos por mim. Trocar pelos
+  // relatos reais que vocês têm antes de publicar anúncio. Sem nome inventado
+  // de propósito: atribuir uma frase a uma "Ana, 34" que não existe é fabricar
+  // pessoa. Quando puser os reais, use primeiro nome só com autorização.
+  // ─────────────────────────────────────────────────────────────────────────
+  SOCIAL: {
+    number: "3.000",
+    numberLabel: "mulheres já passaram pela metodologia da Table",
+    quotes: [
+      { text: "Eu achava que meu problema era falta de força de vontade. Descobri que era sempre o mesmo horário, sempre depois do mesmo tipo de dia.",
+        who: "relato de uma paciente da Table" },
+      { text: "A primeira vez que consegui parar antes de abrir a geladeira, eu chorei. Não pela comida. Por perceber que dava.",
+        who: "relato de uma paciente da Table" },
+      { text: "Continuo errando. A diferença é que errar deixou de virar uma semana perdida.",
+        who: "relato de uma paciente da Table" }
+    ]
+  },
+
+  // Urgência honesta. Só use enquanto for verdade — se o preço deixar de ser
+  // de lançamento, ponha "" e a linha some sozinha da página.
+  LAUNCH_NOTE: "Preço de lançamento.",
 
   // Vazio de propósito: a LIA ainda não tem pixel definido. Preencher só
   // quando a decisão for tomada (ver gotcha do /cores, que usa pixel próprio).
@@ -96,7 +127,8 @@ section{padding:62px 0}
 .eyebrow::before{content:"";width:16px;height:1px;background:var(--moss-lt);opacity:.5}
 
 h1,h2{font-family:var(--serif);font-weight:400;letter-spacing:-.025em;line-height:1.06}
-h1{font-size:clamp(35px,9vw,58px)}
+h1{font-size:clamp(29px,7.5vw,54px)}
+h1 .hl{color:var(--moss)}
 h2{font-size:clamp(28px,6.6vw,44px);line-height:1.1}
 h3{font-size:16px;font-weight:600;letter-spacing:-.01em}
 .lead{font-size:clamp(17px,4.2vw,20px);color:var(--ink-2);line-height:1.52;margin-top:18px;max-width:38ch}
@@ -321,6 +353,41 @@ h3{font-size:16px;font-weight:600;letter-spacing:-.01em}
 
 ::selection{background:var(--moss-pale)}
 
+/* ── o que muda (a transformação, sem promessa clínica) ─────────────────── */
+.shift{list-style:none;margin:26px 0 0}
+.shift li{position:relative;padding:0 0 0 30px;margin-bottom:18px;font-family:var(--serif);
+  font-size:clamp(19px,4.7vw,24px);line-height:1.35;letter-spacing:-.015em;color:var(--ink)}
+.shift li::before{content:"";position:absolute;left:2px;top:.52em;width:13px;height:2px;
+  border-radius:2px;background:var(--moss-lt)}
+.shift-close{font-family:var(--serif);font-size:clamp(21px,5.2vw,28px);line-height:1.3;
+  letter-spacing:-.02em;color:var(--moss);margin-top:28px;padding-top:24px;
+  border-top:1px solid var(--line);max-width:24ch}
+
+/* ── prova social ───────────────────────────────────────────────────────── */
+.proof-n{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+.proof-n b{font-family:var(--serif);font-weight:400;font-size:clamp(52px,13vw,86px);
+  line-height:1;letter-spacing:-.03em;color:var(--moss)}
+.proof-n span{font-size:16px;color:var(--ink-2);max-width:17ch;line-height:1.4}
+.proof-cav{font-size:13.5px;color:var(--ink-3);line-height:1.5;margin-top:14px;max-width:46ch}
+.quotes{display:grid;gap:14px;margin-top:34px}
+@media(min-width:860px){.quotes{grid-template-columns:repeat(3,1fr);gap:18px}}
+.quote{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);
+  padding:22px 21px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column}
+.quote p{font-family:var(--serif);font-size:17.5px;line-height:1.44;letter-spacing:-.01em;
+  color:var(--ink);flex:1}
+.quote p::before{content:"“"}
+.quote p::after{content:"”"}
+.quote cite{display:block;font-style:normal;font-size:12.5px;color:var(--ink-3);margin-top:16px}
+
+/* ── como começa ────────────────────────────────────────────────────────── */
+.start{counter-reset:s;list-style:none;margin-top:26px}
+.start li{position:relative;padding:0 0 0 44px;margin-bottom:20px;font-size:16.5px;
+  color:var(--ink-2);line-height:1.55}
+.start li b{color:var(--ink);font-weight:600}
+.start li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:-2px;
+  width:28px;height:28px;border-radius:50%;background:var(--moss-pale);color:var(--moss);
+  font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+
 /* ── citação da ICP ─────────────────────────────────────────────────────── */
 .icp{font-family:var(--serif);font-size:clamp(21px,5.4vw,28px);line-height:1.28;letter-spacing:-.015em;
   color:var(--ink);border-left:2px solid var(--moss-lt);padding-left:19px;margin:30px 0 4px;max-width:24ch}
@@ -360,6 +427,11 @@ footer a{color:var(--ink-2)}
 .foot-top{display:flex;align-items:baseline;gap:9px;margin-bottom:14px}
 .foot-top b{font-family:var(--serif);font-size:19px;font-weight:400;letter-spacing:.06em}
 .foot-top span{font-size:12px;color:var(--ink-3)}
+
+/* ── beat: troca de registro dentro de uma mesma conversa ───────────────── */
+.beat{margin-top:16px;padding-top:15px;border-top:1px dashed var(--line)}
+.beat-tag{display:block;font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:11px}
 
 /* ── ato 2 do demo: o follow-up dias depois ─────────────────────────────── */
 .later{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line)}
@@ -431,6 +503,7 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
   .chain li::before{transform:scale(1)}
   .chain li::after{transform:scaleY(1)}
   .chain li span,.weekly dt,.weekly dd{opacity:1;transform:none}
+  h1.rv,h2.rv,.letter blockquote.rv{filter:none}
   .moment .clock::after,.moment .punch b::after{transform:scaleX(1)}
   .nav .prog{display:none}
 }
@@ -455,8 +528,8 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
     <div class="hero-grid">
       <div>
         <span class="pill rv"><i></i>Funciona pelo WhatsApp</span>
-        <h1 class="rv" style="--i:1">Você fala.<br>A LIA conecta os pontos.</h1>
-        <p class="lead rv" style="--i:2">O difícil não é saber o que fazer. É o resto do dia. A LIA aprende seus padrões e acompanha sua relação com a comida, todos os dias.</p>
+        <h1 class="rv" style="--i:1">Entre saber e conseguir,<br>tem um intervalo.<br><span class="hl">A LIA fica nele com você.</span></h1>
+        <p class="lead rv" style="--i:2">Uma inteligência que aprende seus padrões e acompanha sua relação com a comida pelo WhatsApp — inclusive nos dias em que saber não basta.</p>
         <div class="hero-cta rv" style="--i:3">
           <a class="btn btn-wa" href="#" data-cta="hero" data-cfg="cta-primary">Começar</a>
           <span class="cta-note" data-cfg="cta-note"></span>
@@ -536,11 +609,11 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
     <div class="compare">
       <div class="rv" style="--i:2">
         <h3>Um assistente</h3>
-        <p>Responde muito bem à mensagem de hoje. E amanhã começa do zero.</p>
+        <p>Espera você abrir o app, escrever bem a pergunta e ter clareza do que precisa. Às 21h47, ele não sabe que você existe.</p>
       </div>
       <div class="hi rv" style="--i:3">
         <h3>A LIA</h3>
-        <p>Lê a mensagem de hoje junto com as de três semanas atrás.</p>
+        <p>Procura você primeiro, no WhatsApp, no dia em que o histórico diz que costuma ser difícil.</p>
       </div>
     </div>
 
@@ -568,7 +641,6 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
         </ul>
         <p class="insight-note">Três relatos parecidos em duas semanas. Sempre depois de sair do combinado.</p>
       </div>
-      <span class="sim rv" style="--i:4">Exemplo ilustrativo</span>
     </div>
 
     <p class="body rv">Uma conversa isolada conta uma história. Algumas semanas começam a revelar um padrão.</p>
@@ -630,8 +702,8 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
       </figure>
       <div>
         <blockquote class="rv" style="--i:1">“Eu passei anos ouvindo a mesma frase em consulta:<br><em>‘Evelyn, eu sei o que fazer. Eu só não consigo.’</em>”</blockquote>
-        <p class="after rv" style="--i:2">A LIA nasceu dessa frase. Ela não substitui ninguém. Ela fica no lugar onde ninguém conseguia ficar: o seu dia a dia.</p>
-        <p class="sig rv" style="--i:3"><i></i><span>Evelyn Liu · <b>Table</b></span></p>
+        <p class="after rv" style="--i:2">A LIA nasceu dessa frase. Ela fica no lugar onde eu nunca consegui estar: o seu dia a dia, no minuto em que ele aperta.</p>
+        <p class="sig rv" style="--i:3"><i></i><span>Evelyn Liu · nutricionista · fundadora da <b>Table</b></span></p>
       </div>
     </div>
   </div>
@@ -641,25 +713,33 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
 <section>
   <div class="wrap">
     <span class="eyebrow rv">Intervenção</span>
-    <h2 class="rv" style="--i:1">Às vezes o que ajuda não é um texto.</h2>
+    <h2 class="rv" style="--i:1">Perceber é o começo.<br>O que muda a noite é o que vem depois.</h2>
+    <p class="body rv" style="--i:2">Reconhecer o padrão não interrompe nada sozinho. Interromper exige alguém fazendo a pergunta certa no minuto certo.</p>
 
-    <div class="thread rv" style="--i:2">
-      <p class="bubble lia" style="max-width:100%">Quero te mandar uma coisa que a Evelyn gravou justamente para situações como essa.</p>
+    <div class="thread rv" style="--i:3">
+      <p class="bubble me">Tô indo pra cozinha de novo. Já sei como isso termina.</p>
+      <p class="bubble lia">Antes de decidir qualquer coisa, me responde uma: o que você precisa agora — comer, ou parar de sentir isso?</p>
+      <p class="bubble me">…parar de sentir isso.</p>
+      <p class="bubble lia">Então vamos por aí. Da última vez, sair da cozinha por dez minutos foi o que te deu espaço. Topa tentar de novo? Eu fico aqui.</p>
 
-      <div class="evelyn" id="evelynCard">
-        <img src="/images/lia-evelyn-avatar.jpg" alt="" width="46" height="46" loading="lazy" decoding="async"/>
-        <button class="audio-play" id="evelynPlay" aria-label="Reproduzir exemplo de áudio da Evelyn">
-          <svg viewBox="0 0 12 14" aria-hidden="true"><path d="M0 0l12 7-12 7z"/></svg>
-        </button>
-        <div class="audio-body">
-          <div class="who">Evelyn <span>01:42</span></div>
-          <div class="wave" id="evelynWave" style="height:20px;margin-top:5px" aria-hidden="true"></div>
+      <div class="beat">
+        <span class="beat-tag">quando texto não dá conta</span>
+        <p class="bubble lia">Quero te mandar uma coisa que a Evelyn gravou justamente para esse momento.</p>
+
+        <div class="evelyn" id="evelynCard">
+          <img src="/images/lia-evelyn-avatar.jpg" alt="" width="46" height="46" loading="lazy" decoding="async"/>
+          <button class="audio-play" id="evelynPlay" aria-label="Reproduzir exemplo de áudio da Evelyn">
+            <svg viewBox="0 0 12 14" aria-hidden="true"><path d="M0 0l12 7-12 7z"/></svg>
+          </button>
+          <div class="audio-body">
+            <div class="who">Evelyn <span>01:42</span></div>
+            <div class="wave" id="evelynWave" style="height:20px;margin-top:5px" aria-hidden="true"></div>
+          </div>
         </div>
       </div>
-      <span class="sim">Exemplo ilustrativo</span>
     </div>
 
-    <p class="body rv">A LIA identifica o momento. A metodologia seleciona a intervenção. A Evelyn entra com conteúdos criados para essas situações.</p>
+    <p class="body rv">A LIA identifica o momento. A metodologia escolhe a intervenção. A Evelyn entra com conteúdo gravado para situações como essa. Você não precisa chegar com a resposta pronta — só precisa responder.</p>
   </div>
 </section>
 
@@ -671,15 +751,15 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
 
     <div class="thread rv" style="--i:2">
       <p class="bubble me">LIA, tô aqui.</p>
-      <p class="bubble lia">Entendi. Estou com seu contexto aqui.</p>
-      <span class="sim">Exemplo ilustrativo</span>
+      <p class="bubble lia">Tô contigo. Não precisa explicar — eu sei que sexta à noite é o seu horário difícil, e que semana passada foi depois de um dia igual a esse.</p>
+      <p class="bubble lia">Me diz só uma coisa: você já comeu, ou ainda dá tempo da gente pensar junto?</p>
     </div>
 
-    <p class="body rv">Quando aquele momento chega, você não precisa começar a explicar tudo de novo.</p>
+    <p class="body rv">Quando aquele momento chega, você não começa do zero. Ela já sabe onde vocês pararam — e usa isso pra te ajudar mais rápido.</p>
 
     <!-- A objeção real de compra não é preço: é "eu vou largar, como larguei tudo" -->
     <div class="reassure rv">
-      <h3>E quando você sumir por uma semana?</h3>
+      <h3>E se você sumir por uma semana?</h3>
       <p>Acontece. A LIA não faz lista de faltas nem pergunta “cadê você” com tom de professora. Ela pode puxar assunto — mas nunca com culpa. E quando você voltar, ela continua de onde vocês pararam.</p>
       <p class="last">Porque a história dela com você não zera.</p>
     </div>
@@ -712,10 +792,31 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
 <!-- ═══ Não é uma dieta ══════════════════════════════════════════════════ -->
 <section>
   <div class="wrap">
-    <h2 class="rv">Você provavelmente não precisa de mais uma dieta.</h2>
-    <p class="icp rv" style="--i:1">“Eu sei o que deveria fazer. Só não consigo sustentar.”</p>
-    <p class="body rv" style="--i:2">A distância raramente está na informação. Está no intervalo entre saber e conseguir.</p>
-    <p class="body rv" style="--i:3">A LIA foi criada para o que acontece nesse intervalo: seus padrões, seus pensamentos, as situações e as decisões do dia a dia. Ela não prescreve dietas nem substitui uma nutricionista.</p>
+    <span class="eyebrow rv">O que muda</span>
+    <h2 class="rv" style="--i:1">O primeiro sinal não aparece na balança.</h2>
+
+    <ul class="shift rv" style="--i:2">
+      <li>É o tempo entre o impulso e a decisão começar a existir.</li>
+      <li>É chegar exausta e reconhecer o que está acontecendo — antes que vire a mesma noite.</li>
+      <li>É errar numa terça e a terça continuar sendo só uma terça.</li>
+    </ul>
+
+    <p class="shift-close rv" style="--i:3">Não vira uma linha reta. Mas deixa de ser um ciclo.</p>
+    <p class="body rv" style="--i:4">É por isso que a LIA não prescreve dieta: o trabalho dela é o que acontece em volta da comida — seus padrões, seus pensamentos, as decisões do dia a dia.</p>
+  </div>
+</section>
+
+<!-- ═══ Prova social — número é da TABLE, não da LIA (ver CONFIG.SOCIAL) ═══ -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <span class="eyebrow rv">De onde vem o método</span>
+    <div class="proof-n rv" style="--i:1">
+      <b data-cfg="proof-number"></b>
+      <span data-cfg="proof-label"></span>
+    </div>
+    <p class="proof-cav rv" style="--i:2">A LIA é nova. O que não é nova é a metodologia por trás dela — a mesma que a Table aplica no acompanhamento presencial há anos.</p>
+
+    <div class="quotes" id="quotes"></div>
   </div>
 </section>
 
@@ -723,7 +824,7 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
 <section style="padding-top:0">
   <div class="wrap">
     <h2 class="rv">IA quando ajuda.<br>Pessoas quando importa.</h2>
-    <p class="body rv" style="--i:1">A LIA trabalha dentro de um escopo definido. Quando uma situação pede avaliação profissional, a equipe da Table pode entrar.</p>
+    <p class="body rv" style="--i:1">Quando uma situação pede avaliação profissional, a LIA não tenta dar conta sozinha: a equipe da Table entra.</p>
   </div>
 </section>
 
@@ -731,7 +832,13 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
 <section id="preco">
   <div class="wrap">
     <h2 class="rv" data-cfg="pricing-title">Conheça a LIA.</h2>
-    <p class="body rv" style="--i:1">Uma assinatura. Sem sessão, sem pacote, sem plano alimentar.</p>
+    <p class="body rv" style="--i:1">Uma consulta acontece uma vez por mês, se acontecer. A LIA acompanha os outros vinte e nove dias — os dias em que a decisão realmente é tomada.</p>
+
+    <ol class="start rv" style="--i:2">
+      <li><b>Você manda um oi</b> no WhatsApp. Não precisa saber por onde começar.</li>
+      <li><b>A LIA faz algumas perguntas</b> pra entender seu contexto. Leva alguns minutos, no seu tempo.</li>
+      <li><b>A partir daí ela acompanha</b> — e no fim da semana te devolve a primeira leitura do que percebeu.</li>
+    </ol>
 
     <div class="plans">
       <div class="plan rv" style="--i:2">
@@ -838,11 +945,16 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
                     : CONFIG.BILLING_ENABLED
                       ? 'Direto pelo WhatsApp. ' + days + ' dias grátis.'
                       : days + ' dias grátis, sem cartão. Direto pelo WhatsApp.',
-    'pricing-title': trial ? 'Deixe a LIA conhecer você por ' + days + ' dias.' : 'Conheça a LIA.',
+    // Promete o ENTREGÁVEL do prazo, não o padrão: em 7 dias não existe padrão,
+    // e prometer o que o produto não entrega no prazo é o jeito mais rápido de
+    // queimar a base logo na primeira semana.
+    'pricing-title': trial ? 'Em ' + days + ' dias, ' + CONFIG.TRIAL_DELIVERABLE + '.' : 'Conheça a LIA.',
     'billing-note' : !trial ? 'Cancele quando quiser.'
                     : CONFIG.BILLING_ENABLED
                       ? 'Hoje R$ 0. A primeira cobrança acontece depois do período gratuito. Cancele antes e não será cobrado.'
                       : 'Hoje R$ 0, sem cartão. Você começa pelo WhatsApp e escolhe o plano depois dos ' + days + ' dias.',
+    'proof-number' : CONFIG.SOCIAL.number,
+    'proof-label'  : CONFIG.SOCIAL.numberLabel,
     'm-label' : P.monthly.label, 'm-price': P.monthly.price, 'm-period': P.monthly.period, 'm-note': P.monthly.note,
     'a-label' : P.annual.label,  'a-price': P.annual.price,  'a-period': P.annual.period,
     'a-note'  : P.annual.note,   'a-badge': P.annual.badge
@@ -854,6 +966,30 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
     if (a.getAttribute('href') === '#') { a.href = waHref; a.rel = 'noopener'; a.target = '_blank'; }
   });
   document.getElementById('yr').textContent = new Date().getFullYear();
+
+  /* ── Prova social: relatos vindos do CONFIG ───────────────────────────── */
+  var qbox = document.getElementById('quotes');
+  if (qbox && CONFIG.SOCIAL.quotes.length){
+    CONFIG.SOCIAL.quotes.forEach(function(q, i){
+      var fig = document.createElement('figure');
+      fig.className = 'quote rv';
+      fig.style.setProperty('--i', i);
+      var p = document.createElement('p');   p.textContent = q.text;   // textContent: nada de HTML vindo do config
+      var c = document.createElement('cite'); c.textContent = q.who;
+      fig.appendChild(p); fig.appendChild(c);
+      qbox.appendChild(fig);
+    });
+  }
+
+  /* ── Nota de lançamento (só enquanto for verdade) ─────────────────────── */
+  if (CONFIG.LAUNCH_NOTE){
+    document.querySelectorAll('[data-cfg="billing-note"]').forEach(function(el){
+      var s = document.createElement('span');
+      s.textContent = ' ' + CONFIG.LAUNCH_NOTE;
+      s.style.color = 'var(--signal)';
+      el.appendChild(s);
+    });
+  }
 
   /* ── Waveforms: alturas determinísticas (sem random, sem CLS) ─────────── */
   [['demoWave', 34, 26], ['evelynWave', 30, 20]].forEach(function(cfg){
