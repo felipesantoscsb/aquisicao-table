@@ -183,10 +183,12 @@ h3{font-size:16px;font-weight:600;letter-spacing:-.01em}
   background:radial-gradient(60% 70% at 50% 0%, rgba(107,125,92,.11), transparent 70%);
 }
 .pill{
-  display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:500;color:var(--moss);
+  display:inline-flex;align-items:center;gap:8px;font-size:clamp(11px,3.35vw,12.5px);font-weight:500;color:var(--moss);
   background:var(--moss-pale);border-radius:999px;padding:7px 15px;margin-bottom:22px;
 }
 .pill i{width:6px;height:6px;border-radius:50%;background:var(--moss-lt);font-style:normal}
+/* telas bem estreitas (SE antigo): aperta o badge pra nao virar 2 linhas */
+@media(max-width:344px){.pill{font-size:10.5px;padding:6px 12px;gap:6px}}
 .hero-cta{margin-top:30px;display:flex;flex-direction:column;align-items:flex-start;gap:12px}
 .hero-cta .btn{width:100%;max-width:340px}
 @media(min-width:900px){
@@ -549,7 +551,7 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
   <div class="wrap wrap-wide">
     <div class="hero-grid">
       <div>
-        <span class="pill rv"><i></i>No WhatsApp. E ela fala primeiro.</span>
+        <span class="pill rv"><i></i>No WhatsApp. Ela te acompanha ativamente.</span>
         <h1 class="rv" style="--i:1">Entre saber e conseguir,<br>tem um intervalo.<br><span class="hl">A LIA fica nele com você.</span></h1>
         <p class="lead rv" style="--i:2">Uma inteligência que aprende seus padrões e te procura no WhatsApp justamente nos dias em que saber não basta.</p>
         <div class="hero-cta rv" style="--i:3">
