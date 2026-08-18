@@ -27,20 +27,15 @@
 <script>
 var CONFIG = {
   // ─────────────────────────────────────────────────────────────────────────
-  // DESTINO DOS CTAs — uma chave só comanda tudo.
-  // Com CHECKOUT_URL vazio: CTA vai pro WhatsApp e a página diz "sem cartão".
-  // Assim que você colar o link do checkout aqui, TUDO vira sozinho: os botões
-  // passam a apontar pro checkout e a copy passa a falar de cobrança. Não
-  // existe estado intermediário possível — era o jeito de a página nunca
-  // prometer cartão enquanto manda a pessoa pro WhatsApp.
+  // DESTINO DOS CTAs
+  // Cada plano tem seu checkout, definido em PRICING.*.checkout. Um botão sem
+  // link configurado cai no WhatsApp em vez de virar link morto.
   // ─────────────────────────────────────────────────────────────────────────
-  CHECKOUT_URL: "",
+  // Cada plano tem seu proprio checkout (ver PRICING.*.checkout).
+  // A URL de retorno do checkout precisa ser configurada NA CAKTO apontando
+  // pra THANKYOU_URL, com www: o apex 301 as chamadas de API do onboarding.
   THANKYOU_URL: "https://www.evelynliu.com.br/obrigado-lia",
 
-  // POLÍTICA (o que a página diz) é separada de DESTINO (pra onde o botão vai).
-  // Estavam juntos antes e por isso a página insistia em "sem cartão" enquanto
-  // o checkout não existia. Com true, a copy já fala de cartão e trial; o botão
-  // segue no WhatsApp até CHECKOUT_URL ser preenchido.
   REQUIRES_CARD: true,
 
   WHATSAPP_NUMBER: "5511977130088",
@@ -60,14 +55,16 @@ var CONFIG = {
   GUARANTEE_DAYS: 7,
   FIRST_DELIVERABLE: "a primeira leitura da sua semana",
 
-  // Formas de pagamento mostradas no checkout (só aparece se CHECKOUT_URL existir)
+  // Formas de pagamento anunciadas junto do CTA
   PAYMENT_METHODS: "Cartão, Apple Pay ou Google Pay",
 
   PRICING: {
     monthly: { label: "Mensal",  price: "R$ 49,90", period: "/mês",
-               note: "Menos de R$ 1,70 por dia. Cancele quando quiser." },
+               note: "Menos de R$ 1,70 por dia. Cancele quando quiser.",
+               checkout: "https://pay.cakto.com.br/32i7ivo_1049496" },
     annual:  { label: "Anual",   price: "R$ 29,90", period: "/mês",
-               note: "R$ 358,80 uma vez por ano · menos de R$ 1 por dia", badge: "economize 40%" }
+               note: "R$ 358,80 uma vez por ano · menos de R$ 1 por dia", badge: "economize 40%",
+               checkout: "https://pay.cakto.com.br/3ewcnxh" }
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -431,6 +428,9 @@ h3{font-size:16px;font-weight:600;letter-spacing:-.01em}
 .badge{position:absolute;top:-9px;right:20px;background:var(--moss);color:#fff;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:5px 11px;border-radius:999px}
 .pay{margin-top:30px;text-align:center}
 .pay .btn{width:100%;max-width:400px}
+
+.plan-btn{display:flex;width:100%;margin-top:20px;font-size:15.5px;padding:14px 24px}
+.plan .amt{min-height:auto}
 
 /* ── garantia ───────────────────────────────────────────────────────────── */
 .guarantee{background:var(--surface);border:1px solid var(--moss-lt);border-radius:var(--radius);
@@ -896,12 +896,14 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
         <div class="name" data-cfg="m-label"></div>
         <div class="amt"><b data-cfg="m-price"></b><span data-cfg="m-period"></span></div>
         <div class="sub" data-cfg="m-note"></div>
+        <a class="btn btn-ghost plan-btn" href="#" data-cta="mensal">Assinar mensal</a>
       </div>
       <div class="plan best rv" style="--i:3">
         <span class="badge" data-cfg="a-badge"></span>
         <div class="name" data-cfg="a-label"></div>
         <div class="amt"><b data-cfg="a-price"></b><span data-cfg="a-period"></span></div>
         <div class="sub" data-cfg="a-note"></div>
+        <a class="btn plan-btn" href="#" data-cta="anual">Assinar anual</a>
       </div>
     </div>
 
@@ -911,10 +913,7 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
       <p class="g-why">A gente prefere devolver o dinheiro de quem não está sendo ajudada do que manter alguém pagando por algo que não serve.</p>
     </div>
 
-    <div class="pay">
-      <a class="btn" href="#" data-cta="pricing" data-cfg="cta-primary">Começar</a>
-      <p class="cta-note" data-cfg="cta-note"></p>
-    </div>
+    <p class="cta-note" style="text-align:center;margin-top:22px" data-cfg="cta-note"></p>
   </div>
 </section>
 
@@ -947,7 +946,7 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
     <div class="final">
       <h2 class="rv">Talvez você não precise tentar mais forte. Talvez precise se entender melhor.</h2>
       <p class="rv" style="margin-top:32px;--i:1">
-        <a class="btn" href="#" data-cta="final" data-cfg="cta-final">Começar com a LIA</a>
+        <a class="btn" href="#preco" data-cta="final" data-cfg="cta-final">Começar com a LIA</a>
       </p>
       <p class="cta-note rv">Você responde algumas perguntas. Depois a LIA te procura.</p>
     </div>
@@ -996,9 +995,10 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
   var dias = CONFIG.GUARANTEE_DAYS, P = CONFIG.PRICING;
   var waHref = 'https://wa.me/' + CONFIG.WHATSAPP_NUMBER +
                '?text=' + encodeURIComponent(CONFIG.WHATSAPP_TEXT);
-  var billing = !!CONFIG.REQUIRES_CARD;          // o que a página promete
-  var temCheckout = !!CONFIG.CHECKOUT_URL;       // pra onde o botão leva hoje
-  var destino = temCheckout ? CONFIG.CHECKOUT_URL : waHref;
+  // Cada plano tem seu checkout. Sem link configurado, o botão cai no
+  // WhatsApp em vez de virar link morto.
+  var checkouts = { mensal: P.monthly.checkout, anual: P.annual.checkout };
+  var temCheckout = !!(P.monthly.checkout || P.annual.checkout);
 
   var slots = {
     'cta-primary'  : 'Começar com a LIA',
@@ -1022,10 +1022,11 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
   });
   document.querySelectorAll('a[data-cta]').forEach(function(a){
     if (a.getAttribute('href') !== '#') return;
-    a.href = destino; a.rel = 'noopener';
-    // Checkout abre na mesma aba (fluxo de compra não deve perder o contexto);
+    var url = checkouts[a.getAttribute('data-cta')];
+    a.href = url || waHref; a.rel = 'noopener';
+    // Checkout abre na mesma aba (o fluxo de compra não deve perder contexto);
     // WhatsApp abre em nova, senão a pessoa perde a página de vendas.
-    if (!temCheckout) a.target = '_blank';
+    if (!url) a.target = '_blank';
   });
   document.getElementById('yr').textContent = new Date().getFullYear();
 
@@ -1181,10 +1182,11 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
     a.addEventListener('click', function(){
       var where = a.getAttribute('data-cta');
       if (where === 'hero') analytics.track('hero_cta_clicked');
-      if (where === 'nav' || where === 'hero') return;  // âncoras internas, não são intenção de compra
+      // nav/hero/final são âncoras internas, não intenção de compra
+      if (where === 'nav' || where === 'hero' || where === 'final') return;
       analytics.track('trial_started', {
-        placement: where, garantia_dias: CONFIG.GUARANTEE_DAYS,
-        destino: temCheckout ? 'checkout' : 'whatsapp'
+        plano: where, garantia_dias: CONFIG.GUARANTEE_DAYS,
+        destino: checkouts[where] ? 'checkout' : 'whatsapp'
       });
     });
   });
