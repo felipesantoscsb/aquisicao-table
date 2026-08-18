@@ -160,6 +160,9 @@ app.get('/as-cores',   (req, res) => res.sendFile(path.join(pub, 'as-cores.html'
 // LIA — landing do produto (Leitura · Intervenção · Acompanhamento). Página
 // auto-contida: preço, trial e destino do CTA vivem no CONFIG do topo do HTML.
 app.get('/lia',        (req, res) => res.sendFile(path.join(pub, 'lia.html')));
+// Obrigado da LIA: página de ATIVAÇÃO (leva pro WhatsApp), não de parabéns.
+// É o destino do checkout — quem assina e não manda a 1a mensagem churna no dia 7.
+app.get('/obrigado-lia', (req, res) => res.sendFile(path.join(pub, 'obrigado-lia.html')));
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -3401,6 +3404,190 @@ app.get('/api/dash/data', async (req, res) => {
 
 app.get('/dash', (req, res) => res.sendFile(path.join(__dirname, 'dash.html')));
 
+// ─── LIA — onboarding pós-compra ──────────────────────────────────────────────
+//
+// Fluxo: checkout → /obrigado-lia?ref=<id da transação> → confirma WhatsApp →
+// onboarding em etapas → POST /api/lia/onboard → persiste local → encaminha p/
+// a API da LIA (que gera o initial assessment e agenda o 1º contato).
+//
+// Princípio: o browser NUNCA fala com a API da LIA (o segredo mora aqui).
+// Princípio: falha da API NÃO pode perder o onboarding — persiste primeiro,
+// encaminha depois, com fila de retry. A cliente nunca preenche duas vezes.
+
+/** Telefone em E.164 (+55DDNNNNNNNNN). Insere o 9º dígito quando faltar. */
+function toE164BR(raw) {
+  if (!raw) return null;
+  let d = String(raw).replace(/\D/g, '');
+  if (d.startsWith('00')) d = d.slice(2);
+  if (!d.startsWith('55')) d = '55' + d;
+  let rest = d.slice(2);                                   // DDD + assinante
+  // Celular antigo (10 dígitos) cujo assinante começa em 6-9 → falta o 9.
+  if (rest.length === 10 && /^[6-9]/.test(rest.slice(2))) rest = rest.slice(0, 2) + '9' + rest.slice(2);
+  if (rest.length < 10 || rest.length > 11) return null;
+  return '+55' + rest;
+}
+
+/** Chave de idempotência: a compra manda; sem compra, o telefone. */
+function liaKey(purchaseRef, e164) {
+  const id = purchaseRef || (e164 ? 'wa_' + e164.replace(/\D/g, '') : null);
+  return id ? 'lia:onboard:' + id : null;
+}
+
+/** Busca a compra nos registros já existentes (Cakto e Ticto). */
+async function findPurchase(ref) {
+  if (!ref) return null;
+  for (const k of [`cakto:purchase:${ref}`, `ticto:purchase:${ref}`]) {
+    const raw = await redisGet(k);
+    if (raw) { try { return JSON.parse(raw); } catch {} }
+  }
+  return null;
+}
+
+// Contexto da compra p/ prefill. Devolve o MÍNIMO — nada de PII completa em
+// query string (o ref é opaco e o telefone volta mascarado).
+app.get('/api/lia/context', async (req, res) => {
+  const ref = String(req.query.ref || '').trim().slice(0, 120);
+  if (!ref) return res.json({ found: false });
+  const p = await findPurchase(ref);
+  if (!p) return res.json({ found: false });
+  const e164 = toE164BR(p.phone);
+  res.json({
+    found: true,
+    first_name: firstName(p.customer_name || p.name || '') || null,
+    phone_masked: e164 ? e164.slice(0, 5) + '*****' + e164.slice(-4) : null,
+    phone_prefill: e164 || null,
+    plan: p.offer_name || p.product_name || null,
+    status: p.status || null,
+  });
+});
+
+// Autosave do rascunho — refresh não pode custar o progresso dela.
+app.post('/api/lia/draft', async (req, res) => {
+  const b = req.body || {};
+  const key = liaKey(b.purchase_ref, toE164BR(b.whatsapp));
+  if (!key) return res.status(400).json({ error: 'sem identificador' });
+  await redisSet(key + ':draft', JSON.stringify({ answers: b.answers || {}, step: b.step || 0, at: Date.now() }),
+                 'EX', 60 * 60 * 24 * 7);
+  res.json({ ok: true });
+});
+
+app.get('/api/lia/draft', async (req, res) => {
+  const key = liaKey(String(req.query.ref || '').trim(), toE164BR(req.query.whatsapp));
+  if (!key) return res.json({ found: false });
+  const raw = await redisGet(key + ':draft');
+  if (!raw) return res.json({ found: false });
+  try { return res.json({ found: true, ...JSON.parse(raw) }); } catch { return res.json({ found: false }); }
+});
+
+/**
+ * Encaminha o onboarding pra API da LIA. Só roda se LIA_API_URL existir —
+ * enquanto o backend da LIA não estiver plugado, o onboarding fica guardado
+ * aqui e a fila drena depois, sem a cliente perceber nada.
+ */
+async function forwardToLia(record) {
+  const url = process.env.LIA_API_URL;
+  if (!url) return { forwarded: false, reason: 'LIA_API_URL ausente' };
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12_000);
+  try {
+    const r = await fetch(url.replace(/\/$/, '') + '/api/users/onboard', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + (process.env.LIA_API_SECRET || ''),
+        'Idempotency-Key': record.idempotency_key,
+      },
+      body: JSON.stringify(record.payload),
+      signal: controller.signal,
+    });
+    const text = await r.text();
+    let data = null; try { data = JSON.parse(text); } catch {}
+    if (!r.ok) return { forwarded: false, status: r.status, body: text.slice(0, 400) };
+    return { forwarded: true, status: r.status, data };
+  } catch (e) {
+    return { forwarded: false, reason: e.name === 'AbortError' ? 'timeout' : e.message };
+  } finally { clearTimeout(timeout); }
+}
+
+app.post('/api/lia/onboard', async (req, res) => {
+  try {
+    const b = req.body || {};
+    const e164 = toE164BR(b.whatsapp);
+    if (!e164) return res.status(400).json({ error: 'WhatsApp inválido' });
+
+    const key = liaKey(b.purchase_ref, e164);
+    const existing = await redisGet(key);
+    if (existing) {
+      // Idempotência: refresh, duplo submit ou volta depois devolvem o mesmo
+      // resultado. Nunca cria segunda usuária nem segundo trial.
+      try {
+        const prev = JSON.parse(existing);
+        if (prev.completed_at) return res.json({ ok: true, duplicate: true, lia: prev.lia_result || null });
+      } catch {}
+    }
+
+    const purchase = await findPurchase(b.purchase_ref);
+    const record = {
+      idempotency_key: b.purchase_ref || e164,
+      completed_at: new Date().toISOString(),
+      payload: {
+        purchase_id:          b.purchase_ref || null,
+        checkout_session_id:  b.checkout_session_id || null,
+        source:               'evelynliu.com.br',
+        whatsapp:             e164,
+        purchase_data:        purchase || null,
+        onboarding_answers:   b.answers || {},
+        communication_preferences: b.preferences || {},
+        consent:              b.consent || {},
+        // Triagem: só o estado, sem regra clínica inventada aqui. A equipe
+        // Table configura os critérios reais depois, do lado da LIA.
+        eligibility:          b.eligibility || 'eligible_for_ai_support',
+        onboarding_duration_seconds: Number(b.duration_seconds) || null,
+      },
+    };
+
+    // 1) Persiste ANTES de tentar a API — é o que garante que nada se perde.
+    await redisSet(key, JSON.stringify(record), 'EX', 60 * 60 * 24 * 180);
+
+    // 2) Encaminha. Falhou? entra na fila e a cliente segue o fluxo normal.
+    const out = await forwardToLia(record);
+    record.lia_result = out;
+    await redisSet(key, JSON.stringify(record), 'EX', 60 * 60 * 24 * 180);
+    if (!out.forwarded) {
+      await redisSet('lia:retry:' + record.idempotency_key, key, 'EX', 60 * 60 * 24 * 7);
+      console.warn('[LIA] onboarding guardado, forward pendente:', record.idempotency_key, out.reason || out.status);
+    } else {
+      console.log('[LIA] onboarding encaminhado:', record.idempotency_key);
+    }
+
+    res.json({ ok: true, duplicate: false, lia: out.forwarded ? out.data : null });
+  } catch (e) {
+    console.error('[LIA] erro no onboard:', e.message);
+    res.status(500).json({ error: 'falha ao registrar' });
+  }
+});
+
+/** Drena onboardings que não conseguiram chegar na API da LIA. */
+async function liaRetrySweep() {
+  const redis = await ensureRedisReady();
+  let keys = [];
+  try { keys = await redis.keys('lia:retry:*'); } catch { return; }
+  for (const rk of keys.slice(0, 25)) {
+    const target = await redisGet(rk);
+    if (!target) { await redisDel(rk); continue; }
+    const raw = await redisGet(target);
+    if (!raw) { await redisDel(rk); continue; }
+    let record; try { record = JSON.parse(raw); } catch { await redisDel(rk); continue; }
+    const out = await forwardToLia(record);
+    if (out.forwarded) {
+      record.lia_result = out;
+      await redisSet(target, JSON.stringify(record), 'EX', 60 * 60 * 24 * 180);
+      await redisDel(rk);
+      console.log('[LIA] retry ok:', record.idempotency_key);
+    }
+  }
+}
+
 // ─── Start ────────────────────────────────────────────────────────────────────
 
 app.listen(PORT, () => {
@@ -3415,6 +3602,11 @@ app.listen(PORT, () => {
   setInterval(() => { recoverySweep().catch(() => {}); }, 5 * 60 * 1000);
   setTimeout(() => { recoverySweep().catch(() => {}); }, 60 * 1000);
   // Sequência pós-quiz: verifica pendências vencidas a cada 5 min.
+  // Onboardings da LIA que não chegaram na API dela (ou porque estava fora, ou
+  // porque LIA_API_URL ainda nem existe) — drena sozinho quando voltar.
+  setInterval(() => { liaRetrySweep().catch(() => {}); }, 10 * 60 * 1000);
+  setTimeout(() => { liaRetrySweep().catch(() => {}); }, 120 * 1000);
+
   setInterval(() => { seqSweep().catch(() => {}); }, 5 * 60 * 1000);
   setTimeout(() => { seqSweep().catch(() => {}); }, 90 * 1000);
 });

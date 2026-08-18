@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Seu acompanhamento começa agora — LIA</title>
+<meta name="description" content="Antes de falar com você, a LIA precisa entender um pouco melhor o seu momento."/>
+<meta name="theme-color" content="#FAF7F2"/>
+<meta name="robots" content="noindex,nofollow"/>
+
+<!--
+  ╭──────────────────────────────────────────────────────────────────────────╮
+  │  ONBOARDING PÓS-COMPRA — não é página de "obrigado pela compra".         │
+  │                                                                          │
+  │  Objetivo: coletar contexto suficiente pra que a PRIMEIRA mensagem da    │
+  │  LIA já demonstre leitura, hipótese, foco e intervenção. O aha moment    │
+  │  é o WhatsApp vibrar com algo que prova que ela leu.                     │
+  │                                                                          │
+  │  Quem fala primeiro é a LIA — nunca peça pra cliente puxar conversa.     │
+  │  Isso casa com a promessa da /lia ("procura você primeiro").             │
+  │                                                                          │
+  │  O browser NÃO fala com a API da LIA: tudo passa por /api/lia/* aqui,    │
+  │  que guarda no Redis e encaminha. Falha da API não perde onboarding.     │
+  ╰──────────────────────────────────────────────────────────────────────────╯
+-->
+<script>
+var CONFIG = {
+  TRIAL_DAYS: 7,
+  // Só usado no fallback do CTA final; o normal é a LIA falar primeiro.
+  WHATSAPP_NUMBER: "5511977130088",
+  SUPPORT_URL: "https://wa.me/5511977130088",
+  PIXEL_ID: "",
+  DEBUG: false
+};
+</script>
+
+<style>
+:root{
+  --canvas:#FAF7F2; --canvas-2:#F4F1EA; --surface:#FFFFFF;
+  --line:#E8E3D9; --line-soft:#F0ECE3;
+  --ink:#1B1F19; --ink-2:#464C42; --ink-3:#7B8177;
+  --moss:#3D4A35; --moss-lt:#6B7D5C; --moss-pale:#EDF1E9; --moss-deep:#242C1F;
+  --signal:#B97040; --signal-pale:#FAF0E7;
+  --radius:22px; --radius-sm:14px;
+  --shadow:0 1px 2px rgba(27,31,25,.04), 0 14px 34px -12px rgba(36,44,31,.16);
+  --shadow-sm:0 1px 2px rgba(27,31,25,.04), 0 6px 16px -8px rgba(36,44,31,.14);
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --serif:ui-serif,'New York','Iowan Old Style',Palatino,'Palatino Linotype',Georgia,serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --wa:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91C21.95 6.45 17.5 2 12.04 2zm5.8 14.17c-.25.69-1.44 1.32-1.99 1.4-.51.08-1.15.11-1.86-.12-.43-.13-.98-.32-1.68-.62-2.96-1.28-4.89-4.26-5.04-4.46-.15-.2-1.2-1.6-1.2-3.05s.76-2.16 1.03-2.46c.27-.3.59-.37.79-.37.2 0 .39 0 .57.01.18.01.42-.07.66.5.25.59.84 2.04.91 2.19.07.15.12.32.02.52-.1.2-.15.32-.3.49-.15.17-.31.38-.44.51-.15.15-.3.31-.13.61.17.3.76 1.25 1.63 2.03 1.12 1 2.06 1.31 2.36 1.46.3.15.47.12.65-.07.17-.2.74-.87.94-1.16.2-.3.4-.25.66-.15.27.1 1.71.81 2.01.95.3.15.49.22.56.35.07.12.07.71-.18 1.4z'/%3E%3C/svg%3E");
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--canvas);color:var(--ink);font-family:var(--sans);line-height:1.6;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100vh}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--moss);outline-offset:3px;border-radius:8px}
+
+.wrap{width:100%;max-width:600px;margin:0 auto;padding:0 22px}
+h1{font-family:var(--serif);font-weight:400;letter-spacing:-.025em;line-height:1.08;
+  font-size:clamp(30px,7.4vw,46px)}
+h2{font-family:var(--serif);font-weight:400;letter-spacing:-.022em;line-height:1.16;
+  font-size:clamp(23px,5.4vw,31px)}
+.lead{font-size:clamp(16.5px,4.1vw,19px);color:var(--ink-2);line-height:1.55;margin-top:16px;max-width:38ch}
+.body{font-size:16px;color:var(--ink-2);line-height:1.6;margin-top:14px;max-width:44ch}
+.tiny{font-size:13px;color:var(--ink-3);line-height:1.5}
+
+/* ── topo ───────────────────────────────────────────────────────────────── */
+.top{padding:20px 0 0}
+.mark{display:flex;align-items:baseline;gap:9px;text-decoration:none}
+.mark b{font-family:var(--serif);font-size:21px;font-weight:400;letter-spacing:.06em}
+.mark span{font-size:11.5px;color:var(--ink-3)}
+
+/* ── botões ─────────────────────────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font:inherit;
+  font-size:16.5px;font-weight:600;letter-spacing:-.01em;padding:17px 30px;border:none;
+  border-radius:999px;cursor:pointer;text-decoration:none;background:var(--moss);color:#fff;
+  width:100%;box-shadow:0 1px 2px rgba(36,44,31,.2),0 10px 24px -10px rgba(36,44,31,.5);
+  transition:transform .16s var(--ease),opacity .16s;-webkit-tap-highlight-color:transparent}
+.btn:active{transform:scale(.985)}
+.btn[disabled]{opacity:.34;pointer-events:none}
+.btn.wa::before{content:"";width:19px;height:19px;flex:0 0 auto;background:currentColor;
+  -webkit-mask:var(--wa) center/contain no-repeat;mask:var(--wa) center/contain no-repeat}
+.btn.ghost{background:transparent;color:var(--ink-2);border:1px solid var(--line);
+  box-shadow:none;font-size:15px;padding:14px 24px}
+.back{background:none;border:none;font:inherit;font-size:14.5px;color:var(--ink-3);
+  cursor:pointer;padding:12px 4px;display:inline-flex;align-items:center;gap:7px}
+.back::before{content:"←"}
+
+/* ── telas ──────────────────────────────────────────────────────────────── */
+.screen{display:none;padding:26px 0 40px}
+.screen.on{display:block;animation:fade .45s var(--ease)}
+@keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* ── progresso ──────────────────────────────────────────────────────────── */
+.prog{position:sticky;top:0;z-index:20;background:var(--canvas);padding:14px 0 12px}
+.prog-bar{height:3px;background:var(--line-soft);border-radius:3px;overflow:hidden}
+.prog-bar i{display:block;height:100%;background:var(--moss-lt);border-radius:3px;
+  width:0;transition:width .5s var(--ease)}
+.prog-txt{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-top:9px}
+
+/* ── campos ─────────────────────────────────────────────────────────────── */
+.q{margin-bottom:8px}
+.q-t{font-family:var(--serif);font-size:clamp(21px,5vw,27px);line-height:1.24;
+  letter-spacing:-.02em;margin-bottom:6px}
+.q-h{font-size:14.5px;color:var(--ink-3);line-height:1.5;margin-bottom:18px}
+.q + .q{margin-top:34px;padding-top:30px;border-top:1px solid var(--line-soft)}
+
+textarea,input[type=text],input[type=tel]{width:100%;font:inherit;font-size:16.5px;color:var(--ink);
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);
+  padding:15px 16px;line-height:1.5;resize:vertical;-webkit-appearance:none}
+textarea{min-height:112px}
+textarea::placeholder,input::placeholder{color:#AAB0A5}
+textarea:focus,input:focus{outline:none;border-color:var(--moss-lt);box-shadow:0 0 0 3px var(--moss-pale)}
+
+.chips{display:flex;flex-wrap:wrap;gap:9px}
+.chip{font:inherit;font-size:15px;line-height:1.3;color:var(--ink-2);background:var(--surface);
+  border:1px solid var(--line);border-radius:999px;padding:11px 17px;cursor:pointer;
+  transition:all .16s var(--ease);text-align:left;-webkit-tap-highlight-color:transparent}
+.chip[aria-pressed=true]{background:var(--moss-pale);border-color:var(--moss-lt);color:var(--moss);font-weight:600}
+.chip:active{transform:scale(.97)}
+
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{display:flex;align-items:flex-start;gap:12px;font-size:16px;color:var(--ink-2);
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);
+  padding:15px 16px;cursor:pointer;transition:all .16s var(--ease);line-height:1.45}
+.opt[aria-pressed=true]{background:var(--moss-pale);border-color:var(--moss-lt);color:var(--ink)}
+.opt i{width:19px;height:19px;flex:0 0 auto;border:1.5px solid var(--line);border-radius:50%;
+  margin-top:2px;position:relative;font-style:normal;transition:all .16s}
+.opt[aria-pressed=true] i{border-color:var(--moss);background:var(--moss)}
+.opt[aria-pressed=true] i::after{content:"";position:absolute;left:5.5px;top:3px;width:5px;height:9px;
+  border-right:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(43deg)}
+
+.nav-row{display:flex;align-items:center;gap:14px;margin-top:32px}
+.nav-row .btn{flex:1}
+
+/* ── whatsapp ───────────────────────────────────────────────────────────── */
+.phone-note{display:flex;gap:11px;align-items:flex-start;background:var(--moss-pale);
+  border-radius:var(--radius-sm);padding:15px 16px;margin-top:16px;font-size:14.5px;
+  color:var(--moss);line-height:1.5}
+.phone-note b{font-weight:600}
+.err{color:#A6412B;font-size:14px;margin-top:10px;display:none}
+.err.on{display:block}
+
+/* ── transparência ──────────────────────────────────────────────────────── */
+.disc{background:var(--canvas-2);border-radius:var(--radius-sm);padding:20px 19px;margin-top:22px}
+.disc li{list-style:none;position:relative;padding-left:20px;font-size:14.5px;color:var(--ink-2);
+  line-height:1.55;margin-bottom:10px}
+.disc li::before{content:"";position:absolute;left:2px;top:.62em;width:8px;height:1.5px;
+  background:var(--moss-lt);border-radius:2px}
+.disc li:last-child{margin-bottom:0}
+
+/* ── processando ────────────────────────────────────────────────────────── */
+.loading{text-align:center;padding:80px 0 60px}
+.orb{width:64px;height:64px;margin:0 auto 30px;border-radius:50%;background:var(--moss-pale);
+  position:relative;display:flex;align-items:center;justify-content:center}
+.orb::after{content:"";position:absolute;inset:-6px;border-radius:50%;
+  border:2px solid var(--moss-lt);border-right-color:transparent;border-bottom-color:transparent;
+  animation:spin 1.15s linear infinite}
+.orb b{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--moss);letter-spacing:.05em}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-txt{font-family:var(--serif);font-size:clamp(19px,4.6vw,24px);color:var(--ink-2);
+  transition:opacity .4s;min-height:2.6em;line-height:1.35}
+
+/* ── final ──────────────────────────────────────────────────────────────── */
+.done-check{width:52px;height:52px;border-radius:50%;background:var(--moss);position:relative;margin-bottom:24px}
+.done-check::after{content:"";position:absolute;left:17px;top:14px;width:12px;height:22px;
+  border-right:2.5px solid #fff;border-bottom:2.5px solid #fff;transform:rotate(43deg)}
+.dest{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);
+  padding:17px 18px;margin-top:24px;box-shadow:var(--shadow-sm)}
+.dest .k{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px}
+.dest .v{font-size:18px;font-weight:600;letter-spacing:.01em}
+.wait{display:flex;align-items:center;gap:10px;margin-top:20px;font-size:15px;color:var(--moss)}
+.wait i{width:8px;height:8px;border-radius:50%;background:var(--moss-lt);font-style:normal;
+  animation:blip 1.6s ease-in-out infinite}
+@keyframes blip{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+
+footer{padding:30px 0 44px;border-top:1px solid var(--line-soft);margin-top:26px}
+footer p{font-size:12.5px;color:var(--ink-3);line-height:1.6;max-width:56ch}
+footer a{color:var(--ink-2)}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .screen.on{animation:none}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap"><a class="mark" href="/lia"><b>LIA</b><span>uma inteligência da Table</span></a></div>
+</header>
+
+<main class="wrap">
+
+<!-- ═══ 1. Intro ═════════════════════════════════════════════════════════ -->
+<section class="screen on" id="s-intro">
+  <h1>Seu acompanhamento começa agora.</h1>
+  <p class="lead">Antes de falar com você, a LIA precisa entender um pouco melhor o seu momento.</p>
+  <p class="body">Você leva alguns minutos. Depois disso, ela continua a conversa direto pelo WhatsApp.</p>
+  <div class="nav-row"><button class="btn" id="go">Começar</button></div>
+  <p class="tiny" style="margin-top:14px;text-align:center">Leva cerca de 5 minutos · dá pra parar e voltar depois</p>
+</section>
+
+<!-- ═══ 2. WhatsApp ══════════════════════════════════════════════════════ -->
+<section class="screen" id="s-phone">
+  <h2>Em qual WhatsApp a LIA pode falar com você?</h2>
+  <p class="body">É por aqui que seu acompanhamento vai acontecer.</p>
+  <div style="margin-top:22px">
+    <input type="tel" id="phone" inputmode="tel" autocomplete="tel"
+           placeholder="(11) 99999-9999" aria-label="Seu WhatsApp com DDD"/>
+    <p class="err" id="phoneErr">Confere esse número pra mim? Preciso de DDD + o número.</p>
+  </div>
+  <div class="phone-note">
+    <span>💛</span>
+    <span><b>Você não precisa mandar mensagem primeiro.</b> Quem entra em contato é a LIA, assim que terminar de ler o que você contar aqui.</span>
+  </div>
+  <div class="nav-row"><button class="btn" id="phoneNext">Continuar</button></div>
+</section>
+
+<!-- ═══ 3. Etapas (render dinâmico) ══════════════════════════════════════ -->
+<section class="screen" id="s-steps">
+  <div class="prog">
+    <div class="prog-bar"><i id="progBar"></i></div>
+    <div class="prog-txt" id="progTxt"></div>
+  </div>
+  <div id="stepBody"></div>
+  <div class="nav-row">
+    <button class="back" id="prev">Voltar</button>
+    <button class="btn" id="next">Continuar</button>
+  </div>
+</section>
+
+<!-- ═══ 4. Processando ═══════════════════════════════════════════════════ -->
+<section class="screen" id="s-load">
+  <div class="loading">
+    <div class="orb"><b>L</b></div>
+    <p class="load-txt" id="loadTxt">Lendo o que você contou…</p>
+  </div>
+</section>
+
+<!-- ═══ 5. Final ═════════════════════════════════════════════════════════ -->
+<section class="screen" id="s-done">
+  <div class="done-check" aria-hidden="true"></div>
+  <h1>Pronto. A LIA já sabe por onde começar.</h1>
+  <p class="lead">Agora ela vai continuar essa conversa com você pelo WhatsApp.</p>
+
+  <div class="dest">
+    <div class="k">Vamos falar com você em</div>
+    <div class="v" id="destPhone">—</div>
+  </div>
+
+  <div class="wait"><i></i><span id="waitTxt">Ela está preparando sua primeira conversa.</span></div>
+  <p class="body">Você não precisa mandar nada primeiro. Pode fechar esta página — a mensagem chega no seu WhatsApp.</p>
+
+  <div class="nav-row" style="flex-direction:column;gap:10px">
+    <a class="btn wa" id="openWa" href="#">Abrir o WhatsApp</a>
+    <button class="btn ghost" id="closeIt">Posso fechar esta página</button>
+  </div>
+
+  <p class="tiny" style="margin-top:24px">Alguma coisa errada? <a href="#" id="support" style="text-decoration:underline">Fala com a equipe da Table</a>.</p>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>
+      A LIA é uma inteligência artificial criada a partir da metodologia da Table. Ela não substitui avaliação,
+      diagnóstico ou tratamento de profissional de saúde.
+      <br><br>
+      © <span id="yr"></span> Table · <a href="/legal">Privacidade e termos</a>
+    </p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ── Analytics (mesmo serviço abstrato da /lia) ───────────────────────── */
+  var analytics = (function(){
+    var queue = [], fired = {};
+    function track(e, p){
+      var payload = Object.assign({ event:e, page:'obrigado-lia', ts:Date.now() }, p || {});
+      queue.push(payload);
+      if (window.dataLayer) window.dataLayer.push(payload);
+      if (window.fbq && CONFIG.PIXEL_ID) { try { fbq('trackCustom', e, p || {}); } catch(x){} }
+      if (CONFIG.DEBUG) console.log('[lia]', e, p || '');
+    }
+    function once(e, p){ if (fired[e]) return; fired[e] = 1; track(e, p); }
+    return { track:track, once:once, queue:queue };
+  })();
+  window.LIA = { analytics: analytics };
+
+  var $ = function(id){ return document.getElementById(id); };
+  var qs = new URLSearchParams(location.search);
+  // Aceita os apelidos mais prováveis do redirect do checkout. Qual deles a
+  // Cakto realmente manda só o primeiro teste de compra real dirá.
+  var purchaseRef = qs.get('ref') || qs.get('t') || qs.get('transaction') ||
+                    qs.get('transaction_id') || qs.get('order') || qs.get('sck') || '';
+  var startedAt = Date.now();
+
+  /* ── Etapas ───────────────────────────────────────────────────────────── */
+  var STEPS = [
+    { id:'goal', label:'O que você quer mudar', qs:[
+      { k:'goal_open', type:'open', t:'Se você pudesse mudar uma coisa na sua relação com comida e corpo hoje, o que seria?',
+        ph:'Escreve do jeito que vier. Não precisa ficar bonito.' },
+      { k:'goal_tags', type:'chips', t:'O que mais aparece pra você?', h:'Pode marcar quantas quiser.',
+        o:['comer quando estou ansiosa','comer quando estou estressada','usar comida como descanso ou recompensa','culpa depois de comer','pensamento tudo-ou-nada','dificuldade de manter constância','excesso de controle','sensação de perder o controle','parar e recomeçar sem fim','dificuldade com meu corpo','comparação','medo de engordar'] }
+    ]},
+    { id:'difficulty', label:'O que tem sido difícil', qs:[
+      { k:'difficulty_open', type:'open', t:'O que mais tem sido difícil pra você ultimamente?',
+        h:'Essa resposta é a que a LIA lê com mais atenção.',
+        ph:'Ex.: chego muito cansada à noite, acabo comendo de um jeito que não queria e depois fico me culpando.' }
+    ]},
+    { id:'when', label:'Quando acontece', qs:[
+      { k:'when_tags', type:'chips', t:'Quando esses momentos costumam aparecer?',
+        o:['fim do dia','à noite','madrugada','fins de semana','depois do trabalho','quando estou sozinha','quando estou ansiosa','quando estou triste','quando estou estressada','depois de discussões','em eventos sociais','depois de comer algo fora do planejado','varia muito','ainda não consigo perceber'] }
+    ]},
+    { id:'before', label:'O que vem antes', qs:[
+      { k:'antecedents', type:'chips', t:'Pouco antes desses momentos, o que normalmente está acontecendo?',
+        o:['fome','cansaço','ansiedade','estresse','tristeza','tédio','solidão','raiva','sobrecarga','passei muitas horas sem comer','comi pouco durante o dia','estava me controlando demais','não consigo perceber'] }
+    ]},
+    { id:'after', label:'O que vem depois', qs:[
+      { k:'consequences', type:'chips', t:'E depois, como você costuma se sentir ou reagir?',
+        o:['culpa','vergonha','ansiedade','frustração','sensação de fracasso','penso que estraguei tudo','quero compensar','quero comer menos depois','penso em pular a próxima refeição','penso em treinar pra compensar','continuo comendo porque já estraguei','consigo voltar ao normal','não sei'] }
+    ]},
+    { id:'rules', label:'Regras alimentares', qs:[
+      { k:'food_rules', type:'chips', t:'Alguma dessas frases parece com você?',
+        o:['tento seguir tudo perfeitamente','quando saio do planejado, tenho dificuldade de retomar','tenho alimentos que considero proibidos','controlo muito e depois sinto que perco o controle','segunda-feira parece um novo começo','sinto que estou sempre de dieta','isso não é uma questão pra mim','não sei'] }
+    ]},
+    { id:'body', label:'Relação com o corpo', qs:[
+      { k:'body_tags', type:'chips', t:'Hoje, como sua relação com seu corpo afeta você?',
+        o:['penso muito no meu peso','me comparo bastante','meu humor muda com a balança','evito fotos','evito roupas ou situações por causa do meu corpo','minha aparência influencia muito como me sinto','quero aprender a lidar melhor com meu corpo','não é uma questão importante pra mim hoje'] },
+      { k:'body_open', type:'open', t:'Quer explicar com as suas palavras?', h:'Opcional.', ph:'' }
+    ]},
+    { id:'history', label:'Histórico', qs:[
+      { k:'history', type:'chips', t:'O que você já tentou antes?',
+        o:['dieta por calorias','low carb','jejum','dieta restritiva','nutricionista','terapia ou psicólogo','medicamento para emagrecer','GLP-1','aplicativos','programas online','nunca tentei nada estruturado'] },
+      { k:'meds', type:'opts', single:true, t:'Você usa hoje algum medicamento para emagrecimento ou controle do apetite?',
+        o:['sim','não','prefiro não responder'] },
+      { k:'health_context', type:'open', t:'Existe algum contexto de saúde ou tratamento que seja importante a LIA saber?',
+        h:'Opcional. Isso não vira diagnóstico nem conduta — serve pra ela não sugerir algo inadequado.', ph:'' }
+    ]},
+    { id:'routine', label:'Sua rotina', qs:[
+      { k:'hard_period', type:'opts', single:true, t:'Em qual período sua rotina costuma ser mais difícil?',
+        o:['manhã','tarde','noite','varia'] },
+      { k:'routine_open', type:'open', t:'Como costuma ser o seu dia?', h:'Opcional, bem curtinho.',
+        ph:'Ex.: trabalho o dia todo, almoço correndo e chego em casa por volta das 20h.' }
+    ]},
+    { id:'comms', label:'Como te acompanhar', qs:[
+      { k:'tone', type:'opts', single:true, t:'Como você prefere que a LIA converse com você?',
+        o:['mais direta','mais acolhedora','um equilíbrio entre os dois'] },
+      { k:'channel', type:'opts', single:true, t:'Você prefere conversar por:', o:['texto','áudio','tanto faz'] },
+      { k:'best_time', type:'opts', single:true, t:'Em qual período você costuma conseguir responder melhor?',
+        o:['manhã','tarde','noite'] }
+    ]},
+    { id:'final', label:'Antes de começar', qs:[
+      { k:'final_open', type:'open', t:'Tem alguma coisa sobre você que gostaria que a LIA soubesse antes de começar?',
+        h:'Pode ser qualquer coisa. Ela leva isso a sério.', ph:'' }
+    ]},
+    { id:'consent', label:'Combinado', consent:true, qs:[
+      { k:'proactive', type:'opts', single:true, t:'Tudo bem receber esses check-ins pelo WhatsApp?',
+        h:'A LIA não espera só você chamar. Ela também volta pra saber como você está e acompanhar o que vocês conversaram.',
+        o:['sim, pode me procurar','prefiro que ela só responda quando eu falar'] }
+    ]}
+  ];
+
+  var answers = {}, step = 0, phone = '';
+
+  /* ── Rascunho: refresh não pode custar o progresso dela ───────────────── */
+  var DRAFT = 'lia_onb_draft';
+  function saveDraft(){
+    var d = { answers:answers, step:step, phone:phone, at:Date.now() };
+    try { sessionStorage.setItem(DRAFT, JSON.stringify(d)); } catch(e){}
+    if (!purchaseRef && !phone) return;
+    fetch('/api/lia/draft', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ purchase_ref:purchaseRef, whatsapp:phone, answers:answers, step:step })
+    }).catch(function(){});
+  }
+  function loadDraft(){
+    try {
+      var d = JSON.parse(sessionStorage.getItem(DRAFT) || 'null');
+      if (d && d.answers){ answers = d.answers; step = d.step || 0; phone = d.phone || ''; return true; }
+    } catch(e){}
+    return false;
+  }
+
+  /* ── Render ───────────────────────────────────────────────────────────── */
+  function show(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); });
+    $(id).classList.add('on');
+    scrollTo({ top:0, behavior:'instant' in document.documentElement.style ? 'instant' : 'auto' });
+  }
+
+  function renderStep(){
+    var s = STEPS[step], html = '';
+    s.qs.forEach(function(q){
+      html += '<div class="q"><div class="q-t">' + esc(q.t) + '</div>';
+      if (q.h) html += '<div class="q-h">' + esc(q.h) + '</div>';
+      if (q.type === 'open'){
+        html += '<textarea data-k="' + q.k + '" placeholder="' + esc(q.ph || '') + '">' + esc(answers[q.k] || '') + '</textarea>';
+      } else if (q.type === 'chips'){
+        html += '<div class="chips">';
+        q.o.forEach(function(o){
+          var on = (answers[q.k] || []).indexOf(o) > -1;
+          html += '<button type="button" class="chip" data-k="' + q.k + '" data-v="' + esc(o) + '" aria-pressed="' + on + '">' + esc(o) + '</button>';
+        });
+        html += '</div>';
+      } else if (q.type === 'opts'){
+        html += '<div class="opts">';
+        q.o.forEach(function(o){
+          var on = q.single ? answers[q.k] === o : (answers[q.k] || []).indexOf(o) > -1;
+          html += '<button type="button" class="opt" data-k="' + q.k + '" data-v="' + esc(o) + '" data-single="' + !!q.single + '" aria-pressed="' + on + '"><i></i><span>' + esc(o) + '</span></button>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+    });
+
+    if (s.consent){
+      html += '<div class="disc"><ul>' +
+        '<li>A LIA é uma inteligência artificial. Não é a Evelyn respondendo pessoalmente.</li>' +
+        '<li>Ela foi criada a partir da metodologia da Table, desenvolvida por Evelyn Liu.</li>' +
+        '<li>Suas mensagens e áudios podem ser processados por IA para personalizar o acompanhamento.</li>' +
+        '<li>Situações fora do escopo dela podem ser encaminhadas para a equipe da Table.</li>' +
+        '<li>A LIA não substitui atendimento médico, psicológico ou nutricional quando necessário.</li>' +
+        '</ul><p class="tiny" style="margin-top:14px">Ao continuar você concorda com os <a href="/legal" style="text-decoration:underline">termos e a política de privacidade</a>.</p></div>';
+    }
+
+    $('stepBody').innerHTML = html;
+    $('progBar').style.width = Math.round(((step) / STEPS.length) * 100) + '%';
+    $('progTxt').textContent = s.label + ' · ' + (step + 1) + ' de ' + STEPS.length;
+    $('prev').style.visibility = step === 0 ? 'hidden' : 'visible';
+    $('next').textContent = step === STEPS.length - 1 ? 'Finalizar' : 'Continuar';
+    bind();
+  }
+
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){
+    return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' })[c]; }); }
+
+  function bind(){
+    $('stepBody').querySelectorAll('textarea').forEach(function(t){
+      t.addEventListener('input', function(){ answers[t.dataset.k] = t.value; });
+      t.addEventListener('blur', saveDraft);
+    });
+    $('stepBody').querySelectorAll('.chip,.opt').forEach(function(b){
+      b.addEventListener('click', function(){
+        var k = b.dataset.k, v = b.dataset.v;
+        if (b.dataset.single === 'true'){
+          answers[k] = v;
+          b.parentElement.querySelectorAll('.opt').forEach(function(o){ o.setAttribute('aria-pressed', o === b); });
+        } else {
+          answers[k] = answers[k] || [];
+          var i = answers[k].indexOf(v);
+          if (i > -1) answers[k].splice(i, 1); else answers[k].push(v);
+          b.setAttribute('aria-pressed', i === -1);
+        }
+        saveDraft();
+      });
+    });
+  }
+
+  /* ── Navegação ────────────────────────────────────────────────────────── */
+  $('go').addEventListener('click', function(){
+    analytics.track('onboarding_started', { has_ref: !!purchaseRef });
+    show('s-phone');
+    if (phone) $('phone').value = phone;
+  });
+
+  $('phoneNext').addEventListener('click', function(){
+    var v = $('phone').value.replace(/\D/g, '');
+    if (v.length < 10 || v.length > 13){ $('phoneErr').classList.add('on'); return; }
+    $('phoneErr').classList.remove('on');
+    phone = $('phone').value;
+    analytics.track('whatsapp_confirmed');
+    saveDraft();
+    show('s-steps'); renderStep();
+  });
+
+  $('prev').addEventListener('click', function(){
+    if (step > 0){ step--; renderStep(); saveDraft(); }
+  });
+
+  $('next').addEventListener('click', function(){
+    analytics.track('onboarding_step_completed', { step: STEPS[step].id, index: step });
+    if (step < STEPS.length - 1){ step++; renderStep(); saveDraft(); return; }
+    submit();
+  });
+
+  /* ── Envio ────────────────────────────────────────────────────────────── */
+  var LOAD_MSGS = ['Lendo o que você contou…','Conectando alguns pontos…','Preparando sua primeira conversa…'];
+
+  function submit(){
+    analytics.track('onboarding_completed', {
+      duration_seconds: Math.round((Date.now() - startedAt) / 1000)
+    });
+    show('s-load');
+
+    var i = 0, timer = setInterval(function(){
+      i++; if (i >= LOAD_MSGS.length) return;
+      $('loadTxt').style.opacity = 0;
+      setTimeout(function(){ $('loadTxt').textContent = LOAD_MSGS[i]; $('loadTxt').style.opacity = 1; }, 380);
+    }, 1900);
+
+    analytics.track('lia_profile_creation_started');
+
+    fetch('/api/lia/onboard', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        purchase_ref: purchaseRef,
+        whatsapp: phone,
+        answers: answers,
+        preferences: { tone:answers.tone, channel:answers.channel, best_time:answers.best_time },
+        consent: { proactive_checkins: answers.proactive === 'sim, pode me procurar', accepted_terms: true,
+                   at: new Date().toISOString() },
+        duration_seconds: Math.round((Date.now() - startedAt) / 1000)
+      })
+    })
+    .then(function(r){ return r.json().catch(function(){ return {}; }); })
+    .then(function(d){
+      clearInterval(timer);
+      analytics.track(d && d.ok ? 'lia_profile_creation_success' : 'lia_profile_creation_failed',
+                      { duplicate: !!(d && d.duplicate) });
+      if (d && d.lia && d.lia.initial_intervention){
+        analytics.track(d.lia.initial_intervention.selected
+          ? 'initial_intervention_selected' : 'initial_intervention_not_selected');
+      }
+      try { sessionStorage.removeItem(DRAFT); } catch(e){}
+      finish();
+    })
+    .catch(function(){
+      clearInterval(timer);
+      // Nunca pedir pra preencher de novo por falha técnica: o backend já
+      // guardou o que deu, e a fila de retry resolve o resto.
+      analytics.track('lia_profile_creation_failed', { network: true });
+      finish();
+    });
+  }
+
+  function finish(){
+    var d = phone.replace(/\D/g, '');
+    var last = d.slice(-4), ddd = d.length > 10 ? d.slice(-11, -9) : d.slice(0, 2);
+    $('destPhone').textContent = '(' + ddd + ') *****-' + last;
+    var wa = 'https://wa.me/' + (d.startsWith('55') ? d : '55' + d);
+    $('openWa').href = wa; $('openWa').target = '_blank'; $('openWa').rel = 'noopener';
+    $('openWa').addEventListener('click', function(){ analytics.track('open_whatsapp_clicked'); });
+    analytics.track('first_contact_scheduled');
+    show('s-done');
+  }
+
+  $('closeIt').addEventListener('click', function(){
+    $('waitTxt').textContent = 'Tudo certo. Pode fechar — a LIA te chama.';
+    $('closeIt').style.display = 'none';
+  });
+
+  /* ── Boot ─────────────────────────────────────────────────────────────── */
+  $('yr').textContent = new Date().getFullYear();
+  $('support').href = CONFIG.SUPPORT_URL; $('support').target = '_blank'; $('support').rel = 'noopener';
+  analytics.once('thank_you_viewed', { has_ref: !!purchaseRef });
+
+  // Prefill do telefone a partir da compra — sem PII na URL, quem resolve é o
+  // backend a partir do ref opaco.
+  if (purchaseRef){
+    fetch('/api/lia/context?ref=' + encodeURIComponent(purchaseRef))
+      .then(function(r){ return r.json(); })
+      .then(function(c){ if (c && c.found && c.phone_prefill && !phone){ phone = c.phone_prefill; $('phone').value = c.phone_prefill; } })
+      .catch(function(){});
+  }
+
+  if (loadDraft() && step > 0){
+    show('s-steps'); renderStep();
+  }
+
+  addEventListener('beforeunload', function(){
+    if (step > 0 && $('s-done').classList.contains('on') === false){
+      analytics.track('onboarding_abandoned', { step: STEPS[step] && STEPS[step].id });
+    }
+  });
+})();
+</script>
+</body>
+</html>

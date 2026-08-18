@@ -26,8 +26,17 @@
 -->
 <script>
 var CONFIG = {
-  // Destino de todo CTA. Hoje entra pelo WhatsApp (número da Table).
-  // TROCAR pelo número dedicado da LIA quando existir.
+  // ─────────────────────────────────────────────────────────────────────────
+  // DESTINO DOS CTAs — uma chave só comanda tudo.
+  // Com CHECKOUT_URL vazio: CTA vai pro WhatsApp e a página diz "sem cartão".
+  // Assim que você colar o link do checkout aqui, TUDO vira sozinho: os botões
+  // passam a apontar pro checkout e a copy passa a falar de cobrança. Não
+  // existe estado intermediário possível — era o jeito de a página nunca
+  // prometer cartão enquanto manda a pessoa pro WhatsApp.
+  // ─────────────────────────────────────────────────────────────────────────
+  CHECKOUT_URL: "",
+  THANKYOU_URL: "/obrigado-lia",
+
   WHATSAPP_NUMBER: "5511977130088",
   WHATSAPP_TEXT:   "Oi! Quero começar meus 7 dias com a LIA.",
 
@@ -40,10 +49,8 @@ var CONFIG = {
   TRIAL_DAYS: 7,
   TRIAL_DELIVERABLE: "a primeira leitura da sua semana",
 
-  // Cobrança. Enquanto BILLING_ENABLED for false a página NÃO afirma que
-  // existe cartão/cobrança — mostra a linha neutra. Virar true só quando o
-  // checkout com cartão estiver de pé de verdade.
-  BILLING_ENABLED: false,
+  // Formas de pagamento mostradas no checkout (só aparece se CHECKOUT_URL existir)
+  PAYMENT_METHODS: "Cartão, Apple Pay ou Google Pay",
 
   PRICING: {
     monthly: { label: "Mensal",  price: "R$ 49,90", period: "/mês",
@@ -835,8 +842,8 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
     <p class="body rv" style="--i:1">Uma consulta acontece uma vez por mês, se acontecer. A LIA acompanha os outros vinte e nove dias — os dias em que a decisão realmente é tomada.</p>
 
     <ol class="start rv" style="--i:2">
-      <li><b>Você manda um oi</b> no WhatsApp. Não precisa saber por onde começar.</li>
-      <li><b>A LIA faz algumas perguntas</b> pra entender seu contexto. Leva alguns minutos, no seu tempo.</li>
+      <li data-cfg="step-1"></li>
+      <li><b>A LIA te chama no WhatsApp</b> e faz algumas perguntas pra entender seu contexto. Leva alguns minutos, no seu tempo.</li>
       <li><b>A partir daí ela acompanha</b> — e no fim da semana te devolve a primeira leitura do que percebeu.</li>
     </ol>
 
@@ -937,22 +944,30 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
   var trial = CONFIG.TRIAL_ENABLED, days = CONFIG.TRIAL_DAYS, P = CONFIG.PRICING;
   var waHref = 'https://wa.me/' + CONFIG.WHATSAPP_NUMBER +
                '?text=' + encodeURIComponent(CONFIG.WHATSAPP_TEXT);
+  // Só existe cobrança quando existe checkout. Deriva de uma chave só para a
+  // página nunca falar de cartão enquanto o botão ainda cai no WhatsApp.
+  var billing = !!CONFIG.CHECKOUT_URL;
+  var destino = billing ? CONFIG.CHECKOUT_URL : waHref;
 
   var slots = {
     'cta-primary'  : trial ? 'Começar meus ' + days + ' dias' : 'Conhecer a LIA',
     'cta-final'    : trial ? 'Começar meus ' + days + ' dias com a LIA' : 'Conhecer a LIA',
     'cta-note'     : !trial ? 'Direto pelo WhatsApp.'
-                    : CONFIG.BILLING_ENABLED
-                      ? 'Direto pelo WhatsApp. ' + days + ' dias grátis.'
+                    : billing
+                      ? days + ' dias grátis. ' + CONFIG.PAYMENT_METHODS + '.'
                       : days + ' dias grátis, sem cartão. Direto pelo WhatsApp.',
     // Promete o ENTREGÁVEL do prazo, não o padrão: em 7 dias não existe padrão,
-    // e prometer o que o produto não entrega no prazo é o jeito mais rápido de
-    // queimar a base logo na primeira semana.
+    // mas existe amostra suficiente pra ela decidir se aquilo ajuda.
     'pricing-title': trial ? 'Em ' + days + ' dias, ' + CONFIG.TRIAL_DELIVERABLE + '.' : 'Conheça a LIA.',
     'billing-note' : !trial ? 'Cancele quando quiser.'
-                    : CONFIG.BILLING_ENABLED
-                      ? 'Hoje R$ 0. A primeira cobrança acontece depois do período gratuito. Cancele antes e não será cobrado.'
+                    : billing
+                      ? 'Hoje você paga R$ 0. A primeira cobrança acontece só depois dos ' + days + ' dias — cancele antes e não será cobrado.'
                       : 'Hoje R$ 0, sem cartão. Você começa pelo WhatsApp e escolhe o plano depois dos ' + days + ' dias.',
+    // Com checkout ela assina antes de conversar; sem checkout, o primeiro
+    // passo é a própria conversa. O passo 1 muda junto com o destino do CTA.
+    'step-1'       : billing
+                      ? 'Você assina em um minuto. ' + CONFIG.PAYMENT_METHODS + '.'
+                      : 'Você manda um oi no WhatsApp. Não precisa saber por onde começar.',
     'proof-number' : CONFIG.SOCIAL.number,
     'proof-label'  : CONFIG.SOCIAL.numberLabel,
     'm-label' : P.monthly.label, 'm-price': P.monthly.price, 'm-period': P.monthly.period, 'm-note': P.monthly.note,
@@ -963,7 +978,11 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
     document.querySelectorAll('[data-cfg="' + k + '"]').forEach(function(el){ el.textContent = slots[k]; });
   });
   document.querySelectorAll('a[data-cta]').forEach(function(a){
-    if (a.getAttribute('href') === '#') { a.href = waHref; a.rel = 'noopener'; a.target = '_blank'; }
+    if (a.getAttribute('href') !== '#') return;
+    a.href = destino; a.rel = 'noopener';
+    // Checkout abre na mesma aba (fluxo de compra não deve perder o contexto);
+    // WhatsApp abre em nova, senão a pessoa perde a página de vendas.
+    if (!billing) a.target = '_blank';
   });
   document.getElementById('yr').textContent = new Date().getFullYear();
 
@@ -1115,9 +1134,11 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
     a.addEventListener('click', function(){
       var where = a.getAttribute('data-cta');
       if (where === 'hero') analytics.track('hero_cta_clicked');
-      if (a.href.indexOf('wa.me') > -1) {
-        analytics.track('trial_started', { placement: where, trial: CONFIG.TRIAL_ENABLED });
-      }
+      if (where === 'nav') return;                    // âncora interna, não é intenção de compra
+      analytics.track('trial_started', {
+        placement: where, trial: CONFIG.TRIAL_ENABLED,
+        destino: billing ? 'checkout' : 'whatsapp'
+      });
     });
   });
 
