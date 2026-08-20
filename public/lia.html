@@ -41,18 +41,20 @@ var CONFIG = {
   WHATSAPP_NUMBER: "5511977130088",
   WHATSAPP_TEXT:   "Oi! Quero começar com a LIA.",
 
-  // A Cakto não tem trial, então a reversão de risco é GARANTIA: ela paga
-  // hoje e tem GUARANTEE_DAYS para pedir de volta.
+  // TRIAL (a Ticto suporta, a Cakto não suportava).
   //
-  // A janela fecha no mesmo dia em que o primeiro entregável chega (a leitura
-  // da semana). Isso é de propósito: dá a ela um ponto de decisão concreto em
-  // vez de um prazo abstrato.
+  // É a reversão de risco mais forte pra esse público: pra pedir reembolso ela
+  // precisaria dizer "não funcionou pra mim", frase que cai em cima da
+  // narrativa que ela já tem sobre si. No trial ela só não continua, em
+  // silêncio, sem precisar admitir nada.
   //
-  // ATENÇÃO ao tom: pedir reembolso é ato carregado de vergonha nesse público.
-  // A copy tem que deixar explícito que não precisa explicar por quê. Se isso
-  // sair, a garantia vira enfeite: as pessoas não pedem, e a gente fica com o
-  // dinheiro de quem se sentiu mal.
-  GUARANTEE_DAYS: 7,
+  // O prazo termina no mesmo dia em que o primeiro entregável chega (a leitura
+  // da semana): ela decide com o artefato na mão, não num prazo abstrato.
+  //
+  // RISCO A COBRIR NA OPERAÇÃO: trial com cartão e sem aviso antes de cobrar
+  // vira máquina de ressentimento. O aviso no dia 6 não é gentileza, é o que
+  // separa renovação de chargeback.
+  TRIAL_DAYS: 7,
   FIRST_DELIVERABLE: "a primeira leitura da sua semana",
 
   // Formas de pagamento anunciadas junto do CTA
@@ -908,9 +910,9 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
     </div>
 
     <div class="guarantee rv">
-      <div class="g-head"><span data-cfg="g-headline">Garantia de 7 dias</span></div>
+      <div class="g-head"><span data-cfg="g-headline">7 dias grátis, de verdade</span></div>
       <p data-cfg="billing-note"></p>
-      <p class="g-why">A gente prefere devolver o dinheiro de quem não está sendo ajudada do que manter alguém pagando por algo que não serve.</p>
+      <p class="g-why">Você não precisa avisar ninguém nem explicar por quê. Se não continuar, é só cancelar, e a cobrança não acontece.</p>
     </div>
 
     <p class="cta-note" style="text-align:center;margin-top:22px" data-cfg="cta-note"></p>
@@ -933,7 +935,7 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
       <details><summary>Ela lembra do que eu conto?</summary>
         <p>Sim. É justamente isso que a diferencia: ela guarda seu contexto ao longo do tempo e usa o histórico para reconhecer o que se repete.</p></details>
       <details><summary>E se eu não quiser continuar?</summary>
-        <p>Nos primeiros 7 dias, é só pedir e devolvemos o valor inteiro. Você não precisa explicar o motivo. Depois disso, pode cancelar a assinatura quando quiser, sem multa.</p></details>
+        <p>Nos 7 primeiros dias você cancela e nada é cobrado. Não precisa explicar o motivo pra ninguém. Depois disso, dá pra cancelar quando quiser, sem multa.</p></details>
       <details><summary>E se eu precisar de uma profissional?</summary>
         <p>Quando uma situação pede avaliação profissional, a LIA encaminha para a equipe da Table.</p></details>
     </div>
@@ -992,7 +994,7 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ── Render do CONFIG nos slots [data-cfg] ────────────────────────────── */
-  var dias = CONFIG.GUARANTEE_DAYS, P = CONFIG.PRICING;
+  var dias = CONFIG.TRIAL_DAYS, P = CONFIG.PRICING;
   var waHref = 'https://wa.me/' + CONFIG.WHATSAPP_NUMBER +
                '?text=' + encodeURIComponent(CONFIG.WHATSAPP_TEXT);
   // Cada plano tem seu checkout. Sem link configurado, o botão cai no
@@ -1001,16 +1003,16 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
   var temCheckout = !!(P.monthly.checkout || P.annual.checkout);
 
   var slots = {
-    'cta-primary'  : 'Começar com a LIA',
-    'cta-final'    : 'Começar com a LIA',
-    'cta-note'     : 'Garantia de ' + dias + ' dias. ' + CONFIG.PAYMENT_METHODS + '.',
+    'cta-primary'  : 'Começar meus ' + dias + ' dias',
+    'cta-final'    : 'Começar meus ' + dias + ' dias',
+    'cta-note'     : dias + ' dias grátis. ' + CONFIG.PAYMENT_METHODS + '.',
     // O prazo da garantia fecha quando o primeiro entregável chega. Isso troca
     // um prazo abstrato por um ponto de decisão com artefato na mão.
     'pricing-title': 'Em ' + dias + ' dias, ' + CONFIG.FIRST_DELIVERABLE + '.',
-    'billing-note' : 'Se até lá não fizer sentido pra você, devolvemos o valor inteiro. '
-                   + 'Sem formulário, sem ligação, sem precisar explicar por quê.',
+    'billing-note' : 'Hoje você paga R$ 0. A primeira cobrança acontece só depois dos '
+                   + dias + ' dias, e a gente te avisa antes. Cancele até lá e nada é cobrado.',
     'step-1'       : 'Você assina em um minuto. ' + CONFIG.PAYMENT_METHODS + '.',
-    'g-headline'   : 'Garantia de ' + dias + ' dias',
+    'g-headline'   : dias + ' dias grátis, de verdade',
     'proof-number' : CONFIG.SOCIAL.number,
     'proof-label'  : CONFIG.SOCIAL.numberLabel,
     'm-label' : P.monthly.label, 'm-price': P.monthly.price, 'm-period': P.monthly.period, 'm-note': P.monthly.note,
@@ -1185,7 +1187,7 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
       // nav/hero/final são âncoras internas, não intenção de compra
       if (where === 'nav' || where === 'hero' || where === 'final') return;
       analytics.track('trial_started', {
-        plano: where, garantia_dias: CONFIG.GUARANTEE_DAYS,
+        plano: where, trial_dias: CONFIG.TRIAL_DAYS,
         destino: checkouts[where] ? 'checkout' : 'whatsapp'
       });
     });

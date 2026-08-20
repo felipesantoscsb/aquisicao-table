@@ -25,7 +25,7 @@
 -->
 <script>
 var CONFIG = {
-  GUARANTEE_DAYS: 7,
+  TRIAL_DAYS: 7,
   // Só usado no fallback do CTA final; o normal é a LIA falar primeiro.
   WHATSAPP_NUMBER: "5511977130088",
   SUPPORT_URL: "https://wa.me/5511977130088",
@@ -264,7 +264,7 @@ footer a{color:var(--ink-2)}
   </div>
 
   <p class="tiny" style="margin-top:24px">
-    Você tem <span id="gDays">7</span> dias de garantia. Se não fizer sentido pra você, é só pedir e devolvemos, sem precisar explicar por quê.
+    Seus <span id="gDays">7</span> dias começam agora e são gratuitos. A gente te avisa antes da primeira cobrança, e você pode cancelar até lá.
   </p>
   <p class="tiny" style="margin-top:10px">Alguma coisa errada? <a href="#" id="support" style="text-decoration:underline">Fala com a equipe da Table</a>.</p>
 </section>
@@ -576,7 +576,7 @@ footer a{color:var(--ink-2)}
 
   /* ── Boot ─────────────────────────────────────────────────────────────── */
   $('yr').textContent = new Date().getFullYear();
-  $('gDays').textContent = CONFIG.GUARANTEE_DAYS;
+  $('gDays').textContent = CONFIG.TRIAL_DAYS;
   $('support').href = CONFIG.SUPPORT_URL; $('support').target = '_blank'; $('support').rel = 'noopener';
   analytics.once('thank_you_viewed', { has_ref: !!purchaseRef });
 

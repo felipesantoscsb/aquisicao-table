@@ -2158,16 +2158,32 @@ function liaOfferIds() {
     .split(',').map(s => s.trim()).filter(Boolean);
 }
 
-/** A Ticto varia onde poe o identificador da oferta conforme o evento. */
+/**
+ * O Raiz migrou pra Cakto, entao por padrao TUDO que chega na Ticto e LIA.
+ *
+ * Uma excecao real: a recuperacao de carrinho por WhatsApp ainda manda link
+ * checkout.ticto.app (template com base fixa, TICTO_CHECKOUT_PATH). Se ela
+ * estiver ligada, uma compra do Raiz ainda pode pingar aqui - e essa compra
+ * PRECISA seguir pro fluxo do Raiz, senao perde recuperacao, perfil e metricas.
+ * Por isso a oferta do Raiz e excluida explicitamente.
+ *
+ * LIA_TICTO_OFFERS continua funcionando como allowlist, se um dia quiserem
+ * controle explicito de volta.
+ */
 function isLiaOffer(body) {
-  const ids = liaOfferIds();
-  if (!ids.length) return false;
   const cand = [
     body?.item?.offer_id, body?.item?.offer_code, body?.offer_id, body?.offer_code,
     body?.order?.offer_id, body?.product_id, body?.item?.product_id,
     body?.checkout_url, body?.item?.offer_name, body?.item?.product_name,
   ].filter(Boolean).map(String);
-  return ids.some(id => cand.some(c => c.includes(id)));
+
+  const ids = liaOfferIds();
+  if (ids.length) return ids.some(id => cand.some(c => c.includes(id)));
+
+  // Sem allowlist: tudo e LIA, menos o que for reconhecidamente do Raiz.
+  const raiz = [process.env.TICTO_CHECKOUT_PATH || 'O3EB65FBD', 'Protocolo Raiz']
+    .filter(Boolean);
+  return !raiz.some(id => cand.some(c => c.includes(id)));
 }
 
 async function handleLiaTicto(body) {
