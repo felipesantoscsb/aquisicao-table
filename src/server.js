@@ -1215,9 +1215,12 @@ async function forwardToSDR(body) {
 
 // ─── Helper CAPI genérico ─────────────────────────────────────────────────────
 
-async function sendCapiEvent({ eventName, phone, fbclid, fbc, fbp, em, fn, external_id, customData, eventSourceUrl, eventId, req }) {
-  const PIXEL_ID   = process.env.META_PIXEL_ID;
-  const CAPI_TOKEN = process.env.META_CAPI_TOKEN;
+async function sendCapiEvent({ eventName, phone, fbclid, fbc, fbp, em, fn, external_id, customData, eventSourceUrl, eventId, req, pixelId, accessToken }) {
+  // pixelId/accessToken opcionais: sem eles cai no pixel principal, que e o
+  // comportamento historico. A LIA passa o proprio par para nao misturar sinal
+  // de conversao com o Protocolo Raiz.
+  const PIXEL_ID   = pixelId     || process.env.META_PIXEL_ID;
+  const CAPI_TOKEN = accessToken || process.env.META_CAPI_TOKEN;
   if (!PIXEL_ID || !CAPI_TOKEN) return;
 
   const user_data = {};
@@ -2133,6 +2136,114 @@ app.post('/api/webhooks/whatsapp', async (req, res) => {
   }
 });
 
+
+// ─── LIA na Ticto — isolamento total do Protocolo Raiz ────────────────────────
+//
+// O webhook /api/webhooks/ticto e COMPARTILHADO. O handler do Raiz dispara
+// recuperacao por WhatsApp, consulta quiz:perfil:, alimenta ticto:stats:* e
+// manda CAPI com event_source_url /raiz. Uma compra da LIA passando por la
+// contaminaria as metricas do Raiz E mandaria mensagem de recuperacao do Raiz
+// pra cliente da LIA.
+//
+// Por isso o portao abaixo roda ANTES de qualquer logica do Raiz, inclusive
+// antes do abandoned_cart. Nada do fluxo do Raiz foi tocado.
+//
+// FAIL-SAFE deliberado: sem LIA_TICTO_OFFERS configurado, isLiaOffer devolve
+// false e TUDO segue pro Raiz exatamente como hoje. Ou seja, esquecer de
+// configurar nao quebra o Raiz - mas deixa a LIA contaminando. Configure as
+// offers ANTES de divulgar o link.
+
+function liaOfferIds() {
+  return (process.env.LIA_TICTO_OFFERS || '')
+    .split(',').map(s => s.trim()).filter(Boolean);
+}
+
+/** A Ticto varia onde poe o identificador da oferta conforme o evento. */
+function isLiaOffer(body) {
+  const ids = liaOfferIds();
+  if (!ids.length) return false;
+  const cand = [
+    body?.item?.offer_id, body?.item?.offer_code, body?.offer_id, body?.offer_code,
+    body?.order?.offer_id, body?.product_id, body?.item?.product_id,
+    body?.checkout_url, body?.item?.offer_name, body?.item?.product_name,
+  ].filter(Boolean).map(String);
+  return ids.some(id => cand.some(c => c.includes(id)));
+}
+
+async function handleLiaTicto(body) {
+  const status = body?.order?.status || body?.status || 'desconhecido';
+  const txId   = body?.order?.hash || body?.transaction?.hash || null;
+
+  // Descoberta de schema: guarda o cru de QUALQUER evento. Os status de
+  // assinatura da Ticto (trial, cancelada, atrasada...) nao estao confirmados
+  // em payload real - o log abaixo e o que vai revelar os nomes verdadeiros.
+  const key = 'lia:ticto:' + (txId || status + ':' + Date.now());
+  await redisSet(key + ':raw', JSON.stringify(body), 'EX', 60 * 60 * 24 * 90);
+  console.log(`[LIA/Ticto] evento=${status} tx=${txId || 'n/a'} offer=${body?.item?.offer_id || 'n/a'}`);
+
+  if (!txId) return;
+
+  // Idempotencia: mesmo hash + mesmo status nao processa duas vezes.
+  const prevRaw = await redisGet('lia:ticto:purchase:' + txId);
+  if (prevRaw) {
+    try {
+      if (JSON.parse(prevRaw).status === status) {
+        console.log(`[LIA/Ticto] duplicata ${txId}/${status} - no-op.`);
+        return;
+      }
+    } catch {}
+  }
+
+  const phoneObj = body?.customer?.phone;
+  const phone = body?.telefone || body?.phone_number_customer
+    || (phoneObj && typeof phoneObj === 'object'
+        ? `${(phoneObj.ddi || '+55').replace('+', '')}${phoneObj.ddd || ''}${phoneObj.number || ''}`
+        : phoneObj) || null;
+
+  const paid   = body?.order?.paid_amount;
+  const value  = typeof paid === 'number' ? paid / 100 : null;
+  const fbclid = body?.query_params?.fbclid || null;
+  const fbc    = body?.query_params?.fbc || (fbclid ? `fb.1.${Date.now()}.${fbclid}` : null);
+
+  const record = {
+    provider: 'ticto', produto: 'lia',
+    transaction_id: txId, status, value,
+    email: body?.customer?.email || null,
+    phone: toE164BR(phone),
+    offer_id: body?.item?.offer_id || null,
+    product_name: body?.item?.product_name || null,
+    fbc, fbp: body?.query_params?.fbp || null,
+    plano: /anual|annual|year/i.test(String(body?.item?.offer_name || body?.item?.product_name || '')) ? 'anual' : 'mensal',
+    created_at: new Date().toISOString(),
+  };
+  await redisSet('lia:ticto:purchase:' + txId, JSON.stringify(record), 'EX', 60 * 60 * 24 * 180);
+
+  // CAPI so na venda aprovada, e SEMPRE no pixel da LIA. Sem LIA_PIXEL_ID
+  // nada e enviado - melhor nao mandar do que mandar pro pixel do Raiz.
+  if (status === 'authorized' && value != null) {
+    const pixelId = process.env.LIA_PIXEL_ID;
+    const token   = process.env.LIA_CAPI_TOKEN || process.env.META_CAPI_TOKEN;
+    if (!pixelId) {
+      console.warn('[LIA/Ticto] LIA_PIXEL_ID ausente - Purchase NAO enviado (nao usamos o pixel do Raiz).');
+    } else {
+      sendCapiEvent({
+        eventName: 'Purchase',
+        phone: record.phone, em: record.email, fbc, fbp: record.fbp,
+        external_id: record.email ? sha256(record.email) : undefined,
+        customData: {
+          value, currency: 'BRL',
+          content_name: 'LIA - ' + record.plano,
+          content_ids: record.offer_id ? [String(record.offer_id)] : undefined,
+        },
+        eventSourceUrl: 'https://www.evelynliu.com.br/lia',
+        eventId: txId,                 // dedup de retries da Ticto
+        pixelId, accessToken: token,
+      }).catch(e => console.error('[LIA/Ticto] CAPI erro:', e.message));
+      console.log(`[LIA/Ticto] Purchase enviado: ${txId} | R$${value} | ${record.plano}`);
+    }
+  }
+}
+
 app.post('/api/webhooks/ticto', async (req, res) => {
   // Responde 200 imediatamente — Ticto exige resposta rápida (inclusive no ping de validação)
   res.sendStatus(200);
@@ -2146,6 +2257,17 @@ app.post('/api/webhooks/ticto', async (req, res) => {
   try {
 
   console.log('[Ticto] Payload recebido:', JSON.stringify(body, null, 2));
+
+  // ── PORTÃO LIA: sai antes de encostar em qualquer coisa do Raiz ──────────
+  if (isLiaOffer(body)) {
+    const liaSecret = process.env.TICTO_WEBHOOK_SECRET;
+    if (liaSecret && body.token !== liaSecret) {
+      console.warn('[LIA/Ticto] Token inválido — payload rejeitado.');
+      return;
+    }
+    await handleLiaTicto(body);
+    return;
+  }
 
   // Ping de validação do cadastro: body vazio ou sem order
   // (abandoned_cart é o único evento legítimo sem body.order — payload v2 flat)
