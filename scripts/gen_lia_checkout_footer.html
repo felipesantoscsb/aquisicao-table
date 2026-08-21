@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<!-- Banner de rodapé do checkout Ticto. 1200x260. Reforça o trial de 7 dias. -->
+<html lang="pt-BR"><head><meta charset="utf-8"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1200px;height:260px;background:#FAF7F2;overflow:hidden;position:relative;
+     display:flex;align-items:center;justify-content:center;text-align:center;
+     font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif}
+body::before{content:"";position:absolute;inset:auto auto -140px -100px;width:360px;height:360px;
+     border-radius:50%;background:radial-gradient(circle,rgba(107,125,92,.16),transparent 68%)}
+.card{position:relative;z-index:1;display:flex;align-items:center;gap:34px;
+      background:#fff;border:1px solid #E8E3D9;border-radius:26px;padding:34px 54px;
+      box-shadow:0 2px 4px rgba(27,31,25,.05),0 20px 44px -18px rgba(36,44,31,.16)}
+.badge{width:76px;height:76px;flex:0 0 auto;border-radius:50%;background:#EDF1E9;
+       display:flex;align-items:center;justify-content:center}
+.badge svg{width:34px;height:34px}
+.txt{text-align:left}
+.days{font-family:ui-serif,'New York','Iowan Old Style',Palatino,Georgia,serif;
+      font-weight:400;font-size:38px;color:#1B1F19;letter-spacing:-.01em;line-height:1.15}
+.sub{font-size:17px;color:#464C42;margin-top:6px;line-height:1.4}
+</style></head><body>
+  <div class="card">
+    <div class="badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#3D4A35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 6L9 17l-5-5"/>
+      </svg>
+    </div>
+    <div class="txt">
+      <div class="days">7 dias grátis, de verdade</div>
+      <div class="sub">Cancele quando quiser, sem burocracia. Nada é cobrado antes do fim do período.</div>
+    </div>
+  </div>
+</body></html>
