@@ -90,6 +90,13 @@ Duas coisas resolvem isso, e as duas precisam existir (não é OU):
 handoff pra Karina, confirmar o SLA, e testar cancelando uma assinatura de
 teste real de ponta a ponta — incluindo o caso "pedi em cima da hora".
 
+> **Status (21/08/2026):** decisão deliberada de rodar 100% manual nessa fase
+> — volume atual não justifica automação ainda, e tráfego já está no ar.
+> Automação (SLA formal + estorno automático) entra no radar pra terça-feira
+> seguinte (25/08). Até lá, a rede de segurança É o Karina acompanhando de
+> perto: qualquer atraso vira estorno manual assim que percebido, não um
+> processo automático. Revisar esta seção quando isso for atacado.
+
 ## Feedback de cancelamento
 
 O erro fácil aqui é perguntar "por que você cancelou?". Nesse público essa
