@@ -318,14 +318,15 @@ footer a{color:var(--ink-2)}
   /* ── Etapas ───────────────────────────────────────────────────────────── */
   var STEPS = [
     { id:'goal', label:'O que você quer mudar', qs:[
-      { k:'goal_open', type:'open', t:'Se você pudesse mudar uma coisa na sua relação com comida e corpo hoje, o que seria?',
-        ph:'Escreve do jeito que vier. Não precisa ficar bonito.' },
       { k:'goal_tags', type:'chips', t:'O que mais aparece pra você?', h:'Pode marcar quantas quiser.',
-        o:['comer quando estou ansiosa','comer quando estou estressada','usar comida como descanso ou recompensa','culpa depois de comer','pensamento tudo-ou-nada','dificuldade de manter constância','excesso de controle','sensação de perder o controle','parar e recomeçar sem fim','dificuldade com meu corpo','comparação','medo de engordar'] }
+        o:['comer quando estou ansiosa','comer quando estou estressada','usar comida como descanso ou recompensa','culpa depois de comer','pensamento tudo-ou-nada','dificuldade de manter constância','excesso de controle','sensação de perder o controle','parar e recomeçar sem fim','dificuldade com meu corpo','comparação','medo de engordar'] },
+      { k:'goal_open', type:'open', t:'Dessas situações, qual você mais gostaria que ficasse um pouco mais leve?',
+        h:'Se preferir, conte só um momento recente em que isso aconteceu.',
+        ph:'Ex.: a noite é quando mais pesa, porque chego cansada e sem espaço pra pensar.' }
     ]},
     { id:'difficulty', label:'O que tem sido difícil', qs:[
-      { k:'difficulty_open', type:'open', t:'O que mais tem sido difícil pra você ultimamente?',
-        h:'Essa resposta é a que a LIA lê com mais atenção.',
+      { k:'difficulty_open', type:'open', t:'Pra gente olhar uma situação concreta: qual momento recente foi mais difícil?',
+        h:'Pode ser uma noite, uma refeição, uma saída da rotina ou um pensamento que ficou voltando.',
         ph:'Ex.: chego muito cansada à noite, acabo comendo de um jeito que não queria e depois fico me culpando.' }
     ]},
     { id:'when', label:'Quando acontece', qs:[
@@ -347,20 +348,22 @@ footer a{color:var(--ink-2)}
     { id:'body', label:'Relação com o corpo', qs:[
       { k:'body_tags', type:'chips', t:'Hoje, como sua relação com seu corpo afeta você?',
         o:['penso muito no meu peso','me comparo bastante','meu humor muda com a balança','evito fotos','evito roupas ou situações por causa do meu corpo','minha aparência influencia muito como me sinto','quero aprender a lidar melhor com meu corpo','não é uma questão importante pra mim hoje'] },
-      { k:'body_open', type:'open', t:'Quer explicar com as suas palavras?', h:'Opcional.', ph:'' }
+      { k:'body_open', type:'open', t:'Qual dessas situações mais mexeu com você recentemente?',
+        h:'Pode ser balança, roupa, foto, comparação ou outra situação. Opcional.',
+        ph:'Ex.: evitei uma roupa que gosto porque não me senti bem nela.' }
     ]},
     { id:'history', label:'Histórico', qs:[
       { k:'history', type:'chips', t:'O que você já tentou antes?',
         o:['dieta por calorias','low carb','jejum','dieta restritiva','nutricionista','terapia ou psicólogo','medicamento para emagrecer','GLP-1','aplicativos','programas online','nunca tentei nada estruturado'] },
       { k:'meds', type:'opts', single:true, t:'Você usa hoje algum medicamento para emagrecimento ou controle do apetite?',
         o:['sim','não','prefiro não responder'] },
-      { k:'health_context', type:'open', t:'Existe algum contexto de saúde ou tratamento que seja importante a LIA saber?',
-        h:'Opcional. Isso não vira diagnóstico nem conduta. Serve pra ela não sugerir algo inadequado.', ph:'' }
+      { k:'health_context', type:'open', t:'Tem algum cuidado de saúde que a LIA precisa respeitar desde o começo?',
+        h:'Por exemplo: tratamento em andamento, orientação profissional ou assunto que ela não deve sugerir. Opcional.', ph:'' }
     ]},
     { id:'routine', label:'Sua rotina', qs:[
       { k:'hard_period', type:'opts', single:true, t:'Em qual período sua rotina costuma ser mais difícil?',
         o:['manhã','tarde','noite','varia'] },
-      { k:'routine_open', type:'open', t:'Como costuma ser o seu dia?', h:'Opcional, bem curtinho.',
+      { k:'routine_open', type:'open', t:'Em qual parte do dia costuma faltar mais tempo ou energia pra você?', h:'Manhã, almoço, chegada em casa ou noite, por exemplo. Opcional.',
         ph:'Ex.: trabalho o dia todo, almoço correndo e chego em casa por volta das 20h.' }
     ]},
     { id:'comms', label:'Como te acompanhar', qs:[
@@ -371,8 +374,9 @@ footer a{color:var(--ink-2)}
         o:['manhã','tarde','noite'] }
     ]},
     { id:'final', label:'Antes de começar', qs:[
-      { k:'final_open', type:'open', t:'Tem alguma coisa sobre você que gostaria que a LIA soubesse antes de começar?',
-        h:'Pode ser qualquer coisa. Ela leva isso a sério.', ph:'' }
+      { k:'final_open', type:'open', t:'Existe algum cuidado que faria essa conversa funcionar melhor pra você?',
+        h:'Pode ser um assunto que prefere evitar, um jeito de falar ou um momento mais delicado da rotina. Opcional.',
+        ph:'Ex.: quando eu estiver me culpando, prefiro que você seja acolhedora sem tentar resolver tudo.' }
     ]},
     { id:'consent', label:'Combinado', consent:true, qs:[
       { k:'proactive', type:'opts', single:true, t:'Tudo bem receber esses check-ins pelo WhatsApp?',
