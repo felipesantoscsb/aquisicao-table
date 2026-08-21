@@ -3623,8 +3623,17 @@ app.get('/api/lia/draft', async (req, res) => {
  * aqui e a fila drena depois, sem a cliente perceber nada.
  */
 async function forwardToLia(record) {
-  const url = process.env.LIA_API_URL;
+  let url = process.env.LIA_API_URL;
   if (!url) return { forwarded: false, reason: 'LIA_API_URL ausente' };
+
+  // Sem protocolo o fetch nem tenta conectar: estoura 'Failed to parse URL'
+  // antes de sair da máquina, o forward vira forwarded:false e o onboarding
+  // some na fila — sem erro visível pra ninguém. Aconteceu em produção.
+  // Assumir https é seguro: a LIA nunca roda em texto puro.
+  if (!/^https?:\/\//i.test(url)) {
+    console.warn('[LIA] LIA_API_URL sem protocolo, assumindo https://:', url);
+    url = 'https://' + url.replace(/^\/+/, '');
+  }
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 12_000);
   try {
