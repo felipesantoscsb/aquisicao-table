@@ -3695,6 +3695,10 @@ app.post('/api/lia/onboard', async (req, res) => {
         checkout_session_id:  b.checkout_session_id || null,
         source:               'evelynliu.com.br',
         whatsapp:             e164,
+        // Como ela quer ser chamada. Perguntado na propria tela do WhatsApp
+        // para nao virar mais um passo — e porque o nome do checkout costuma
+        // ser o nome completo do cadastro, nao como a pessoa se chama.
+        name:                 (typeof b.name === 'string' && b.name.trim()) ? b.name.trim().slice(0, 60) : null,
         purchase_data:        purchase || null,
         onboarding_answers:   b.answers || {},
         communication_preferences: b.preferences || {},

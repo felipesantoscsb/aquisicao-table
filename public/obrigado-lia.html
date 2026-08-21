@@ -208,9 +208,15 @@ footer a{color:var(--ink-2)}
 
 <!-- ═══ 2. WhatsApp ══════════════════════════════════════════════════════ -->
 <section class="screen" id="s-phone">
-  <h2>Em qual WhatsApp a LIA pode falar com você?</h2>
-  <p class="body">É por aqui que seu acompanhamento vai acontecer.</p>
+  <h2>Como a LIA fala com você?</h2>
+  <p class="body">Duas coisas só, e o resto é conversa.</p>
   <div style="margin-top:22px">
+    <label for="prefName" class="body" style="display:block;margin-bottom:6px">Como você gostaria de ser chamada?</label>
+    <input type="text" id="prefName" autocomplete="given-name" maxlength="40"
+           placeholder="O nome que as pessoas próximas usam" aria-label="Como você gostaria de ser chamada"/>
+  </div>
+  <div style="margin-top:18px">
+    <label for="phone" class="body" style="display:block;margin-bottom:6px">Confirma o WhatsApp?</label>
     <input type="tel" id="phone" inputmode="tel" autocomplete="tel"
            placeholder="(11) 99999-9999" aria-label="Seu WhatsApp com DDD"/>
     <p class="err" id="phoneErr">Confere esse número pra mim? Preciso de DDD + o número.</p>
@@ -530,6 +536,7 @@ footer a{color:var(--ink-2)}
       body: JSON.stringify({
         purchase_ref: purchaseRef,
         whatsapp: phone,
+        name: (document.getElementById('prefName') || {}).value || null,
         answers: answers,
         preferences: { tone:answers.tone, channel:answers.channel, best_time:answers.best_time },
         consent: { proactive_checkins: answers.proactive === 'sim, pode me procurar', accepted_terms: true,
