@@ -381,22 +381,25 @@ footer a{color:var(--ink-2)}
     ]}
   ];
 
-  var answers = {}, step = 0, phone = '';
+  var answers = {}, step = 0, phone = '', preferredName = '';
 
   /* ── Rascunho: refresh não pode custar o progresso dela ───────────────── */
   var DRAFT = 'lia_onb_draft';
   function saveDraft(){
-    var d = { answers:answers, step:step, phone:phone, at:Date.now() };
+    preferredName = (($('prefName') || {}).value || preferredName || '').trim();
+    var d = { answers:answers, step:step, phone:phone, preferredName:preferredName, at:Date.now() };
     try { sessionStorage.setItem(DRAFT, JSON.stringify(d)); } catch(e){}
     if (!purchaseRef && !phone) return;
     fetch('/api/lia/draft', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ purchase_ref:purchaseRef, whatsapp:phone, answers:answers, step:step })
+      body: JSON.stringify({ purchase_ref:purchaseRef, whatsapp:phone, name:preferredName,
+                             answers:answers, step:step })
     }).catch(function(){});
   }
   function loadDraft(){
     try {
       var d = JSON.parse(sessionStorage.getItem(DRAFT) || 'null');
-      if (d && d.answers){ answers = d.answers; step = d.step || 0; phone = d.phone || ''; return true; }
+      if (d && d.answers){ answers = d.answers; step = d.step || 0; phone = d.phone || '';
+        preferredName = d.preferredName || ''; return true; }
     } catch(e){}
     return false;
   }
@@ -490,6 +493,7 @@ footer a{color:var(--ink-2)}
     analytics.track('onboarding_started', { has_ref: !!purchaseRef });
     show('s-phone');
     if (phone) $('phone').value = phone;
+    if (preferredName) $('prefName').value = preferredName;
   });
 
   $('phoneNext').addEventListener('click', function(){
@@ -536,7 +540,7 @@ footer a{color:var(--ink-2)}
       body: JSON.stringify({
         purchase_ref: purchaseRef,
         whatsapp: phone,
-        name: (document.getElementById('prefName') || {}).value || null,
+        name: (($('prefName') || {}).value || preferredName || '').trim() || null,
         answers: answers,
         preferences: { tone:answers.tone, channel:answers.channel, best_time:answers.best_time },
         consent: { proactive_checkins: answers.proactive === 'sim, pode me procurar', accepted_terms: true,
@@ -597,6 +601,7 @@ footer a{color:var(--ink-2)}
   }
 
   if (loadDraft() && step > 0){
+    if (preferredName) $('prefName').value = preferredName;
     show('s-steps'); renderStep();
   }
 

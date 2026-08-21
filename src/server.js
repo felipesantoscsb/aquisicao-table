@@ -3604,7 +3604,12 @@ app.post('/api/lia/draft', async (req, res) => {
   const b = req.body || {};
   const key = liaKey(b.purchase_ref, toE164BR(b.whatsapp));
   if (!key) return res.status(400).json({ error: 'sem identificador' });
-  await redisSet(key + ':draft', JSON.stringify({ answers: b.answers || {}, step: b.step || 0, at: Date.now() }),
+  await redisSet(key + ':draft', JSON.stringify({
+    answers: b.answers || {},
+    step: b.step || 0,
+    name: typeof b.name === 'string' ? b.name.trim().slice(0, 60) : '',
+    at: Date.now(),
+  }),
                  'EX', 60 * 60 * 24 * 7);
   res.json({ ok: true });
 });
