@@ -239,7 +239,7 @@ footer a{color:var(--ink-2)}
     <button class="back" id="prev">Voltar</button>
     <button class="btn" id="next">Continuar</button>
   </div>
-  <button class="skip" id="skip" style="display:none">Pular esta pergunta</button>
+  <button class="skip" id="skip" style="display:none">Pular esta etapa</button>
 </section>
 
 <!-- ═══ 4. Processando ═══════════════════════════════════════════════════ -->
@@ -319,15 +319,7 @@ footer a{color:var(--ink-2)}
   var STEPS = [
     { id:'goal', label:'O que você quer mudar', qs:[
       { k:'goal_tags', type:'chips', t:'O que mais aparece pra você?', h:'Pode marcar quantas quiser.',
-        o:['comer quando estou ansiosa','comer quando estou estressada','usar comida como descanso ou recompensa','culpa depois de comer','pensamento tudo-ou-nada','dificuldade de manter constância','excesso de controle','sensação de perder o controle','parar e recomeçar sem fim','dificuldade com meu corpo','comparação','medo de engordar'] },
-      { k:'goal_open', type:'open', t:'Dessas situações, qual você mais gostaria que ficasse um pouco mais leve?',
-        h:'Se preferir, conte só um momento recente em que isso aconteceu.',
-        ph:'Ex.: a noite é quando mais pesa, porque chego cansada e sem espaço pra pensar.' }
-    ]},
-    { id:'difficulty', label:'O que tem sido difícil', qs:[
-      { k:'difficulty_open', type:'open', t:'Pra gente olhar uma situação concreta: qual momento recente foi mais difícil?',
-        h:'Pode ser uma noite, uma refeição, uma saída da rotina ou um pensamento que ficou voltando.',
-        ph:'Ex.: chego muito cansada à noite, acabo comendo de um jeito que não queria e depois fico me culpando.' }
+        o:['comer quando estou ansiosa','comer quando estou estressada','usar comida como descanso ou recompensa','culpa depois de comer','pensamento tudo-ou-nada','dificuldade de manter constância','excesso de controle','sensação de perder o controle','parar e recomeçar sem fim','dificuldade com meu corpo','comparação','medo de engordar'] }
     ]},
     { id:'when', label:'Quando acontece', qs:[
       { k:'when_tags', type:'chips', t:'Quando esses momentos costumam aparecer?',
@@ -347,40 +339,46 @@ footer a{color:var(--ink-2)}
     ]},
     { id:'body', label:'Relação com o corpo', qs:[
       { k:'body_tags', type:'chips', t:'Hoje, como sua relação com seu corpo afeta você?',
-        o:['penso muito no meu peso','me comparo bastante','meu humor muda com a balança','evito fotos','evito roupas ou situações por causa do meu corpo','minha aparência influencia muito como me sinto','quero aprender a lidar melhor com meu corpo','não é uma questão importante pra mim hoje'] },
-      { k:'body_open', type:'open', t:'Qual dessas situações mais mexeu com você recentemente?',
-        h:'Pode ser balança, roupa, foto, comparação ou outra situação. Opcional.',
-        ph:'Ex.: evitei uma roupa que gosto porque não me senti bem nela.' }
+        o:['penso muito no meu peso','me comparo bastante','meu humor muda com a balança','evito fotos','evito roupas ou situações por causa do meu corpo','minha aparência influencia muito como me sinto','quero aprender a lidar melhor com meu corpo','não é uma questão importante pra mim hoje'] }
     ]},
     { id:'history', label:'Histórico', qs:[
       { k:'history', type:'chips', t:'O que você já tentou antes?',
         o:['dieta por calorias','low carb','jejum','dieta restritiva','nutricionista','terapia ou psicólogo','medicamento para emagrecer','GLP-1','aplicativos','programas online','nunca tentei nada estruturado'] },
       { k:'meds', type:'opts', single:true, t:'Você usa hoje algum medicamento para emagrecimento ou controle do apetite?',
-        o:['sim','não','prefiro não responder'] },
-      { k:'health_context', type:'open', t:'Tem algum cuidado de saúde que a LIA precisa respeitar desde o começo?',
-        h:'Por exemplo: tratamento em andamento, orientação profissional ou assunto que ela não deve sugerir. Opcional.', ph:'' }
+        o:['sim','não','prefiro não responder'] }
     ]},
     { id:'routine', label:'Sua rotina', qs:[
       { k:'hard_period', type:'opts', single:true, t:'Em qual período sua rotina costuma ser mais difícil?',
-        o:['manhã','tarde','noite','varia'] },
-      { k:'routine_open', type:'open', t:'Em qual parte do dia costuma faltar mais tempo ou energia pra você?', h:'Manhã, almoço, chegada em casa ou noite, por exemplo. Opcional.',
-        ph:'Ex.: trabalho o dia todo, almoço correndo e chego em casa por volta das 20h.' }
+        o:['manhã','tarde','noite','varia'] }
     ]},
     { id:'comms', label:'Como te acompanhar', qs:[
       { k:'tone', type:'opts', single:true, t:'Como você prefere que a LIA converse com você?',
         o:['mais direta','mais acolhedora','um equilíbrio entre os dois'] },
-      { k:'channel', type:'opts', single:true, t:'Você prefere conversar por:', o:['texto','áudio','tanto faz'] },
       { k:'best_time', type:'opts', single:true, t:'Em qual período você costuma conseguir responder melhor?',
         o:['manhã','tarde','noite'] }
     ]},
-    { id:'final', label:'Antes de começar', qs:[
+    { id:'open', label:'Se quiser contar mais', optionalIntro:true, qs:[
+      { k:'goal_open', type:'open', t:'Dessas situações, qual você mais gostaria que ficasse um pouco mais leve?',
+        h:'Se preferir, conte só um momento recente em que isso aconteceu.',
+        ph:'Ex.: a noite é quando mais pesa, porque chego cansada e sem espaço pra pensar.' },
+      { k:'difficulty_open', type:'open', t:'Pra gente olhar uma situação concreta: qual momento recente foi mais difícil?',
+        h:'Pode ser uma noite, uma refeição, uma saída da rotina ou um pensamento que ficou voltando.',
+        ph:'Ex.: chego muito cansada à noite, acabo comendo de um jeito que não queria e depois fico me culpando.' },
+      { k:'body_open', type:'open', t:'Qual situação com seu corpo mais mexeu com você recentemente?',
+        h:'Pode ser balança, roupa, foto, comparação ou outra situação.',
+        ph:'Ex.: evitei uma roupa que gosto porque não me senti bem nela.' },
+      { k:'health_context', type:'open', t:'Tem algum cuidado de saúde que a LIA precisa respeitar desde o começo?',
+        h:'Por exemplo: tratamento em andamento, orientação profissional ou assunto que ela não deve sugerir.', ph:'' },
+      { k:'routine_open', type:'open', t:'Em qual parte do dia costuma faltar mais tempo ou energia pra você?',
+        h:'Manhã, almoço, chegada em casa ou noite, por exemplo.',
+        ph:'Ex.: trabalho o dia todo, almoço correndo e chego em casa por volta das 20h.' },
       { k:'final_open', type:'open', t:'Existe algum cuidado que faria essa conversa funcionar melhor pra você?',
-        h:'Pode ser um assunto que prefere evitar, um jeito de falar ou um momento mais delicado da rotina. Opcional.',
+        h:'Pode ser um assunto que prefere evitar, um jeito de falar ou um momento mais delicado da rotina.',
         ph:'Ex.: quando eu estiver me culpando, prefiro que você seja acolhedora sem tentar resolver tudo.' }
     ]},
-    { id:'consent', label:'Combinado', consent:true, qs:[
-      { k:'proactive', type:'opts', single:true, t:'Tudo bem receber esses check-ins pelo WhatsApp?',
-        h:'A LIA não espera só você chamar. Ela também volta pra saber como você está e acompanhar o que vocês conversaram.',
+    { id:'consent', label:'Finalizar', consent:true, qs:[
+      { k:'proactive', type:'opts', single:true, t:'A LIA pode te procurar pelo WhatsApp?',
+        h:'Além de responder quando você chamar, ela pode abrir a conversa perto dos períodos mais difíceis e voltar para acompanhar o que vocês conversaram.',
         o:['sim, pode me procurar','prefiro que ela só responda quando eu falar'] }
     ]}
   ];
@@ -417,6 +415,9 @@ footer a{color:var(--ink-2)}
 
   function renderStep(){
     var s = STEPS[step], html = '';
+    if (s.optionalIntro){
+      html += '<div class="disc"><strong>Tudo nesta etapa é opcional.</strong><p class="tiny" style="margin-top:8px">Se não estiver a fim de escrever agora, pode pular. A LIA pode conhecer você aos poucos pela conversa.</p></div>';
+    }
     s.qs.forEach(function(q){
       html += '<div class="q"><div class="q-t">' + esc(q.t) + '</div>';
       if (q.h) html += '<div class="q-h">' + esc(q.h) + '</div>';
@@ -445,6 +446,7 @@ footer a{color:var(--ink-2)}
     });
 
     if (s.consent){
+      html += '<p class="err" id="consentErr">Escolha uma opção para a LIA respeitar sua preferência.</p>';
       html += '<div class="disc"><ul>' +
         '<li>A LIA é uma inteligência artificial. Não é a Evelyn respondendo pessoalmente.</li>' +
         '<li>Ela foi criada a partir da metodologia da Table, desenvolvida por Evelyn Liu.</li>' +
@@ -481,6 +483,7 @@ footer a{color:var(--ink-2)}
         if (b.dataset.single === 'true'){
           answers[k] = v;
           b.parentElement.querySelectorAll('.opt').forEach(function(o){ o.setAttribute('aria-pressed', o === b); });
+          if (k === 'proactive' && $('consentErr')) $('consentErr').classList.remove('on');
         } else {
           answers[k] = answers[k] || [];
           var i = answers[k].indexOf(v);
@@ -515,6 +518,10 @@ footer a{color:var(--ink-2)}
   });
 
   function advance(skipped){
+    if (STEPS[step].consent && !answers.proactive){
+      if ($('consentErr')) $('consentErr').classList.add('on');
+      return;
+    }
     analytics.track('onboarding_step_completed', { step: STEPS[step].id, index: step, skipped: !!skipped });
     if (step < STEPS.length - 1){ step++; renderStep(); saveDraft(); return; }
     submit();
@@ -546,7 +553,7 @@ footer a{color:var(--ink-2)}
         whatsapp: phone,
         name: (($('prefName') || {}).value || preferredName || '').trim() || null,
         answers: answers,
-        preferences: { tone:answers.tone, channel:answers.channel, best_time:answers.best_time },
+        preferences: { tone:answers.tone, best_time:answers.best_time },
         consent: { proactive_checkins: answers.proactive === 'sim, pode me procurar', accepted_terms: true,
                    at: new Date().toISOString() },
         duration_seconds: Math.round((Date.now() - startedAt) / 1000)
