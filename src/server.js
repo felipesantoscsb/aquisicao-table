@@ -3660,7 +3660,20 @@ app.post('/api/lia/onboard', async (req, res) => {
       // resultado. Nunca cria segunda usuária nem segundo trial.
       try {
         const prev = JSON.parse(existing);
-        if (prev.completed_at) return res.json({ ok: true, duplicate: true, lia: prev.lia_result || null });
+        // Só é duplicata se o repasse pra LIA REALMENTE aconteceu.
+        //
+        // Antes bastava completed_at, que é gravado sempre — inclusive quando
+        // o forward falhou. Efeito: uma tentativa que não chegou na LIA ficava
+        // cacheada como "pronta", e a pessoa não conseguia mais entrar nem
+        // preenchendo de novo. Só saía limpando a chave no Redis à mão.
+        //
+        // Com forward pendente, seguimos o fluxo e tentamos outra vez: criar
+        // usuária duas vezes é impossível do outro lado (a LIA faz upsert por
+        // telefone), então retentar é seguro e não deixar ninguém preso vale
+        // mais do que economizar uma chamada.
+        if (prev.completed_at && prev.lia_result && prev.lia_result.forwarded) {
+          return res.json({ ok: true, duplicate: true, lia: prev.lia_result.data || null });
+        }
       } catch {}
     }
 
