@@ -95,12 +95,19 @@ var CONFIG = {
   // de lançamento, ponha "" e a linha some sozinha da página.
   LAUNCH_NOTE: "Preço de lançamento.",
 
-  // Vazio de propósito: a LIA ainda não tem pixel definido. Preencher só
-  // quando a decisão for tomada (ver gotcha do /cores, que usa pixel próprio).
-  PIXEL_ID: "",
+  // Pixel próprio da LIA (produto separado — não mistura com o funil Raiz).
+  PIXEL_ID: "519946826343805",
 
   DEBUG: false
 };
+</script>
+
+<!-- Meta Pixel (LIA) — carrega só se CONFIG.PIXEL_ID estiver definido -->
+<script>
+(function(){ if(!CONFIG.PIXEL_ID) return;
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', CONFIG.PIXEL_ID); fbq('track','PageView');
+})();
 </script>
 
 <style>
@@ -1193,6 +1200,10 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
         plano: where, trial_dias: CONFIG.TRIAL_DAYS,
         destino: checkouts[where] ? 'checkout' : 'whatsapp'
       });
+      // Pixel LIA: InitiateCheckout só quando vai pro checkout (não no fallback WhatsApp)
+      if (checkouts[where] && window.fbq && CONFIG.PIXEL_ID) {
+        try { fbq('track','InitiateCheckout', { content_name: 'LIA - ' + where, currency: 'BRL' }); } catch(e){}
+      }
     });
   });
 
