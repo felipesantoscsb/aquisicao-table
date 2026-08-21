@@ -3720,7 +3720,19 @@ app.post('/api/lia/onboard', async (req, res) => {
       console.log('[LIA] onboarding encaminhado:', record.idempotency_key);
     }
 
-    res.json({ ok: true, duplicate: false, lia: out.forwarded ? out.data : null });
+    // Expoe o MOTIVO da falha (nunca o segredo). Sem isto, um erro de
+    // configuracao vira 'lia: null' e a unica forma de diagnosticar e ler log
+    // de servidor — foi o que fez este bug durar horas.
+    res.json({
+      ok: true,
+      duplicate: false,
+      lia: out.forwarded ? out.data : null,
+      lia_error: out.forwarded ? null : {
+        reason: out.reason || null,
+        status: out.status || null,
+        body: typeof out.body === 'string' ? out.body.slice(0, 200) : null,
+      },
+    });
   } catch (e) {
     console.error('[LIA] erro no onboard:', e.message);
     res.status(500).json({ error: 'falha ao registrar' });
