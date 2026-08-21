@@ -39,6 +39,34 @@ compra de teste revela os nomes verdadeiros. Não inventar strings antes disso.
 | **Pix Gerado / Aguardando Pagamento / Pix Expirado** | Gerou e não pagou. Lembrete com o código; no expirado, link novo. |
 | **[Afiliação] Aprovada** | Sem ação enquanto não houver programa de afiliados. |
 
+## Cancelamento pela própria LIA (dependência de backend)
+
+A LP e a página de obrigado agora prometem: **"cancele direto com a LIA, no
+WhatsApp"** — sem formulário, sem portal separado. Isso reduz fricção a quase
+zero, mas cria uma dependência que precisa existir ANTES de divulgar essa
+promessa, senão vira o mesmo problema que já corrigimos com o "te avisamos
+antes": promessa na página sem lastro no backend.
+
+O que precisa existir no backend da LIA:
+
+1. **A LIA reconhecer intenção de cancelamento na conversa** (não precisa ser
+   perfeito — um gatilho por palavra-chave/intenção básica resolve o essencial).
+2. **Confirmar antes de executar.** Uma pergunta de confirmação evita
+   cancelamento acidental por mensagem ambígua — mas só uma, sem tentar reter.
+3. **Executar de fato na assinatura da Ticto.** Verificar se a Ticto expõe API
+   para cancelar assinatura programaticamente (distinto do webhook, que só
+   informa eventos — aqui precisamos do sentido contrário: LIA → Ticto).
+   Se não existir API direta, o caminho é a equipe humana ser notificada e
+   cancelar manualmente em minutos — mas nesse caso a copy não pode prometer
+   "cancele direto com a LIA" como se fosse instantâneo e 100% automático.
+4. **Confirmar pra ela que cancelou**, com data até quando o acesso continua
+   ativo (se cancelar dentro do trial, deixar claro que não vai ser cobrada).
+5. **Dispara o evento `subscription_canceled`** no fluxo já documentado acima,
+   incluindo a régua de feedback (24-48h depois, ver seção seguinte).
+
+**Antes de rodar tráfego pago com essa copy no ar**, confirmar que os passos
+1-3 funcionam de ponta a ponta. Testar cancelando uma assinatura de teste real.
+
 ## Feedback de cancelamento
 
 O erro fácil aqui é perguntar "por que você cancelou?". Nesse público essa
