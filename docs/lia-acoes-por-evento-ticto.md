@@ -39,33 +39,56 @@ compra de teste revela os nomes verdadeiros. Não inventar strings antes disso.
 | **Pix Gerado / Aguardando Pagamento / Pix Expirado** | Gerou e não pagou. Lembrete com o código; no expirado, link novo. |
 | **[Afiliação] Aprovada** | Sem ação enquanto não houver programa de afiliados. |
 
-## Cancelamento pela própria LIA (dependência de backend)
+## Cancelamento pela própria LIA (handoff manual pra Karina/ops)
 
-A LP e a página de obrigado agora prometem: **"cancele direto com a LIA, no
-WhatsApp"** — sem formulário, sem portal separado. Isso reduz fricção a quase
-zero, mas cria uma dependência que precisa existir ANTES de divulgar essa
-promessa, senão vira o mesmo problema que já corrigimos com o "te avisamos
-antes": promessa na página sem lastro no backend.
+A LP e a página de obrigado prometem: **"cancele direto com a LIA, no
+WhatsApp"** — sem formulário, sem portal separado. A promessa continua
+verdadeira mesmo sem API: a cliente só fala com a LIA, nunca com um sistema.
+Decisão confirmada: **por ora o cancelamento é handoff da LIA pra Karina, que
+executa manualmente na Ticto.** Sem necessidade de API de cancelamento
+programático — resolve o ponto técnico, mas troca por um risco operacional
+diferente, que é o que esta seção cobre.
 
-O que precisa existir no backend da LIA:
+### O que precisa existir
 
-1. **A LIA reconhecer intenção de cancelamento na conversa** (não precisa ser
-   perfeito — um gatilho por palavra-chave/intenção básica resolve o essencial).
-2. **Confirmar antes de executar.** Uma pergunta de confirmação evita
-   cancelamento acidental por mensagem ambígua — mas só uma, sem tentar reter.
-3. **Executar de fato na assinatura da Ticto.** Verificar se a Ticto expõe API
-   para cancelar assinatura programaticamente (distinto do webhook, que só
-   informa eventos — aqui precisamos do sentido contrário: LIA → Ticto).
-   Se não existir API direta, o caminho é a equipe humana ser notificada e
-   cancelar manualmente em minutos — mas nesse caso a copy não pode prometer
-   "cancele direto com a LIA" como se fosse instantâneo e 100% automático.
-4. **Confirmar pra ela que cancelou**, com data até quando o acesso continua
-   ativo (se cancelar dentro do trial, deixar claro que não vai ser cobrada).
+1. **A LIA reconhecer intenção de cancelamento na conversa** (gatilho por
+   palavra-chave/intenção básica resolve o essencial, não precisa ser perfeito).
+2. **Confirmar antes de fazer o handoff.** Uma pergunta evita acionar Karina
+   por mensagem ambígua — só uma, sem tentar reter.
+3. **Handoff pra Karina de forma que ela veja rápido.** Definir o canal (ex.:
+   número/grupo de WhatsApp que ela monitora, ou painel interno) e incluir no
+   handoff: nome, WhatsApp, transaction_id/subscription_id, e se está dentro
+   do trial ou já pagando — pra ela não precisar caçar essa informação.
+4. **Confirmar pra ela na hora**, mesmo antes de Karina processar: *"Recebi
+   seu pedido, o cancelamento está sendo feito e nada será cobrado."* Isso não
+   é firula — é o que faz a cliente não continuar achando que precisa insistir
+   ou que o pedido se perdeu.
 5. **Dispara o evento `subscription_canceled`** no fluxo já documentado acima,
    incluindo a régua de feedback (24-48h depois, ver seção seguinte).
 
-**Antes de rodar tráfego pago com essa copy no ar**, confirmar que os passos
-1-3 funcionam de ponta a ponta. Testar cancelando uma assinatura de teste real.
+### O risco que o handoff manual introduz — e a rede de segurança
+
+Handoff manual tem atraso. Se a cliente pedir cancelamento dentro do trial e
+Karina processar DEPOIS que a Ticto já disparou a cobrança automática, a
+promessa "nada é cobrado" quebra mesmo que ela tenha pedido a tempo — e nesse
+público isso não é só um reembolso chato, é confirmar a desconfiança que a
+página inteira trabalhou pra desarmar.
+
+Duas coisas resolvem isso, e as duas precisam existir (não é OU):
+
+- **SLA de processamento por Karina.** Pedido registrado tem que ser
+  processado no mesmo dia útil, e obrigatoriamente antes da rotina diária de
+  cobrança da Ticto. Definir esse horário de corte com quem cuida da operação.
+- **Rede de segurança automática.** Se por qualquer motivo (fim de semana,
+  volume, falha humana) o processamento atrasar e a cobrança disparar mesmo
+  assim: **estorno automático de qualquer cobrança que caia depois de um
+  pedido de cancelamento já registrado**, sem precisar a cliente reclamar pra
+  isso acontecer. Isto é o que torna a promessa da página verdadeira na
+  prática, mesmo com processo manual por trás.
+
+**Antes de rodar tráfego pago com essa copy no ar**: confirmar canal de
+handoff pra Karina, confirmar o SLA, e testar cancelando uma assinatura de
+teste real de ponta a ponta — incluindo o caso "pedi em cima da hora".
 
 ## Feedback de cancelamento
 
