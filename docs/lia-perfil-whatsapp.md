@@ -7,18 +7,16 @@ Regeração: `scripts/gen_lia_avatar_wa.html` + Chrome headless.
 
 **LIA**
 
-Alternativas se a Meta rejeitar (nomes de 3 letras às vezes são sinalizados):
-`LIA · Table` → `LIA da Table` → `Table`
+Via Z-API não há review da Meta: o nome é simplesmente o que estiver
+configurado na conta do WhatsApp. Define e pronto.
 
 Razão de "LIA" puro: é o que aparece na lista de conversas dela. "LIA"
 parece nome de pessoa. Qualquer coisa com "nutri", "dieta" ou "Table
 Clinic" entrega o assunto pra quem olhar a tela por cima do ombro — mesma
 lógica do descritor da fatura do cartão.
 
-Se a Meta questionar, a evidência de vínculo é a própria
-evelynliu.com.br/lia, que apresenta a LIA como produto da Table.
-
-Trocar nome depois da aprovação tem limite de frequência. Vale acertar agora.
+Configure pelo app WhatsApp Business no número, e só depois conecte o QR
+no Z-API. Categoria, horário e descrição só existem na versão Business.
 
 ## Recado / About (limite 139 caracteres)
 
@@ -59,23 +57,42 @@ protege em qualquer questionamento de política.
 contradiz a promessa da landing e ainda mostra "fechado" justo no momento
 mais vulnerável dela.
 
-## Restrição que afeta o produto: janela de 24 horas
+## Z-API: o que muda
 
-Fora da janela de 24h desde a última mensagem DELA, o WhatsApp só permite
-**templates aprovados** — texto fixo com variáveis. Não dá para mandar uma
-intervenção personalizada e dinâmica.
+Z-API dirige uma sessão real do WhatsApp (QR code), não a API oficial.
+Consequências:
 
-Isso bate direto no diferencial da LIA ("ela te procura primeiro").
+**A favor.** Não existe janela de 24 horas nem template aprovado. A LIA pode
+mandar mensagem personalizada e dinâmica a qualquer hora. O diferencial
+central do produto ("ela te procura primeiro") funciona sem contorno — o que
+não aconteceria na Cloud API, onde fora da janela só rola texto fixo.
 
-Padrão a adotar: o contato proativo é um **template curto que reabre a
-janela**; a intervenção real acontece depois que ela responde. O template
-não deve tentar ser a intervenção, deve ser o convite.
+**Contra.** É solução não oficial. A Meta pode banir o número, e o gatilho
+mais comum é bloqueio e denúncia por parte de quem recebe. Se o número cair,
+cai o produto inteiro e o histórico das conversas junto.
 
-Templates a submeter para aprovação (todos precisam de review da Meta):
-- Primeiro contato pós-onboarding
-- Check-in proativo (o "ela percebe o padrão e procura")
-- Aviso de fim do trial, caminhos A e B (ver `lia-aviso-fim-do-trial.md`)
-- Régua de dunning: cobrança atrasada, d1/d3/d5
-- Feedback de cancelamento
+### Por que o risco aqui é menor do que parece
 
-Aprovação leva tempo e reprova por tom promocional. Submeter cedo.
+Ban costuma vir de disparo frio. A LIA fala com quem **pagou** e marcou
+consentimento explícito de check-in no onboarding. Ela está esperando a
+mensagem. Bloqueio e denúncia são improváveis.
+
+Isso é diferente da recuperação de checkout, que fala com quem abandonou
+carrinho e não pediu nada — e foi exatamente o que derrubou a qualidade do
+número em julho, ao ponto de a sequência de 4h ser pausada.
+
+**Não repita o erro: número dedicado da LIA, separado do número usado para
+recuperação e para o Protocolo Raiz.** Misturar os dois tráfegos coloca o
+produto pago refém da qualidade de um disparo frio.
+
+### Cuidados
+
+- Aquecimento do número antes de volume. Chip novo disparando muito é o
+  padrão clássico de ban.
+- Monitorar taxa de bloqueio e denúncia. É o sinal antecedente do ban, não
+  o volume em si.
+- Backup do histórico do lado da LIA, nunca só no aparelho. Se o número cair,
+  o contexto das usuárias não pode cair junto — é literalmente o produto.
+- Ter caminho de migração para a Cloud API mapeado. Em escala, não oficial
+  eventualmente quebra. Não é urgente agora, mas não pode ser descoberto no
+  dia em que acontecer.
