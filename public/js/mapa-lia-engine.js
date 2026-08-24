@@ -1,219 +1,338 @@
 (function (root, factory) {
-  const api = factory();
+  var api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.MapaLiaEngine = api;
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  const VERSION = '2026-08-24.1';
-  const AXES = {
-    overload: {
-      short: 'sobrecarga',
-      title: 'O contexto pode estar chegando antes da escolha',
-      trigger: 'um dia exigente ou com pouca margem',
-      thought: 'resolver isso depois parece mais possível do que parar agora',
-      action: 'a decisão acontece no automático',
-      after: 'vem a sensação de ter se afastado do que queria',
-      insight: 'Talvez o ponto mais útil não seja cobrar uma escolha melhor, e sim criar margem alguns minutos antes.',
-    },
-    soothing: {
-      short: 'alívio emocional',
-      title: 'A comida pode estar ocupando uma função de alívio',
-      trigger: 'uma emoção que pede saída rápida',
-      thought: 'comer parece oferecer uma pausa imediata',
-      action: 'o alívio vira a prioridade daquele momento',
-      after: 'a emoção diminui por instantes, mas o desconforto pode voltar',
-      insight: 'Quando a função é aliviar, informação sobre alimentação costuma ser pouco. A intervenção precisa entrar antes do impulso ganhar velocidade.',
-    },
-    rigidity: {
-      short: 'rigidez',
-      title: 'Uma regra rígida pode estar alimentando o ciclo',
-      trigger: 'uma saída do plano ou do que parecia certo',
-      thought: 'se não foi perfeito, o dia parece perdido',
-      action: 'a flexibilidade diminui e o movimento fica mais extremo',
-      after: 'surge a promessa de compensar ou recomeçar',
-      insight: 'Talvez o avanço aqui venha menos de apertar as regras e mais de impedir que um episódio decida o restante do dia.',
-    },
-    restriction: {
-      short: 'controle e restrição',
-      title: 'O controle pode estar produzindo o efeito contrário',
-      trigger: 'uma fase de muita vigilância ou contenção',
-      thought: 'certos alimentos passam a carregar urgência e valor demais',
-      action: 'quando há acesso, fica mais difícil perceber o suficiente',
-      after: 'a resposta costuma ser aumentar o controle outra vez',
-      insight: 'Se a restrição aumenta a urgência, endurecer o plano pode manter o problema. Regularidade e permissão precisam entrar na leitura.',
-    },
-    automaticity: {
-      short: 'piloto automático',
-      title: 'O padrão pode estar acontecendo rápido demais para ser percebido',
-      trigger: 'uma rotina conhecida, um lugar ou horário recorrente',
-      thought: 'a ação começa antes de uma decisão consciente',
-      action: 'o comportamento segue uma sequência já treinada',
-      after: 'só depois fica claro o que aconteceu',
-      insight: 'O primeiro ganho não precisa ser impedir. Pode ser aprender a notar o começo do ciclo alguns minutos mais cedo.',
-    },
-    selfcriticism: {
-      short: 'autocrítica',
-      title: 'A cobrança pode estar dificultando a reparação',
-      trigger: 'uma escolha interpretada como falha',
-      thought: 'a conversa interna fica dura e definitiva',
-      action: 'cuidar de si perde espaço para punir ou desistir',
-      after: 'a culpa reforça a sensação de distância do objetivo',
-      insight: 'Autocrítica parece correção, mas frequentemente reduz a capacidade de fazer a próxima escolha possível.',
-    },
-    disconnection: {
-      short: 'desconexão dos sinais',
-      title: 'Os sinais do corpo podem estar ficando em segundo plano',
-      trigger: 'pressa, distração ou muitas decisões externas',
-      thought: 'horário, regra ou disponibilidade falam mais alto',
-      action: 'fome, saciedade e necessidade são percebidas tarde',
-      after: 'fica difícil entender o que realmente teria ajudado',
-      insight: 'Antes de mudar o que comer, pode ser mais potente recuperar pequenos pontos de contato com fome, energia e satisfação.',
-    },
+  var VERSION = '2026-08-24.2';
+  var MAX_ANSWERS = 8;
+  var MECHANISMS = {
+    overload: { label: 'sobrecarga e pouca margem' },
+    emotional_relief: { label: 'busca de alívio' },
+    rigidity: { label: 'rigidez e tudo ou nada' },
+    automaticity: { label: 'piloto automático' },
+    disconnection: { label: 'sinais percebidos tarde' },
+    self_criticism: { label: 'autocrítica depois do episódio' },
+    compensation: { label: 'culpa seguida de compensação' },
   };
 
-  function option(id, label, weights) { return { id, label, weights }; }
-  const QUESTIONS = [
-    { id: 'moment', stage: 'seed', prompt: 'Em qual momento costuma ficar mais difícil cuidar da alimentação?', options: [
-      option('night', 'No fim do dia ou à noite', { overload: 2, automaticity: 1 }),
-      option('emotion', 'Quando alguma emoção aperta', { soothing: 3 }),
-      option('offplan', 'Quando saio do que tinha planejado', { rigidity: 2, selfcriticism: 1 }),
-      option('busy', 'Quando o dia fica corrido e sem estrutura', { overload: 2, disconnection: 1 }),
-    ]},
-    { id: 'first_move', stage: 'seed', prompt: 'Quando isso começa, o que mais se parece com o seu movimento?', options: [
-      option('fast', 'Percebo quando já estou fazendo', { automaticity: 3 }),
-      option('relief', 'Procuro alguma coisa que me dê alívio', { soothing: 3 }),
-      option('giveup', 'Penso “agora já foi” e largo o restante', { rigidity: 3 }),
-      option('postpone', 'Vou adiando até ficar difícil decidir bem', { overload: 2, disconnection: 2 }),
-    ]},
-    { id: 'aftermath', stage: 'seed', prompt: 'E depois, qual reação aparece com mais frequência?', options: [
-      option('compensate', 'Quero compensar ou controlar mais', { restriction: 3, rigidity: 1 }),
-      option('guilt', 'Me cobro e fico remoendo', { selfcriticism: 3 }),
-      option('confused', 'Fico sem entender por que aconteceu', { automaticity: 2, disconnection: 2 }),
-      option('repeat', 'Sinto alívio, mas o ciclo volta em outro momento', { soothing: 2, overload: 1 }),
-    ]},
+  function sig(id, label, kind, mechanism, weight) {
+    return { id:id, label:label, kind:kind, mechanism:mechanism, weight:weight || 1 };
+  }
+  function opt(id, label, reflection, signals) {
+    return { id:id, label:label, reflection:reflection, signals:signals };
+  }
+  function q(id, branch, prompt, options) {
+    return { id:id, branch:branch || null, prompt:prompt, options:options };
+  }
 
-    { id: 'overload_detail', axis: 'overload', prompt: 'Nos dias mais exigentes, o que costuma faltar primeiro?', options: [
-      option('time', 'Tempo para parar e escolher', { overload: 3 }),
-      option('energy', 'Energia para sustentar mais uma decisão', { overload: 3, automaticity: 1 }),
-      option('structure', 'Alguma estrutura mínima para o dia', { overload: 2, disconnection: 2 }),
-      option('support', 'Um jeito de descarregar o que acumulou', { overload: 2, soothing: 1 }),
-    ]},
-    { id: 'soothing_detail', axis: 'soothing', prompt: 'O que a comida parece oferecer naquele instante?', options: [
-      option('pause', 'Uma pausa', { soothing: 3, overload: 1 }),
-      option('comfort', 'Conforto ou acolhimento', { soothing: 3 }),
-      option('reward', 'Uma recompensa depois de aguentar muito', { soothing: 2, overload: 2 }),
-      option('numb', 'Um jeito de não pensar por alguns minutos', { soothing: 3, automaticity: 1 }),
-    ]},
-    { id: 'rigidity_detail', axis: 'rigidity', prompt: 'Quando algo sai do planejado, qual pensamento chega mais perto?', options: [
-      option('lostday', '“O dia já está perdido”', { rigidity: 3 }),
-      option('restart', '“Amanhã eu recomeço direito”', { rigidity: 3, restriction: 1 }),
-      option('cant', '“Eu nunca consigo manter”', { rigidity: 2, selfcriticism: 2 }),
-      option('fix', '“Preciso corrigir isso rápido”', { rigidity: 2, restriction: 2 }),
-    ]},
-    { id: 'restriction_detail', axis: 'restriction', prompt: 'Quando tenta retomar o controle, o que mais acontece?', options: [
-      option('cut', 'Corto alimentos ou refeições', { restriction: 3 }),
-      option('rules', 'Crio regras mais apertadas', { restriction: 3, rigidity: 1 }),
-      option('hold', 'Seguro o máximo que consigo', { restriction: 3 }),
-      option('track', 'Passo a vigiar cada escolha', { restriction: 2, selfcriticism: 1 }),
-    ]},
-    { id: 'automaticity_detail', axis: 'automaticity', prompt: 'Em que ponto você costuma perceber o que está acontecendo?', options: [
-      option('before', 'Um pouco antes, mas já parece difícil mudar', { automaticity: 2, soothing: 1 }),
-      option('during', 'No meio', { automaticity: 3 }),
-      option('after', 'Só depois', { automaticity: 3, disconnection: 1 }),
-      option('varies', 'Depende muito do ambiente ou do horário', { automaticity: 2, overload: 1 }),
-    ]},
-    { id: 'selfcriticism_detail', axis: 'selfcriticism', prompt: 'Como costuma ser a conversa com você mesma depois?', options: [
-      option('harsh', 'Dura e cheia de cobrança', { selfcriticism: 3 }),
-      option('comparison', 'Comparo com como eu deveria estar', { selfcriticism: 3, rigidity: 1 }),
-      option('avoid', 'Evito pensar e sigo o dia', { selfcriticism: 1, automaticity: 2 }),
-      option('repair', 'Tento reparar, mas sem saber por onde', { selfcriticism: 2, disconnection: 1 }),
-    ]},
-    { id: 'disconnection_detail', axis: 'disconnection', prompt: 'O que mais dificulta perceber do que você precisa?', options: [
-      option('screen', 'Como distraída ou fazendo outra coisa', { disconnection: 3, automaticity: 1 }),
-      option('late', 'Percebo fome ou cansaço tarde demais', { disconnection: 3, overload: 1 }),
-      option('external', 'Sigo mais regras do que sinais', { disconnection: 3, restriction: 1 }),
-      option('unclear', 'Os sinais parecem confusos', { disconnection: 3 }),
-    ]},
+  var QUESTIONS = [
+    q('moment', null, 'Pra começar por uma cena real: quando costuma ficar mais difícil cuidar da alimentação?', [
+      opt('night','No fim do dia ou à noite','os momentos mais difíceis costumam chegar no fim do dia',[sig('end_day','fim do dia ou noite','context','overload',3)]),
+      opt('emotion','Quando alguma emoção aperta','uma emoção mais intensa costuma marcar o começo',[sig('emotion_pressure','emoção apertando','context','emotional_relief',3)]),
+      opt('offplan','Quando saio do que tinha planejado','o ciclo costuma começar quando algo sai do planejado',[sig('plan_rupture','saída do planejado','context','rigidity',3)]),
+      opt('busy','Quando o dia fica corrido e sem estrutura','dias corridos e sem estrutura parecem deixar pouca margem',[sig('busy_day','dia corrido e sem estrutura','context','overload',3),sig('low_structure','pouca estrutura','context','disconnection',1)]),
+    ]),
+    q('first_move', null, 'Quando essa cena começa, qual movimento chega mais perto do que acontece?', [
+      opt('relief','Procuro alguma coisa que me dê alívio','a comida pode aparecer como uma forma rápida de aliviar',[sig('relief_search','busca de alívio','function','emotional_relief',4)]),
+      opt('fast','Percebo quando já estou fazendo','a percepção costuma chegar quando o movimento já começou',[sig('late_awareness','percepção tardia','behavior','automaticity',4)]),
+      opt('giveup','Penso “agora já foi” e largo o restante','uma saída do plano pode virar a sensação de que o restante já foi perdido',[sig('all_or_nothing','pensamento de tudo ou nada','cognition','rigidity',4)]),
+      opt('postpone','Vou adiando até ficar difícil decidir bem','as decisões podem ser adiadas até restar pouca energia',[sig('decision_fatigue','decisões acumuladas','behavior','overload',3),sig('late_need','necessidade percebida tarde','body','disconnection',1)]),
+    ]),
 
-    { id: 'permission', stage: 'differentiate', prompt: 'Quando um alimento parece “proibido”, o que tende a acontecer?', options: [
-      option('urgent', 'Ele fica mais presente na minha cabeça', { restriction: 3 }),
-      option('allin', 'Quando como, parece que preciso aproveitar', { restriction: 2, rigidity: 2 }),
-      option('neutral', 'Não muda muito para mim', { disconnection: 1 }),
-      option('no_forbidden', 'Não costumo dividir alimentos assim', { overload: 1, soothing: 1 }),
-    ]},
-    { id: 'repair', stage: 'differentiate', prompt: 'Depois de um momento difícil, o que ajudaria mais a próxima escolha?', options: [
-      option('small', 'Uma ação pequena e concreta', { overload: 2, selfcriticism: 1 }),
-      option('understand', 'Entender o que disparou aquilo', { automaticity: 2, soothing: 1 }),
-      option('flex', 'Sair do tudo ou nada', { rigidity: 3 }),
-      option('regular', 'Voltar a uma rotina possível, sem compensar', { restriction: 3 }),
-    ]},
-    { id: 'need', stage: 'differentiate', prompt: 'Se esse padrão pudesse mudar um pouco, o que faria mais diferença agora?', options: [
-      option('anticipate', 'Perceber antes de chegar no limite', { overload: 2, automaticity: 2 }),
-      option('choice', 'Ter mais espaço para escolher', { disconnection: 2, automaticity: 1 }),
-      option('peace', 'Diminuir culpa e conflito', { selfcriticism: 2, rigidity: 1 }),
-      option('steady', 'Ter mais constância sem radicalizar', { restriction: 2, rigidity: 2 }),
-    ]},
+    q('emotion_need','emotional_relief','Naquele instante, o que a comida parece oferecer?',[
+      opt('pause','Uma pausa','o que parece fazer falta é uma pausa',[sig('need_pause','necessidade de pausa','need','emotional_relief',3)]),
+      opt('comfort','Conforto ou acolhimento','a busca parece se aproximar de conforto ou acolhimento',[sig('need_comfort','busca de conforto','need','emotional_relief',3)]),
+      opt('reward','Uma recompensa depois de aguentar muito','o alimento pode ganhar o lugar de recompensa depois de um dia exigente',[sig('reward_after_effort','recompensa depois de esforço','function','emotional_relief',2),sig('accumulated_effort','esforço acumulado','context','overload',2)]),
+      opt('numb','Um jeito de não pensar por alguns minutos','por alguns minutos, não pensar parece ser parte do alívio',[sig('need_numb','desejo de desligar','need','emotional_relief',3),sig('disengage','desligamento','behavior','automaticity',1)]),
+    ]),
+    q('emotion_before','emotional_relief','Pouco antes, o que costuma estar mais presente?',[
+      opt('anxiety','Ansiedade ou inquietação','ansiedade ou inquietação aparecem pouco antes',[sig('anxiety','ansiedade ou inquietação','antecedent','emotional_relief',3)]),
+      opt('frustration','Frustração ou decepção','frustração ou decepção parecem preparar o terreno',[sig('frustration','frustração ou decepção','antecedent','emotional_relief',3)]),
+      opt('lonely','Solidão ou sensação de estar sem apoio','a sensação de estar sem apoio aparece antes',[sig('loneliness','solidão ou pouco apoio','antecedent','emotional_relief',3)]),
+      opt('mixed','É difícil separar uma emoção só','as emoções chegam misturadas e difíceis de nomear',[sig('mixed_emotions','emoções misturadas','antecedent','disconnection',2),sig('emotion_pressure','emoção apertando','context','emotional_relief',1)]),
+    ]),
+    q('emotion_after','emotional_relief','Depois desse alívio mais imediato, o que costuma ficar?',[
+      opt('guilt','Culpa ou cobrança','o alívio pode ser seguido por culpa ou cobrança',[sig('guilt','culpa depois','consequence','self_criticism',3)]),
+      opt('repeat','O incômodo volta e dá vontade de repetir','o incômodo pode voltar e reacender o movimento',[sig('short_relief','alívio curto','consequence','emotional_relief',2),sig('repeat_urge','vontade de repetir','response','automaticity',2)]),
+      opt('compensate','Vontade de compensar depois','depois aparece uma tentativa de compensar',[sig('compensation','tentativa de compensação','response','compensation',4)]),
+      opt('unclear','Só fico confusa com o que aconteceu','fica difícil entender a sequência depois que passa',[sig('post_confusion','confusão depois','consequence','disconnection',3)]),
+    ]),
+    q('emotion_pattern','emotional_relief','Isso costuma acontecer de um jeito previsível?',[
+      opt('same_time','Sim, em horários parecidos','o horário parece fazer parte da repetição',[sig('time_pattern','horário recorrente','context','automaticity',2)]),
+      opt('same_feeling','Sim, quando a mesma emoção aparece','a mesma emoção parece reabrir a sequência',[sig('emotion_pattern','emoção recorrente','context','emotional_relief',3)]),
+      opt('unpredictable','Parece imprevisível','a repetição ainda parece difícil de antecipar',[sig('unpredictable','padrão ainda pouco previsível','context','disconnection',2)]),
+      opt('varies','Muda bastante conforme o dia','o contexto do dia parece mudar a forma do ciclo',[sig('context_variation','variação conforme o dia','context','overload',1)]),
+    ]),
+
+    q('load_missing','overload','Nos dias mais exigentes, o que parece faltar primeiro?',[
+      opt('time','Tempo para parar','falta tempo para fazer uma pausa antes de decidir',[sig('low_time','pouco tempo para si','need','overload',3)]),
+      opt('energy','Energia para mais uma decisão','a energia para decidir parece acabar antes do dia',[sig('low_energy','cansaço e pouca energia','body','overload',3)]),
+      opt('structure','Uma estrutura mínima','uma estrutura mínima se perde ao longo do dia',[sig('low_structure','pouca estrutura','context','disconnection',3)]),
+      opt('space','Um espaço que seja meu','parece faltar um espaço de cuidado que seja só seu',[sig('low_personal_space','pouco espaço para si','need','overload',3)]),
+    ]),
+    q('load_day','overload','Como o dia costuma chegar até esse momento?',[
+      opt('no_break','Quase sem pausas','o dia chega ali quase sem pausas',[sig('no_breaks','dia quase sem pausas','context','overload',3)]),
+      opt('little_food','Com poucas refeições ou comendo pouco','o corpo pode chegar depois de muitas horas ou pouca comida',[sig('long_gap','muitas horas sem comer','body','disconnection',3)]),
+      opt('many_decisions','Com decisões e demandas acumuladas','decisões e demandas se acumulam antes do momento difícil',[sig('decision_load','decisões acumuladas','context','overload',3)]),
+      opt('variable','Cada dia de um jeito','a falta de previsibilidade parece pesar',[sig('unstable_routine','rotina pouco previsível','context','overload',2)]),
+    ]),
+    q('load_mode','overload','Quando finalmente come, como isso costuma acontecer?',[
+      opt('standing','Em pé ou direto da embalagem','comer em pé ou direto da embalagem aparece na cena',[sig('unstructured_eating','comer sem estrutura','behavior','automaticity',3)]),
+      opt('screen','Fazendo outra coisa ao mesmo tempo','a refeição divide espaço com tela, trabalho ou outra tarefa',[sig('distracted_eating','comer com distração','behavior','automaticity',3)]),
+      opt('fast','Muito rápido','a velocidade deixa pouco tempo para perceber o que acontece',[sig('fast_eating','comer rápido','behavior','automaticity',3)]),
+      opt('searching','Procurando várias coisas','há uma busca que demora a encontrar satisfação',[sig('search_satisfaction','busca por satisfação','behavior','disconnection',2)]),
+    ]),
+    q('load_after','overload','Quando passa, qual reação costuma aparecer?',[
+      opt('guilt','Me cobro','a cobrança chega depois de um dia que já exigiu muito',[sig('guilt','culpa depois','consequence','self_criticism',3)]),
+      opt('compensate','Quero compensar','o próximo movimento tende a ser compensar',[sig('compensation','tentativa de compensação','response','compensation',4)]),
+      opt('promise','Prometo organizar tudo amanhã','surge a promessa de que amanhã será totalmente diferente',[sig('restart_promise','promessa de recomeço','response','rigidity',3)]),
+      opt('exhausted','Só sigo ainda mais cansada','o ciclo termina aumentando o cansaço',[sig('more_exhaustion','mais cansaço depois','consequence','overload',2)]),
+    ]),
+
+    q('rule_thought','rigidity','Quando algo sai do planejado, qual pensamento chega mais perto?',[
+      opt('lost_day','“O dia já está perdido”','uma escolha pode parecer capaz de definir o dia inteiro',[sig('lost_day','dia percebido como perdido','cognition','rigidity',4)]),
+      opt('restart','“Amanhã começo direito”','o recomeço perfeito fica sempre colocado no dia seguinte',[sig('restart_promise','promessa de recomeço','cognition','rigidity',3)]),
+      opt('never','“Eu nunca consigo manter”','uma situação vira uma conclusão maior sobre sua capacidade',[sig('global_self_judgment','conclusão dura sobre si','cognition','self_criticism',3)]),
+      opt('fix','“Preciso corrigir isso rápido”','aparece urgência para corrigir o que aconteceu',[sig('urgent_fix','urgência para corrigir','cognition','compensation',3)]),
+    ]),
+    q('rule_response','rigidity','E como você costuma tentar corrigir?',[
+      opt('skip','Pulo ou reduzo a próxima refeição','a reparação pode virar redução da próxima refeição',[sig('meal_restriction','redução da próxima refeição','response','compensation',4)]),
+      opt('rules','Crio regras mais apertadas','a resposta costuma ser apertar ainda mais as regras',[sig('stricter_rules','regras mais apertadas','response','rigidity',4)]),
+      opt('exercise','Penso em compensar com exercício','o exercício pode ganhar função de compensação',[sig('exercise_compensation','exercício como compensação','response','compensation',4)]),
+      opt('giveup','Desisto por um tempo','a cobrança pode terminar em afastamento do cuidado',[sig('care_abandonment','afastamento do cuidado','response','self_criticism',3)]),
+    ]),
+    q('rule_origin','rigidity','Hoje, como as regras aparecem na sua alimentação?',[
+      opt('forbidden','Tenho alimentos que considero proibidos','alguns alimentos ainda ocupam o lugar de proibidos',[sig('forbidden_food','alimentos proibidos','cognition','rigidity',3)]),
+      opt('perfect','Tento seguir tudo perfeitamente','o cuidado parece precisar ser perfeito para contar',[sig('perfection_rule','regra de perfeição','cognition','rigidity',4)]),
+      opt('tracking','Vigio cada escolha','muita energia é usada para vigiar as escolhas',[sig('food_monitoring','vigilância constante','behavior','rigidity',3)]),
+      opt('few','Não tenho muitas regras claras','as regras não parecem ser o centro da questão',[sig('few_rules','poucas regras explícitas','context','disconnection',1)]),
+    ]),
+    q('rule_after','rigidity','No dia seguinte, o que tende a acontecer?',[
+      opt('control','Começo mais controlada','o dia seguinte começa com mais controle',[sig('control_restart','recomeço com controle','response','rigidity',3)]),
+      opt('repeat','O ciclo se repete','a tentativa de correção não parece encerrar a repetição',[sig('cycle_repeat','ciclo se repete','consequence','compensation',3)]),
+      opt('guilt','Continuo me culpando','a culpa atravessa para o dia seguinte',[sig('lasting_guilt','culpa prolongada','consequence','self_criticism',3)]),
+      opt('normal','Consigo seguir normalmente','às vezes você consegue voltar sem transformar o episódio',[sig('normal_return','retorno sem compensação','protective','self_criticism',1)]),
+    ]),
+
+    q('auto_notice','automaticity','Em que ponto você costuma perceber o que está acontecendo?',[
+      opt('before','Um pouco antes','às vezes existe um pequeno aviso antes',[sig('early_notice','pequeno aviso antes','protective','automaticity',1)]),
+      opt('during','No meio','a percepção costuma aparecer no meio da sequência',[sig('mid_awareness','percepção no meio','behavior','automaticity',3)]),
+      opt('after','Só depois','o ciclo costuma ficar visível apenas depois',[sig('after_awareness','percepção só depois','behavior','automaticity',4)]),
+      opt('varies','Depende muito do dia','o momento da percepção varia com o contexto',[sig('variable_awareness','percepção variável','behavior','disconnection',2)]),
+    ]),
+    q('auto_place','automaticity','Onde ou em qual situação isso mais acontece?',[
+      opt('kitchen','Na cozinha, em pé','a cozinha e o comer em pé aparecem como parte da sequência',[sig('kitchen_cue','cozinha como pista','context','automaticity',3)]),
+      opt('sofa','No sofá ou vendo algo','sofá e tela parecem funcionar como pistas conhecidas',[sig('screen_cue','sofá ou tela como pista','context','automaticity',3)]),
+      opt('work','Enquanto trabalho','trabalho e alimentação acontecem ao mesmo tempo',[sig('work_eating','comer trabalhando','context','automaticity',3)]),
+      opt('varied','Em lugares diferentes','o lugar muda, então outra pista pode estar conduzindo',[sig('no_place_pattern','sem lugar único','context','disconnection',2)]),
+    ]),
+    q('auto_body','automaticity','Como estavam os sinais do corpo antes?',[
+      opt('hungry','Já estava com bastante fome','a fome já estava alta quando a percepção chegou',[sig('high_hunger','fome já elevada','body','disconnection',3)]),
+      opt('tired','Muito cansada','o cansaço estava presente antes',[sig('low_energy','cansaço e pouca energia','body','overload',3)]),
+      opt('unclear','Não sei dizer','os sinais do corpo ainda parecem pouco nítidos',[sig('unclear_body','sinais do corpo pouco nítidos','body','disconnection',3)]),
+      opt('not_hungry','Não parecia ser fome','a fome não parecia ser a necessidade principal',[sig('non_hunger_need','necessidade diferente de fome','body','emotional_relief',2)]),
+    ]),
+    q('auto_after','automaticity','Quando percebe, qual é a primeira reação?',[
+      opt('stop','Às vezes consigo parar e observar','em alguns momentos, perceber já cria um pouco de espaço',[sig('pause_capacity','capacidade de pausar','protective','automaticity',1)]),
+      opt('continue','Continuo porque já comecei','começar pode ser interpretado como motivo para continuar',[sig('continue_after_start','continuar porque começou','cognition','rigidity',3)]),
+      opt('guilt','Me culpo','a percepção vem acompanhada de culpa',[sig('guilt','culpa depois','consequence','self_criticism',3)]),
+      opt('compensate','Penso em compensar','a percepção aciona uma tentativa de compensação',[sig('compensation','tentativa de compensação','response','compensation',4)]),
+    ]),
+
+    q('verification', 'verification','Só para conferir a conexão: o que mais costuma manter esse ciclo de um dia para o outro?',[
+      opt('compensation','Tentar compensar depois','a compensação pode preparar a próxima repetição',[sig('compensation','tentativa de compensação','response','compensation',3)]),
+      opt('criticism','A forma como me trato depois','a autocrítica pode dificultar o retorno ao cuidado',[sig('guilt','culpa e autocrítica','consequence','self_criticism',3)]),
+      opt('same_context','O mesmo horário ou contexto voltar','o mesmo contexto reaparece antes de haver outra alternativa',[sig('context_repeat','contexto recorrente','context','automaticity',3)]),
+      opt('more_rules','Criar novas regras','novas regras podem devolver força ao tudo ou nada',[sig('stricter_rules','regras mais apertadas','response','rigidity',3)]),
+    ]),
+    q('observation', 'closing','Se a LIA pudesse observar uma coisa com você nos próximos dias, qual seria mais útil entender?',[
+      opt('before','O que acontece minutos antes','vale observar os minutos anteriores ao movimento',[sig('observe_before','interesse no que vem antes','goal','automaticity',1)]),
+      opt('timing','Por que certos horários pesam mais','vale observar a repetição dos horários difíceis',[sig('observe_time','interesse no padrão de horário','goal','overload',1)]),
+      opt('after','O que faz a culpa virar outro ciclo','vale observar o que acontece depois da culpa',[sig('observe_after','interesse na manutenção','goal','compensation',1)]),
+      opt('helped','O que já ajudou alguma vez','vale observar também as exceções e o que já funcionou',[sig('observe_protection','interesse no que ajuda','goal','self_criticism',1)]),
+    ]),
   ];
 
-  const byId = Object.fromEntries(QUESTIONS.map(q => [q.id, q]));
+  var QUESTION_BY_ID = Object.fromEntries(QUESTIONS.map(function (x) { return [x.id, x]; }));
+  var BRANCH_ORDER = {
+    emotional_relief:['emotion_need','emotion_before','emotion_after','emotion_pattern'],
+    overload:['load_missing','load_day','load_mode','load_after'],
+    rigidity:['rule_thought','rule_response','rule_origin','rule_after'],
+    automaticity:['auto_notice','auto_place','auto_body','auto_after'],
+  };
 
-  function scoreAnswers(answers) {
-    const scores = Object.fromEntries(Object.keys(AXES).map(k => [k, 0]));
-    (answers || []).forEach(a => {
-      const q = byId[a.question_id];
-      const o = q && q.options.find(x => x.id === a.option_id);
-      if (!o) return;
-      Object.entries(o.weights || {}).forEach(([axis, value]) => { scores[axis] += value; });
+  function answerDetails(answers) {
+    return (answers || []).map(function (a) {
+      var question = QUESTION_BY_ID[a.question_id];
+      var option = question && question.options.find(function (o) { return o.id === a.option_id; });
+      return option ? { question:question, option:option } : null;
+    }).filter(Boolean);
+  }
+
+  function buildSignals(answers) {
+    var grouped = {};
+    answerDetails(answers).forEach(function (item) {
+      item.option.signals.forEach(function (signal) {
+        if (!grouped[signal.id]) grouped[signal.id] = { id:signal.id, label:signal.label, kind:signal.kind, mechanism:signal.mechanism, score:0, evidence:[] };
+        grouped[signal.id].score += signal.weight;
+        grouped[signal.id].evidence.push({ question_id:item.question.id, option_id:item.option.id, text:item.option.label });
+      });
     });
+    return Object.values(grouped).sort(function (a,b) { return b.score-a.score || a.id.localeCompare(b.id); });
+  }
+
+  function mechanismScores(answers) {
+    var scores = Object.fromEntries(Object.keys(MECHANISMS).map(function (k) { return [k,0]; }));
+    buildSignals(answers).forEach(function (s) { scores[s.mechanism] = (scores[s.mechanism] || 0) + s.score; });
     return scores;
   }
 
-  function rankedAxes(answers) {
-    const scores = scoreAnswers(answers);
-    return Object.keys(scores).sort((a, b) => scores[b] - scores[a] || a.localeCompare(b));
+  function rankedMechanisms(answers) {
+    var scores = mechanismScores(answers);
+    return Object.keys(scores).sort(function (a,b) { return scores[b]-scores[a] || a.localeCompare(b); });
   }
 
-  function nextQuestion(answers) {
-    const answered = new Set((answers || []).map(a => a.question_id));
-    const seed = QUESTIONS.find(q => q.stage === 'seed' && !answered.has(q.id));
-    if (seed) return seed;
-    if ((answers || []).length >= 9) return null;
-
-    const ranking = rankedAxes(answers);
-    const axisQuestion = ranking
-      .map(axis => QUESTIONS.find(q => q.axis === axis && !answered.has(q.id)))
-      .find(Boolean);
-    if (axisQuestion && (answers || []).length < 7) return axisQuestion;
-
-    return QUESTIONS.find(q => q.stage === 'differentiate' && !answered.has(q.id))
-      || QUESTIONS.find(q => q.axis && !answered.has(q.id))
-      || null;
+  function currentBranch(answers) {
+    var scores = mechanismScores(answers);
+    var branchScores = {
+      emotional_relief:scores.emotional_relief,
+      overload:scores.overload + scores.disconnection * .25,
+      rigidity:scores.rigidity + scores.compensation * .25 + scores.self_criticism * .15,
+      automaticity:scores.automaticity + scores.disconnection * .35,
+    };
+    return Object.keys(branchScores).sort(function (a,b) { return branchScores[b]-branchScores[a] || a.localeCompare(b); })[0];
   }
 
-  function interpolation(answers) {
-    const axis = rankedAxes(answers)[0];
-    const data = AXES[axis];
-    return `Uma possibilidade está aparecendo: ${data.trigger} pode estar deixando ${data.action}. Vamos conferir mais um pouco antes de fechar essa hipótese.`;
+  function nextDecision(answers) {
+    var used = new Set((answers || []).map(function (a) { return a.question_id; }));
+    if (!used.has('moment')) return { question:QUESTION_BY_ID.moment, branch:'opening', reason:'A leitura começa situando uma cena concreta.' };
+    if (!used.has('first_move')) return { question:QUESTION_BY_ID.first_move, branch:currentBranch(answers), reason:'Depois do contexto, precisamos identificar o primeiro movimento percebido.' };
+    if ((answers || []).length >= MAX_ANSWERS) return { question:null, branch:currentBranch(answers), reason:'A leitura já tem contexto, movimento, consequência e manutenção suficientes.' };
+
+    var branch = currentBranch(answers);
+    var branchQuestion = (BRANCH_ORDER[branch] || []).map(function (id) { return QUESTION_BY_ID[id]; }).find(function (x) { return !used.has(x.id); });
+    if ((answers || []).length < 6 && branchQuestion) {
+      return { question:branchQuestion, branch:branch, reason:'Os sinais mais fortes até aqui pedem aprofundamento em ' + MECHANISMS[branch].label + '.' };
+    }
+    if (!used.has('verification')) return { question:QUESTION_BY_ID.verification, branch:'verification', reason:'Agora precisamos testar o que pode manter a repetição, sem tratar a hipótese como fato.' };
+    if (!used.has('observation')) return { question:QUESTION_BY_ID.observation, branch:'closing', reason:'A última resposta define o que vale observar no acompanhamento, sem entregar uma intervenção.' };
+    return { question:null, branch:branch, reason:'Leitura concluída.' };
   }
 
-  function buildResult(answers) {
-    const ranking = rankedAxes(answers);
-    const primary = ranking[0];
-    const secondary = ranking.find(a => a !== primary) || ranking[1];
-    const p = AXES[primary];
-    const s = AXES[secondary];
+  function nextQuestion(answers) { return nextDecision(answers).question; }
+
+  function buildConnections(answers) {
+    var signals = buildSignals(answers);
+    function best(kinds) { return signals.find(function (s) { return kinds.includes(s.kind); }); }
+    var context = best(['context','antecedent','body']);
+    var movement = best(['function','behavior','need','cognition']);
+    var consequence = best(['consequence']);
+    var response = best(['response']);
+    var out = [];
+    function connect(id, from, to, hedge) {
+      if (!from || !to || from.id === to.id) return;
+      out.push({ id:id, from:from.id, to:to.id, summary:hedge + ' “' + from.label + '” e “' + to.label + '” estejam ligados.', evidence:[].concat(from.evidence,to.evidence).slice(0,3) });
+    }
+    connect('context_to_movement',context,movement,'Até aqui, parece possível que');
+    connect('movement_to_consequence',movement,consequence,'Vale observar se');
+    connect('consequence_to_response',consequence,response,'Uma hipótese é que');
+    connect('response_to_context',response,context,'Essa resposta pode ajudar a recriar');
+    return out;
+  }
+
+  function midanswer(answers) {
+    var details = answerDetails(answers);
+    var a = details[Math.max(0, details.length-2)];
+    var b = details[details.length-1];
+    var next = nextDecision(answers);
+    var stage = details.length <= 3 ? 'Até aqui, duas coisas ficaram lado a lado:' : 'Agora a sequência ficou um pouco mais nítida:';
     return {
-      primary_axis: primary,
-      secondary_axis: secondary,
-      eyebrow: 'Sua hipótese inicial',
-      title: p.title,
-      summary: `Pelas respostas que você escolheu, uma hipótese é que ${p.trigger} abra o ciclo. Nesse contexto, ${p.thought}; então ${p.action}. ${p.after.charAt(0).toUpperCase() + p.after.slice(1)}.`,
-      nuance: `Também apareceu um sinal de ${s.short}. Ele pode reforçar o ciclo, mas só o acompanhamento ao longo dos dias mostra quando isso realmente acontece.`,
-      insight: p.insight,
-      cycle: [p.trigger, p.thought, p.action, p.after],
+      text: stage + ' ' + a.option.reflection + ' e ' + b.option.reflection + '. Isso ainda é uma hipótese. ' + (next.question ? 'Quero conferir ' + next.question.prompt.charAt(0).toLowerCase() + next.question.prompt.slice(1) : 'Já temos material para montar sua primeira leitura.'),
+      evidence: [a.question.id,b.question.id],
+      branch: next.branch,
     };
   }
 
-  return { VERSION, AXES, QUESTIONS, scoreAnswers, rankedAxes, nextQuestion, interpolation, buildResult };
+  var INTERVENTIONS = {
+    emotional_relief:{ id:'R05', name:'Dez minutos antes de decidir', format:'Conversa guiada', duration:'2 minutos', description:'Uma intervenção breve para criar espaço entre a urgência e a decisão.' },
+    overload:{ id:'O02', name:'Mapa do seu fim de dia', format:'Exercício guiado', duration:'3 minutos', description:'Uma leitura mais próxima do horário em que demandas, cansaço e decisões se acumulam.' },
+    rigidity:{ id:'O06', name:'Confirmar o padrão', format:'Conversa guiada', duration:'2 minutos', description:'Uma conversa para testar a hipótese sem transformar uma primeira leitura em verdade.' },
+    automaticity:{ id:'O04', name:'Onde acontece', format:'Exercício guiado', duration:'2 minutos', description:'Uma observação das pistas que podem iniciar a sequência antes da percepção.' },
+    compensation:{ id:'D03', name:'A próxima refeição normal', format:'Conversa guiada', duration:'2 minutos', description:'Uma intervenção para o ponto em que culpa e tentativa de compensação começam a se alimentar.' },
+    self_criticism:{ id:'O06', name:'Confirmar o padrão', format:'Conversa guiada', duration:'2 minutos', description:'Uma conversa para separar o que foi relatado das conclusões duras que aparecem depois.' },
+    disconnection:{ id:'O04', name:'Onde acontece', format:'Exercício guiado', duration:'2 minutos', description:'Uma observação das pistas que costumam passar despercebidas na rotina.' },
+  };
+
+  function buildArtifact(answers) {
+    var signals = buildSignals(answers);
+    var connections = buildConnections(answers);
+    var ranking = rankedMechanisms(answers);
+    var scores = mechanismScores(answers);
+    var primary = ranking[0], secondary = ranking[1];
+    if (scores.compensation >= 4) primary = 'compensation';
+    var total = Object.values(scores).reduce(function (a,b) { return a+b; },0) || 1;
+    var confidence = Math.min(.88, Math.max(.45, .42 + (answers.length/MAX_ANSWERS)*.25 + (scores[primary]/total)*.25));
+    var byKind = function (kinds) { return signals.filter(function (s) { return kinds.includes(s.kind); }).slice(0,3); };
+    var context = byKind(['context','antecedent','body']);
+    var movement = byKind(['function','need','behavior','cognition']).slice(0,2);
+    var consequence = byKind(['consequence']);
+    var response = byKind(['response']);
+    var nodes = [
+      { id:'reported', label:'Você relatou principalmente', items:context.map(function(s){return s.label;}) },
+      { id:'movement', label:'O movimento que pode vir depois', items:movement.map(function(s){return s.label;}) },
+      { id:'after', label:'O que costuma ficar', items:consequence.map(function(s){return s.label;}) },
+      { id:'maintenance', label:'O que pode manter a repetição', items:response.map(function(s){return s.label;}) },
+    ].filter(function (n) { return n.items.length; });
+    var intervention = INTERVENTIONS[primary] || INTERVENTIONS[secondary] || INTERVENTIONS.automaticity;
+    return {
+      map_version:VERSION,
+      answers:answerDetails(answers).map(function (d) { return { question_id:d.question.id, question:d.question.prompt, option_id:d.option.id, answer:d.option.label }; }),
+      signals:signals,
+      connections:connections,
+      primary_mechanism:primary,
+      secondary_mechanism:secondary,
+      confidence:Number(confidence.toFixed(2)),
+      possible_cycle:nodes,
+      recommended_intervention_id:intervention.id,
+      recommended_intervention_name:intervention.name,
+      recommended_intervention_format:intervention.format,
+      recommended_intervention_duration:intervention.duration,
+      recommended_intervention_reason:intervention.description,
+      branch:currentBranch(answers),
+      next_question_reason:nextDecision(answers).reason,
+    };
+  }
+
+  function buildNarrative(answers) {
+    var artifact = buildArtifact(answers);
+    var details = answerDetails(answers);
+    function pick(index, fallback) { return details[index] ? details[index].option.reflection : fallback; }
+    var connections = artifact.connections;
+    var points = [
+      { number:'01', title:'A cena em que isso começa', text:'Você contou que ' + pick(0,'o contexto ainda precisa ser observado') + '. Até aqui, isso parece ser parte importante da cena, não uma explicação definitiva.' },
+      { number:'02', title:'O movimento que aparece junto', text:'Também apareceu que ' + pick(1,'o primeiro movimento ainda não está claro') + '. ' + (connections[0] ? connections[0].summary : 'Vale observar como essas duas partes se encontram.') },
+      { number:'03', title:'O que pode manter a repetição', text:connections[2]
+        ? connections[2].summary + ' É uma hipótese inicial, e não uma conclusão sobre você.'
+        : 'No fechamento, apareceu que ' + pick(6,'o depois ainda merece atenção') + '. Você escolheu acompanhar ' + pick(7,'o que acontece nos momentos reais').replace(/^vale observar\s*/,'') + '. Isso orienta a observação, não define uma conclusão sobre você.' },
+    ];
+    var mechanism = MECHANISMS[artifact.primary_mechanism];
+    return {
+      intro:'Obrigada por confiar essas respostas. Esta é uma primeira leitura, não um diagnóstico.',
+      points:points,
+      hypothesis:'Juntando esses sinais, uma hipótese é que ' + mechanism.label + ' esteja participando da repetição. O mapa mostra uma conexão possível. Só o acompanhamento dos momentos reais pode confirmar, corrigir ou descartar essa leitura.',
+      closing:'Por enquanto, a leitura termina aqui. Não é hora de transformar essa hipótese em mais uma regra.',
+      artifact:artifact,
+    };
+  }
+
+  return {
+    VERSION:VERSION, MAX_ANSWERS:MAX_ANSWERS, QUESTIONS:QUESTIONS, MECHANISMS:MECHANISMS,
+    nextQuestion:nextQuestion, nextDecision:nextDecision, currentBranch:currentBranch,
+    buildSignals:buildSignals, buildConnections:buildConnections, mechanismScores:mechanismScores,
+    midanswer:midanswer, interpolation:function(a){return midanswer(a).text;},
+    buildArtifact:buildArtifact, buildNarrative:buildNarrative,
+    buildResult:function(a){var n=buildNarrative(a);return Object.assign({},n.artifact,{eyebrow:'Sua primeira leitura',title:'A LIA começou a conectar o que você contou',summary:n.hypothesis,cycle:n.artifact.possible_cycle.map(function(x){return x.items.join(', ')}),insight:n.closing,nuance:n.intro});},
+  };
 });

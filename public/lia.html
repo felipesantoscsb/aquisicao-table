@@ -24,7 +24,9 @@
   │  Mudou a política comercial? Muda só aqui.                               │
   ╰──────────────────────────────────────────────────────────────────────────╯
 -->
+<script src="/js/lia-product-config.js"></script>
 <script>
+var PRODUCT = window.LIA_PRODUCT_CONFIG;
 var CONFIG = {
   // ─────────────────────────────────────────────────────────────────────────
   // DESTINO DOS CTAs
@@ -34,12 +36,12 @@ var CONFIG = {
   // Cada plano tem seu proprio checkout (ver PRICING.*.checkout).
   // A URL de retorno do checkout precisa ser configurada NA CAKTO apontando
   // pra THANKYOU_URL, com www: o apex 301 as chamadas de API do onboarding.
-  THANKYOU_URL: "https://www.evelynliu.com.br/obrigado-lia",
+  THANKYOU_URL: PRODUCT.THANKYOU_URL,
 
   REQUIRES_CARD: true,
 
-  WHATSAPP_NUMBER: "5511977130088",
-  WHATSAPP_TEXT:   "Oi! Quero começar com a LIA.",
+  WHATSAPP_NUMBER: PRODUCT.WHATSAPP_NUMBER,
+  WHATSAPP_TEXT:   PRODUCT.WHATSAPP_TEXT,
 
   // TRIAL (a Ticto suporta, a Cakto não suportava).
   //
@@ -54,20 +56,13 @@ var CONFIG = {
   // RISCO A COBRIR NA OPERAÇÃO: trial com cartão e sem aviso antes de cobrar
   // vira máquina de ressentimento. O aviso no dia 6 não é gentileza, é o que
   // separa renovação de chargeback.
-  TRIAL_DAYS: 7,
-  FIRST_DELIVERABLE: "a primeira leitura da sua semana",
+  TRIAL_DAYS: PRODUCT.TRIAL_DAYS,
+  FIRST_DELIVERABLE: PRODUCT.FIRST_DELIVERABLE,
 
   // Formas de pagamento anunciadas junto do CTA
-  PAYMENT_METHODS: "Cartão, Apple Pay ou Google Pay",
+  PAYMENT_METHODS: PRODUCT.PAYMENT_METHODS,
 
-  PRICING: {
-    monthly: { label: "Mensal",  price: "R$ 49,90", period: "/mês",
-               note: "Menos de R$ 1,70 por dia. Cancele direto com a LIA, no WhatsApp.",
-               checkout: "https://payment.ticto.app/OAC407884" },
-    annual:  { label: "Anual",   price: "R$ 29,90", period: "/mês",
-               note: "R$ 358,80 uma vez por ano · menos de R$ 1 por dia", badge: "economize 40%",
-               checkout: "https://payment.ticto.app/O599B4571" }
-  },
+  PRICING: PRODUCT.PRICING,
 
   // ─────────────────────────────────────────────────────────────────────────
   // PROVA SOCIAL — LER ANTES DE RODAR TRÁFEGO
@@ -96,7 +91,7 @@ var CONFIG = {
   LAUNCH_NOTE: "Preço de lançamento.",
 
   // Pixel próprio da LIA (produto separado — não mistura com o funil Raiz).
-  PIXEL_ID: "519946826343805",
+  PIXEL_ID: PRODUCT.PIXEL_ID,
 
   DEBUG: false
 };
@@ -1196,7 +1191,7 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
       if (where === 'hero') analytics.track('hero_cta_clicked');
       // nav/hero/final são âncoras internas, não intenção de compra
       if (where === 'nav' || where === 'hero' || where === 'final') return;
-      analytics.track('trial_started', {
+      analytics.track('checkout_started', {
         plano: where, trial_dias: CONFIG.TRIAL_DAYS,
         destino: checkouts[where] ? 'checkout' : 'whatsapp'
       });

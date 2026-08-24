@@ -4,6 +4,7 @@ const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
 const Redis = require('ioredis');
+const LIA_PRODUCT = require('../public/js/lia-product-config.js');
 
 // ─── Redis (compartilhado com sdr-table) ──────────────────────────────────────
 let _redis;
@@ -1281,13 +1282,14 @@ async function sendCapiEvent({ eventName, phone, fbclid, fbc, fbp, em, fn, exter
 // funil e identificadores permitidos para mensuração/deduplicação.
 
 const MAPA_LIA_EVENTS = new Set([
-  'mapa_started', 'question_answered', 'interpolation_shown',
-  'mapa_completed', 'result_viewed', 'cta_clicked', 'checkout_started',
+  'map_started', 'question_answered', 'branch_changed', 'midanswer_shown',
+  'map_completed', 'result_viewed', 'cta_clicked', 'checkout_started',
+  'trial_started', 'first_intervention_unlocked',
 ]);
 
 const MAPA_LIA_META_EVENTS = {
-  mapa_started: 'ViewContent',
-  mapa_completed: 'CompleteRegistration',
+  map_started: 'ViewContent',
+  map_completed: 'CompleteRegistration',
   checkout_started: 'InitiateCheckout',
 };
 
@@ -1299,12 +1301,73 @@ function validMapaSession(value) {
   return /^[a-zA-Z0-9_-]{16,80}$/.test(String(value || ''));
 }
 
+function sanitizeMapaArtifact(map) {
+  if (!map || typeof map !== 'object') return null;
+  const cleanList = (value, limit, mapper) => Array.isArray(value)
+    ? value.slice(0, limit).map(mapper).filter(Boolean)
+    : [];
+  const artifact = {
+    map_version: cleanMapaString(map.map_version, 40) || 'unknown',
+    answers: cleanList(map.answers, 10, (a) => {
+      if (!a || typeof a !== 'object') return null;
+      const questionId = cleanMapaString(a.question_id, 50);
+      const optionId = cleanMapaString(a.option_id, 50);
+      if (!questionId || !optionId) return null;
+      return {
+        question_id: questionId, option_id: optionId,
+        question: cleanMapaString(a.question, 240) || null,
+        answer: cleanMapaString(a.answer, 240) || null,
+      };
+    }),
+    signals: cleanList(map.signals, 30, (s) => {
+      if (!s || typeof s !== 'object') return null;
+      const id = cleanMapaString(s.id, 60);
+      if (!id) return null;
+      return {
+        id, label: cleanMapaString(s.label, 180) || null,
+        kind: cleanMapaString(s.kind, 40) || null,
+        mechanism: cleanMapaString(s.mechanism, 60) || null,
+        score: Math.max(0, Math.min(100, Number(s.score) || 0)),
+      };
+    }),
+    connections: cleanList(map.connections, 12, (c) => {
+      if (!c || typeof c !== 'object') return null;
+      const id = cleanMapaString(c.id, 80);
+      if (!id) return null;
+      return {
+        id, from: cleanMapaString(c.from, 60) || null,
+        to: cleanMapaString(c.to, 60) || null,
+        summary: cleanMapaString(c.summary, 360) || null,
+      };
+    }),
+    primary_mechanism: cleanMapaString(map.primary_mechanism, 60) || null,
+    secondary_mechanism: cleanMapaString(map.secondary_mechanism, 60) || null,
+    confidence: Math.max(0, Math.min(1, Number(map.confidence) || 0)),
+    possible_cycle: cleanList(map.possible_cycle, 6, (node) => {
+      if (!node || typeof node !== 'object') return null;
+      return {
+        id: cleanMapaString(node.id, 60) || null,
+        label: cleanMapaString(node.label, 180) || null,
+        items: cleanList(node.items, 6, (item) => cleanMapaString(item, 180) || null),
+      };
+    }),
+    recommended_intervention_id: cleanMapaString(map.recommended_intervention_id, 40) || null,
+    recommended_intervention_name: cleanMapaString(map.recommended_intervention_name, 160) || null,
+    recommended_intervention_format: cleanMapaString(map.recommended_intervention_format, 80) || null,
+    recommended_intervention_duration: cleanMapaString(map.recommended_intervention_duration, 40) || null,
+    recommended_intervention_reason: cleanMapaString(map.recommended_intervention_reason, 500) || null,
+    branch: cleanMapaString(map.branch, 60) || null,
+  };
+  return artifact;
+}
+
 app.get('/api/mapa-lia/config', (_req, res) => {
   // Pixel ID é público por natureza; tokens e qualquer dado da pessoa ficam no servidor.
   res.json({
-    pixel_id: process.env.LIA_PIXEL_ID || null,
-    checkout_monthly: process.env.LIA_CHECKOUT_MONTHLY || 'https://payment.ticto.app/OAC407884',
-    checkout_annual: process.env.LIA_CHECKOUT_ANNUAL || 'https://payment.ticto.app/O599B4571',
+    pixel_id: process.env.LIA_PIXEL_ID || LIA_PRODUCT.PIXEL_ID,
+    trial_days: LIA_PRODUCT.TRIAL_DAYS,
+    payment_methods: LIA_PRODUCT.PAYMENT_METHODS,
+    pricing: LIA_PRODUCT.PRICING,
   });
 });
 
@@ -1351,25 +1414,15 @@ app.post('/api/mapa-lia/events', async (req, res) => {
     session.answer_count = Math.min(10, Math.max(Number(session.answer_count || 0), Number(body.answer_count || 0)));
   }
 
-  if (event === 'mapa_completed' && body.map && typeof body.map === 'object') {
+  if (event === 'map_completed' && body.map && typeof body.map === 'object') {
     // Persistência first-party mínima para evolução do produto. Nada daqui é
     // repassado ao Pixel/CAPI.
-    session.map = {
-      version: cleanMapaString(body.map.version, 30) || '1',
-      answers: Array.isArray(body.map.answers)
-        ? body.map.answers.slice(0, 10).map(a => ({
-            question_id: cleanMapaString(a?.question_id, 40),
-            option_id: cleanMapaString(a?.option_id, 40),
-          })).filter(a => a.question_id && a.option_id)
-        : [],
-      primary_axis: cleanMapaString(body.map.primary_axis, 40) || null,
-      secondary_axis: cleanMapaString(body.map.secondary_axis, 40) || null,
-    };
+    session.map = sanitizeMapaArtifact(body.map);
     session.completed_at = now;
   }
 
   const contact = body.contact && typeof body.contact === 'object' ? body.contact : null;
-  if (contact && (event === 'mapa_completed' || event === 'checkout_started')) {
+  if (contact && (event === 'map_completed' || event === 'checkout_started')) {
     session.contact = {
       name: cleanMapaString(contact.name, 100) || null,
       email: cleanMapaString(contact.email, 180).toLowerCase() || null,
@@ -1380,9 +1433,16 @@ app.post('/api/mapa-lia/events', async (req, res) => {
   await redisSet(sessionKey, JSON.stringify(session), 'EX', 60 * 60 * 24 * 180);
   metricsIncr(`mapa_lia_${event}`).catch(() => {});
 
+  if (session.contact?.phone) {
+    await redisSet(`mapa-lia:match:phone:${sha256(session.contact.phone)}`, sessionId, 'EX', 60 * 60 * 24 * 180);
+  }
+  if (session.contact?.email) {
+    await redisSet(`mapa-lia:match:email:${sha256(session.contact.email)}`, sessionId, 'EX', 60 * 60 * 24 * 180);
+  }
+
   // A mesma chave acompanha o checkout e permite atribuição de Purchase, sem
   // anexar respostas ou hipótese à URL.
-  if (event === 'checkout_started') {
+  if (event === 'map_completed' || event === 'checkout_started') {
     const lead = {
       lead_event_id: sessionId,
       nome: session.contact?.name || null,
@@ -2372,7 +2432,24 @@ async function handleLiaTicto(body) {
   const value  = typeof paid === 'number' ? paid / 100 : null;
   const fbclid = body?.query_params?.fbclid || null;
   const fbc    = body?.query_params?.fbc || (fbclid ? `fb.1.${Date.now()}.${fbclid}` : null);
-  const sourceSession = body?.query_params?.src || body?.query_params?.sck || null;
+  let sourceSession = body?.query_params?.src || body?.query_params?.sck || null;
+  if (!validMapaSession(sourceSession)) {
+    const normalizedBuyerPhone = normalizePhone(phone || '');
+    const buyerEmail = cleanMapaString(body?.customer?.email, 180).toLowerCase();
+    sourceSession = normalizedBuyerPhone
+      ? await redisGet(`mapa-lia:match:phone:${sha256(normalizedBuyerPhone)}`)
+      : null;
+    if (!validMapaSession(sourceSession) && buyerEmail) {
+      sourceSession = await redisGet(`mapa-lia:match:email:${sha256(buyerEmail)}`);
+    }
+  }
+  let mapaLia = null;
+  if (validMapaSession(sourceSession)) {
+    try {
+      const mapRaw = await redisGet(`mapa-lia:session:${sourceSession}`);
+      mapaLia = mapRaw ? JSON.parse(mapRaw).map || null : null;
+    } catch {}
+  }
 
   const record = {
     provider: 'ticto', produto: 'lia',
@@ -2383,6 +2460,7 @@ async function handleLiaTicto(body) {
     product_name: body?.item?.product_name || null,
     fbc, fbp: body?.query_params?.fbp || null,
     source_session: validMapaSession(sourceSession) ? sourceSession : null,
+    mapa_lia: mapaLia,
     plano: /anual|annual|year/i.test(String(body?.item?.offer_name || body?.item?.product_name || '')) ? 'anual' : 'mensal',
     created_at: new Date().toISOString(),
   };
@@ -3743,11 +3821,31 @@ function liaKey(purchaseRef, e164) {
 /** Busca a compra nos registros já existentes (Cakto e Ticto). */
 async function findPurchase(ref) {
   if (!ref) return null;
-  for (const k of [`cakto:purchase:${ref}`, `ticto:purchase:${ref}`]) {
+  for (const k of [`lia:ticto:purchase:${ref}`, `cakto:purchase:${ref}`, `ticto:purchase:${ref}`]) {
     const raw = await redisGet(k);
     if (raw) { try { return JSON.parse(raw); } catch {} }
   }
   return null;
+}
+
+async function findMapaForOnboarding(purchase, phone, email) {
+  if (purchase?.mapa_lia) {
+    return { sessionId: purchase.source_session || null, map: purchase.mapa_lia };
+  }
+  let sessionId = purchase?.source_session || null;
+  if (!validMapaSession(sessionId) && phone) {
+    sessionId = await redisGet(`mapa-lia:match:phone:${sha256(normalizePhone(phone))}`);
+  }
+  if (!validMapaSession(sessionId) && email) {
+    sessionId = await redisGet(`mapa-lia:match:email:${sha256(String(email).trim().toLowerCase())}`);
+  }
+  if (!validMapaSession(sessionId)) return { sessionId: null, map: null };
+  try {
+    const raw = await redisGet(`mapa-lia:session:${sessionId}`);
+    return { sessionId, map: raw ? JSON.parse(raw).map || null : null };
+  } catch {
+    return { sessionId, map: null };
+  }
 }
 
 // Contexto da compra p/ prefill. Devolve o MÍNIMO — nada de PII completa em
@@ -3756,8 +3854,26 @@ app.get('/api/lia/context', async (req, res) => {
   const ref = String(req.query.ref || '').trim().slice(0, 120);
   if (!ref) return res.json({ found: false });
   const p = await findPurchase(ref);
-  if (!p) return res.json({ found: false });
+  if (!p && validMapaSession(ref)) {
+    try {
+      const raw = await redisGet(`mapa-lia:session:${ref}`);
+      const session = raw ? JSON.parse(raw) : null;
+      if (session?.map) {
+        const e164 = toE164BR(session.contact?.phone);
+        return res.json({
+          found: true,
+          map_found: true,
+          map_session_id: ref,
+          first_name: firstName(session.contact?.name || '') || null,
+          phone_masked: e164 ? e164.slice(0, 5) + '*****' + e164.slice(-4) : null,
+          phone_prefill: e164 || null,
+        });
+      }
+    } catch {}
+  }
+  if (!p) return res.json({ found: false, map_found: false });
   const e164 = toE164BR(p.phone);
+  const linkedMap = await findMapaForOnboarding(p, e164, p.email);
   res.json({
     found: true,
     first_name: firstName(p.customer_name || p.name || '') || null,
@@ -3765,6 +3881,8 @@ app.get('/api/lia/context', async (req, res) => {
     phone_prefill: e164 || null,
     plan: p.offer_name || p.product_name || null,
     status: p.status || null,
+    map_found: Boolean(linkedMap.map),
+    map_session_id: linkedMap.sessionId,
   });
 });
 
@@ -3861,6 +3979,7 @@ app.post('/api/lia/onboard', async (req, res) => {
     }
 
     const purchase = await findPurchase(b.purchase_ref);
+    const linkedMap = await findMapaForOnboarding(purchase, e164, purchase?.email || b.email);
     const record = {
       idempotency_key: b.purchase_ref || e164,
       completed_at: new Date().toISOString(),
@@ -3874,6 +3993,7 @@ app.post('/api/lia/onboard', async (req, res) => {
         // ser o nome completo do cadastro, nao como a pessoa se chama.
         name:                 (typeof b.name === 'string' && b.name.trim()) ? b.name.trim().slice(0, 60) : null,
         purchase_data:        purchase || null,
+        mapa_lia:             linkedMap.map,
         onboarding_answers:   b.answers || {},
         communication_preferences: b.preferences || {},
         consent:              b.consent || {},
@@ -3881,6 +4001,7 @@ app.post('/api/lia/onboard', async (req, res) => {
         // Table configura os critérios reais depois, do lado da LIA.
         eligibility:          b.eligibility || 'eligible_for_ai_support',
         onboarding_duration_seconds: Number(b.duration_seconds) || null,
+        map_session_id:       linkedMap.sessionId,
       },
     };
 
