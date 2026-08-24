@@ -24,7 +24,7 @@
   │  Mudou a política comercial? Muda só aqui.                               │
   ╰──────────────────────────────────────────────────────────────────────────╯
 -->
-<script src="/js/lia-product-config.js?v=20260824.3"></script>
+<script src="/js/lia-product-config.js?v=20260824.4"></script>
 <script>
 var PRODUCT = window.LIA_PRODUCT_CONFIG;
 var CONFIG = {
@@ -315,6 +315,23 @@ h3{font-size:16px;font-weight:600;letter-spacing:-.01em}
 .step{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:20px;box-shadow:var(--shadow-sm)}
 .step b{display:block;font-family:var(--serif);font-size:15px;letter-spacing:.16em;text-transform:uppercase;color:var(--moss);margin-bottom:9px}
 .step p{font-size:15.5px;color:var(--ink-2);line-height:1.5}
+
+/* ── biblioteca e progressão ───────────────────────────────────────────── */
+.library-panel{background:var(--moss-deep);color:#F2F0E9;border-radius:28px;padding:30px 24px;margin-top:34px}
+.library-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:25px}
+.library-head strong{font-family:var(--serif);font-size:clamp(36px,9vw,58px);font-weight:400;line-height:1}
+.library-head>span{font-size:12px;color:#AEB8A8;text-align:right;line-height:1.45}
+.library-row{display:grid;grid-template-columns:minmax(110px,160px) 1fr;gap:14px;align-items:center;margin:13px 0}
+.library-row label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#D9DDD5}
+.library-bar{height:8px;border-radius:8px;background:rgba(255,255,255,.1);overflow:hidden}
+.library-bar i{display:block;width:var(--w);height:100%;background:#98AB8B;border-radius:8px}
+.library-formats{display:flex;gap:8px;flex-wrap:wrap;margin-top:24px}
+.library-formats span{border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:7px 11px;font-size:12px;color:#D9DDD5}
+.progress-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:28px}
+.progress-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:18px;box-shadow:var(--shadow-sm)}
+.progress-card b{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--moss-lt);margin-bottom:8px}
+.progress-card span{font-family:var(--serif);font-size:19px;line-height:1.25}
+@media(max-width:520px){.library-row{grid-template-columns:110px 1fr}.progress-grid{grid-template-columns:1fr}}
 
 /* ── Evelyn Liu → LIA ───────────────────────────────────────────────────── */
 .brand{background:var(--moss-deep);color:#F2F0E9;border-radius:28px;padding:56px 24px;text-align:center;overflow:hidden}
@@ -706,7 +723,7 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
 <section>
   <div class="wrap">
     <span class="eyebrow rv">Intervenção</span>
-    <h2 class="rv" style="--i:1">Perceber é o começo.<br>O que muda a noite é o que vem depois.</h2>
+    <h2 class="rv" style="--i:1">A LIA não apenas responde.<br>Ela intervém.</h2>
     <p class="body rv" style="--i:2">Reconhecer o padrão não interrompe nada sozinho. Interromper exige alguém fazendo a pergunta certa no minuto certo.</p>
 
     <div class="thread rv" style="--i:3">
@@ -736,6 +753,20 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
   </div>
 </section>
 
+<!-- ═══ Biblioteca real de intervenções ═════════════════════════════════ -->
+<section id="librarySection">
+  <div class="wrap">
+    <span class="eyebrow rv">Biblioteca de Intervenções</span>
+    <h2 class="rv" style="--i:1">Um próximo passo para cada mecanismo. Não uma resposta pronta para todo mundo.</h2>
+    <p class="body rv" style="--i:2">A LIA observa o contexto, seleciona uma intervenção da metodologia e volta depois para entender o que ela produziu. A biblioteca foi desenhada para reunir mais de 50 intervenções. Nesta Beta 1, 26 já estão ativas em áudio, texto e exercícios guiados.</p>
+    <div class="library-panel rv" style="--i:3">
+      <div class="library-head"><strong><span data-library-planned></span></strong><span><span data-library-active></span> já ativas<br>Biblioteca em evolução</span></div>
+      <div id="liaLibraryBars"></div>
+      <div class="library-formats"><span>🎧 Áudio</span><span>💬 Texto guiado</span><span>✦ Exercício</span><span>↻ Acompanhamento</span></div>
+    </div>
+  </div>
+</section>
+
 <!-- ═══ Leitura · Intervenção · Acompanhamento ═══════════════════════════ -->
 <section>
   <div class="wrap center">
@@ -755,11 +786,20 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
       </svg>
     </div>
 
-    <div class="steps" style="text-align:left">
-      <div class="step rv" style="--i:0"><b>Leitura</b><p>A LIA aprende seu contexto e começa a reconhecer o que se repete.</p></div>
-      <div class="step rv" style="--i:1"><b>Intervenção</b><p>Quando identifica um momento relevante, usa intervenções da metodologia Table, inclusive conteúdos gravados pela Evelyn.</p></div>
-      <div class="step rv" style="--i:2"><b>Acompanhamento</b><p>Ela volta depois. Pergunta o que aconteceu. Aprende com a sua resposta.</p></div>
+    <div class="steps" style="text-align:left" id="journeySection">
+      <div class="step rv" style="--i:0"><b>Você vive</b><p>Uma situação real acontece, no seu dia e no seu contexto.</p></div>
+      <div class="step rv" style="--i:1"><b>A LIA observa</b><p>Usa o que você contou e a memória construída para perceber um possível mecanismo.</p></div>
+      <div class="step rv" style="--i:2"><b>Ela intervém</b><p>Seleciona na metodologia um próximo passo compatível com aquele momento.</p></div>
+      <div class="step rv" style="--i:3"><b>Ela volta</b><p>Pergunta o que aconteceu, sem cobrança e sem transformar silêncio em falha.</p></div>
+      <div class="step rv" style="--i:4"><b>Ela aprende</b><p>O efeito da intervenção ajuda a ajustar as próximas conversas e escolhas.</p></div>
     </div>
+    <div class="progress-grid">
+      <div class="progress-card rv"><b>Semana 1</b><span>Primeiras hipóteses</span></div>
+      <div class="progress-card rv" style="--i:1"><b>Semana 4</b><span>Padrões mais claros</span></div>
+      <div class="progress-card rv" style="--i:2"><b>Mês 3</b><span>Mais antecipação</span></div>
+      <div class="progress-card rv" style="--i:3"><b>Ao longo do tempo</b><span>Mais autonomia</span></div>
+    </div>
+    <p class="proof-cav rv">Essa progressão explica como a memória pode aprofundar o contexto. Não é promessa de resultado em prazo fixo.</p>
   </div>
 </section>
 
@@ -791,8 +831,8 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
       </figure>
       <div>
         <blockquote class="rv" style="--i:1">“Eu passei anos ouvindo a mesma frase em consulta:<br><em>‘Evelyn, eu sei o que fazer. Eu só não consigo.’</em>”</blockquote>
-        <p class="after rv" style="--i:2">A LIA nasceu dessa frase. Ela fica no lugar onde eu nunca consegui estar: o seu dia a dia, no minuto em que ele aperta.</p>
-        <p class="sig rv" style="--i:3"><i></i><span>Evelyn Liu · nutricionista · fundadora da <b>Table</b></span></p>
+        <p class="after rv" style="--i:2">Durante anos, transformei a escuta em consulta em uma metodologia de Nutrição Comportamental. A LIA nasceu para levar essa experiência ao lugar onde eu nunca consegui estar: o seu dia a dia, no minuto em que ele aperta.</p>
+        <p class="sig rv" style="--i:3"><i></i><span>Evelyn Liu · nutricionista · fundadora da <b>Table</b> · metodologia aplicada em mais de 3.000 mulheres</span></p>
       </div>
     </div>
   </div>
@@ -1037,6 +1077,20 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
   });
   document.getElementById('yr').textContent = new Date().getFullYear();
 
+  /* ── Biblioteca: mesma fonte usada no resultado do Mapa ─────────────── */
+  var library = PRODUCT.INTERVENTION_LIBRARY;
+  document.querySelectorAll('[data-library-active]').forEach(function(el){ el.textContent = library.active; });
+  document.querySelectorAll('[data-library-planned]').forEach(function(el){ el.textContent = library.plannedLabel; });
+  document.querySelectorAll('[data-library-total]').forEach(function(el){ el.textContent = library.total; });
+  var libraryBars = document.getElementById('liaLibraryBars');
+  if (libraryBars) library.categories.forEach(function(category){
+    var row = document.createElement('div'); row.className = 'library-row';
+    var label = document.createElement('label'); label.textContent = category.label;
+    var bar = document.createElement('span'); bar.className = 'library-bar';
+    var fill = document.createElement('i'); fill.style.setProperty('--w', category.strength + '%');
+    bar.appendChild(fill); row.appendChild(label); row.appendChild(bar); libraryBars.appendChild(row);
+  });
+
   /* ── Prova social: relatos vindos do CONFIG ───────────────────────────── */
   var qbox = document.getElementById('quotes');
   if (qbox && CONFIG.SOCIAL.quotes.length){
@@ -1095,6 +1149,9 @@ h1.rv.in,h2.rv.in,.letter blockquote.rv.in{filter:blur(0);transition:opacity .8s
   onView(document.getElementById('loop'),     function(){ document.getElementById('loop').classList.add('run'); }, .5);
   onView(document.getElementById('brand'),    function(){ document.getElementById('brand').classList.add('run'); }, .4);
   onView(document.getElementById('preco'),    function(){ analytics.once('pricing_viewed'); }, .25);
+  onView(document.getElementById('librarySection'), function(){ analytics.once('library_section_view'); }, .3);
+  onView(document.getElementById('journeySection'), function(){ analytics.once('timeline_view'); }, .3);
+  onView(document.querySelector('.letter'), function(){ analytics.once('evelyn_section_view'); }, .3);
   document.querySelectorAll('[data-insight]').forEach(function(el){
     onView(el, function(){ analytics.once('lia_insight_viewed'); }, .5);
   });

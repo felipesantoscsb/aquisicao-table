@@ -91,16 +91,35 @@ test('preços, checkouts, trial e Pixel têm uma única fonte pública', () => {
   assert.equal(product.TRIAL_DAYS, 7);
   assert.match(product.PRICING.monthly.checkout, /ticto\.app/);
   assert.match(product.PIXEL_ID, /^\d+$/);
+  assert.equal(product.INTERVENTION_LIBRARY.active, 26);
+  assert.equal(product.INTERVENTION_LIBRARY.total, 29);
+  assert.equal(product.INTERVENTION_LIBRARY.plannedLabel, 'mais de 50');
+  assert.deepEqual(product.INTERVENTION_LIBRARY.formats, ['Áudio', 'Texto', 'Exercício guiado']);
 });
 
 test('tracking canônico existe e não envia respostas diretamente à Meta', () => {
   const server = fs.readFileSync(path.join(__dirname, '../src/server.js'), 'utf8');
   const map = fs.readFileSync(path.join(__dirname, '../public/mapa-lia.html'), 'utf8');
-  for (const event of ['map_started','question_answered','branch_changed','midanswer_shown','map_completed','result_viewed','cta_clicked','checkout_started','trial_started','first_intervention_unlocked']) {
+  for (const event of ['map_started','question_answered','branch_changed','midanswer_shown','map_completed','result_viewed','cta_clicked','checkout_started','trial_started','first_intervention_unlocked','first_intervention_locked_view','first_intervention_unlock','library_section_view','timeline_view','evelyn_section_view']) {
     assert.match(server, new RegExp(event));
   }
   assert.doesNotMatch(map, /fbq\([^\n]+answers|fbq\([^\n]+signals|fbq\([^\n]+mechanism/);
   assert.match(server, /sanitizeMapaArtifact/);
+});
+
+test('reposicionamento vende metodologia, biblioteca e acompanhamento sem promessas inexistentes', () => {
+  const lia = fs.readFileSync(path.join(__dirname, '../public/lia.html'), 'utf8');
+  const map = fs.readFileSync(path.join(__dirname, '../public/mapa-lia.html'), 'utf8');
+  for (const html of [lia, map]) {
+    assert.match(html, /Biblioteca de Intervenções/);
+    assert.match(html, /Evelyn Liu/);
+    assert.match(html, /acompanhamento/i);
+  }
+  assert.match(lia, /mais de 50 intervenções/i);
+  assert.match(map, /data-library-planned/);
+  assert.doesNotMatch(map, /🎥|vídeos/i);
+  assert.match(map, /Deixe a LIA conduzir sua primeira intervenção/);
+  assert.match(map, /lia-evelyn-carta\.jpg/);
 });
 
 test('/raiz permanece isolado e o Mapa não aciona automações legadas', () => {

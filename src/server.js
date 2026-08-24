@@ -1285,6 +1285,8 @@ const MAPA_LIA_EVENTS = new Set([
   'map_started', 'question_answered', 'branch_changed', 'midanswer_shown',
   'map_completed', 'result_viewed', 'cta_clicked', 'checkout_started',
   'trial_started', 'first_intervention_unlocked',
+  'first_intervention_locked_view', 'first_intervention_unlock',
+  'library_section_view', 'timeline_view', 'evelyn_section_view',
 ]);
 
 const MAPA_LIA_META_EVENTS = {
