@@ -86,6 +86,9 @@ const pub   = path.join(__dirname, '..', 'public');
 // sempre; só o goOffer muda (Ticto→Cakto). Campanhas seguem apontando p/ /raiz.
 // REVERTER: trocar 'quiz-cakto.html' de volta por 'quiz.html' (1 linha).
 app.get('/raiz',       (req, res) => res.sendFile(path.join(pub,   'quiz-cakto.html')));
+// Mapa LIA: funil novo e isolado. Não compartilha perfil, automações nem Pixel
+// com o Quiz Raiz; apenas reutiliza a infraestrutura genérica de atribuição/CAPI.
+app.get('/mapa-lia',   (req, res) => res.sendFile(path.join(pub,   'mapa-lia.html')));
 app.get('/quiz',       (req, res) => res.redirect(301, '/raiz' + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '')));
 // Teste A/B da migração de pagamento: mesmo quiz, checkout CAKTO (cópia isolada).
 // /raiz continua no Ticto; o tráfego que o Felipe direcionar pra cá vai pro Cakto.
@@ -1271,6 +1274,155 @@ async function sendCapiEvent({ eventName, phone, fbclid, fbc, fbp, em, fn, exter
   }
 }
 
+// ─── MAPA LIA — analytics first-party + CAPI isolada ────────────────────────
+//
+// As respostas, eixos e a hipótese do mapa são dados de primeira parte. Eles
+// nunca entram no payload da Meta. A CAPI recebe somente eventos padrão do
+// funil e identificadores permitidos para mensuração/deduplicação.
+
+const MAPA_LIA_EVENTS = new Set([
+  'mapa_started', 'question_answered', 'interpolation_shown',
+  'mapa_completed', 'result_viewed', 'cta_clicked', 'checkout_started',
+]);
+
+const MAPA_LIA_META_EVENTS = {
+  mapa_started: 'ViewContent',
+  mapa_completed: 'CompleteRegistration',
+  checkout_started: 'InitiateCheckout',
+};
+
+function cleanMapaString(value, max = 160) {
+  return typeof value === 'string' ? value.trim().slice(0, max) : '';
+}
+
+function validMapaSession(value) {
+  return /^[a-zA-Z0-9_-]{16,80}$/.test(String(value || ''));
+}
+
+app.get('/api/mapa-lia/config', (_req, res) => {
+  // Pixel ID é público por natureza; tokens e qualquer dado da pessoa ficam no servidor.
+  res.json({
+    pixel_id: process.env.LIA_PIXEL_ID || null,
+    checkout_monthly: process.env.LIA_CHECKOUT_MONTHLY || 'https://payment.ticto.app/OAC407884',
+    checkout_annual: process.env.LIA_CHECKOUT_ANNUAL || 'https://payment.ticto.app/O599B4571',
+  });
+});
+
+app.post('/api/mapa-lia/events', async (req, res) => {
+  const body = req.body || {};
+  const event = cleanMapaString(body.event, 40);
+  const sessionId = cleanMapaString(body.session_id, 80);
+  const eventId = cleanMapaString(body.event_id, 100);
+
+  if (!MAPA_LIA_EVENTS.has(event) || !validMapaSession(sessionId) || !eventId) {
+    return res.status(400).json({ ok: false, error: 'evento inválido' });
+  }
+
+  // Idempotência compartilhada entre refresh, double click e retries do browser.
+  try {
+    const fresh = await getRedis().set(`mapa-lia:event:${eventId}`, '1', 'EX', 60 * 60 * 24 * 7, 'NX');
+    if (!fresh) return res.json({ ok: true, duplicate: true });
+  } catch {
+    // Analytics nunca pode travar a experiência quando o Redis oscilar.
+  }
+
+  const now = new Date().toISOString();
+  const sessionKey = `mapa-lia:session:${sessionId}`;
+  let session = {};
+  try {
+    const raw = await redisGet(sessionKey);
+    if (raw) session = JSON.parse(raw);
+  } catch {}
+
+  session.session_id = sessionId;
+  session.updated_at = now;
+  session.first_seen_at = session.first_seen_at || now;
+  session.last_event = event;
+  session.utm = session.utm || {
+    source: cleanMapaString(body.utm?.source, 80) || null,
+    medium: cleanMapaString(body.utm?.medium, 80) || null,
+    campaign: cleanMapaString(body.utm?.campaign, 120) || null,
+    content: cleanMapaString(body.utm?.content, 120) || null,
+  };
+  session.fbc = session.fbc || cleanMapaString(body.fbc, 180) || null;
+  session.fbp = session.fbp || cleanMapaString(body.fbp, 180) || null;
+
+  if (event === 'question_answered') {
+    session.answer_count = Math.min(10, Math.max(Number(session.answer_count || 0), Number(body.answer_count || 0)));
+  }
+
+  if (event === 'mapa_completed' && body.map && typeof body.map === 'object') {
+    // Persistência first-party mínima para evolução do produto. Nada daqui é
+    // repassado ao Pixel/CAPI.
+    session.map = {
+      version: cleanMapaString(body.map.version, 30) || '1',
+      answers: Array.isArray(body.map.answers)
+        ? body.map.answers.slice(0, 10).map(a => ({
+            question_id: cleanMapaString(a?.question_id, 40),
+            option_id: cleanMapaString(a?.option_id, 40),
+          })).filter(a => a.question_id && a.option_id)
+        : [],
+      primary_axis: cleanMapaString(body.map.primary_axis, 40) || null,
+      secondary_axis: cleanMapaString(body.map.secondary_axis, 40) || null,
+    };
+    session.completed_at = now;
+  }
+
+  const contact = body.contact && typeof body.contact === 'object' ? body.contact : null;
+  if (contact && (event === 'mapa_completed' || event === 'checkout_started')) {
+    session.contact = {
+      name: cleanMapaString(contact.name, 100) || null,
+      email: cleanMapaString(contact.email, 180).toLowerCase() || null,
+      phone: normalizePhone(cleanMapaString(contact.phone, 30)) || null,
+    };
+  }
+
+  await redisSet(sessionKey, JSON.stringify(session), 'EX', 60 * 60 * 24 * 180);
+  metricsIncr(`mapa_lia_${event}`).catch(() => {});
+
+  // A mesma chave acompanha o checkout e permite atribuição de Purchase, sem
+  // anexar respostas ou hipótese à URL.
+  if (event === 'checkout_started') {
+    const lead = {
+      lead_event_id: sessionId,
+      nome: session.contact?.name || null,
+      email: session.contact?.email || null,
+      phone: session.contact?.phone || null,
+      external_id: session.contact?.email ? sha256(session.contact.email) : null,
+      fbc: session.fbc,
+      fbp: session.fbp,
+      channel: 'meta_lia',
+      source: 'mapa-lia',
+      saved_at: now,
+    };
+    await redisSet(`lead:${sessionId}`, JSON.stringify(lead), 'EX', 60 * 60 * 24 * 180);
+  }
+
+  res.json({ ok: true });
+
+  const metaEvent = MAPA_LIA_META_EVENTS[event];
+  const pixelId = process.env.LIA_PIXEL_ID;
+  const token = process.env.LIA_CAPI_TOKEN || process.env.META_CAPI_TOKEN;
+  if (!metaEvent || !pixelId || !token) return;
+
+  const person = session.contact || {};
+  sendCapiEvent({
+    eventName: metaEvent,
+    phone: person.phone,
+    em: person.email,
+    fn: firstName(person.name),
+    external_id: person.email ? sha256(person.email) : undefined,
+    fbc: session.fbc,
+    fbp: session.fbp,
+    customData: { content_name: 'Mapa LIA', content_category: 'self-reflection' },
+    eventSourceUrl: 'https://www.evelynliu.com.br/mapa-lia',
+    eventId,
+    req,
+    pixelId,
+    accessToken: token,
+  }).catch(e => console.error('[Mapa LIA/CAPI]', e.message));
+});
+
 // ─── Lead Context (dossiê bootstrap) ─────────────────────────────────────────
 // Retorna hashes e first_name para hidratação do fbq('init') no dossiê.
 // Não expõe PII — apenas campos hasheados + primeiro nome em texto puro.
@@ -2220,6 +2372,7 @@ async function handleLiaTicto(body) {
   const value  = typeof paid === 'number' ? paid / 100 : null;
   const fbclid = body?.query_params?.fbclid || null;
   const fbc    = body?.query_params?.fbc || (fbclid ? `fb.1.${Date.now()}.${fbclid}` : null);
+  const sourceSession = body?.query_params?.src || body?.query_params?.sck || null;
 
   const record = {
     provider: 'ticto', produto: 'lia',
@@ -2229,14 +2382,30 @@ async function handleLiaTicto(body) {
     offer_id: body?.item?.offer_id || null,
     product_name: body?.item?.product_name || null,
     fbc, fbp: body?.query_params?.fbp || null,
+    source_session: validMapaSession(sourceSession) ? sourceSession : null,
     plano: /anual|annual|year/i.test(String(body?.item?.offer_name || body?.item?.product_name || '')) ? 'anual' : 'mensal',
     created_at: new Date().toISOString(),
   };
   await redisSet('lia:ticto:purchase:' + txId, JSON.stringify(record), 'EX', 60 * 60 * 24 * 180);
 
+  // O início real do trial só é contabilizado pelo webhook da Ticto. Clique no
+  // checkout não é tratado como trial para não inflar a métrica do Mapa.
+  if (record.source_session && /trial|teste|avalia[cç][aã]o/i.test(status)) {
+    metricsIncr('mapa_lia_trial_started').catch(() => {});
+    try {
+      const mapKey = `mapa-lia:session:${record.source_session}`;
+      const mapRaw = await redisGet(mapKey);
+      const mapSession = mapRaw ? JSON.parse(mapRaw) : { session_id: record.source_session };
+      mapSession.trial_started_at = new Date().toISOString();
+      mapSession.trial_transaction_id = txId;
+      await redisSet(mapKey, JSON.stringify(mapSession), 'EX', 60 * 60 * 24 * 180);
+    } catch {}
+  }
+
   // CAPI so na venda aprovada, e SEMPRE no pixel da LIA. Sem LIA_PIXEL_ID
   // nada e enviado - melhor nao mandar do que mandar pro pixel do Raiz.
   if (status === 'authorized' && value != null) {
+    if (record.source_session) metricsIncr('mapa_lia_first_billing').catch(() => {});
     const pixelId = process.env.LIA_PIXEL_ID;
     const token   = process.env.LIA_CAPI_TOKEN || process.env.META_CAPI_TOKEN;
     if (!pixelId) {

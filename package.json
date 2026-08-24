@@ -4,7 +4,8 @@
   "description": "Servidor Express com integração Meta CAPI para deploy no Railway",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "test": "node --test tests/*.test.js"
   },
   "engines": {
     "node": ">=20"
