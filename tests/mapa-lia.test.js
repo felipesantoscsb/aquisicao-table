@@ -117,6 +117,7 @@ test('reposicionamento vende metodologia, biblioteca e acompanhamento sem promes
   }
   assert.match(lia, /mais de 50 intervenções/i);
   assert.match(map, /data-library-planned/);
+  assert.doesNotMatch(lia + map, /beta 1|já ativas|26 ativas/i);
   assert.doesNotMatch(map, /🎥|vídeos/i);
   assert.match(map, /Deixe a LIA conduzir sua primeira intervenção/);
   assert.match(map, /lia-evelyn-carta\.jpg/);
