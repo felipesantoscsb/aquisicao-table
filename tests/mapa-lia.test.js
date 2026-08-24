@@ -57,7 +57,7 @@ test('resultado é carta, não relatório ou intervenção entregue', () => {
     assert.equal(run.narrative.points.length, 3);
     assert.match(run.narrative.intro, /não (?:é )?um diagnóstico/i);
     assert.match(run.narrative.hypothesis, /hipótese/i);
-    assert.match(run.narrative.closing, /leitura termina aqui/i);
+    assert.match(run.narrative.closing, /leitura para aqui de propósito/i);
     assert.ok(run.artifact.recommended_intervention_id);
   });
 });

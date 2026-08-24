@@ -5,7 +5,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '2026-08-24.2';
+  var VERSION = '2026-08-24.3';
   var MAX_ANSWERS = 8;
   var MECHANISMS = {
     overload: { label: 'sobrecarga e pouca margem' },
@@ -247,13 +247,25 @@
     var a = details[Math.max(0, details.length-2)];
     var b = details[details.length-1];
     var next = nextDecision(answers);
-    var stage = details.length <= 3 ? 'Até aqui, duas coisas ficaram lado a lado:' : 'Agora a sequência ficou um pouco mais nítida:';
-    return {
-      text: stage + ' ' + a.option.reflection + ' e ' + b.option.reflection + '. Isso ainda é uma hipótese. ' + (next.question ? 'Quero conferir ' + next.question.prompt.charAt(0).toLowerCase() + next.question.prompt.slice(1) : 'Já temos material para montar sua primeira leitura.'),
-      evidence: [a.question.id,b.question.id],
-      branch: next.branch,
-    };
+    // O beat do meio é o momento "ela está me lendo": devolve as duas últimas
+    // respostas conectadas e cria expectativa — sem colar o texto da próxima
+    // pergunta (gerava frases quebradas quando o prompt já tinha prefixo).
+    var text = details.length <= 3
+      ? 'Duas coisas ficaram lado a lado: ' + a.option.reflection + '. E ' + b.option.reflection + '. Se essa ligação for real, ela explica bastante coisa. Ainda é hipótese, e é exatamente isso que as próximas perguntas vão testar.'
+      : 'A sequência ficou mais nítida: ' + a.option.reflection + '. E ' + b.option.reflection + '. Falta a última peça: o que faz isso se repetir.';
+    return { text: text, evidence: [a.question.id,b.question.id], branch: next.branch };
   }
+
+
+  var MECHANISM_READINGS = {
+    overload: 'o que derruba o seu cuidado não parece ser falta de controle. É um dia que termina sem sobrar nada pra você. Quando não existe margem, a comida vira o único momento que é seu.',
+    emotional_relief: 'a comida parece estar fazendo um trabalho que não é dela: virou o caminho mais curto até algum alívio. O que pede atenção não é o que você come. É do que você está precisando na hora em que come.',
+    rigidity: 'a regra pode estar pesando mais que a comida. Quando o plano quebra, o pensamento de que \u201cjá foi\u201d derruba o resto do dia. Não é o desvio que custa caro, é o tudo ou nada que vem depois dele.',
+    automaticity: 'boa parte da sequência parece acontecer antes de você chegar: mesmos lugares, mesmos horários, as mesmas pistas. Você não decide mal. Você está chegando tarde na decisão.',
+    disconnection: 'os sinais parecem chegar tarde ou misturados: fome, cansaço e emoção falando ao mesmo tempo. Isso não é falta de disciplina. É sinal sem nitidez.',
+    self_criticism: 'o que mais sustenta o ciclo talvez não seja o que você come, e sim a dureza com que você se trata depois. É ela que torna o voltar mais difícil do que o sair.',
+    compensation: 'o motor do ciclo pode não ser o episódio, e sim o que vem depois dele. Compensar prepara a próxima repetição. É por isso que apertar mais nunca resolveu.',
+  };
 
   var INTERVENTIONS = {
     emotional_relief:{ id:'R05', name:'Dez minutos antes de decidir', format:'Conversa guiada', duration:'2 minutos', description:'Uma intervenção breve para criar espaço entre a urgência e a decisão.' },
@@ -310,19 +322,23 @@
     var details = answerDetails(answers);
     function pick(index, fallback) { return details[index] ? details[index].option.reflection : fallback; }
     var connections = artifact.connections;
+    // Regra de tom: a honestidade fica CONCENTRADA (intro diz "não é
+    // diagnóstico", hipótese diz "hipótese", fechamento explica o porquê).
+    // Os pontos em si afirmam o que as respostas mostraram — sem cada frase
+    // se retratar no final, o que diluía a leitura inteira.
     var points = [
-      { number:'01', title:'A cena em que isso começa', text:'Você contou que ' + pick(0,'o contexto ainda precisa ser observado') + '. Até aqui, isso parece ser parte importante da cena, não uma explicação definitiva.' },
-      { number:'02', title:'O movimento que aparece junto', text:'Também apareceu que ' + pick(1,'o primeiro movimento ainda não está claro') + '. ' + (connections[0] ? connections[0].summary : 'Vale observar como essas duas partes se encontram.') },
-      { number:'03', title:'O que pode manter a repetição', text:connections[2]
-        ? connections[2].summary + ' É uma hipótese inicial, e não uma conclusão sobre você.'
-        : 'No fechamento, apareceu que ' + pick(6,'o depois ainda merece atenção') + '. Você escolheu acompanhar ' + pick(7,'o que acontece nos momentos reais').replace(/^vale observar\s*/,'') + '. Isso orienta a observação, não define uma conclusão sobre você.' },
+      { number:'01', title:'A cena em que isso começa', text:'Você contou que ' + pick(0,'o contexto ainda precisa ser observado') + '. É ali que vale olhar primeiro: não pro prato, pra cena.' },
+      { number:'02', title:'O movimento que aparece junto', text:'Também apareceu que ' + pick(1,'o primeiro movimento ainda não está claro') + '. ' + (connections[0] ? connections[0].summary : 'Essas duas partes parecem se encontrar sempre no mesmo ponto.') },
+      { number:'03', title:'O que pode manter a repetição', text:(connections[2]
+        ? connections[2].summary
+        : 'No fechamento, apareceu que ' + pick(6,'o depois ainda merece atenção') + '.') + ' Esse é o elo que costuma passar despercebido, e é onde uma mudança pequena rende mais.' },
     ];
-    var mechanism = MECHANISMS[artifact.primary_mechanism];
+    var reading = MECHANISM_READINGS[artifact.primary_mechanism] || MECHANISMS[artifact.primary_mechanism].label + ' parece participar da repetição.';
     return {
-      intro:'Obrigada por confiar essas respostas. Esta é uma primeira leitura, não um diagnóstico.',
+      intro:'Este mapa foi montado com as suas respostas. Não é um diagnóstico, é um ponto de partida. Vem ver o que apareceu.',
       points:points,
-      hypothesis:'Juntando esses sinais, uma hipótese é que ' + mechanism.label + ' esteja participando da repetição. O mapa mostra uma conexão possível. Só o acompanhamento dos momentos reais pode confirmar, corrigir ou descartar essa leitura.',
-      closing:'Por enquanto, a leitura termina aqui. Não é hora de transformar essa hipótese em mais uma regra.',
+      hypothesis:'Pelo que você contou, uma hipótese ganhou força: ' + reading + ' O acompanhamento dos momentos reais é o que confirma ou corrige essa leitura.',
+      closing:'A leitura para aqui de propósito. Transformar isso em mais uma regra seria repetir o ciclo. O próximo passo não é decidir mais, é observar melhor acompanhada.',
       artifact:artifact,
     };
   }
