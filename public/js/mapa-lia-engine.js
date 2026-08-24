@@ -5,7 +5,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var VERSION = '2026-08-24.3';
+  var VERSION = '2026-08-24.4';
   var MAX_ANSWERS = 8;
   var MECHANISMS = {
     overload: { label: 'sobrecarga e pouca margem' },
@@ -242,18 +242,21 @@
     return out;
   }
 
+  function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
   function midanswer(answers) {
     var details = answerDetails(answers);
     var a = details[Math.max(0, details.length-2)];
     var b = details[details.length-1];
     var next = nextDecision(answers);
-    // O beat do meio é o momento "ela está me lendo": devolve as duas últimas
-    // respostas conectadas e cria expectativa — sem colar o texto da próxima
-    // pergunta (gerava frases quebradas quando o prompt já tinha prefixo).
-    var text = details.length <= 3
-      ? 'Duas coisas ficaram lado a lado: ' + a.option.reflection + '. E ' + b.option.reflection + '. Se essa ligação for real, ela explica bastante coisa. Ainda é hipótese, e é exatamente isso que as próximas perguntas vão testar.'
-      : 'A sequência ficou mais nítida: ' + a.option.reflection + '. E ' + b.option.reflection + '. Falta a última peça: o que faz isso se repetir.';
-    return { text: text, evidence: [a.question.id,b.question.id], branch: next.branch };
+    // O beat do meio é o momento "ela está me lendo". Antes era um parágrafo
+    // único e denso — cansava a leitura. Agora é uma sequência de linhas
+    // curtas (como a LIA falando por partes), cada uma uma ideia só. O texto
+    // continua disponível como fallback pra quem consumir só `text`.
+    var beats = details.length <= 3
+      ? ['Duas coisas ficaram lado a lado.', cap(a.option.reflection) + '.', cap(b.option.reflection) + '.', 'Se essa ligação for real, ela explica bastante coisa.', 'Ainda é hipótese.']
+      : ['A sequência ficou mais nítida.', cap(a.option.reflection) + '.', cap(b.option.reflection) + '.', 'Falta a última peça: o que faz isso se repetir.'];
+    return { text: beats.join(' '), beats: beats, evidence: [a.question.id,b.question.id], branch: next.branch };
   }
 
 
