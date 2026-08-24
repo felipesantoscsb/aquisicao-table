@@ -9,6 +9,10 @@
   <meta property="og:title" content="Mapa LIA">
   <meta property="og:description" content="Um primeiro olhar para o que pode estar acontecendo em volta da comida.">
   <meta property="og:url" content="https://www.evelynliu.com.br/mapa-lia">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://www.evelynliu.com.br/images/mapa-lia-og.jpg">
+  <meta property="og:locale" content="pt_BR">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#FAF7F2">
   <style>
 :root{
@@ -61,6 +65,14 @@ h2{font-size:clamp(26px,6.8vw,38px);line-height:1.1}
 h2.rv{filter:blur(6px)}
 h2.rv.in{filter:blur(0);transition:opacity .8s var(--ease),transform .8s var(--ease),filter .8s var(--ease);transition-delay:calc(var(--i,0) * 85ms)}
 
+/* ── retomada de progresso (localStorage sobrevive a reload/aba morta) ─── */
+.resume-card{background:var(--moss-pale);border:1px solid var(--moss-lt);border-radius:var(--radius);
+  padding:20px 22px;margin-top:28px}
+.resume-card p{font-size:14.5px;color:var(--ink-2);line-height:1.5;margin-bottom:14px}
+.resume-card .btn{margin-bottom:9px}
+.resume-restart{display:block;width:100%;background:none;border:none;font:inherit;font-size:13px;
+  color:var(--ink-3);text-decoration:underline;cursor:pointer;padding:4px;text-align:center}
+
 /* ── cards base ─────────────────────────────────────────────────────────── */
 .start-card,.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
 .start-card{padding:24px;margin-top:28px}
@@ -78,6 +90,11 @@ h2.rv.in{filter:blur(0);transition:opacity .8s var(--ease),transform .8s var(--e
 .btn:hover{transform:translateY(-1px)}
 .btn:active{transform:translateY(0) scale(.985)}
 .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+.quiz-back{display:none;align-items:center;gap:6px;background:none;border:none;font:inherit;
+  font-size:13px;color:var(--ink-3);cursor:pointer;padding:6px 4px 14px;margin-left:-4px}
+.quiz-back.show{display:inline-flex}
+.quiz-back::before{content:"←";font-size:13px}
 
 /* ── progresso do quiz ──────────────────────────────────────────────────── */
 .progress-wrap{display:flex;align-items:center;gap:12px;margin:2px 0 26px}
@@ -178,11 +195,23 @@ h2.rv.in{filter:blur(0);transition:opacity .8s var(--ease),transform .8s var(--e
 
 /* ── intervenção travada: registro "propôs" (verde, não terra) ──────────── */
 .locked{background:var(--moss-pale);border:1px solid var(--moss-lt);border-radius:18px;padding:22px;margin:30px 0}
-.lock{width:38px;height:38px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-size:17px;margin-bottom:16px}
+.lock{width:38px;height:38px;border-radius:50%;background:var(--surface);display:grid;place-items:center;margin-bottom:16px}
+.lock svg{width:15px;height:15px}
 .locked h3{font-family:var(--serif);font-size:22px;font-weight:400;margin:7px 0 9px;letter-spacing:-.01em}
 .locked-meta{font-size:11px;color:var(--moss);font-weight:700;letter-spacing:.07em;text-transform:uppercase}
 .locked p{color:var(--ink-2);font-size:14px;line-height:1.55}
 .locked .note{margin-top:14px;padding-top:14px;border-top:1px solid rgba(61,74,53,.14)}
+/* Antes o card mostrava nome+descrição inteiros por baixo de um cadeado
+   decorativo — nada ficava de fato trancado, o que matava o motivo de
+   continuar. Agora o texto real existe no DOM (pra quem usa leitor de
+   tela) mas fica borrado e ilegível visualmente; só format+duração
+   (baixa informação, cria expectativa) ficam nítidos. */
+.locked-teaser{position:relative;margin-top:6px;border-radius:12px;overflow:hidden}
+.locked-teaser h3,.locked-teaser>p{filter:blur(6px);user-select:none;-webkit-user-select:none;pointer-events:none}
+.locked-unlock{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  gap:7px;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--moss);
+  background:linear-gradient(180deg,rgba(237,241,233,.35),var(--moss-pale) 60%)}
+.locked-unlock svg{width:12px;height:12px}
 
 /* ── seções de história (scroll longo, revelação por IO) ───────────────── */
 .story-section{margin-top:46px;padding-top:40px;border-top:1px solid var(--line)}
@@ -224,7 +253,13 @@ h2.rv.in{filter:blur(0);transition:opacity .8s var(--ease),transform .8s var(--e
 .lib-bar.in i{width:var(--w)}
 
 .formats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:20px 0}
-.format{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;font-size:12.5px}
+/* Badge circular com letra, não emoji: o resto da página inteira usa esse
+   mesmo padrão (.step span, .journey-step i): emoji de plataforma renderiza
+   diferente em cada SO e quebrava a coerência do sistema de ícone próprio. */
+.format{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius-sm);padding:13px;font-size:12.5px}
+.format i{width:24px;height:24px;flex:0 0 auto;margin-top:1px;border-radius:50%;background:var(--moss-pale);
+  color:var(--moss);display:grid;place-items:center;font-style:normal;font-weight:700;font-size:10.5px}
 .format b{display:block;margin-bottom:3px}
 .format span{color:var(--ink-3);font-size:11px}
 
@@ -369,6 +404,11 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
       <p class="eyebrow">Mapa LIA · menos de 3 minutos</p>
       <h1>Talvez o problema nunca tenha sido a comida.</h1>
       <p class="lead">Em 8 respostas, a LIA desenha o mapa do seu ciclo: onde ele começa, o que alimenta a repetição e onde uma mudança pequena rende mais.</p>
+      <div class="resume-card" id="resumeCard" style="display:none">
+        <p>Você já tinha começado um mapa e não terminou. Continuar de onde parou?</p>
+        <button class="btn" id="resumeBtn">Continuar meu mapa</button>
+        <button class="resume-restart" id="restartBtn">Começar um mapa novo</button>
+      </div>
       <div class="start-card">
         <div class="steps">
           <div class="step"><span>1</span><div><b>Uma conversa, não um teste</b><p>Cada pergunta é escolhida a partir da sua resposta anterior, como numa consulta.</p></div></div>
@@ -381,6 +421,7 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
     </section>
 
     <section class="screen" id="quiz">
+      <button class="quiz-back" id="quizBack" type="button">Voltar</button>
       <div class="progress-wrap"><div class="progress"><i id="bar"></i></div><div class="counter" id="counter"></div></div>
       <p class="eyebrow">Um passo de cada vez</p>
       <div class="question" id="question"></div>
@@ -412,13 +453,20 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
       <p class="eyebrow" style="margin-top:28px">Três pontos chamaram atenção</p>
       <div class="points" id="points"></div>
       <div class="hypothesis"><div class="hypothesis-head">A LIA percebeu</div><p id="hypothesis"></p></div>
+      <p class="eyebrow" style="margin-top:28px">Como isso se conecta</p>
       <div class="cycle" id="cycle"></div>
       <p class="nuance" id="readingClose"></p>
       <div class="locked" id="firstIntervention">
-        <div class="lock" aria-hidden="true">🔒</div><p class="eyebrow">Sua primeira intervenção</p>
+        <div class="lock" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#3D4A35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+        <p class="eyebrow">Sua primeira intervenção</p>
         <div class="locked-meta"><span id="interventionFormat"></span> · <span id="interventionDuration"></span></div>
-        <h3 id="interventionName"></h3><p id="interventionDescription"></p>
-        <p class="note">Ela fica guardada junto com o seu mapa. Na primeira conversa, a LIA confere seu contexto e as regras de segurança e libera com você.</p>
+        <div class="locked-teaser">
+          <h3 id="interventionName" aria-hidden="true"></h3>
+          <p id="interventionDescription" aria-hidden="true"></p>
+          <div class="locked-unlock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Revelada no WhatsApp</div>
+        </div>
+        <span class="sr-only" id="interventionSrText" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)"></span>
+        <p class="note">Já está pronta, mas fica guardada até a primeira conversa. É lá que a LIA confere seu contexto e as regras de segurança antes de liberar com você.</p>
       </div>
       <div class="bridge">
         <p class="eyebrow">O mapa é a primeira leitura</p>
@@ -441,7 +489,7 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
           <p class="eyebrow rv">Biblioteca de Intervenções</p><h2 class="rv" style="--i:1">A LIA não apenas responde.<br>Ela intervém.</h2>
           <p class="summary rv" style="--i:2">Quando percebe um mecanismo, ela procura na metodologia um próximo passo adequado ao contexto. Pode ser um áudio, uma conversa guiada ou um exercício breve. Depois, volta para entender o efeito.</p>
           <div class="library rv" style="--i:3"><div class="library-head"><strong><span data-library-planned></span></strong><span>Intervenções da<br>metodologia Evelyn Liu</span></div><div id="libraryBars"></div></div>
-          <div class="formats rv" style="--i:4"><div class="format"><b>🎧 Áudios</b><span>Para momentos que pedem pausa e presença</span></div><div class="format"><b>💬 Textos guiados</b><span>Perguntas e protocolos breves</span></div><div class="format"><b>✦ Exercícios</b><span>Experimentos aplicáveis no dia a dia</span></div><div class="format"><b>↻ Retorno</b><span>A LIA observa o efeito e ajusta</span></div></div>
+          <div class="formats rv" style="--i:4"><div class="format"><i aria-hidden="true">Á</i><div><b>Áudios</b><span>Para momentos que pedem pausa e presença</span></div></div><div class="format"><i aria-hidden="true">T</i><div><b>Textos guiados</b><span>Perguntas e protocolos breves</span></div></div><div class="format"><i aria-hidden="true">E</i><div><b>Exercícios</b><span>Experimentos aplicáveis no dia a dia</span></div></div><div class="format"><i aria-hidden="true">R</i><div><b>Retorno</b><span>A LIA observa o efeito e ajusta</span></div></div></div>
         </section>
 
         <section class="story-section">
@@ -465,6 +513,7 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
           <p class="note">O acompanhamento começa pelo WhatsApp, já levando o mapa que você acabou de construir.</p>
           <div class="plans"><button class="plan active" data-plan="monthly"><b id="monthlyLabel"></b><span id="monthlyPrice"></span><span class="plan-note" id="monthlyNote"></span></button><button class="plan" data-plan="annual"><em class="plan-badge" id="annualBadge"></em><b id="annualLabel"></b><span id="annualPrice"></span><span class="plan-note" id="annualNote"></span></button></div>
           <button class="btn" id="checkout">Receber minha primeira intervenção</button>
+          <p class="note" id="checkoutError" style="display:none;color:#A6412B;text-align:center;margin:10px 0 0">Não consegui abrir o checkout agora. Tenta de novo em instantes, ou chama a gente no WhatsApp.</p>
           <p class="note" id="trialNote" style="text-align:center;margin:11px 0 0"></p>
           <div class="guarantee"><b>7 dias grátis, de verdade.</b><p>Hoje você paga R$ 0. Se não quiser continuar, cancele direto com a LIA no WhatsApp antes do fim do período e nada será cobrado.</p></div>
         </div>
@@ -506,6 +555,17 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
     if(!id){ id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2)).replace(/-/g,''); localStorage.setItem('mapa_lia_session', id); }
     return id;
   }
+  // Rascunho em localStorage: sobrevive a reload e a aba morta pelo navegador
+  // in-app do Instagram/WhatsApp (a origem de quase todo o trafego aqui) —
+  // sem isso, uma aba morta no meio das 8 perguntas apagava tudo sem aviso.
+  const DRAFT_KEY = 'mapa_lia_draft_' + state.sessionId;
+  function saveDraft(){ try{ localStorage.setItem(DRAFT_KEY, JSON.stringify({answers:state.answers, ts:Date.now()})); }catch(e){} }
+  function loadDraft(){ try{ const raw=localStorage.getItem(DRAFT_KEY); if(!raw) return null; const d=JSON.parse(raw);
+    if(!Array.isArray(d.answers) || !d.answers.length || d.answers.length>=E.MAX_ANSWERS) return null;
+    if(Date.now()-(d.ts||0) > 1000*60*60*24*3) return null; // rascunho de mais de 3 dias, descarta
+    return d; }catch(e){ return null; } }
+  function clearDraft(){ try{ localStorage.removeItem(DRAFT_KEY); }catch(e){} }
+
   function cookie(name){ return document.cookie.split('; ').find(x=>x.startsWith(name+'='))?.split('=').slice(1).join('=') || null; }
   function fbc(){ const c=cookie('_fbc'); const click=params.get('fbclid'); return c || (click ? `fb.1.${Date.now()}.${click}` : null); }
   function eventId(name){ return `${state.sessionId}_${name}_${Date.now()}_${Math.random().toString(36).slice(2,8)}`; }
@@ -527,17 +587,22 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
     (function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=true;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=true;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)})(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
     fbq('init',id); fbq('track','PageView');
   }
+  function renderPricing(pricing, trialDays, paymentMethods){
+    document.getElementById('monthlyLabel').textContent=pricing.monthly.label;
+    document.getElementById('monthlyPrice').textContent=pricing.monthly.price+' '+pricing.monthly.period;
+    document.getElementById('annualLabel').textContent=pricing.annual.label;
+    document.getElementById('annualPrice').textContent=pricing.annual.price+' '+pricing.annual.period;
+    document.getElementById('monthlyNote').textContent=pricing.monthly.note;
+    document.getElementById('annualNote').textContent=pricing.annual.note;
+    document.getElementById('annualBadge').textContent=pricing.annual.badge||'';
+    document.getElementById('trialNote').textContent=trialDays+' dias grátis. '+paymentMethods+'.';
+  }
   initPixel(PRODUCT.PIXEL_ID);
-  fetch('/api/mapa-lia/config').then(r=>r.json()).then(c=>{state.config={...PRODUCT,...c};initPixel(c.pixel_id)}).catch(()=>{});
-  document.getElementById('monthlyLabel').textContent=PRODUCT.PRICING.monthly.label;
-  document.getElementById('monthlyPrice').textContent=PRODUCT.PRICING.monthly.price+' '+PRODUCT.PRICING.monthly.period;
-  document.getElementById('annualLabel').textContent=PRODUCT.PRICING.annual.label;
-  document.getElementById('annualPrice').textContent=PRODUCT.PRICING.annual.price+' '+PRODUCT.PRICING.annual.period;
-  document.getElementById('monthlyNote').textContent=PRODUCT.PRICING.monthly.note;
-  document.getElementById('annualNote').textContent=PRODUCT.PRICING.annual.note;
-  document.getElementById('annualBadge').textContent=PRODUCT.PRICING.annual.badge||'';
-  document.getElementById('trialNote').textContent=PRODUCT.TRIAL_DAYS+' dias grátis. '+PRODUCT.PAYMENT_METHODS+'.';
-  document.querySelectorAll('[data-library-active]').forEach(el=>el.textContent=PRODUCT.INTERVENTION_LIBRARY.active);
+  renderPricing(PRODUCT.PRICING, PRODUCT.TRIAL_DAYS, PRODUCT.PAYMENT_METHODS);
+  fetch('/api/mapa-lia/config').then(r=>r.json()).then(c=>{
+    state.config={...PRODUCT,...c}; initPixel(c.pixel_id);
+    if(c.pricing) renderPricing(c.pricing, c.trial_days||PRODUCT.TRIAL_DAYS, c.payment_methods||PRODUCT.PAYMENT_METHODS);
+  }).catch(()=>{});
   document.querySelectorAll('[data-library-planned]').forEach(el=>el.textContent=PRODUCT.INTERVENTION_LIBRARY.plannedLabel);
   const libraryBars=document.getElementById('libraryBars');
   PRODUCT.INTERVENTION_LIBRARY.categories.forEach(c=>{const row=document.createElement('div');row.className='lib-row';const label=document.createElement('label');label.textContent=c.label;const bar=document.createElement('span');bar.className='lib-bar';const fill=document.createElement('i');fill.style.setProperty('--w',c.strength+'%');bar.appendChild(fill);row.append(label,bar);libraryBars.appendChild(row)});
@@ -578,13 +643,30 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
     document.getElementById('counter').textContent=`${state.answers.length+1} de ${E.MAX_ANSWERS}`;
     document.getElementById('bar').style.width=`${Math.min(100,(state.answers.length/E.MAX_ANSWERS)*100)}%`;
     document.getElementById('question').textContent=q.prompt;
+    document.getElementById('quizBack').classList.toggle('show', state.answers.length>0);
     const wrap=document.getElementById('options'); wrap.innerHTML='';
-    q.options.forEach(o=>{ const b=document.createElement('button'); b.className='option'; const dot=document.createElement('span'); dot.className='opt-dot'; const txt=document.createElement('span'); txt.textContent=o.label; b.append(dot,txt); b.onclick=()=>answer(q,o,b); wrap.appendChild(b); });
+    q.options.forEach(o=>{ const b=document.createElement('button'); b.className='option'; const dot=document.createElement('span'); dot.className='opt-dot'; const txt=document.createElement('span'); txt.textContent=o.label; b.append(dot,txt); b.setAttribute('aria-pressed','false'); b.onclick=()=>answer(q,o,b); wrap.appendChild(b); });
     show('quiz');updateDebug();
   }
+  // Voltar: some 1 resposta e deixa o proprio engine recalcular a pergunta
+  // certa (nextDecision e funcao pura do array de respostas — sem estado
+  // escondido pra dessincronizar). Pre-marca a escolha anterior pra ela ver
+  // o que tinha respondido, mas sem travar: qualquer clique muda de novo.
+  document.getElementById('quizBack').onclick=()=>{
+    if(!state.answers.length) return;
+    const prev=state.answers.pop(); state.branch=E.currentBranch(state.answers); saveDraft();
+    track('quiz_back_clicked',{answer_count:state.answers.length});
+    renderQuestion();
+    const q=E.nextDecision(state.answers).question;
+    if(q && q.id===prev.question_id){
+      const idx=q.options.findIndex(o=>o.id===prev.option_id);
+      const btn=document.querySelectorAll('#options .option')[idx];
+      if(btn){ btn.classList.add('chosen'); btn.setAttribute('aria-pressed','true'); }
+    }
+  };
   function answer(q,o,button){
-    if(button.parentNode.dataset.locked) return; button.parentNode.dataset.locked='1'; button.classList.add('chosen');
-    const previousBranch=state.branch; state.answers.push({question_id:q.id,option_id:o.id}); state.branch=E.currentBranch(state.answers);
+    if(button.parentNode.dataset.locked) return; button.parentNode.dataset.locked='1'; button.classList.add('chosen'); button.setAttribute('aria-pressed','true');
+    const previousBranch=state.branch; state.answers.push({question_id:q.id,option_id:o.id}); state.branch=E.currentBranch(state.answers); saveDraft();
     track('question_answered',{answer_count:state.answers.length});
     if(previousBranch && previousBranch!==state.branch)track('branch_changed',{from_branch:previousBranch,to_branch:state.branch,answer_count:state.answers.length});
     updateDebug();
@@ -597,12 +679,37 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
         requestAnimationFrame(()=>requestAnimationFrame(()=>beatEls.forEach(el=>el.classList.add('in'))));track('midanswer_shown',{answer_count:state.answers.length}); } else renderQuestion(); },260);
   }
   document.getElementById('start').onclick=()=>{track('map_started');renderQuestion()};
+  (function(){
+    const draft=loadDraft();
+    if(!draft) return;
+    document.getElementById('resumeCard').style.display='block';
+    track('draft_resume_shown',{answer_count:draft.answers.length});
+    document.getElementById('resumeBtn').onclick=()=>{
+      state.answers=draft.answers.slice(); state.branch=E.currentBranch(state.answers);
+      track('draft_resumed',{answer_count:state.answers.length});
+      renderQuestion();
+    };
+    document.getElementById('restartBtn').onclick=()=>{
+      clearDraft(); document.getElementById('resumeCard').style.display='none';
+      track('draft_restart_clicked');
+    };
+  })();
   document.getElementById('continue').onclick=renderQuestion;
+
+  // Mascara progressiva (11) 99999-9999 — so formatacao visual, o valor
+  // enviado ja e normalizado no servidor (normalizePhone em /api/mapa-lia/events).
+  document.getElementById('phone').addEventListener('input', function(e){
+    let d=e.target.value.replace(/\D/g,'').slice(0,11);
+    if(d.length>6) e.target.value=`(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+    else if(d.length>2) e.target.value=`(${d.slice(0,2)}) ${d.slice(2)}`;
+    else if(d.length>0) e.target.value=`(${d}`;
+    else e.target.value='';
+  });
 
   document.getElementById('contactForm').onsubmit=function(ev){
     ev.preventDefault(); const name=document.getElementById('name').value.trim(); const email=document.getElementById('email').value.trim(); const phone=document.getElementById('phone').value.replace(/\D/g,''); const ok=name.length>=2 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && phone.length>=10;
     document.getElementById('formError').style.display=ok?'none':'block'; if(!ok)return;
-    state.contact={name,email,phone}; const narrative=E.buildNarrative(state.answers);state.artifact=narrative.artifact;
+    clearDraft(); state.contact={name,email,phone}; const narrative=E.buildNarrative(state.answers);state.artifact=narrative.artifact;
     track('map_completed',{contact:state.contact,map:state.artifact});
     renderResult(narrative);show('result');track('result_viewed');updateDebug();
     // Revelação do resultado via classe, disparada num frame separado do
@@ -618,6 +725,10 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
     const points=document.getElementById('points');points.innerHTML='';n.points.forEach(p=>{const el=document.createElement('article');el.className='point';const small=document.createElement('small');small.textContent=p.number;const h=document.createElement('h3');h.textContent=p.title;const text=document.createElement('p');text.textContent=p.text;el.append(small,h,text);points.appendChild(el)});
     const c=document.getElementById('cycle');c.innerHTML='';a.possible_cycle.forEach((node,i)=>{const d=document.createElement('div');d.className='cycle-item v2';d.style.setProperty('--n',i);const title=document.createElement('b');title.textContent=node.label;const list=document.createElement('ul');node.items.forEach(x=>{const li=document.createElement('li');li.textContent=x;list.appendChild(li)});d.append(title,list);c.appendChild(d)});
     document.getElementById('interventionFormat').textContent=a.recommended_intervention_format;document.getElementById('interventionDuration').textContent=a.recommended_intervention_duration;document.getElementById('interventionName').textContent=a.recommended_intervention_name;document.getElementById('interventionDescription').textContent=a.recommended_intervention_reason;
+    // Visualmente borrado de propósito (ver CSS .locked-teaser) — pra quem usa
+    // leitor de tela, o texto real teria o MESMO efeito de "vazar" o que devia
+    // ficar reservado pro WhatsApp. Descrição acessível genérica no lugar.
+    document.getElementById('interventionSrText').textContent=`Uma intervenção em formato ${a.recommended_intervention_format.toLowerCase()}, de ${a.recommended_intervention_duration}, preparada a partir do seu mapa. O conteúdo é revelado na primeira conversa com a LIA no WhatsApp.`;
   }
 
   // CTA fixo (só mobile): entre o mapa e a oferta existem ~8 telas de rolagem.
@@ -636,7 +747,9 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
 
   document.querySelectorAll('.plan').forEach(b=>b.onclick=()=>{state.plan=b.dataset.plan;document.querySelectorAll('.plan').forEach(x=>x.classList.toggle('active',x===b));track('cta_clicked',{plan:state.plan})});
   document.getElementById('checkout').onclick=function(){
-    const pricing=state.config.pricing||PRODUCT.PRICING;const base=state.plan==='annual'?pricing.annual.checkout:pricing.monthly.checkout;if(!base)return;
+    const errEl=document.getElementById('checkoutError'); errEl.style.display='none';
+    const pricing=state.config.pricing||PRODUCT.PRICING;const base=state.plan==='annual'?pricing.annual.checkout:pricing.monthly.checkout;
+    if(!base){ errEl.style.display='block'; track('checkout_unavailable',{plan:state.plan}); return; }
     track('cta_clicked',{plan:state.plan}); track('checkout_started',{plan:state.plan,contact:state.contact});
     const u=new URL(base); u.searchParams.set('src',state.sessionId); u.searchParams.set('sck',state.sessionId); if(fbc())u.searchParams.set('fbc',fbc()); if(cookie('_fbp'))u.searchParams.set('fbp',cookie('_fbp')); Object.entries(utm).forEach(([k,v])=>{if(v)u.searchParams.set('utm_'+k,v)}); setTimeout(()=>location.href=u.toString(),180);
   };

@@ -1289,6 +1289,8 @@ const MAPA_LIA_EVENTS = new Set([
   'library_section_view', 'timeline_view', 'evelyn_section_view',
   'whatsapp_section_view', 'whatsapp_demo_view', 'faq_section_view', 'faq_opened',
   'evelyn_audio_played',
+  'quiz_back_clicked', 'draft_resume_shown', 'draft_resumed', 'draft_restart_clicked',
+  'checkout_unavailable',
 ]);
 
 const MAPA_LIA_META_EVENTS = {

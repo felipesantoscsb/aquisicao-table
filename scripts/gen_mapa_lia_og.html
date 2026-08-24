@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!-- Card de compartilhamento do /mapa-lia (1200x630). Render:
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+    --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=1 \
+    --window-size=1200,630 --screenshot=/tmp/mapa-lia-og.png \
+    file://$PWD/scripts/gen_mapa_lia_og.html
+  sips -s format jpeg -s formatOptions 88 /tmp/mapa-lia-og.png --out public/images/mapa-lia-og.jpg -->
+<html lang="pt-BR"><head><meta charset="utf-8"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1200px;height:630px;background:#FAF7F2;color:#1B1F19;overflow:hidden;position:relative;
+     font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
+     display:flex;align-items:center;gap:70px;padding:0 84px}
+body::before{content:"";position:absolute;inset:auto auto -180px -140px;width:480px;height:480px;
+     border-radius:50%;background:radial-gradient(circle,rgba(107,125,92,.22),transparent 68%)}
+.left{flex:1;position:relative;z-index:1}
+.eyebrow{display:flex;align-items:center;gap:12px;font-size:16px;letter-spacing:.18em;text-transform:uppercase;color:#6B7D5C;margin-bottom:28px}
+.eyebrow::before{content:"";width:26px;height:1.5px;background:#6B7D5C;opacity:.7}
+h1{font-family:ui-serif,'New York','Iowan Old Style',Palatino,Georgia,serif;font-weight:400;
+   font-size:70px;line-height:1.08;letter-spacing:-.02em;max-width:11ch;margin-bottom:26px}
+.sub{font-size:24px;line-height:1.5;color:#464C42;max-width:30ch}
+.card{width:378px;flex:0 0 auto;background:#fff;border:1px solid #B97040;border-radius:24px;
+      padding:30px 28px;box-shadow:0 30px 70px -20px rgba(36,44,31,.28);position:relative;z-index:1}
+.ch{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:700;letter-spacing:.1em;
+    text-transform:uppercase;color:#B97040;margin-bottom:24px}
+ul{list-style:none}
+li{position:relative;padding-left:28px;font-size:23px;color:#1B1F19;height:48px;display:flex;align-items:center}
+li::before{content:"";position:absolute;left:3px;top:20px;width:8px;height:8px;border-radius:50%;background:#3D4A35}
+li::after{content:"";position:absolute;left:6.5px;top:31px;width:1px;height:24px;background:#6B7D5C;opacity:.3}
+li:last-child::after{display:none}
+</style></head>
+<body>
+  <div class="left">
+    <div class="eyebrow">LIA · Table</div>
+    <h1>Mapa LIA</h1>
+    <p class="sub">Responda 8 perguntas e receba uma primeira leitura do seu ciclo com a comida.</p>
+  </div>
+  <div class="card">
+    <div class="ch">A LIA percebeu</div>
+    <ul><li>Sobrecarga</li><li>Fim do dia</li><li>Busca por alívio</li><li>Culpa</li></ul>
+  </div>
+</body></html>
