@@ -1287,6 +1287,7 @@ const MAPA_LIA_EVENTS = new Set([
   'trial_started', 'first_intervention_unlocked',
   'first_intervention_locked_view', 'first_intervention_unlock',
   'library_section_view', 'timeline_view', 'evelyn_section_view',
+  'whatsapp_section_view', 'whatsapp_demo_view', 'faq_section_view', 'faq_opened',
 ]);
 
 const MAPA_LIA_META_EVENTS = {

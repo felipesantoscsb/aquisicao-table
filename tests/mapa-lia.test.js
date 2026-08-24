@@ -100,7 +100,7 @@ test('preços, checkouts, trial e Pixel têm uma única fonte pública', () => {
 test('tracking canônico existe e não envia respostas diretamente à Meta', () => {
   const server = fs.readFileSync(path.join(__dirname, '../src/server.js'), 'utf8');
   const map = fs.readFileSync(path.join(__dirname, '../public/mapa-lia.html'), 'utf8');
-  for (const event of ['map_started','question_answered','branch_changed','midanswer_shown','map_completed','result_viewed','cta_clicked','checkout_started','trial_started','first_intervention_unlocked','first_intervention_locked_view','first_intervention_unlock','library_section_view','timeline_view','evelyn_section_view']) {
+  for (const event of ['map_started','question_answered','branch_changed','midanswer_shown','map_completed','result_viewed','cta_clicked','checkout_started','trial_started','first_intervention_unlocked','first_intervention_locked_view','first_intervention_unlock','library_section_view','timeline_view','evelyn_section_view','whatsapp_section_view','whatsapp_demo_view','faq_section_view','faq_opened']) {
     assert.match(server, new RegExp(event));
   }
   assert.doesNotMatch(map, /fbq\([^\n]+answers|fbq\([^\n]+signals|fbq\([^\n]+mechanism/);
@@ -121,6 +121,11 @@ test('reposicionamento vende metodologia, biblioteca e acompanhamento sem promes
   assert.doesNotMatch(map, /🎥|vídeos/i);
   assert.match(map, /Deixe a LIA conduzir sua primeira intervenção/);
   assert.match(map, /lia-evelyn-carta\.jpg/);
+  assert.match(map, /100% pelo WhatsApp/);
+  assert.match(map, /Sem baixar aplicativo/);
+  assert.match(map, /id="whatsappDemo"/);
+  assert.match(map, /id="faqSection"/);
+  assert.match(map, /Sua semana com a LIA/);
 });
 
 test('/raiz permanece isolado e o Mapa não aciona automações legadas', () => {
