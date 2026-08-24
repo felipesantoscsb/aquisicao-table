@@ -23,13 +23,15 @@
   │  que guarda no Redis e encaminha. Falha da API não perde onboarding.     │
   ╰──────────────────────────────────────────────────────────────────────────╯
 -->
+<script src="/js/lia-product-config.js"></script>
 <script>
+var PRODUCT = window.LIA_PRODUCT_CONFIG;
 var CONFIG = {
-  TRIAL_DAYS: 7,
+  TRIAL_DAYS: PRODUCT.TRIAL_DAYS,
   // Só usado no fallback do CTA final; o normal é a LIA falar primeiro.
-  WHATSAPP_NUMBER: "5511977130088",
-  SUPPORT_URL: "https://wa.me/5511977130088",
-  PIXEL_ID: "519946826343805",
+  WHATSAPP_NUMBER: PRODUCT.WHATSAPP_NUMBER,
+  SUPPORT_URL: "https://wa.me/" + PRODUCT.WHATSAPP_NUMBER,
+  PIXEL_ID: PRODUCT.PIXEL_ID,
   DEBUG: false
 };
 </script>
@@ -390,6 +392,14 @@ footer a{color:var(--ink-2)}
         o:['sim, pode me procurar','prefiro que ela só responda quando eu falar'] }
     ]}
   ];
+  var MAP_REDUNDANT_STEPS = ['goal','when','before','after','rules','routine'];
+  var mapIntegrated = false;
+  function integrateMapIntoOnboarding(){
+    if (mapIntegrated) return;
+    mapIntegrated = true;
+    STEPS = STEPS.filter(function(s){ return MAP_REDUNDANT_STEPS.indexOf(s.id) === -1; });
+    analytics.track('map_imported_to_onboarding');
+  }
 
   var answers = {}, step = 0, phone = '', preferredName = '';
 
@@ -506,8 +516,6 @@ footer a{color:var(--ink-2)}
   /* ── Navegação ────────────────────────────────────────────────────────── */
   $('go').addEventListener('click', function(){
     analytics.track('onboarding_started', { has_ref: !!purchaseRef });
-    // Pixel LIA: StartTrial (conversão de início de trial) ao chegar no onboarding
-    if (window.fbq && CONFIG.PIXEL_ID) { try { fbq('track','StartTrial', { currency: 'BRL' }); } catch(e){} }
     show('s-phone');
     if (phone) $('phone').value = phone;
     if (preferredName) $('prefName').value = preferredName;
@@ -617,7 +625,10 @@ footer a{color:var(--ink-2)}
   if (purchaseRef){
     fetch('/api/lia/context?ref=' + encodeURIComponent(purchaseRef))
       .then(function(r){ return r.json(); })
-      .then(function(c){ if (c && c.found && c.phone_prefill && !phone){ phone = c.phone_prefill; $('phone').value = c.phone_prefill; } })
+      .then(function(c){
+        if (c && c.map_found) integrateMapIntoOnboarding();
+        if (c && c.found && c.phone_prefill && !phone){ phone = c.phone_prefill; $('phone').value = c.phone_prefill; }
+      })
       .catch(function(){});
   }
 
