@@ -92,24 +92,38 @@ h2.rv.in{filter:blur(0);transition:opacity .8s var(--ease),transform .8s var(--e
   border:1px solid var(--line);background:var(--surface);border-radius:var(--radius-sm);
   padding:16px 17px;text-align:left;line-height:1.4;font-size:15.5px;color:var(--ink-2);cursor:pointer;
   transition:border-color .16s var(--ease),background .16s var(--ease),transform .1s}
-.option::before{content:"";width:19px;height:19px;flex:0 0 auto;margin-top:1px;border:1.5px solid var(--line);
+.opt-dot{width:19px;height:19px;flex:0 0 auto;margin-top:1px;border:1.5px solid var(--line);
   border-radius:50%;position:relative;transition:all .16s}
 .option:hover{border-color:var(--moss-lt)}
 .option:active{transform:scale(.99)}
 .option.chosen{border-color:var(--moss-lt);background:var(--moss-pale);color:var(--ink)}
-.option.chosen::before{border-color:var(--moss);background:var(--moss)}
-.option.chosen::after{content:"";position:absolute;width:5px;height:9px;border-right:2px solid #fff;border-bottom:2px solid #fff;
-  transform:translate(6.5px,4.5px) rotate(43deg)}
+.option.chosen .opt-dot{border-color:var(--moss);background:var(--moss)}
+.option.chosen .opt-dot::after{content:"";position:absolute;left:6px;top:4px;width:5px;height:9px;
+  border-right:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(43deg)}
 
 /* ── interpolação (a LIA lendo em voz alta) ────────────────────────────── */
 .interp{padding:28px}
 .interp .mark{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--moss);
   font-family:var(--serif);font-size:16px;color:#fff;margin-bottom:20px}
-.interp-beats{display:flex;flex-direction:column;gap:14px;margin:0 0 26px}
-.beat{font-family:var(--serif);font-size:clamp(18px,4.6vw,22px);line-height:1.36;letter-spacing:-.01em;color:var(--ink);
-  opacity:0;transform:translateY(8px);animation:beatIn .55s var(--ease) forwards;animation-delay:calc(var(--i,0) * 220ms)}
-.beat.beat-bridge{font-size:14px;color:var(--moss-lt);margin-top:2px}
-@keyframes beatIn{to{opacity:1;transform:none}}
+.interp-beats{display:flex;flex-direction:column;gap:0;margin:4px 0 28px}
+/* Corrente: mesma metáfora visual do .cycle mais abaixo, porque é
+   literalmente o que a legenda promete ("a LIA está conectando pontos").
+   Revelação via transição + classe .in (JS, requestAnimationFrame) — não
+   via animation-on-mount, que falhava silenciosamente em alguns navegadores
+   (display:none -> block nem sempre dispara a animação de forma confiável). */
+.beat{position:relative;padding:0 0 20px 24px;opacity:0;transform:translateY(8px);
+  transition:opacity .5s var(--ease),transform .5s var(--ease);transition-delay:calc(var(--i,0) * 200ms)}
+.beat.in{opacity:1;transform:none}
+.beat::before{content:"";position:absolute;left:0;top:.5em;width:8px;height:8px;border-radius:50%;
+  background:var(--moss);opacity:.9;transform:scale(0);transition:transform .35s var(--ease);transition-delay:calc(var(--i,0) * 200ms)}
+.beat.in::before{transform:scale(1)}
+.beat::after{content:"";position:absolute;left:3.5px;top:1.3em;width:1px;height:calc(100% - 1em);
+  background:var(--moss-lt);opacity:.3}
+.beat:last-child{padding-bottom:0}
+.beat:last-child::after{display:none}
+.beat p{margin:0;font-family:var(--serif);font-size:clamp(17px,4.3vw,20px);line-height:1.4;letter-spacing:-.01em;color:var(--ink)}
+.beat.beat-bridge p{font-size:14px;color:var(--moss-lt);font-family:var(--sans)}
+.beat.beat-bridge::before{background:var(--moss-lt);width:6px;height:6px}
 
 /* ── formulário de captura ──────────────────────────────────────────────── */
 .form-card{padding:26px}
@@ -122,6 +136,10 @@ h2.rv.in{filter:blur(0);transition:opacity .8s var(--ease),transform .8s var(--e
 .consent-note{font-size:12px;line-height:1.55;color:var(--ink-3);margin:14px 0 18px;text-align:center}
 .consent-note a{text-decoration:underline;color:var(--ink-2)}
 .error{display:none;color:#A6412B;font-size:13px;margin:4px 0 14px;text-align:center}
+/* O botão ficava colado no último campo: .error some (display:none) quando
+   não há erro e some com o espaço junto. Margem fixa no botão do form
+   garante respiro em qualquer um dos dois estados. */
+#contactForm .btn{margin-top:22px}
 
 /* ── resultado: cabeçalho ───────────────────────────────────────────────── */
 .result-head{padding-bottom:24px;border-bottom:1px solid var(--line-soft)}
@@ -146,17 +164,17 @@ h2.rv.in{filter:blur(0);transition:opacity .8s var(--ease),transform .8s var(--e
 .cycle{margin:28px 0;position:relative}
 .cycle-item.v2{position:relative;padding:0 0 22px 26px;display:block}
 .cycle-item.v2::before{content:"";position:absolute;left:2px;top:5px;width:8px;height:8px;border-radius:50%;
-  background:var(--moss);opacity:.9;transform:scale(0);animation:dotIn .5s var(--ease) forwards;animation-delay:calc(var(--n,0) * 160ms)}
+  background:var(--moss);opacity:.9;transform:scale(0);transition:transform .4s var(--ease);transition-delay:calc(var(--n,0) * 160ms)}
 .cycle-item.v2::after{content:"";position:absolute;left:5.5px;top:17px;width:1px;height:calc(100% - 22px);
-  background:var(--moss-lt);opacity:.3;transform:scaleY(0);transform-origin:top;animation:lineIn .4s var(--ease) forwards;animation-delay:calc(var(--n,0) * 160ms + 200ms)}
+  background:var(--moss-lt);opacity:.3;transform:scaleY(0);transform-origin:top;transition:transform .35s var(--ease);transition-delay:calc(var(--n,0) * 160ms + 180ms)}
 .cycle-item.v2:last-child::after{display:none}
 .cycle-item.v2 b{display:block;font-family:var(--serif);font-size:16.5px;font-weight:400;margin-bottom:6px;
-  opacity:0;transform:translateY(6px);animation:txtIn .5s var(--ease) forwards;animation-delay:calc(var(--n,0) * 160ms + 120ms)}
+  opacity:0;transform:translateY(6px);transition:opacity .4s var(--ease),transform .4s var(--ease);transition-delay:calc(var(--n,0) * 160ms + 100ms)}
 .cycle-item.v2 ul{margin:0;padding-left:18px;color:var(--ink-3);font-size:13.5px;line-height:1.6;
-  opacity:0;transform:translateY(6px);animation:txtIn .5s var(--ease) forwards;animation-delay:calc(var(--n,0) * 160ms + 170ms)}
-@keyframes dotIn{0%{transform:scale(0)}60%{transform:scale(1.35)}100%{transform:scale(1)}}
-@keyframes lineIn{to{transform:scaleY(1)}}
-@keyframes txtIn{to{opacity:1;transform:none}}
+  opacity:0;transform:translateY(6px);transition:opacity .4s var(--ease),transform .4s var(--ease);transition-delay:calc(var(--n,0) * 160ms + 150ms)}
+.cycle-item.v2.in::before{transform:scale(1)}
+.cycle-item.v2.in::after{transform:scaleY(1)}
+.cycle-item.v2.in b,.cycle-item.v2.in ul{opacity:1;transform:none}
 
 .nuance{color:var(--ink-3);font-size:13.5px;line-height:1.62;margin-top:18px}
 
@@ -179,17 +197,20 @@ h2.rv.in{filter:blur(0);transition:opacity .8s var(--ease),transform .8s var(--e
 .authority p{font-size:13.5px;line-height:1.55;color:var(--ink-2);margin:7px 0}
 .authority b{font-family:var(--serif);font-size:18px;font-weight:400}
 
-.evelyn-audio{display:flex;align-items:center;gap:13px;background:var(--surface);border:1px solid var(--line);
-  border-radius:var(--radius-sm);padding:14px;margin-top:14px;box-shadow:var(--shadow-sm)}
-.evelyn-audio img{width:44px;height:44px;border-radius:50%;object-fit:cover;flex:0 0 auto}
-.audio-play{width:36px;height:36px;flex:0 0 auto;border-radius:50%;border:none;cursor:pointer;
+/* Compacto de propósito: vive DENTRO do balão de chat da demo, não é mais
+   card avulso. O áudio É a intervenção, por isso mora na própria mensagem
+   "Intervenção escolhida" em vez de anunciada em texto antes dela. */
+.demo-card.audio-msg{padding-bottom:13px}
+.evelyn-audio{display:flex;align-items:center;gap:10px;margin-top:9px}
+.evelyn-audio img{width:32px;height:32px;border-radius:50%;object-fit:cover;flex:0 0 auto}
+.audio-play{width:32px;height:32px;flex:0 0 auto;border-radius:50%;border:none;cursor:pointer;
   background:var(--moss);color:#fff;display:flex;align-items:center;justify-content:center;padding:0}
-.audio-play svg{width:12px;height:12px;fill:currentColor;margin-left:2px}
+.audio-play svg{width:11px;height:11px;fill:currentColor;margin-left:2px}
 .audio-body{flex:1;min-width:0}
-.audio-body .who{font-size:13.5px;font-weight:600}
-.audio-body .who span{font-weight:400;color:var(--ink-3);font-size:12px;margin-left:4px}
-.wave{display:flex;align-items:center;gap:2.5px;height:22px;margin-top:5px}
-.wave i{display:block;width:2.5px;border-radius:2px;background:var(--moss-lt);opacity:.35;height:var(--h,8px)}
+.audio-body .who{font-size:12.5px;font-weight:600}
+.audio-body .who span{font-weight:400;color:var(--ink-3);font-size:11px;margin-left:4px}
+.wave{display:flex;align-items:center;gap:2px;height:18px;margin-top:4px}
+.wave i{display:block;width:2px;border-radius:2px;background:var(--moss-lt);opacity:.35;height:var(--h,7px)}
 .evelyn-audio.playing .wave i{animation:wavePulse .9s var(--ease) infinite alternate;animation-delay:calc(var(--n) * 40ms)}
 @keyframes wavePulse{from{transform:scaleY(.55);opacity:.35}to{transform:scaleY(1.25);opacity:.85}}
 
@@ -302,15 +323,18 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
 .debug.on{display:block}
 
 /* ── resultado: revelação em estágio (não depende de scroll, a tela some/aparece) */
-#result.active .result-head,#result.active .points .point,#result.active .hypothesis,
-#result.active .cycle,#result.active .locked{animation:in .5s ease both}
-#result.active .points .point:nth-child(1){animation-delay:.15s}
-#result.active .points .point:nth-child(2){animation-delay:.3s}
-#result.active .points .point:nth-child(3){animation-delay:.45s}
-#result.active .hypothesis{animation-delay:.62s}
-#result.active .cycle{animation-delay:.78s}
-#result.active .locked{animation-delay:.94s}
-@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+/* Revelação do resultado por transição + classe .rr ("result reveal"),
+   disparada via JS em requestAnimationFrame depois de show('result') — não
+   por animation-on-mount, que pode nunca disparar (mesmo bug dos beats). */
+.result-head,.points .point,.hypothesis,.cycle,.locked{opacity:0;transform:translateY(10px);
+  transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.result-head.rr,.points .point.rr,.hypothesis.rr,.cycle.rr,.locked.rr{opacity:1;transform:none}
+.points .point:nth-child(1){transition-delay:.15s}
+.points .point:nth-child(2){transition-delay:.3s}
+.points .point:nth-child(3){transition-delay:.45s}
+.hypothesis{transition-delay:.55s}
+.cycle{transition-delay:.68s}
+.locked{transition-delay:.85s}
 
 @media(min-width:700px){
   main{padding-top:52px}
@@ -327,6 +351,8 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
   *,*::before,*::after{animation:none!important;transition:none!important}
   .rv{opacity:1;transform:none;filter:none}
   .beat{opacity:1;transform:none}
+  .beat::before{transform:scale(1)}
+  .result-head,.points .point,.hypothesis,.cycle,.locked{opacity:1;transform:none}
   .cycle-item.v2::before{transform:scale(1)}
   .cycle-item.v2::after{transform:scaleY(1)}
   .cycle-item.v2 b,.cycle-item.v2 ul{opacity:1;transform:none}
@@ -411,16 +437,6 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
         <section class="story-section" id="evelynSection">
           <p class="eyebrow rv">De onde vem o método</p><h2 class="rv" style="--i:1">Uma metodologia construída em consulta, presente no seu dia a dia.</h2>
           <div class="authority rv" style="--i:2"><img src="/images/lia-evelyn-carta.jpg" alt="Evelyn Liu" width="112" height="144" loading="lazy"><div><b>Evelyn Liu</b><p>Nutricionista e fundadora da Table. Durante anos, transformou a escuta clínica em uma metodologia de Nutrição Comportamental para ajudar pessoas a mudar a relação com comida e corpo.</p><p>A LIA não substitui Evelyn nem inventa um método. Ela leva essa experiência ao momento em que ela pode fazer diferença.</p></div></div>
-          <div class="evelyn-audio rv" style="--i:3" id="evelynCard">
-            <img src="/images/lia-evelyn-avatar.jpg" alt="" width="44" height="44" loading="lazy" decoding="async"/>
-            <button class="audio-play" id="evelynPlay" aria-label="Reproduzir exemplo de áudio da Evelyn">
-              <svg viewBox="0 0 12 14" aria-hidden="true"><path d="M0 0l12 7-12 7z"/></svg>
-            </button>
-            <div class="audio-body">
-              <div class="who">Evelyn <span>01:38 · exemplo de intervenção em áudio</span></div>
-              <div class="wave" id="evelynWave" aria-hidden="true"></div>
-            </div>
-          </div>
         </section>
 
         <section class="story-section" id="librarySection">
@@ -432,7 +448,7 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
 
         <section class="story-section">
           <p class="eyebrow rv">Na prática, pelo WhatsApp</p><h2 class="rv" style="--i:1">A intervenção muda conforme o que está acontecendo.</h2>
-          <div class="phone-demo rv" style="--i:2" id="whatsappDemo"><div class="phone-head"><i>L</i><div><b>LIA</b><span>online no WhatsApp</span></div></div><div class="phone-chat"><div class="demo-flow"><div class="demo-card me" style="--delay:.15s"><small>Você · 21:47</small>Hoje cheguei exausta e acabei comendo muito além da fome.</div><div class="typing-dots" aria-hidden="true"><i></i><i></i><i></i></div><div class="demo-card lia" style="--delay:.8s"><small>A LIA percebeu</small>Sobrecarga + busca por alívio</div><div class="demo-card lia" style="--delay:1.45s"><small>Intervenção escolhida</small>Tenho uma prática curta que pode ajudar a separar a exaustão da urgência de comer. Quer fazer comigo agora?</div><div class="demo-card lia" style="--delay:2.1s"><small>No dia seguinte</small>Como você ficou depois daquele momento?</div></div></div></div>
+          <div class="phone-demo rv" style="--i:2" id="whatsappDemo"><div class="phone-head"><i>L</i><div><b>LIA</b><span>online no WhatsApp</span></div></div><div class="phone-chat"><div class="demo-flow"><div class="demo-card me" style="--delay:.15s"><small>Você · 21:47</small>Hoje cheguei exausta e acabei comendo muito além da fome.</div><div class="typing-dots" aria-hidden="true"><i></i><i></i><i></i></div><div class="demo-card lia" style="--delay:.8s"><small>A LIA percebeu</small>Sobrecarga + busca por alívio</div><div class="demo-card lia audio-msg" style="--delay:1.45s"><small>Intervenção escolhida</small><div class="evelyn-audio" id="evelynCard"><img src="/images/lia-evelyn-avatar.jpg" alt="" width="36" height="36" loading="lazy" decoding="async"/><button class="audio-play" id="evelynPlay" aria-label="Reproduzir exemplo de áudio da Evelyn"><svg viewBox="0 0 12 14" aria-hidden="true"><path d="M0 0l12 7-12 7z"/></svg></button><div class="audio-body"><div class="who">Evelyn <span>0:38</span></div><div class="wave" id="evelynWave" aria-hidden="true"></div></div></div></div><div class="demo-card lia" style="--delay:2.1s"><small>No dia seguinte</small>Como você ficou depois daquele momento?</div></div></div></div>
           <p class="note">Exemplo ilustrativo. A resposta e a intervenção mudam conforme o contexto e as regras de segurança.</p>
 
           <div class="weekly-card rv" style="--i:3"><div class="weekly-top"><b>Sua semana com a LIA</b><span>um exemplo</span></div><dl><dt>Ela percebeu</dt><dd>O fim do dia continua sendo o momento mais vulnerável.</dd><dt>Você percebeu</dt><dd>Conseguiu notar o gatilho antes de agir, duas vezes.</dd><dt>Próximo experimento</dt><dd>Criar uma pausa antes do horário em que o ciclo costuma começar.</dd></dl></div>
@@ -542,7 +558,7 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
   trackView('faqSection','faq_section_view');
   // Waveform determinística (sem random, sem CLS) — mesma técnica do /lia.
   (()=>{const el=document.getElementById('evelynWave');if(!el)return;let html='';
-    for(let i=0;i<28;i++){const h=Math.round((0.32+0.66*Math.abs(Math.sin(i*1.31)*Math.cos(i*0.44)))*20);html+=`<i style="--h:${h}px;--n:${i}"></i>`}
+    for(let i=0;i<18;i++){const h=Math.round((0.32+0.66*Math.abs(Math.sin(i*1.31)*Math.cos(i*0.44)))*16);html+=`<i style="--h:${h}px;--n:${i}"></i>`}
     el.innerHTML=html;})();
   const evelynPlay=document.getElementById('evelynPlay');
   if(evelynPlay)evelynPlay.addEventListener('click',()=>{const on=document.getElementById('evelynCard').classList.toggle('playing');if(on)track('evelyn_audio_played')});
@@ -565,7 +581,7 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
     document.getElementById('bar').style.width=`${Math.min(100,(state.answers.length/E.MAX_ANSWERS)*100)}%`;
     document.getElementById('question').textContent=q.prompt;
     const wrap=document.getElementById('options'); wrap.innerHTML='';
-    q.options.forEach(o=>{ const b=document.createElement('button'); b.className='option'; b.textContent=o.label; b.onclick=()=>answer(q,o,b); wrap.appendChild(b); });
+    q.options.forEach(o=>{ const b=document.createElement('button'); b.className='option'; const dot=document.createElement('span'); dot.className='opt-dot'; const txt=document.createElement('span'); txt.textContent=o.label; b.append(dot,txt); b.onclick=()=>answer(q,o,b); wrap.appendChild(b); });
     show('quiz');updateDebug();
   }
   function answer(q,o,button){
@@ -574,7 +590,13 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
     track('question_answered',{answer_count:state.answers.length});
     if(previousBranch && previousBranch!==state.branch)track('branch_changed',{from_branch:previousBranch,to_branch:state.branch,answer_count:state.answers.length});
     updateDebug();
-    setTimeout(()=>{ delete button.parentNode.dataset.locked; if(state.answers.length===3 || state.answers.length===6){ const mid=E.midanswer(state.answers);const beatsWrap=document.getElementById('interpBeats');beatsWrap.innerHTML='';mid.beats.forEach((b,bi)=>{const p=document.createElement('p');p.className='beat'+(bi===mid.beats.length-1&&mid.beats.length>4?' beat-bridge':'');p.style.setProperty('--i',bi);p.textContent=b;beatsWrap.appendChild(p)});show('interpolation');track('midanswer_shown',{answer_count:state.answers.length}); } else renderQuestion(); },260);
+    setTimeout(()=>{ delete button.parentNode.dataset.locked; if(state.answers.length===3 || state.answers.length===6){ const mid=E.midanswer(state.answers);const beatsWrap=document.getElementById('interpBeats');beatsWrap.innerHTML='';
+        const beatEls=mid.beats.map((b,bi)=>{const el=document.createElement('div');el.className='beat'+(bi===mid.beats.length-1&&mid.beats.length>4?' beat-bridge':'');el.style.setProperty('--i',bi);const p=document.createElement('p');p.textContent=b;el.appendChild(p);beatsWrap.appendChild(el);return el});
+        show('interpolation');
+        // .in precisa entrar em um frame SEPARADO do mount, senão a transição
+        // não dispara em alguns navegadores (display:none->block não é
+        // suficiente sozinho — é o mesmo bug que via nas revelações por scroll).
+        requestAnimationFrame(()=>requestAnimationFrame(()=>beatEls.forEach(el=>el.classList.add('in'))));track('midanswer_shown',{answer_count:state.answers.length}); } else renderQuestion(); },260);
   }
   document.getElementById('start').onclick=()=>{track('map_started');renderQuestion()};
   document.getElementById('continue').onclick=renderQuestion;
@@ -585,6 +607,13 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
     state.contact={name,email,phone}; const narrative=E.buildNarrative(state.answers);state.artifact=narrative.artifact;
     track('map_completed',{contact:state.contact,map:state.artifact});
     renderResult(narrative);show('result');track('result_viewed');updateDebug();
+    // Revelação do resultado via classe, disparada num frame separado do
+    // mount (mesmo motivo dos beats: display:none->block sozinho não é
+    // garantia confiável de que a animação toca em todo navegador).
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      document.querySelectorAll('.result-head,.points .point,.hypothesis,.cycle,.locked').forEach(el=>el.classList.add('rr'));
+      document.querySelectorAll('.cycle-item.v2').forEach(el=>el.classList.add('in'));
+    }));
   };
   function renderResult(n){
     const a=n.artifact;document.getElementById('letterIntro').textContent=n.intro;document.getElementById('hypothesis').textContent=n.hypothesis;document.getElementById('readingClose').textContent=n.closing;
