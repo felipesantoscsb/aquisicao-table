@@ -7,7 +7,9 @@
   return Object.freeze({
     TRIAL_DAYS: 7,
     FIRST_DELIVERABLE: 'a primeira leitura da sua semana',
-    PAYMENT_METHODS: 'Cartão, Apple Pay ou Google Pay',
+    // Apple Pay/Google Pay tirados em 25/08/2026: não estavam funcionando no
+    // checkout. Só cartão de crédito por enquanto — reavaliar quando corrigido.
+    PAYMENT_METHODS: 'Cartão de crédito',
     THANKYOU_URL: 'https://www.evelynliu.com.br/obrigado-lia',
     WHATSAPP_NUMBER: '5511977130088',
     WHATSAPP_TEXT: 'Oi! Quero começar com a LIA.',
