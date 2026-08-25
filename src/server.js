@@ -1625,8 +1625,10 @@ p{color:var(--ink-2);margin-bottom:14px}
 .offer h2{font-family:var(--serif);font-weight:400;font-size:22px;margin-bottom:6px}
 .offer .note{font-size:13.5px;color:var(--ink-3);margin-bottom:20px}
 .plans{display:grid;gap:12px;margin-bottom:18px}
-.plan{border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center}
+.plan{border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;
+width:100%;background:none;font:inherit;text-align:left;cursor:pointer;-webkit-appearance:none;appearance:none;transition:border-color .15s,background .15s}
 .plan.best{border-color:var(--moss);position:relative}
+.plan.active{border-color:var(--moss-deep);background:var(--moss-pale)}
 .plan .badge{position:absolute;top:-10px;right:14px;background:var(--moss);color:#fff;font-size:10.5px;padding:3px 10px;border-radius:999px}
 .plan .name{font-size:13px;color:var(--ink-3)}
 .plan .amt{font-family:var(--serif);font-size:20px;color:var(--ink)}
@@ -1685,13 +1687,22 @@ function renderMapeamentoPage({ name, narrative, map }) {
       <h2>Continue o que seu mapa começou</h2>
       <p class="note">O acompanhamento começa pelo WhatsApp, já levando o mapa que você construiu.</p>
       <div class="plans">
-        <div class="plan"><span class="name">${escapeHtml(p.monthly.label)}</span><span class="amt">${escapeHtml(p.monthly.price)}<span>${escapeHtml(p.monthly.period)}</span></span></div>
-        <div class="plan best"><span class="badge">${escapeHtml(p.annual.badge || '')}</span><span class="name">${escapeHtml(p.annual.label)}</span><span class="amt">${escapeHtml(p.annual.price)}<span>${escapeHtml(p.annual.period)}</span></span></div>
+        <button type="button" class="plan" data-checkout="${escapeHtml(p.monthly.checkout)}"><span class="name">${escapeHtml(p.monthly.label)}</span><span class="amt">${escapeHtml(p.monthly.price)}<span>${escapeHtml(p.monthly.period)}</span></span></button>
+        <button type="button" class="plan best active" data-checkout="${escapeHtml(p.annual.checkout)}"><span class="badge">${escapeHtml(p.annual.badge || '')}</span><span class="name">${escapeHtml(p.annual.label)}</span><span class="amt">${escapeHtml(p.annual.price)}<span>${escapeHtml(p.annual.period)}</span></span></button>
       </div>
-      <a class="btn" href="${escapeHtml(p.annual.checkout)}">Receber minha primeira intervenção</a>
+      <a class="btn" id="checkoutBtn" href="${escapeHtml(p.annual.checkout)}">Receber minha primeira intervenção</a>
       <p class="guarantee">${LIA_PRODUCT.TRIAL_DAYS} dias grátis, de verdade. Cancele direto com a LIA no WhatsApp e nada é cobrado.</p>
     </div>
     <footer>Table · Uma experiência de reflexão e acompanhamento comportamental.<br>Em situações de urgência, procure um serviço de saúde.</footer>
+    <script>
+      document.querySelectorAll('.plan').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          document.querySelectorAll('.plan').forEach(function(b){ b.classList.remove('active'); });
+          btn.classList.add('active');
+          document.getElementById('checkoutBtn').href = btn.getAttribute('data-checkout');
+        });
+      });
+    </script>
   `);
 }
 
