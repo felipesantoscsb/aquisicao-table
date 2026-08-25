@@ -164,6 +164,12 @@ app.get('/as-cores',   (req, res) => res.sendFile(path.join(pub, 'as-cores.html'
 // LIA — landing do produto (Leitura · Intervenção · Acompanhamento). Página
 // auto-contida: preço, trial e destino do CTA vivem no CONFIG do topo do HTML.
 app.get('/lia',        (req, res) => res.sendFile(path.join(pub, 'lia.html')));
+// Variante da /lia para a base do Protocolo Raiz (disparo por template no
+// WhatsApp). Mesmo PRODUCT config — preço, trial e checkout NÃO divergem da
+// /lia de propósito. Muda só a copy: fala com quem já fez o Raiz e enquadra os
+// 7 dias como cortesia. A URL separada é a atribuição desta coorte: tudo que
+// chega aqui é base morna, e não pode ser lido junto com tráfego frio.
+app.get('/lia-raiz',   (req, res) => res.sendFile(path.join(pub, 'lia-raiz.html')));
 // Obrigado da LIA: página de ATIVAÇÃO (leva pro WhatsApp), não de parabéns.
 // É o destino do checkout — quem assina e não manda a 1a mensagem churna no dia 7.
 app.get('/obrigado-lia', (req, res) => res.sendFile(path.join(pub, 'obrigado-lia.html')));
