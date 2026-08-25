@@ -5,6 +5,9 @@ const crypto = require('crypto');
 const fs = require('fs');
 const Redis = require('ioredis');
 const LIA_PRODUCT = require('../public/js/lia-product-config.js');
+// Motor puro do quiz (buildNarrative é função determinística de answers) —
+// reaproveitado em /l/:id pra reconstruir a leitura original sem duplicar lógica.
+const LIA_ENGINE = require('../public/js/mapa-lia-engine.js');
 
 // ─── Redis (compartilhado com sdr-table) ──────────────────────────────────────
 let _redis;
@@ -46,6 +49,23 @@ const PORT = process.env.PORT || 3000;
 
 // ─── Middlewares ───────────────────────────────────────────────────────────────
 
+
+// ─── Verificação de domínio Apple Pay (Paddle) ────────────────────────────────
+// A Apple busca https://evelynliu.com.br/.well-known/apple-developer-merchantid-domain-association
+// e é intransigente: não segue redirect, não passa por login e compara o corpo
+// byte a byte. Por isso este mount vem ANTES de tudo — antes dos parsers, do
+// gate de token e das rotas do funil — e serve o arquivo cru.
+// Sem ele daria 404 mesmo com o arquivo no lugar: o express.static lá embaixo
+// usa dotfiles:'ignore' (padrão) e finge que a pasta .well-known não existe.
+app.use('/.well-known', express.static(path.join(__dirname, '..', 'public', '.well-known'), {
+  dotfiles: 'allow',
+  index: false,
+  redirect: false,
+  setHeaders: (res, filePath) => {
+    // O arquivo da Apple não tem extensão; sem isto sairia application/octet-stream.
+    if (!path.extname(filePath)) res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  },
+}));
 
 // Body parsers — json primário, text como fallback para webhooks sem Content-Type correto
 app.use(express.json({ strict: false }));
@@ -1516,6 +1536,157 @@ app.post('/api/mapa-lia/events', async (req, res) => {
     metricsIncr(`mapa_lia_capi_${event}_failed`).catch(() => {});
     console.error('[Mapa LIA/CAPI]', e.message);
   });
+});
+
+// ─── Mapeamento (link do dossiê da LIA, disparado por template no WhatsApp) ──
+// Mesma lógica do dossiê do Raiz (sdr-table: /d/:slug + botão de URL dinâmica
+// no template, {{1}} = id) — mas sem precisar de storage novo nem geração por
+// IA: a leitura inteira já é reconstruída a partir de session.map.answers,
+// reaproveitando o MESMO motor determinístico que gerou a leitura original
+// (buildNarrative é função pura de answers — mesmos ids, mesmo texto).
+// Página aditiva: não usa nenhuma rota/tabela do /mapa-lia em si.
+
+const MICRO_URGENCY = {
+  overload: 'Dias cheios não avisam quando vão terminar sem sobrar nada pra você — e é nesse ponto que o ciclo mais aparece. Sem um espaço reservado antes desse momento, ele tende a se repetir na próxima semana parecida.',
+  emotional_relief: 'Enquanto a comida continuar sendo o caminho mais curto até o alívio, ela vai seguir sendo escolhida — não por falta de força, mas porque ainda é o que funciona mais rápido. Mudar isso pede um caminho alternativo pronto antes da próxima vez.',
+  rigidity: 'O primeiro deslize não é o que custa caro — é o que vem depois dele. Sem trabalhar esse tudo-ou-nada, a próxima quebra de regra tende a puxar o mesmo efeito em cascata de sempre.',
+  automaticity: 'Esse tipo de sequência tende a se repetir enquanto as pistas que a disparam continuarem passando despercebidas. Reconhecê-las a tempo é o que muda o ponto em que você entra na decisão.',
+  disconnection: 'Quando fome, cansaço e emoção chegam misturados, fica fácil confundir um pelo outro — e essa confusão tende a se repetir até que os sinais fiquem mais nítidos.',
+  self_criticism: 'A dureza que vem depois do episódio costuma pesar mais que o episódio em si, e é ela que dificulta o retorno. Sem mudar essa parte, o ciclo de culpa tende a se manter do mesmo tamanho.',
+  compensation: 'Compensar um episódio tende a preparar o próximo — é assim que o ciclo se sustenta. Apertar mais não resolveu até aqui, e dificilmente vai resolver sozinho daqui pra frente.',
+};
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+function renderMapeamentoShell(bodyHtml) {
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Seu mapa · LIA</title>
+<style>
+:root{--canvas:#FAF7F2;--surface:#FFFFFF;--line:#E8E3D9;--ink:#1B1F19;--ink-2:#464C42;--ink-3:#7B8177;
+--moss:#3D4A35;--moss-lt:#6B7D5C;--moss-pale:#EDF1E9;--moss-deep:#242C1F;--signal:#B97040;--signal-pale:#FAF0E7;
+--radius:20px;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+--serif:ui-serif,'New York','Iowan Old Style',Palatino,Georgia,serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--canvas);color:var(--ink);font-family:var(--sans);line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:560px;margin:0 auto;padding:40px 22px 80px}
+.mark{font-family:var(--serif);font-size:20px;color:var(--moss-deep);margin-bottom:34px}
+.mark span{font-size:11px;color:var(--ink-3);font-family:var(--sans);letter-spacing:.04em;margin-left:8px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--moss);font-weight:600;margin-bottom:8px;display:block}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(24px,6vw,30px);color:var(--ink);margin-bottom:16px;line-height:1.3}
+p{color:var(--ink-2);margin-bottom:14px}
+.point{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:12px}
+.point b{display:block;font-family:var(--serif);font-size:16px;color:var(--moss-deep);margin-bottom:6px}
+.point p{margin:0;font-size:14.5px}
+.hypothesis{background:var(--signal-pale);border:1px solid rgba(185,112,64,.25);border-radius:var(--radius);padding:22px;margin:24px 0}
+.hypothesis .eyebrow{color:var(--signal)}
+.hypothesis p{color:var(--ink);margin:0;font-size:15px}
+.cycle{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin:20px 0}
+.cycle .node{margin-bottom:12px}
+.cycle .node:last-child{margin-bottom:0}
+.cycle .node b{display:block;font-size:12.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.cycle .node span{font-size:14.5px;color:var(--ink-2)}
+.intervention{background:var(--moss-pale);border:1px solid rgba(107,125,92,.3);border-radius:var(--radius);padding:22px;margin:24px 0;text-align:center}
+.intervention .eyebrow{color:var(--moss)}
+.intervention h3{font-family:var(--serif);font-weight:400;font-size:19px;color:var(--moss-deep);margin-bottom:6px}
+.intervention .meta{font-size:12.5px;color:var(--ink-3);margin-bottom:10px}
+.urgency{font-size:15px;color:var(--ink);margin:26px 0;padding:18px 20px;border-left:3px solid var(--signal);background:var(--surface);border-radius:0 12px 12px 0}
+.offer{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:26px 22px;margin-top:28px}
+.offer h2{font-family:var(--serif);font-weight:400;font-size:22px;margin-bottom:6px}
+.offer .note{font-size:13.5px;color:var(--ink-3);margin-bottom:20px}
+.plans{display:grid;gap:12px;margin-bottom:18px}
+.plan{border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center}
+.plan.best{border-color:var(--moss);position:relative}
+.plan .badge{position:absolute;top:-10px;right:14px;background:var(--moss);color:#fff;font-size:10.5px;padding:3px 10px;border-radius:999px}
+.plan .name{font-size:13px;color:var(--ink-3)}
+.plan .amt{font-family:var(--serif);font-size:20px;color:var(--ink)}
+.plan .amt span{font-size:12px;color:var(--ink-3);font-family:var(--sans)}
+.btn{display:block;width:100%;text-align:center;background:var(--moss-deep);color:#fff;text-decoration:none;
+padding:16px;border-radius:999px;font-weight:600;font-size:15.5px;margin-top:6px}
+.guarantee{font-size:12.5px;color:var(--ink-3);text-align:center;margin-top:14px}
+footer{margin-top:40px;font-size:11.5px;color:var(--ink-3);text-align:center;line-height:1.6}
+</style></head><body><div class="wrap">
+<div class="mark">LIA<span>uma inteligência da Table</span></div>
+${bodyHtml}
+</div></body></html>`;
+}
+
+function renderMapeamentoNotFound() {
+  return renderMapeamentoShell(`
+    <span class="eyebrow">Este mapa expirou</span>
+    <h1>Não encontramos essa leitura por aqui.</h1>
+    <p>Pode ter passado o prazo, ou o link já foi usado de outro jeito. Sem problema: dá pra fazer um novo mapa em poucos minutos.</p>
+    <a class="btn" href="https://www.evelynliu.com.br/mapa-lia">Fazer meu mapa</a>
+    <footer>Table · Em situações de urgência, procure um serviço de saúde.</footer>
+  `);
+}
+
+function renderMapeamentoPage({ name, narrative, map }) {
+  const greeting = name ? `Oi, ${escapeHtml(name)}.` : 'Oi.';
+  const points = (narrative?.points || []).map(p => `
+    <div class="point"><b>${escapeHtml(p.title)}</b><p>${escapeHtml(p.text)}</p></div>
+  `).join('');
+  const hypothesis = narrative?.hypothesis || map.recommended_intervention_reason || '';
+  const closing = narrative?.closing || '';
+  const cycleNodes = (map.possible_cycle || []).filter(n => n.items?.length).map(n => `
+    <div class="node"><b>${escapeHtml(n.label)}</b><span>${n.items.map(escapeHtml).join(', ')}</span></div>
+  `).join('');
+  const urgency = MICRO_URGENCY[map.primary_mechanism] || 'Ciclos assim raramente somem sozinhos — costumam esperar o próximo dia parecido pra se repetir. Um acompanhamento no momento em que ele aparece é o que costuma mudar isso.';
+  const p = LIA_PRODUCT.PRICING;
+
+  return renderMapeamentoShell(`
+    <span class="eyebrow">Seu mapa, de volta</span>
+    <h1>${greeting} O que você contou ainda tem um desenho.</h1>
+    ${narrative?.intro ? `<p>${escapeHtml(narrative.intro)}</p>` : ''}
+    ${points}
+    ${hypothesis ? `<div class="hypothesis"><span class="eyebrow">A LIA percebeu</span><p>${escapeHtml(hypothesis)}</p></div>` : ''}
+    ${cycleNodes ? `<div class="cycle">${cycleNodes}</div>` : ''}
+    ${closing ? `<p class="nuance">${escapeHtml(closing)}</p>` : ''}
+    ${map.recommended_intervention_name ? `
+    <div class="intervention">
+      <span class="eyebrow">Sua primeira intervenção</span>
+      <h3>${escapeHtml(map.recommended_intervention_name)}</h3>
+      <div class="meta">${escapeHtml(map.recommended_intervention_format || '')} · ${escapeHtml(map.recommended_intervention_duration || '')}</div>
+      <div class="meta">Revelada assim que você começar com a LIA no WhatsApp</div>
+    </div>` : ''}
+    <p class="urgency">${escapeHtml(urgency)}</p>
+    <div class="offer">
+      <h2>Continue o que seu mapa começou</h2>
+      <p class="note">O acompanhamento começa pelo WhatsApp, já levando o mapa que você construiu.</p>
+      <div class="plans">
+        <div class="plan"><span class="name">${escapeHtml(p.monthly.label)}</span><span class="amt">${escapeHtml(p.monthly.price)}<span>${escapeHtml(p.monthly.period)}</span></span></div>
+        <div class="plan best"><span class="badge">${escapeHtml(p.annual.badge || '')}</span><span class="name">${escapeHtml(p.annual.label)}</span><span class="amt">${escapeHtml(p.annual.price)}<span>${escapeHtml(p.annual.period)}</span></span></div>
+      </div>
+      <a class="btn" href="${escapeHtml(p.annual.checkout)}">Receber minha primeira intervenção</a>
+      <p class="guarantee">${LIA_PRODUCT.TRIAL_DAYS} dias grátis, de verdade. Cancele direto com a LIA no WhatsApp e nada é cobrado.</p>
+    </div>
+    <footer>Table · Uma experiência de reflexão e acompanhamento comportamental.<br>Em situações de urgência, procure um serviço de saúde.</footer>
+  `);
+}
+
+app.get('/l/:id', async (req, res) => {
+  const id = String(req.params.id || '').trim();
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  if (!validMapaSession(id)) return res.status(404).send(renderMapeamentoNotFound());
+
+  let session = null;
+  try {
+    const raw = await redisGet(`mapa-lia:session:${id}`);
+    session = raw ? JSON.parse(raw) : null;
+  } catch {}
+
+  if (!session?.map || !Array.isArray(session.map.answers) || !session.map.answers.length) {
+    return res.status(404).send(renderMapeamentoNotFound());
+  }
+
+  let narrative = null;
+  try { narrative = LIA_ENGINE.buildNarrative(session.map.answers); } catch (e) { console.warn('[l/:id] buildNarrative falhou, usando fallback:', e.message); }
+
+  const name = firstName(session.contact?.name || '') || null;
+  res.send(renderMapeamentoPage({ name, narrative, map: session.map }));
 });
 
 // ─── Lead Context (dossiê bootstrap) ─────────────────────────────────────────
