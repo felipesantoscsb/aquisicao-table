@@ -316,6 +316,7 @@ h2.rv.in{filter:blur(0);transition:opacity .8s var(--ease),transform .8s var(--e
 /* oferta */
 .offer{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin-top:26px;box-shadow:var(--shadow)}
 .offer h3{font-family:var(--serif);font-size:24px;font-weight:400;margin:0 0 10px;letter-spacing:-.01em}
+.micro-urgency{font-size:14.5px;color:var(--ink);margin:16px 0;padding:14px 16px;border-left:3px solid var(--signal);background:var(--signal-pale);border-radius:0 10px 10px 0}
 .offer ul{padding-left:18px;color:var(--ink-3);font-size:13.5px;line-height:1.55}
 .plans{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:18px 0}
 .plan{position:relative;border:1px solid var(--line);border-radius:var(--radius-sm);padding:13px;text-align:left;background:var(--surface);cursor:pointer;transition:border-color .16s,background .16s}
@@ -511,6 +512,7 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
         <div class="offer rv">
           <p class="eyebrow">Continue o que seu mapa começou</p><h3>Deixe a LIA conduzir sua primeira intervenção.</h3>
           <p class="note">O acompanhamento começa pelo WhatsApp, já levando o mapa que você acabou de construir.</p>
+          <p class="micro-urgency" id="microUrgency"></p>
           <div class="plans"><button class="plan active" data-plan="monthly"><b id="monthlyLabel"></b><span id="monthlyPrice"></span><span class="plan-note" id="monthlyNote"></span></button><button class="plan" data-plan="annual"><em class="plan-badge" id="annualBadge"></em><b id="annualLabel"></b><span id="annualPrice"></span><span class="plan-note" id="annualNote"></span></button></div>
           <button class="btn" id="checkout">Receber minha primeira intervenção</button>
           <p class="note" id="checkoutError" style="display:none;color:#A6412B;text-align:center;margin:10px 0 0">Não consegui abrir o checkout agora. Tenta de novo em instantes, ou chama a gente no WhatsApp.</p>
@@ -740,6 +742,7 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
     // leitor de tela, o texto real teria o MESMO efeito de "vazar" o que devia
     // ficar reservado pro WhatsApp. Descrição acessível genérica no lugar.
     document.getElementById('interventionSrText').textContent=`Uma intervenção em formato ${a.recommended_intervention_format.toLowerCase()}, de ${a.recommended_intervention_duration}, preparada a partir do seu mapa. O conteúdo é revelado na primeira conversa com a LIA no WhatsApp.`;
+    document.getElementById('microUrgency').textContent = MapaLiaEngine.MICRO_URGENCY[a.primary_mechanism] || '';
   }
 
   // CTA fixo (só mobile): entre o mapa e a oferta existem ~8 telas de rolagem.

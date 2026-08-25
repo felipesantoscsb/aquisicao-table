@@ -1546,15 +1546,9 @@ app.post('/api/mapa-lia/events', async (req, res) => {
 // (buildNarrative é função pura de answers — mesmos ids, mesmo texto).
 // Página aditiva: não usa nenhuma rota/tabela do /mapa-lia em si.
 
-const MICRO_URGENCY = {
-  overload: 'Dias cheios não avisam quando vão terminar sem sobrar nada pra você — e é nesse ponto que o ciclo mais aparece. Sem um espaço reservado antes desse momento, ele tende a se repetir na próxima semana parecida.',
-  emotional_relief: 'Enquanto a comida continuar sendo o caminho mais curto até o alívio, ela vai seguir sendo escolhida — não por falta de força, mas porque ainda é o que funciona mais rápido. Mudar isso pede um caminho alternativo pronto antes da próxima vez.',
-  rigidity: 'O primeiro deslize não é o que custa caro — é o que vem depois dele. Sem trabalhar esse tudo-ou-nada, a próxima quebra de regra tende a puxar o mesmo efeito em cascata de sempre.',
-  automaticity: 'Esse tipo de sequência tende a se repetir enquanto as pistas que a disparam continuarem passando despercebidas. Reconhecê-las a tempo é o que muda o ponto em que você entra na decisão.',
-  disconnection: 'Quando fome, cansaço e emoção chegam misturados, fica fácil confundir um pelo outro — e essa confusão tende a se repetir até que os sinais fiquem mais nítidos.',
-  self_criticism: 'A dureza que vem depois do episódio costuma pesar mais que o episódio em si, e é ela que dificulta o retorno. Sem mudar essa parte, o ciclo de culpa tende a se manter do mesmo tamanho.',
-  compensation: 'Compensar um episódio tende a preparar o próximo — é assim que o ciclo se sustenta. Apertar mais não resolveu até aqui, e dificilmente vai resolver sozinho daqui pra frente.',
-};
+// MICRO_URGENCY vive em mapa-lia-engine.js (fonte única, usada também na
+// oferta do /mapa-lia em si) — aqui só referenciamos via LIA_ENGINE.
+const MICRO_URGENCY = LIA_ENGINE.MICRO_URGENCY;
 
 function escapeHtml(s) {
   return String(s || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
@@ -1591,7 +1585,8 @@ p{color:var(--ink-2);margin-bottom:14px}
 .cycle .node span{font-size:14.5px;color:var(--ink-2)}
 .intervention{background:var(--moss-pale);border:1px solid rgba(107,125,92,.3);border-radius:var(--radius);padding:22px;margin:24px 0;text-align:center}
 .intervention .eyebrow{color:var(--moss)}
-.intervention h3{font-family:var(--serif);font-weight:400;font-size:19px;color:var(--moss-deep);margin-bottom:6px}
+.intervention h3{font-family:var(--serif);font-weight:400;font-size:19px;color:var(--moss-deep);margin-bottom:6px;
+  filter:blur(6px);user-select:none;-webkit-user-select:none;pointer-events:none}
 .intervention .meta{font-size:12.5px;color:var(--ink-3);margin-bottom:10px}
 .urgency{font-size:15px;color:var(--ink);margin:26px 0;padding:18px 20px;border-left:3px solid var(--signal);background:var(--surface);border-radius:0 12px 12px 0}
 .offer{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:26px 22px;margin-top:28px}
@@ -1648,7 +1643,8 @@ function renderMapeamentoPage({ name, narrative, map }) {
     ${map.recommended_intervention_name ? `
     <div class="intervention">
       <span class="eyebrow">Sua primeira intervenção</span>
-      <h3>${escapeHtml(map.recommended_intervention_name)}</h3>
+      <h3 aria-hidden="true">${escapeHtml(map.recommended_intervention_name)}</h3>
+      <span class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Uma intervenção reservada pro que apareceu no seu mapa, revelada na primeira conversa com a LIA no WhatsApp.</span>
       <div class="meta">${escapeHtml(map.recommended_intervention_format || '')} · ${escapeHtml(map.recommended_intervention_duration || '')}</div>
       <div class="meta">Revelada assim que você começar com a LIA no WhatsApp</div>
     </div>` : ''}

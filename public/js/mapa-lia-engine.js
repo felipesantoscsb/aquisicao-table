@@ -270,6 +270,19 @@
     compensation: 'o motor do ciclo pode não ser o episódio, e sim o que vem depois dele. Compensar prepara a próxima repetição. É por isso que apertar mais nunca resolveu.',
   };
 
+  // Usado na seção de oferta (mapa-lia.html) e no /l/:id (server.js, via
+  // require deste mesmo arquivo) — fonte única, pra não haver duas versões
+  // do mesmo texto por mecanismo em lugares diferentes.
+  var MICRO_URGENCY = {
+    overload: 'Dias cheios não avisam quando vão terminar sem sobrar nada pra você — e é nesse ponto que o ciclo mais aparece. Sem um espaço reservado antes desse momento, ele tende a se repetir na próxima semana parecida.',
+    emotional_relief: 'Enquanto a comida continuar sendo o caminho mais curto até o alívio, ela vai seguir sendo escolhida — não por falta de força, mas porque ainda é o que funciona mais rápido. Mudar isso pede um caminho alternativo pronto antes da próxima vez.',
+    rigidity: 'O primeiro deslize não é o que custa caro — é o que vem depois dele. Sem trabalhar esse tudo-ou-nada, a próxima quebra de regra tende a puxar o mesmo efeito em cascata de sempre.',
+    automaticity: 'Esse tipo de sequência tende a se repetir enquanto as pistas que a disparam continuarem passando despercebidas. Reconhecê-las a tempo é o que muda o ponto em que você entra na decisão.',
+    disconnection: 'Quando fome, cansaço e emoção chegam misturados, fica fácil confundir um pelo outro — e essa confusão tende a se repetir até que os sinais fiquem mais nítidos.',
+    self_criticism: 'A dureza que vem depois do episódio costuma pesar mais que o episódio em si, e é ela que dificulta o retorno. Sem mudar essa parte, o ciclo de culpa tende a se manter do mesmo tamanho.',
+    compensation: 'Compensar um episódio tende a preparar o próximo — é assim que o ciclo se sustenta. Apertar mais não resolveu até aqui, e dificilmente vai resolver sozinho daqui pra frente.',
+  };
+
   var INTERVENTIONS = {
     emotional_relief:{ id:'R05', name:'Dez minutos antes de decidir', format:'Conversa guiada', duration:'2 minutos', description:'Uma intervenção breve para criar espaço entre a urgência e a decisão.' },
     overload:{ id:'O02', name:'Mapa do seu fim de dia', format:'Exercício guiado', duration:'3 minutos', description:'Uma leitura mais próxima do horário em que demandas, cansaço e decisões se acumulam.' },
@@ -347,7 +360,7 @@
   }
 
   return {
-    VERSION:VERSION, MAX_ANSWERS:MAX_ANSWERS, QUESTIONS:QUESTIONS, MECHANISMS:MECHANISMS,
+    VERSION:VERSION, MAX_ANSWERS:MAX_ANSWERS, QUESTIONS:QUESTIONS, MECHANISMS:MECHANISMS, MICRO_URGENCY:MICRO_URGENCY,
     nextQuestion:nextQuestion, nextDecision:nextDecision, currentBranch:currentBranch,
     buildSignals:buildSignals, buildConnections:buildConnections, mechanismScores:mechanismScores,
     midanswer:midanswer, interpolation:function(a){return midanswer(a).text;},
