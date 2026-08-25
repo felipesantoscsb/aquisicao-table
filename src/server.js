@@ -170,9 +170,11 @@ app.get('/lia',        (req, res) => res.sendFile(path.join(pub, 'lia.html')));
 // 7 dias como cortesia. A URL separada é a atribuição desta coorte: tudo que
 // chega aqui é base morna, e não pode ser lido junto com tráfego frio.
 app.get('/lia-raiz',   (req, res) => res.sendFile(path.join(pub, 'lia-raiz.html')));
+app.get('/lia-es',     (req, res) => res.sendFile(path.join(pub, 'lia-es.html')));
 // Obrigado da LIA: página de ATIVAÇÃO (leva pro WhatsApp), não de parabéns.
 // É o destino do checkout — quem assina e não manda a 1a mensagem churna no dia 7.
 app.get('/obrigado-lia', (req, res) => res.sendFile(path.join(pub, 'obrigado-lia.html')));
+app.get('/obrigado-lia-es', (req, res) => res.sendFile(path.join(pub, 'obrigado-lia-es.html')));
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -1275,9 +1277,15 @@ async function sendCapiEvent({ eventName, phone, fbclid, fbc, fbp, em, fn, exter
       body: JSON.stringify(metaPayload),
     });
     const json = await res.json();
+    if (!res.ok) {
+      const detail = json?.error?.message || `Meta CAPI respondeu ${res.status}`;
+      throw new Error(detail);
+    }
     console.log(`[CAPI] ${eventName} — fbtrace_id: ${json.fbtrace_id}`);
+    return json;
   } catch (err) {
     console.error(`[CAPI] ${eventName} erro:`, err.message);
+    throw err;
   }
 }
 
@@ -1288,7 +1296,7 @@ async function sendCapiEvent({ eventName, phone, fbclid, fbc, fbp, em, fn, exter
 // funil e identificadores permitidos para mensuração/deduplicação.
 
 const MAPA_LIA_EVENTS = new Set([
-  'map_started', 'question_answered', 'branch_changed', 'midanswer_shown',
+  'page_view', 'map_started', 'question_answered', 'branch_changed', 'midanswer_shown',
   'map_completed', 'result_viewed', 'cta_clicked', 'checkout_started',
   'trial_started', 'first_intervention_unlocked',
   'first_intervention_locked_view', 'first_intervention_unlock',
@@ -1300,10 +1308,20 @@ const MAPA_LIA_EVENTS = new Set([
 ]);
 
 const MAPA_LIA_META_EVENTS = {
+  page_view: 'PageView',
   map_started: 'ViewContent',
   map_completed: 'CompleteRegistration',
   checkout_started: 'InitiateCheckout',
 };
+
+function liaPixelId() {
+  const canonical = LIA_PRODUCT.PIXEL_ID;
+  const configured = cleanMapaString(process.env.LIA_PIXEL_ID, 30);
+  if (configured && configured !== canonical) {
+    console.error(`[LIA/Meta] LIA_PIXEL_ID=${configured} diverge do Pixel canônico ${canonical}; usando o canônico.`);
+  }
+  return canonical;
+}
 
 function cleanMapaString(value, max = 160) {
   return typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -1376,7 +1394,7 @@ function sanitizeMapaArtifact(map) {
 app.get('/api/mapa-lia/config', (_req, res) => {
   // Pixel ID é público por natureza; tokens e qualquer dado da pessoa ficam no servidor.
   res.json({
-    pixel_id: process.env.LIA_PIXEL_ID || LIA_PRODUCT.PIXEL_ID,
+    pixel_id: liaPixelId(),
     trial_days: LIA_PRODUCT.TRIAL_DAYS,
     payment_methods: LIA_PRODUCT.PAYMENT_METHODS,
     pricing: LIA_PRODUCT.PRICING,
@@ -1473,7 +1491,7 @@ app.post('/api/mapa-lia/events', async (req, res) => {
   res.json({ ok: true });
 
   const metaEvent = MAPA_LIA_META_EVENTS[event];
-  const pixelId = process.env.LIA_PIXEL_ID;
+  const pixelId = liaPixelId();
   const token = process.env.LIA_CAPI_TOKEN || process.env.META_CAPI_TOKEN;
   if (!metaEvent || !pixelId || !token) return;
 
@@ -1492,7 +1510,12 @@ app.post('/api/mapa-lia/events', async (req, res) => {
     req,
     pixelId,
     accessToken: token,
-  }).catch(e => console.error('[Mapa LIA/CAPI]', e.message));
+  }).then(() => {
+    metricsIncr(`mapa_lia_capi_${event}_ok`).catch(() => {});
+  }).catch(e => {
+    metricsIncr(`mapa_lia_capi_${event}_failed`).catch(() => {});
+    console.error('[Mapa LIA/CAPI]', e.message);
+  });
 });
 
 // ─── Lead Context (dossiê bootstrap) ─────────────────────────────────────────
@@ -2480,7 +2503,8 @@ async function handleLiaTicto(body) {
 
   // O início real do trial só é contabilizado pelo webhook da Ticto. Clique no
   // checkout não é tratado como trial para não inflar a métrica do Mapa.
-  if (record.source_session && /trial|teste|avalia[cç][aã]o/i.test(status)) {
+  const trialStarted = /trial|teste|avalia[cç][aã]o/i.test(status);
+  if (record.source_session && trialStarted) {
     metricsIncr('mapa_lia_trial_started').catch(() => {});
     try {
       const mapKey = `mapa-lia:session:${record.source_session}`;
@@ -2492,14 +2516,40 @@ async function handleLiaTicto(body) {
     } catch {}
   }
 
+  if (trialStarted) {
+    const token = process.env.LIA_CAPI_TOKEN || process.env.META_CAPI_TOKEN;
+    if (!token) {
+      console.warn('[LIA/Ticto] Token CAPI ausente - StartTrial não enviado.');
+    } else {
+      sendCapiEvent({
+        eventName: 'StartTrial',
+        phone: record.phone, em: record.email, fbc, fbp: record.fbp,
+        external_id: record.email ? sha256(record.email) : undefined,
+        customData: {
+          currency: 'BRL',
+          value: value ?? 0,
+          content_name: 'LIA - ' + record.plano,
+          content_ids: record.offer_id ? [String(record.offer_id)] : undefined,
+        },
+        eventSourceUrl: 'https://www.evelynliu.com.br/mapa-lia',
+        eventId: `${txId}:start_trial`,
+        pixelId: liaPixelId(), accessToken: token,
+      }).then(() => metricsIncr('mapa_lia_capi_start_trial_ok').catch(() => {}))
+        .catch((e) => {
+          metricsIncr('mapa_lia_capi_start_trial_failed').catch(() => {});
+          console.error('[LIA/Ticto] StartTrial CAPI erro:', e.message);
+        });
+    }
+  }
+
   // CAPI so na venda aprovada, e SEMPRE no pixel da LIA. Sem LIA_PIXEL_ID
   // nada e enviado - melhor nao mandar do que mandar pro pixel do Raiz.
   if (status === 'authorized' && value != null) {
     if (record.source_session) metricsIncr('mapa_lia_first_billing').catch(() => {});
-    const pixelId = process.env.LIA_PIXEL_ID;
+    const pixelId = liaPixelId();
     const token   = process.env.LIA_CAPI_TOKEN || process.env.META_CAPI_TOKEN;
-    if (!pixelId) {
-      console.warn('[LIA/Ticto] LIA_PIXEL_ID ausente - Purchase NAO enviado (nao usamos o pixel do Raiz).');
+    if (!token) {
+      console.warn('[LIA/Ticto] Token CAPI ausente - Purchase NÃO enviado.');
     } else {
       sendCapiEvent({
         eventName: 'Purchase',
@@ -2510,11 +2560,16 @@ async function handleLiaTicto(body) {
           content_name: 'LIA - ' + record.plano,
           content_ids: record.offer_id ? [String(record.offer_id)] : undefined,
         },
-        eventSourceUrl: 'https://www.evelynliu.com.br/lia',
+        eventSourceUrl: 'https://www.evelynliu.com.br/mapa-lia',
         eventId: txId,                 // dedup de retries da Ticto
         pixelId, accessToken: token,
-      }).catch(e => console.error('[LIA/Ticto] CAPI erro:', e.message));
-      console.log(`[LIA/Ticto] Purchase enviado: ${txId} | R$${value} | ${record.plano}`);
+      }).then(() => {
+        metricsIncr('mapa_lia_capi_purchase_ok').catch(() => {});
+        console.log(`[LIA/Ticto] Purchase enviado: ${txId} | R$${value} | ${record.plano}`);
+      }).catch(e => {
+        metricsIncr('mapa_lia_capi_purchase_failed').catch(() => {});
+        console.error('[LIA/Ticto] Purchase CAPI erro:', e.message);
+      });
     }
   }
 }
@@ -3919,6 +3974,77 @@ app.get('/api/lia/draft', async (req, res) => {
   const raw = await redisGet(key + ':draft');
   if (!raw) return res.json({ found: false });
   try { return res.json({ found: true, ...JSON.parse(raw) }); } catch { return res.json({ found: false }); }
+});
+
+// ─── LIA Espanha — casca comercial do MVP ──────────────────────────────────
+// Neste estágio não encaminha para o backend da LIA: primeiro preserva o
+// onboarding es-ES com idempotência. O roteamento multilíngue será conectado
+// quando a LIA tiver locale/market como fonte de verdade, sem deixar o prompt
+// pt-BR responder por engano a uma cliente espanhola.
+const LIA_ES_EVENTS = new Set([
+  'page_view', 'cta_clicked', 'checkout_started', 'thank_you_viewed',
+  'onboarding_step_completed', 'onboarding_completed', 'onboarding_failed',
+]);
+
+function toE164ES(raw) {
+  if (!raw) return null;
+  let digits = String(raw).replace(/\D/g, '');
+  if (digits.startsWith('00')) digits = digits.slice(2);
+  if (digits.length === 9) digits = '34' + digits;
+  if (!digits.startsWith('34') || digits.length !== 11) return null;
+  return '+' + digits;
+}
+
+app.post('/api/lia-es/events', async (req, res) => {
+  const body = req.body || {};
+  const event = cleanMapaString(body.event, 50);
+  if (!LIA_ES_EVENTS.has(event)) return res.status(400).json({ error: 'evento inválido' });
+  const id = cleanMapaString(body.event_id, 120) || `es_${event}_${Date.now()}`;
+  const fresh = await getRedis().set(`lia-es:event:${id}`, '1', 'EX', 60 * 60 * 24 * 30, 'NX');
+  if (!fresh) return res.json({ ok: true, duplicate: true });
+  const safe = {
+    event, event_id: id, locale: 'es-ES', market: 'ES',
+    offer: 'lia_es_monthly_1990', currency: 'EUR',
+    source: cleanMapaString(body.source, 120), medium: cleanMapaString(body.medium, 120),
+    campaign: cleanMapaString(body.campaign, 160), adset: cleanMapaString(body.adset, 160),
+    ad: cleanMapaString(body.ad, 160), hook: cleanMapaString(body.hook, 160),
+    creative: cleanMapaString(body.creative, 160),
+    landing_version: cleanMapaString(body.landing_version, 50),
+    created_at: new Date().toISOString(),
+  };
+  await redisSet(`lia-es:analytics:${Date.now()}:${id}`, JSON.stringify(safe), 'EX', 60 * 60 * 24 * 180);
+  try { await getRedis().incr(`lia-es:stats:${event}`); } catch {}
+  res.json({ ok: true });
+});
+
+app.post('/api/lia-es/onboard', async (req, res) => {
+  const body = req.body || {};
+  const phone = toE164ES(body.whatsapp);
+  if (!phone) return res.status(400).json({ error: 'WhatsApp español inválido' });
+  if (!body.consent?.accepted_terms) return res.status(422).json({ error: 'consentimiento obligatorio' });
+  const purchaseRef = cleanMapaString(body.purchase_ref, 120) || null;
+  const key = `lia-es:onboard:${purchaseRef || sha256(phone)}`;
+  const existing = await redisGet(key);
+  if (existing) return res.json({ ok: true, duplicate: true, status: 'stored_for_activation' });
+  const record = {
+    idempotency_key: purchaseRef || sha256(phone),
+    completed_at: new Date().toISOString(),
+    status: 'stored_for_activation',
+    payload: {
+      purchase_id: purchaseRef, whatsapp: phone, locale: 'es-ES', market: 'ES',
+      language: 'es', timezone: 'Europe/Madrid', offer: 'lia_es_monthly_1990',
+      currency: 'EUR', source: 'evelynliu.com.br/lia-es',
+      onboarding_version: 'lia-es-v1', onboarding_answers: body.answers || {},
+      consent: {
+        accepted_terms: true,
+        proactive_checkins: body.consent?.proactive_checkins === true,
+      },
+      onboarding_duration_seconds: Number(body.duration_seconds) || null,
+    },
+  };
+  await redisSet(key, JSON.stringify(record), 'EX', 60 * 60 * 24 * 180);
+  await redisSet(`lia-es:activation-pending:${record.idempotency_key}`, key, 'EX', 60 * 60 * 24 * 30);
+  res.json({ ok: true, duplicate: false, status: 'stored_for_activation' });
 });
 
 /**

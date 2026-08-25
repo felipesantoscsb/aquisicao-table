@@ -91,6 +91,7 @@ test('preços, checkouts, trial e Pixel têm uma única fonte pública', () => {
   assert.equal(product.TRIAL_DAYS, 7);
   assert.match(product.PRICING.monthly.checkout, /ticto\.app/);
   assert.match(product.PIXEL_ID, /^\d+$/);
+  assert.equal(product.PIXEL_ID, '519946826343805');
   assert.equal(product.INTERVENTION_LIBRARY.active, 26);
   assert.equal(product.INTERVENTION_LIBRARY.total, 29);
   assert.equal(product.INTERVENTION_LIBRARY.plannedLabel, 'mais de 50');
@@ -105,6 +106,26 @@ test('tracking canônico existe e não envia respostas diretamente à Meta', () 
   }
   assert.doesNotMatch(map, /fbq\([^\n]+answers|fbq\([^\n]+signals|fbq\([^\n]+mechanism/);
   assert.match(server, /sanitizeMapaArtifact/);
+});
+
+test('Pixel e CAPI do Mapa cobrem o funil com deduplicação e observabilidade', () => {
+  const server = fs.readFileSync(path.join(__dirname, '../src/server.js'), 'utf8');
+  const map = fs.readFileSync(path.join(__dirname, '../public/mapa-lia.html'), 'utf8');
+
+  assert.match(map, /fbq\('track','PageView',\{\},pageViewEventId\?\{eventID:pageViewEventId\}/);
+  assert.match(map, /track\('page_view',\{\}, \{eventId:pageViewEventId,pixel:false\}\)/);
+  assert.match(map, /document\.cookie=`_fbc=/);
+  assert.match(server, /page_view: 'PageView'/);
+  assert.match(server, /map_started: 'ViewContent'/);
+  assert.match(server, /map_completed: 'CompleteRegistration'/);
+  assert.match(server, /checkout_started: 'InitiateCheckout'/);
+  assert.match(server, /eventName: 'StartTrial'/);
+  assert.match(server, /eventName: 'Purchase'/);
+  assert.match(server, /eventId: `\$\{txId\}:start_trial`/);
+  assert.match(server, /if \(!res\.ok\).*Meta CAPI respondeu/s);
+  assert.match(server, /mapa_lia_capi_\$\{event\}_failed/);
+  assert.match(server, /function liaPixelId\(\)/);
+  assert.match(server, /return canonical/);
 });
 
 test('reposicionamento vende metodologia, biblioteca e acompanhamento sem promessas inexistentes', () => {

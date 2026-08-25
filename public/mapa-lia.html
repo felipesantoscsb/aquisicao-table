@@ -567,25 +567,34 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
   function clearDraft(){ try{ localStorage.removeItem(DRAFT_KEY); }catch(e){} }
 
   function cookie(name){ return document.cookie.split('; ').find(x=>x.startsWith(name+'='))?.split('=').slice(1).join('=') || null; }
-  function fbc(){ const c=cookie('_fbc'); const click=params.get('fbclid'); return c || (click ? `fb.1.${Date.now()}.${click}` : null); }
+  function ensureFbc(){
+    const current=cookie('_fbc');if(current)return current;
+    const click=params.get('fbclid');if(!click)return null;
+    const value=`fb.1.${Date.now()}.${click}`;
+    document.cookie=`_fbc=${encodeURIComponent(value)}; path=/; max-age=7776000; SameSite=Lax; Secure`;
+    return value;
+  }
+  const attributionFbc=ensureFbc();
+  function fbc(){ return cookie('_fbc') || attributionFbc; }
   function eventId(name){ return `${state.sessionId}_${name}_${Date.now()}_${Math.random().toString(36).slice(2,8)}`; }
   function show(id){ screens.forEach(s=>s.classList.toggle('active',s.id===id)); window.scrollTo({top:0,behavior:'smooth'}); }
   function pixel(name,id){ if(window.fbq) window.fbq('track',name,{content_name:'Mapa LIA',content_category:'self-reflection'},{eventID:id}); }
-  function track(event,extra={}){
-    const id=eventId(event); const standard={map_started:'ViewContent',map_completed:'CompleteRegistration',checkout_started:'InitiateCheckout'}[event];
-    if(standard) pixel(standard,id);
+  function track(event,extra={},options={}){
+    const id=options.eventId||eventId(event); const standard={map_started:'ViewContent',map_completed:'CompleteRegistration',checkout_started:'InitiateCheckout'}[event];
+    if(standard && options.pixel!==false) pixel(standard,id);
     const payload={event,session_id:state.sessionId,event_id:id,utm,fbc:fbc(),fbp:cookie('_fbp'),...extra};
     fetch('/api/mapa-lia/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),keepalive:true}).catch(()=>{});
+    return id;
   }
   function trackView(id,event){
     const el=document.getElementById(id);if(!el)return;
     const observer=new IntersectionObserver(entries=>{if(entries.some(x=>x.isIntersecting)){track(event);observer.disconnect()}},{threshold:.35});
     observer.observe(el);
   }
-  function initPixel(id){
+  function initPixel(id,pageViewEventId){
     if(!id || window.fbq) return;
     (function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=true;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=true;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)})(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init',id); fbq('track','PageView');
+    fbq('init',id); fbq('track','PageView',{},pageViewEventId?{eventID:pageViewEventId}:undefined);
   }
   function renderPricing(pricing, trialDays, paymentMethods){
     document.getElementById('monthlyLabel').textContent=pricing.monthly.label;
@@ -597,7 +606,9 @@ footer{text-align:center;color:var(--ink-3);font-size:11.5px;padding:24px 20px;l
     document.getElementById('annualBadge').textContent=pricing.annual.badge||'';
     document.getElementById('trialNote').textContent=trialDays+' dias grátis. '+paymentMethods+'.';
   }
-  initPixel(PRODUCT.PIXEL_ID);
+  const pageViewEventId=eventId('page_view');
+  initPixel(PRODUCT.PIXEL_ID,pageViewEventId);
+  track('page_view',{}, {eventId:pageViewEventId,pixel:false});
   renderPricing(PRODUCT.PRICING, PRODUCT.TRIAL_DAYS, PRODUCT.PAYMENT_METHODS);
   fetch('/api/mapa-lia/config').then(r=>r.json()).then(c=>{
     state.config={...PRODUCT,...c}; initPixel(c.pixel_id);
