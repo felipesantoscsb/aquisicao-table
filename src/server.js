@@ -1245,6 +1245,30 @@ async function forwardToSDR(body) {
   console.log(`[SDR-forward] Resposta: ${sdrBody}`);
 }
 
+// Mapa LIA → sdr-table: dispara lia_rec/lia_entende. Endpoint, namespace e
+// flags PRÓPRIOS no sdr-table (/webhook/mapa-lia) — nunca cai no mesmo
+// /webhook/quiz do Raiz, mesmo reaproveitando o mesmo segredo/host.
+async function forwardMapaLiaToSDR({ nome, phone, sessionId }) {
+  const SDR_URL    = 'https://table-production-07c5.up.railway.app/webhook/mapa-lia';
+  const SDR_SECRET = process.env.SDR_WEBHOOK_SECRET;
+
+  if (!SDR_SECRET) {
+    console.warn('[mapa-lia/SDR-forward] SDR_WEBHOOK_SECRET não configurado — forward ignorado');
+    return;
+  }
+  const phoneNorm = normalizePhone(phone);
+  if (!phoneNorm) return;
+
+  const payload = { nome: nome || 'você', whatsapp: phoneNorm, session_id: sessionId };
+
+  const sdrRes = await fetch(SDR_URL, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json', 'x-webhook-secret': SDR_SECRET },
+    body:    JSON.stringify(payload),
+  });
+  console.log(`[mapa-lia/SDR-forward] Status: ${sdrRes.status} — lead ${payload.nome} (${phoneNorm})`);
+}
+
 // ─── Helper CAPI genérico ─────────────────────────────────────────────────────
 
 async function sendCapiEvent({ eventName, phone, fbclid, fbc, fbp, em, fn, external_id, customData, eventSourceUrl, eventId, req, pixelId, accessToken }) {
@@ -1506,6 +1530,14 @@ app.post('/api/mapa-lia/events', async (req, res) => {
       saved_at: now,
     };
     await redisSet(`lead:${sessionId}`, JSON.stringify(lead), 'EX', 60 * 60 * 24 * 180);
+  }
+
+  // Encaminha pro sdr-table (lia_rec/lia_entende) só no fechamento do mapa,
+  // não em checkout_started — quem já foi pro checkout está sendo tratada
+  // pelo funil de compra, não precisa do nudge de quem ainda não decidiu.
+  if (event === 'map_completed' && session.contact?.phone) {
+    forwardMapaLiaToSDR({ nome: session.contact.name, phone: session.contact.phone, sessionId })
+      .catch(err => console.error('[mapa-lia/SDR-forward] erro:', err.message));
   }
 
   res.json({ ok: true });
