@@ -124,6 +124,7 @@ app.get('/raiz-google', (req, res) => res.sendFile(path.join(pub,   'quiz-google
 // TikTok: cópia isolada (pixel TikTok, sem Meta), checkout CAKTO. channel:'tiktok'.
 app.get('/raiz-tiktok', (req, res) => res.sendFile(path.join(pub,   'quiz-tiktok.html')));
 app.get('/legal',      (req, res) => res.sendFile(path.join(funil, 'privacidade_termos_evelynliu.html')));
+app.get('/legal-es',   (req, res) => res.sendFile(path.join(pub, 'legal-es.html')));
 app.get('/mediakit',   (req, res) => res.sendFile(path.join(pub,   'mediakit.html')));
 app.get('/protocolo-raiz', (req, res) => res.sendFile(path.join(funil, 'protocolo_raiz_bio.html')));
 app.get('/obrigado',           (req, res) => res.sendFile(path.join(funil, 'obrigado-protocolo-raiz.html')));
