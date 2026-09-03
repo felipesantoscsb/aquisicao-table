@@ -40,6 +40,28 @@ async function redisGet(key) { try { return await getRedis().get(key); } catch {
 async function redisSet(key, value, ...args) { try { return await getRedis().set(key, value, ...args); } catch { return null; } }
 async function redisDel(key) { try { return await getRedis().del(key); } catch { return null; } }
 
+function isEvelynCheckoutProduct(productId, productName) {
+  const expectedId = String(process.env.EVELYN_CHECKOUT_PRODUCT_ID || '').trim();
+  if (expectedId && String(productId || '').trim() === expectedId) return true;
+  const pattern = String(process.env.EVELYN_CHECKOUT_PRODUCT_NAME_PATTERN || '').trim();
+  if (!pattern) return false;
+  try { return new RegExp(pattern, 'i').test(String(productName || '')); }
+  catch { console.error('[Evelyn] EVELYN_CHECKOUT_PRODUCT_NAME_PATTERN inválido'); return false; }
+}
+
+async function notifyEvelynCommercialEvent({ eventId, eventType, phone, name, payload }) {
+  const url = process.env.HUB_EVELYN_EVENT_URL;
+  const secret = process.env.HUB_WEBHOOK_SECRET;
+  if (!url || !secret) return false;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-webhook-secret': secret },
+    body: JSON.stringify({ event_id:eventId,event_type:eventType,phone,lead_name:name||null,source:'checkout',occurred_at:new Date().toISOString(),payload }),
+  });
+  if (!response.ok) throw new Error(`Hub Evelyn HTTP ${response.status}`);
+  return true;
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -123,6 +145,7 @@ app.get('/obrigado',           (req, res) => res.sendFile(path.join(funil, 'obri
 app.get('/obrigado-essential',    (req, res) => res.sendFile(path.join(funil, 'obrigado-essential.html')));
 app.get('/obrigado-premium',      (req, res) => res.sendFile(path.join(funil, 'obrigado-premium.html')));
 app.get('/obrigado-elite',        (req, res) => res.sendFile(path.join(funil, 'obrigado-elite.html')));
+app.get('/obrigado-evelyn',       (req, res) => res.sendFile(path.join(funil, 'obrigado-evelyn.html')));
 app.get('/obrigado-essential-pr', (req, res) => res.sendFile(path.join(funil, 'obrigado-essential-pr.html')));
 
 // ─── Rotas de ofertas ─────────────────────────────────────────────────────────
@@ -2337,6 +2360,18 @@ app.post('/api/webhooks/ticto', async (req, res) => {
   if (status === 'authorized') {
     // Compra confirmada → cancela recuperação pendente do telefone
     await cancelCheckoutRecovery(customerPhone, 'authorized');
+
+    // O provedor/ID ainda é configurável. Só marca a venda premium quando há
+    // correspondência explícita, evitando classificar uma venda Table como Evelyn.
+    if (isEvelynCheckoutProduct(offerId, productName)) {
+      notifyEvelynCommercialEvent({
+        eventId: `checkout:${transactionId}:authorized`,
+        eventType: 'evelyn_won',
+        phone: customerPhone,
+        name: body.customer?.name || body.name || null,
+        payload: { revenue_cents: Number.isInteger(paidAmount) ? paidAmount : null, product_id: offerId, transaction_id: transactionId },
+      }).catch(e => console.error('[Evelyn] falha ao registrar venda no Hub:', e.message));
+    }
 
     // Série diária p/ dashboard (fire-and-forget) — pós-checagem de
     // idempotência acima, então retries da Ticto não contam duas vezes

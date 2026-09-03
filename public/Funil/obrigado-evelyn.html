@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Próximos passos com Evelyn Liu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init','989971718548782');fbq('track','PageView');
+    const trackingKey='tc_evelyn_thank_you_v1';
+    if(!localStorage.getItem(trackingKey)){
+      const eventId='evelyn-thank-you-'+crypto.randomUUID();
+      localStorage.setItem(trackingKey,eventId);
+      fbq('trackCustom','EvelynThankYouView',{content_name:'Acompanhamento Direto Evelyn'},{eventID:eventId});
+      fbq('track','Purchase',{value:4800.00,currency:'BRL',content_name:'Acompanhamento Direto com Evelyn Liu',content_ids:['Fllvy2wB2O'],content_type:'product'},{eventID:'purchase-'+eventId});
+    }
+  </script>
+  <style>
+    :root{--cream:#f7f2ea;--paper:#fffaf3;--ink:#30231b;--moss:#46513d;--terra:#ad6845;--line:#ddd1c2}
+    *{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:Jost,sans-serif;line-height:1.65}.wrap{width:min(760px,calc(100% - 32px));margin:auto;padding:56px 0 72px}.brand{font:500 13px Jost,sans-serif;letter-spacing:.25em;text-transform:uppercase;color:var(--terra)}h1,h2{font-family:"Cormorant Garamond",serif}h1{font-size:clamp(42px,8vw,72px);line-height:1;margin:18px 0 20px}h1 em{color:var(--moss)}.lead{font-size:18px;max-width:650px}.card{background:var(--paper);border:1px solid var(--line);padding:28px;margin:28px 0}.step{display:grid;grid-template-columns:36px 1fr;gap:14px;margin:22px 0}.num{width:32px;height:32px;border:1px solid var(--terra);border-radius:50%;display:grid;place-items:center;color:var(--terra)}h2{font-size:28px;margin:0 0 5px}.step p{margin:0}.btn{display:inline-block;background:var(--moss);color:white;text-decoration:none;padding:16px 23px;margin-top:8px}.fine{font-size:13px;color:#74685f;margin-top:18px}@media(max-width:560px){.wrap{padding-top:38px}.card{padding:22px}.step{grid-template-columns:32px 1fr}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="brand">Acompanhamento direto com Evelyn Liu</div>
+    <h1>Seu novo ciclo<br><em>começa com clareza.</em></h1>
+    <p class="lead">Recebemos sua confirmação. Agora a equipe organiza sua entrada com cuidado, sem deixar você tentando descobrir sozinha o que fazer a seguir.</p>
+    <section class="card" aria-label="Próximos passos">
+      <div class="step"><span class="num">1</span><div><h2>Horário semanal</h2><p>A equipe entra em contato para confirmar com você o dia e o horário fixos dos encontros semanais com Evelyn.</p></div></div>
+      <div class="step"><span class="num">2</span><div><h2>Ativação da LIA</h2><p>Depois da confirmação inicial, Evelyn ativa seu acompanhamento na LIA para que o processo continue entre os encontros pelo WhatsApp.</p></div></div>
+      <div class="step"><span class="num">3</span><div><h2>Comunidade Table</h2><p>Você também recebe as orientações de acesso às experiências e iniciativas da Comunidade Table.</p></div></div>
+    </section>
+    <a class="btn" href="https://wa.me/5511977130088?text=Oi%2C%20acabo%20de%20confirmar%20meu%20acompanhamento%20direto%20com%20a%20Evelyn%20e%20gostaria%20de%20combinar%20os%20pr%C3%B3ximos%20passos." target="_blank" rel="noopener">Falar com a equipe</a>
+    <p class="fine">A ativação da paciente e da LIA continua sendo confirmada pela Evelyn/equipe, como no modelo Table atual.</p>
+  </main>
+</body>
+</html>
