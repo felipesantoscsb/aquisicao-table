@@ -3327,7 +3327,16 @@ app.get('/api/dash/data', async (req, res) => {
     // cada registro. Como os registros ficam 90 dias, isto vale retroativamente.
     const porCanal = {};
     const ofertasVistas = {};
-    const purchaseKeys = await redis.keys('ticto:purchase:*');
+    // Ticto E Cakto. O contador diário 'purchases' só é incrementado no webhook
+    // da Ticto; desde que /raiz passou a servir o checkout Cakto, a maior parte
+    // das vendas do funil vive só em cakto:purchase:* — sem somar as duas aqui,
+    // o dash (e o relatório diário que o lê) subconta o faturamento do PR.
+    // A regra do "maior entre as duas fontes" logo abaixo continua valendo: o
+    // backfill agora é o superconjunto, então ele vence o contador.
+    const purchaseKeys = [
+      ...await redis.keys('ticto:purchase:*'),
+      ...await redis.keys('cakto:purchase:*'),
+    ];
     for (const k of purchaseKeys) {
       try {
         const raw = await redis.get(k);
@@ -3346,10 +3355,14 @@ app.get('/api/dash/data', async (req, res) => {
         // de teste que depois é estornada — o mapeamento não pode depender de
         // a venda continuar de pé.
         {
-          const oid = String(rec.offer_id || 'sem_offer_id');
+          // Prefixo do provider: os offer_ids da Cakto são de outro espaço de
+          // numeração e colidiriam com os da Ticto no inventário.
+          const oid = (rec.provider === 'cakto' ? 'cakto:' : '') + String(rec.offer_id || 'sem_offer_id');
           const estorno = rec.status === 'refunded' || rec.status === 'chargeback';
           const inv = ofertasVistas[oid] = ofertasVistas[oid] ||
-            { compras: 0, estornos: 0, canal: canalDaOferta(rec.offer_id),
+            { compras: 0, estornos: 0,
+              canal: rec.provider === 'cakto' ? 'cakto' : canalDaOferta(rec.offer_id),
+              provider: rec.provider || 'ticto',
               produto: rec.product_name || null, primeira: d, ultima: d, por_dia: {} };
           if (estorno) inv.estornos += 1;
           if (d < inv.primeira) inv.primeira = d;
@@ -3359,7 +3372,7 @@ app.get('/api/dash/data', async (req, res) => {
         // agrega por canal (só compras válidas) e, dentro dele, por perfil —
         // permite cruzar as duas dimensões: qual perfil compra em qual canal
         if (rec.status !== 'refunded' && rec.status !== 'chargeback') {
-          const canal = canalDaOferta(rec.offer_id);
+          const canal = rec.provider === 'cakto' ? 'cakto' : canalDaOferta(rec.offer_id);
           porCanal[canal] = porCanal[canal] || { compras: 0, receita_cents: 0, por_perfil: {} };
           porCanal[canal].compras += 1;
           porCanal[canal].receita_cents += Math.round((rec.value || 0) * 100);
@@ -3370,7 +3383,7 @@ app.get('/api/dash/data', async (req, res) => {
           }
           // compras válidas no inventário (o registro da oferta em si já foi
           // feito acima, cobrindo também as estornadas)
-          const inv = ofertasVistas[String(rec.offer_id || 'sem_offer_id')];
+          const inv = ofertasVistas[(rec.provider === 'cakto' ? 'cakto:' : '') + String(rec.offer_id || 'sem_offer_id')];
           if (inv) {
             inv.compras += 1;
             inv.por_dia[d] = (inv.por_dia[d] || 0) + 1;
