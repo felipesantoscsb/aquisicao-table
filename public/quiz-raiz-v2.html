@@ -199,7 +199,7 @@ canvas{width:100%;height:100%;display:block}
 .pcard img{width:56px;height:56px;border-radius:50%;object-fit:cover}
 .pcard q{font-size:15px;color:#39443c;line-height:1.65;display:block;quotes:'“' '”'}
 .pcard cite{display:block;margin-top:8px;font-style:normal;font-size:12.5px;color:var(--muted);letter-spacing:.04em}
-.proof-more{margin-top:14px;background:none;border:1px solid var(--line);border-radius:999px;padding:12px 20px;color:var(--pine);cursor:pointer;font-size:14px;width:100%}
+.proof-cta{margin-top:26px;width:100%}
 /* stack + preço */
 .stack{background:var(--pine);border-radius:26px;padding:clamp(24px,5.5vw,40px);color:#fff;margin-top:30px;box-shadow:0 24px 60px rgba(26,37,31,.24)}
 .stack-row{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.1)}
@@ -461,13 +461,12 @@ canvas{width:100%;height:100%;display:block}
       <div class="pcard"><img src="/images/Juliana Moreno.png" alt="Juliana" loading="lazy"><div><q>Depois de 12 anos tentando dietas, foi a primeira vez que me senti em paz com minhas escolhas.</q><cite>Juliana</cite></div></div>
       <div class="pcard"><img src="/images/Adriana.png" alt="Adriana" loading="lazy"><div><q>Em 6 semanas entendi o que 3 nutricionistas não conseguiram me explicar: não era falta de força de vontade.</q><cite>Adriana</cite></div></div>
       <div class="pcard"><img src="/images/Cris.png" alt="Cris" loading="lazy"><div><q>Finalmente me sinto em equilíbrio com o meu corpo.</q><cite>Cris</cite></div></div>
-    </div>
-    <div class="proof" id="proofMore" hidden>
+    
       <div class="pcard"><img src="/images/Iracema.png" alt="Iracema" loading="lazy"><div><q>Aprendi a me ouvir de um jeito que nunca tinha conseguido antes.</q><cite>Iracema</cite></div></div>
       <div class="pcard"><img src="/images/Gracinha.png" alt="Gracinha" loading="lazy"><div><q>Aprendi a me ouvir antes de abrir a geladeira.</q><cite>Gracinha</cite></div></div>
       <div class="pcard"><img src="/images/Liliane.png" alt="Liliane" loading="lazy"><div><q>Nunca pensei que ia me sentir assim de novo.</q><cite>Liliane</cite></div></div>
     </div>
-    <button class="proof-more" id="proofToggle">Ver mais depoimentos</button>
+    <button class="btn btn-primary proof-cta" id="proofCta">Quero trabalhar meu Radar →</button>
   </div></section>
 
   <!-- 14, 15 · STACK, ANCORAGEM E PREÇO -->
@@ -750,7 +749,7 @@ $('back').onclick=()=>{if(current){current--;render()}else page('intro')};
 $('reveal').onclick=reveal;
 $('checkout').onclick=checkout;
 $('checkout2').onclick=checkout;
-$('proofToggle').onclick=function(){const m=$('proofMore');m.hidden=!m.hidden;this.textContent=m.hidden?'Ver mais depoimentos':'Ver menos'};
+$('proofCta').onclick=()=>$('priceBand').scrollIntoView({behavior:'smooth',block:'start'});
 $('faq').addEventListener('toggle',e=>{if(e.target.open)track('FAQInteraction')},true);
 $('phone').oninput=e=>{let d=e.target.value.replace(/\D/g,'').slice(0,11);e.target.value=d.length>6?`(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`:d};
 </script>
