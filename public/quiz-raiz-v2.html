@@ -179,6 +179,8 @@ canvas{width:100%;height:100%;display:block}
 .comp p:last-child{margin-bottom:0}
 .comp-meta{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 0}
 .comp-meta span{font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:#4d5750;background:var(--cream)}
+.comp-meta span.meta-strong{border-color:var(--clay);color:var(--clay);background:#fdf4ef;font-weight:600}
+.comp.hero-comp .comp-meta span.meta-strong{border-color:var(--gold);color:var(--gold);background:rgba(217,184,114,.12)}
 .comp.hero-comp{background:var(--pine);border-color:var(--pine);color:#fff;box-shadow:0 24px 60px rgba(26,37,31,.3)}
 .comp.hero-comp:before{content:'';position:absolute;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(217,184,114,.22),transparent 70%);right:-150px;top:-150px}
 .comp.hero-comp>*{position:relative;z-index:1}
@@ -408,7 +410,8 @@ canvas{width:100%;height:100%;display:block}
       <h3>Entenda o que acontece antes da comida</h3>
       <p>O Protocolo Raiz ajuda você a sair do automático e começar a perceber padrões, gatilhos, crenças e situações que moldam sua relação com comida e corpo.</p>
       <p>Não tem cardápio, lista de proibições nem meta de calorias. É um trabalho de percepção, o tipo de coisa que continua valendo depois, independentemente do que aconteça com o tratamento.</p>
-      <div class="comp-meta"><span>12 exercícios guiados por Evelyn Liu</span><span>Aulas em vídeo</span><span>Diário de acompanhamento</span><span>Livro “Gordura Não Existe” em PDF</span></div>
+      <p><strong>O acesso é vitalício.</strong> As aulas e os exercícios ficam com você para sempre, para voltar quantas vezes precisar, em qualquer fase.</p>
+      <div class="comp-meta"><span>12 exercícios guiados por Evelyn Liu</span><span>Aulas em vídeo</span><span>Diário de acompanhamento</span><span>Livro “Gordura Não Existe” em PDF</span><span class="meta-strong">Acesso vitalício</span></div>
     </div>
 
     <div class="comp">
@@ -431,8 +434,8 @@ canvas{width:100%;height:100%;display:block}
       <p>É a mesma lente que a Evelyn desenvolveu na Table e que sustenta os seis pilares do seu Radar. A nutricionista que vai te atender trabalha dentro desse método, olhando para os mesmos seis pontos que você acabou de ver.</p>
       <p>Não é uma sessão de dieta. Não é um cardápio genérico. É uma conversa individual de escuta e direcionamento para entender o que está acontecendo e quais próximos passos fazem sentido para você.</p>
       <p style="color:#eacfa4">É aqui que o método deixa de olhar apenas para respostas de um quiz e começa a olhar para a sua história.</p>
-      <div class="comp-meta"><span>30 a 40 minutos</span><span>Online, por videochamada</span><span>Nutricionista comportamental da Table</span><span>Agendamento pelo seu WhatsApp</span></div>
-      <p class="disclaimer">A equipe atende um número limitado de Sessões Raiz por semana. Quando houver fit, acompanhamentos contínuos da Table poderão ser apresentados, sem qualquer obrigação.</p>
+      <div class="comp-meta"><span>30 a 40 minutos</span><span>Online, por videochamada</span><span>Nutricionista comportamental da Table</span><span>Agendamento pelo seu WhatsApp</span><span class="meta-strong">Cerca de 1 semana até a sessão</span></div>
+      <p class="disclaimer">O agendamento acontece conforme a disponibilidade da equipe, que atende um número limitado de Sessões Raiz por semana. Na média, a sessão acontece cerca de uma semana depois da compra. Quando houver fit, acompanhamentos contínuos da Table poderão ser apresentados, sem qualquer obrigação.</p>
     </div>
 
   </div></section>
@@ -476,10 +479,10 @@ canvas{width:100%;height:100%;display:block}
     <div class="stack">
       <p class="eyebrow" style="color:var(--gold)">O que está incluído</p>
       <div style="margin-top:18px">
-        <div class="stack-row"><div><b>Protocolo Raiz</b><p>12 exercícios guiados + aulas + diário</p></div><span class="stack-val">R$ 97</span></div>
-        <div class="stack-row"><div><b>Livro “Gordura Não Existe” em PDF</b><p>A tese que fundamenta o método</p></div><span class="stack-val">R$ 57</span></div>
-        <div class="stack-row"><div><b>LIA no WhatsApp</b><p>Acompanhamento no dia a dia</p></div><span class="stack-val">incluída</span></div>
-        <div class="stack-row" style="border-bottom:0"><div><b>Sessão Raiz</b><p>30 a 40 min, individual, com nutricionista comportamental</p></div><span class="stack-val">R$ 237</span></div>
+        <div class="stack-row"><div><b>Protocolo Raiz</b><p>12 exercícios guiados + aulas + diário · acesso vitalício</p></div><span class="stack-val">R$ 97</span></div>
+        <div class="stack-row"><div><b>Livro “Gordura Não Existe” em PDF</b><p>A tese que fundamenta o método · para sempre</p></div><span class="stack-val">R$ 57</span></div>
+        <div class="stack-row"><div><b>LIA no WhatsApp</b><p>Acompanhamento no dia a dia<span data-lia-sufixo></span></p></div><span class="stack-val">incluída</span></div>
+        <div class="stack-row" style="border-bottom:0"><div><b>Sessão Raiz</b><p>30 a 40 min, individual, com nutricionista comportamental · agendada em cerca de 1 semana</p></div><span class="stack-val">R$ 237</span></div>
         <div class="stack-sum"><span>Valor dos componentes já precificados</span><s>R$ 391</s></div>
       </div>
       <div class="price-box">
@@ -509,10 +512,12 @@ canvas{width:100%;height:100%;display:block}
       <details><summary>Já parei e comecei a ganhar peso. Isso é para mim?</summary><p>Sim. Esse é justamente um momento em que a reação automática costuma ser apertar regras e recuperar controle. O Protocolo Raiz e a Sessão Raiz ajudam a entender o que está acontecendo antes de entrar de novo em uma guerra com a comida.</p></details>
       <details><summary>Não uso Mounjaro, Ozempic nem Wegovy. Isso é para mim?</summary><p>É. Os seis pilares do Radar não dependem de medicação nenhuma. Eles descrevem a relação com o corpo, com a comida e com a vida real, que é onde o incômodo costuma morar com ou sem tratamento. O Protocolo Raiz e a Sessão Raiz trabalham exatamente essa camada.</p></details>
       <details><summary>Isso é uma dieta?</summary><p>Não. Não há cardápio, lista de alimentos proibidos ou meta de calorias. O trabalho é sobre os padrões que estão por trás do comportamento alimentar.</p></details>
-      <details><summary>Como funciona a LIA?</summary><p>A LIA é o agente de IA da Table e conversa com você pelo WhatsApp: check-ins, registros, reflexões e apoio nos momentos em que comida, ansiedade ou rotina se cruzam. Ela aproxima o cuidado do seu dia a dia e não substitui profissionais.</p></details>
+      <details><summary>Como funciona a LIA?</summary><p>A LIA é o agente de IA da Table e conversa com você pelo WhatsApp: check-ins, registros, reflexões e apoio nos momentos em que comida, ansiedade ou rotina se cruzam. Ela aproxima o cuidado do seu dia a dia e não substitui profissionais.<span data-lia-faq></span></p></details>
       <details><summary>Como funciona a Sessão Raiz?</summary><p>São 30 a 40 minutos, online, individualmente com uma nutricionista comportamental da equipe Table. Depois da compra, nossa equipe entra em contato pelo seu WhatsApp para agendar no horário que funcionar melhor para você.</p></details>
+      <details><summary>Em quanto tempo consigo fazer a Sessão Raiz?</summary><p>O agendamento acontece conforme a disponibilidade da equipe, porque atendemos um número limitado de sessões por semana. Na média, a Sessão Raiz acontece cerca de uma semana depois da compra. O Protocolo Raiz, esse sim, você acessa na hora.</p></details>
       <details><summary>Vou receber um plano alimentar na Sessão Raiz?</summary><p>Não. A Sessão Raiz é uma conversa de escuta e direcionamento. Ela não inclui prescrição de dieta nem plano alimentar.</p></details>
       <details><summary>O que acontece se eu quiser continuar sendo acompanhada pela Table?</summary><p>Se houver fit, a nutricionista apresenta os acompanhamentos contínuos da Table na própria Sessão Raiz. É uma possibilidade, não uma obrigação, e nada disso é necessário para aproveitar o que você comprou.</p></details>
+      <details><summary>Por quanto tempo tenho acesso a cada coisa?</summary><p>O Protocolo Raiz e o livro em PDF são de acesso vitalício: ficam com você para sempre.<span data-lia-acesso></span> A Sessão Raiz é um atendimento único, agendado depois da compra.</p></details>
       <details><summary>Tenho garantia?</summary><p>Sim. São 7 dias. Se o Protocolo Raiz não fizer sentido para você, basta solicitar o reembolso dentro do período e devolvemos 100% do valor.</p></details>
     </div>
   </div></section>
@@ -550,7 +555,7 @@ const questions=[
  {tag:'9 · Próximo passo',text:'O que faria mais diferença para você agora?',weights:true,options:[['Entender melhor meus sinais de fome e saciedade',{awareness:2,food:3}],['Ter mais flexibilidade em situações reais',{adaptability:2,knowledge:3}],['Parar de viver entre culpa, controle e medo',{food:1,body:2}],['Construir apoio e recursos para uma nova fase',{resources:2,adaptability:3}]]}
 ];
 /* ---------------- configuração editável ---------------- */
-const LIA_ACCESS_LABEL = '';   /* ex.: 'Acesso por 30 dias'. Vazio = não exibe duração na interface. */
+const LIA_ACCESS_LABEL = '1 mês';   /* período de acesso à LIA incluído nesta oferta. Vazio = não exibe duração. Alimenta o chip, a linha do stack e o FAQ. */
 const VSL_MEDIA_ID     = '';   /* id Wistia da VSL deste funil. Vazio = seção some, sem placeholder. */
 
 /* ---------------- conteúdo dos pilares ---------------- */
@@ -711,7 +716,12 @@ function renderResult(){
   $('finalHeadline').textContent=`${first}, seu Radar já está pronto. O que vem depois dele é uma escolha sua.`;
   $('finalCopy').innerHTML=`Protocolo Raiz para entender, LIA para perceber no dia a dia e uma Sessão Raiz individual com uma nutricionista comportamental da Table para olhar para <strong>${lc(low)}</strong> com a sua história na frente.`;
   /* LIA e VSL condicionais */
-  if(LIA_ACCESS_LABEL)$('liaMeta').insertAdjacentHTML('beforeend',`<span>${LIA_ACCESS_LABEL}</span>`);
+  if(LIA_ACCESS_LABEL){
+    $('liaMeta').insertAdjacentHTML('beforeend',`<span class="meta-strong">${LIA_ACCESS_LABEL} de acesso incluído</span>`);
+    document.querySelectorAll('[data-lia-sufixo]').forEach(e=>e.textContent=` · ${LIA_ACCESS_LABEL} incluído`);
+    document.querySelectorAll('[data-lia-faq]').forEach(e=>e.textContent=` Nesta oferta, o acesso à LIA é de ${LIA_ACCESS_LABEL}.`);
+    document.querySelectorAll('[data-lia-acesso]').forEach(e=>e.textContent=` O acesso à LIA nesta oferta é de ${LIA_ACCESS_LABEL}.`);
+  }
   if(VSL_MEDIA_ID){const s=$('vslSlot');s.hidden=false;s.innerHTML=`<script src="https://fast.wistia.com/player.js" async><\/script><script src="https://fast.wistia.com/embed/${VSL_MEDIA_ID}.js" async type="module"><\/script><style>wistia-player{display:block;width:100%;border-radius:22px;overflow:hidden;box-shadow:0 14px 40px rgba(37,52,44,.14)}</style><wistia-player media-id="${VSL_MEDIA_ID}" aspect="0.5625"></wistia-player>`}
   drawRadar();
 }
