@@ -125,6 +125,9 @@ const pub   = path.join(__dirname, '..', 'public');
 // sempre; só o goOffer muda (Ticto→Cakto). Campanhas seguem apontando p/ /raiz.
 // REVERTER: trocar 'quiz-cakto.html' de volta por 'quiz.html' (1 linha).
 app.get('/raiz',       (req, res) => res.sendFile(path.join(pub,   'quiz-cakto.html')));
+// Nova avenida GLP-1: Radar Table com as seis dimensões oficiais do método.
+// Mantém Pixel/CAPI do /raiz, mas não aciona SDR, dossiê ou sequência de WhatsApp.
+app.get('/raiz-v2',    (req, res) => res.sendFile(path.join(pub,   'quiz-raiz-v2.html')));
 app.get('/quiz',       (req, res) => res.redirect(301, '/raiz' + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '')));
 // Teste A/B da migração de pagamento: mesmo quiz, checkout CAKTO (cópia isolada).
 // /raiz continua no Ticto; o tráfego que o Felipe direcionar pra cá vai pro Cakto.
@@ -346,7 +349,7 @@ app.post('/api/capi', async (req, res) => {
   }
 
   // SDR forward só no CompleteRegistration: único momento com perfil+respostas+qualificação completos.
-  if ((req.body.event_name || 'Lead') === 'CompleteRegistration') {
+  if ((req.body.event_name || 'Lead') === 'CompleteRegistration' && req.body.slug !== 'raiz-v2') {
     forwardToSDR(req.body).catch(err =>
       console.error('[SDR-forward] Erro ao encaminhar para o SDR:', err.message)
     );
