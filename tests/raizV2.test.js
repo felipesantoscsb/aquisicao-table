@@ -42,6 +42,24 @@ test('resultado mantém interpolação de nome, estágio e pilares', () => {
   assert.match(html, /DIMS\[high\]/);
 });
 
+test('primeira pergunta contextualiza medicação sem presumir tratamento', () => {
+  assert.match(html, /Você não precisa dizer qual medicamento usa/);
+  assert.match(html, /'stopped_other'/);
+  assert.match(html, /Já usei, mas hoje não uso mais/);
+});
+
+test('resultado fica oculto até a conclusão e a VSL está configurada', () => {
+  assert.match(html, /\.page\.result\{display:none/);
+  assert.match(html, /\.page\.result\.active\{display:block/);
+  assert.match(html, /const VSL_MEDIA_ID\s*=\s*'vjen9pjw56'/);
+  assert.match(html, /wistia-player/);
+});
+
+test('tipografia de destaque evita a família anterior com f estilizado', () => {
+  assert.match(html, /family=Lora/);
+  assert.doesNotMatch(html, /Fraunces/);
+});
+
 test('documento entrega matriz, doze roteiros e priorização 1A/1B', () => {
   assert.equal((ads.match(/^### [ABC][1-4] —/gm) || []).length, 12);
   assert.match(ads, /Batch 1A/);

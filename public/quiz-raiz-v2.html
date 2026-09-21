@@ -10,7 +10,7 @@
 <meta property="og:description" content="Um retrato visual da sua relação com corpo, comida e vida real.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Lora:wght@500;600&display=swap" rel="stylesheet">
 <script>
 function getCookie(n){const m=document.cookie.match(new RegExp('(^| )'+n+'=([^;]+)'));return m?m[2]:null}
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
@@ -28,9 +28,9 @@ fetch('/api/capi',{method:'POST',headers:{'Content-Type':'application/json'},bod
 body{margin:0;background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;line-height:1.55;font-size:16px;-webkit-font-smoothing:antialiased}
 .page{display:none;min-height:100svh}.page.active{display:flex}
 .shell{width:min(100%,760px);margin:auto;padding:36px 22px}
-.brand{font-family:'Fraunces',serif;font-size:21px;letter-spacing:.08em}
+.brand{font-family:'Lora',serif;font-size:21px;letter-spacing:.08em}
 .eyebrow{text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:600;color:var(--clay);margin:0}
-h1,h2,h3,h4{font-family:'Fraunces',serif;line-height:1.08;margin:0;font-weight:500}
+h1,h2,h3,h4{font-family:'Lora',serif;line-height:1.08;margin:0;font-weight:500}
 h1{font-size:clamp(38px,8.6vw,64px);letter-spacing:-.035em}
 h2{font-size:clamp(29px,6.4vw,46px);letter-spacing:-.028em}
 h3{font-size:clamp(22px,4.6vw,30px);letter-spacing:-.02em}
@@ -69,7 +69,9 @@ button,a{font:inherit}
 .card{background:var(--paper);border:1px solid var(--line);border-radius:26px;padding:clamp(24px,6vw,44px);box-shadow:0 18px 54px rgba(37,52,44,.08)}
 .qcard{animation:rise .38s cubic-bezier(.2,.7,.3,1)}
 @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-.question-title{font:500 clamp(25px,5.2vw,36px)/1.18 'Fraunces',serif;margin:10px 0 26px;letter-spacing:-.02em}
+.question-title{font:500 clamp(25px,5.2vw,36px)/1.18 'Lora',serif;margin:10px 0 14px;letter-spacing:-.02em}
+.q-note{font-size:14px;line-height:1.6;color:var(--muted);margin:0 0 24px;padding:12px 14px;background:#f6f7f3;border-left:3px solid var(--sage);border-radius:0 10px 10px 0}
+.q-note[hidden]{display:none}
 .options{display:grid;gap:10px}
 .option{width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:16px;padding:16px 18px;color:var(--ink);cursor:pointer;display:flex;gap:14px;align-items:center;transition:border-color .16s,background .16s,transform .16s;font-size:15.5px;line-height:1.5}
 .option:hover{border-color:var(--sage);background:#f7f8f4;transform:translateX(3px)}
@@ -87,6 +89,7 @@ button,a{font:inherit}
 .capture h2{margin:12px auto 14px;max-width:560px}
 .capture>p{color:var(--muted);max-width:480px;margin:0 auto;font-size:15px}
 .fields{display:grid;gap:10px;margin:28px auto 0;max-width:470px;text-align:left}
+.field-label{font-size:13px;font-weight:600;color:var(--pine);margin:2px 3px -5px}
 .field{width:100%;padding:16px 17px;border:1px solid var(--line);border-radius:14px;background:#fff;font:inherit;transition:.16s}
 .field:focus{outline:0;border-color:var(--sage);box-shadow:0 0 0 3px rgba(144,165,143,.25)}
 .error{font-size:12px;color:var(--danger);min-height:16px;margin:-6px 3px 0}
@@ -104,7 +107,8 @@ button,a{font:inherit}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-steps{color:#b9c7bc;min-height:26px;font-size:15px}
 /* ---------- result: estrutura editorial ---------- */
-.page.result,.result{display:block;background:var(--cream)}
+.page.result{display:none;background:var(--cream)}
+.page.result.active{display:block}
 .band{padding:clamp(54px,11vw,92px) 22px}
 .band>div{width:min(100%,720px);margin:auto}
 .band-dark{background:var(--pine);color:#eef2ee}
@@ -132,7 +136,7 @@ canvas{width:100%;height:100%;display:block}
 .score-list{display:grid;gap:14px;margin-top:26px;border-top:1px solid var(--line);padding-top:24px}
 .score-row{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:baseline}
 .score-row span{font-size:14px;color:#3f4a43;font-weight:500}
-.score-row b{font:600 19px 'Fraunces',serif;color:var(--pine)}
+.score-row b{font:600 19px 'Lora',serif;color:var(--pine)}
 .score-row.is-focus b{color:var(--clay)}
 .bar{grid-column:1/-1;height:5px;border-radius:8px;background:#e9e3d8;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--sage);border-radius:8px;transition:width .9s cubic-bezier(.2,.7,.3,1)}
@@ -154,7 +158,7 @@ canvas{width:100%;height:100%;display:block}
 /* pilares */
 .pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:30px}
 .pillar{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:20px}
-.pillar .pv{font:600 26px 'Fraunces',serif;color:var(--pine);display:block;line-height:1}
+.pillar .pv{font:600 26px 'Lora',serif;color:var(--pine);display:block;line-height:1}
 .pillar h4{font-size:16px;margin:10px 0 6px;font-family:'DM Sans',sans-serif;font-weight:600;letter-spacing:0}
 .pillar p{font-size:13.5px;color:var(--muted);margin:0;line-height:1.55}
 .pillar.prio{background:var(--pine);border-color:var(--pine)}
@@ -165,16 +169,16 @@ canvas{width:100%;height:100%;display:block}
 /* evelyn */
 .evelyn{display:grid;grid-template-columns:76px 1fr;gap:18px;align-items:center}
 .evelyn img{width:76px;height:76px;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid var(--sage)}
-.evelyn-name{font-family:'Fraunces',serif;font-size:22px;color:var(--pine);margin:0}
+.evelyn-name{font-family:'Lora',serif;font-size:22px;color:var(--pine);margin:0}
 .evelyn-role{font-size:13px;color:var(--muted);margin:4px 0 0;line-height:1.5}
-.evelyn-quote{font-family:'Fraunces',serif;font-size:clamp(19px,4.2vw,24px);line-height:1.45;color:var(--pine);margin:28px 0 0;font-weight:500}
+.evelyn-quote{font-family:'Lora',serif;font-size:clamp(19px,4.2vw,24px);line-height:1.45;color:var(--pine);margin:28px 0 0;font-weight:500}
 .evelyn-quote span{display:block;margin-top:14px}
 .vsl{margin:44px 0 0;text-align:center}
-.vsl-intro{font-family:'Fraunces',serif;font-size:clamp(18px,4vw,22px);line-height:1.45;color:var(--pine);margin:12px auto 22px;max-width:34ch}
+.vsl-intro{font-family:'Lora',serif;font-size:clamp(18px,4vw,22px);line-height:1.45;color:var(--pine);margin:12px auto 22px;max-width:34ch}
 .vsl-frame{width:min(100%,380px);margin:0 auto;border-radius:22px;overflow:hidden;box-shadow:0 14px 40px rgba(37,52,44,.16);border:1px solid var(--line);background:var(--pine)}
 .vsl-frame wistia-player{display:block;width:100%}
 .vsl-frame wistia-player:not(:defined){background:center/contain no-repeat url('https://fast.wistia.com/embed/medias/vjen9pjw56/swatch');padding-top:177.78%;filter:blur(5px)}
-.vsl-bridge{font-family:'Fraunces',serif;font-size:clamp(20px,4.6vw,26px);line-height:1.35;color:var(--pine);font-weight:500;margin:30px auto 0;max-width:26ch}
+.vsl-bridge{font-family:'Lora',serif;font-size:clamp(20px,4.6vw,26px);line-height:1.35;color:var(--pine);font-weight:500;margin:30px auto 0;max-width:26ch}
 .comp-link{border-left:2px solid var(--clay);padding-left:12px;font-size:14.5px!important;color:var(--pine)!important}
 .hero-comp .comp-link{color:#eacfa4!important}
 /* componentes da oferta */
@@ -199,7 +203,7 @@ canvas{width:100%;height:100%;display:block}
 /* jornada */
 .journey{display:grid;gap:0;margin-top:30px}
 .jstep{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:16px 20px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
-.jstep b{font-family:'Fraunces',serif;font-size:19px;font-weight:500;color:#fff}
+.jstep b{font-family:'Lora',serif;font-size:19px;font-weight:500;color:#fff}
 .jstep span{font-size:13.5px;color:#b9c7bc}
 .jarrow{text-align:center;color:var(--gold);font-size:18px;line-height:1;padding:8px 0}
 /* prova social */
@@ -214,12 +218,12 @@ canvas{width:100%;height:100%;display:block}
 .stack-row{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.1)}
 .stack-row:first-of-type{padding-top:0}
 .stack-row div p{margin:0;color:#b9c7bc;font-size:13px;line-height:1.5}
-.stack-row div b{font-weight:500;font-family:'Fraunces',serif;font-size:17px;color:#fff;display:block;margin-bottom:3px}
+.stack-row div b{font-weight:500;font-family:'Lora',serif;font-size:17px;color:#fff;display:block;margin-bottom:3px}
 .stack-val{font-size:13.5px;color:#93a396;white-space:nowrap;flex-shrink:0}
 .stack-sum{display:flex;justify-content:space-between;align-items:baseline;padding:16px 0 0;font-size:13.5px;color:#93a396}
 .stack-sum s{font-size:15px;white-space:nowrap}
 .price-box{margin-top:22px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:22px;text-align:center}
-.price-box .pnum{font:600 clamp(46px,11vw,60px)/1 'Fraunces',serif;color:#fff;display:block}
+.price-box .pnum{font:600 clamp(46px,11vw,60px)/1 'Lora',serif;color:#fff;display:block}
 .price-box .pnote{font-size:13.5px;color:#b9c7bc;margin:10px 0 0}
 .stack .btn{width:100%;margin-top:18px}
 .stack-fine{font-size:12px;color:#8fa093;margin-top:14px;text-align:center}
@@ -227,7 +231,7 @@ canvas{width:100%;height:100%;display:block}
 .band-dark .disclaimer{color:#8fa093}
 /* garantia */
 .guarantee{background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:clamp(26px,6vw,40px);text-align:center;margin-top:24px}
-.guarantee .seal{width:54px;height:54px;border-radius:50%;background:#eef1eb;border:1px solid var(--sage);display:grid;place-items:center;margin:0 auto 16px;font-family:'Fraunces',serif;font-size:19px;color:var(--pine)}
+.guarantee .seal{width:54px;height:54px;border-radius:50%;background:#eef1eb;border:1px solid var(--sage);display:grid;place-items:center;margin:0 auto 16px;font-family:'Lora',serif;font-size:19px;color:var(--pine)}
 .guarantee h3{margin-bottom:10px}
 .guarantee p{color:var(--muted);margin:0;font-size:15px}
 /* faq */
@@ -281,22 +285,25 @@ canvas{width:100%;height:100%;display:block}
 
 <section class="page" id="quiz"><div class="shell">
   <div class="qhead"><span class="brand">TABLE</span><div class="ticks" id="ticks"></div><span class="counter" id="counter"></span></div>
-  <div class="card qcard" id="qcard"><p class="eyebrow" id="qtag"></p><h2 class="question-title" id="question"></h2><div class="options" id="options"></div><button class="back" id="back">← Voltar</button></div>
+  <div class="card qcard" id="qcard"><p class="eyebrow" id="qtag"></p><h2 class="question-title" id="question"></h2><p class="q-note" id="qnote" hidden></p><div class="options" id="options"></div><button class="back" id="back">← Voltar</button></div>
 </div></section>
 
 <section class="page" id="capture"><div class="shell"><div class="card capture">
   <div class="seal-sm" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#25342c" stroke-width="1.6" stroke-linecap="round"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="9"/></svg></div>
   <p class="eyebrow">Seu Radar está calculado</p><h2>Como podemos chamar você no resultado?</h2>
-  <p>Preencha seus dados para abrir o retrato completo. Nesta versão, o resultado aparece somente nesta página e não será enviado por WhatsApp.</p>
+  <p>Preencha seus dados para abrir o retrato completo. Seu resultado aparece somente nesta página e não será enviado por WhatsApp. Não vamos mandar nenhuma mensagem agora.</p>
   <div class="fields">
+    <label class="field-label" for="name">Nome</label>
     <input class="field" id="name" autocomplete="name" placeholder="Seu nome">
     <span class="error" id="nameError"></span>
+    <label class="field-label" for="email">E-mail</label>
     <input class="field" id="email" type="email" autocomplete="email" placeholder="Seu melhor e-mail">
     <span class="error" id="emailError"></span>
+    <label class="field-label" for="phone">WhatsApp</label>
     <input class="field" id="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="Seu WhatsApp com DDD">
     <span class="error" id="phoneError"></span>
     <button class="btn btn-primary" id="reveal">Abrir meu Radar →</button>
-  </div><p class="fine">Seus dados são usados para mensuração do funil e personalização desta experiência. Consulte nossa <a href="/legal" target="_blank" style="color:var(--pine)">Política de Privacidade</a>.</p>
+  </div><p class="fine">Usamos esses dados para personalizar seu resultado e mensurar esta experiência. Se você decidir seguir adiante, o WhatsApp também facilita o agendamento da sessão. Consulte nossa <a href="/legal" target="_blank" rel="noopener" style="color:var(--pine)">Política de Privacidade</a>.</p>
 </div></div></section>
 
 <section class="page" id="loading"><div class="shell">
@@ -544,7 +551,7 @@ const DIMS={
   adaptability:{label:'Adaptabilidade',short:'Adaptação'}
 };
 const questions=[
- {tag:'Seu momento',text:'Qual frase mais se aproxima da sua fase hoje?',stage:true,options:[['Ainda uso e não penso em parar agora','using'],['Ainda uso e já penso em como será depois','thinking'],['Parei e percebi fome ou pensamentos sobre comida voltando','stopped_hunger'],['Parei e meu peso começou a subir','stopped_weight'],['Nunca usei esse tipo de medicação','never']]},
+ {tag:'Antes de começar',text:'Para personalizar seu Radar, qual situação descreve melhor o seu momento?',note:'Você não precisa dizer qual medicamento usa. Isso apenas adapta a leitura do resultado e não sugere nenhuma mudança no seu tratamento.',stage:true,options:[['Uso esse tipo de medicação e não penso em parar agora','using'],['Uso e já penso em como será quando essa fase mudar','thinking'],['Já parei e percebi mais fome ou pensamentos sobre comida','stopped_hunger'],['Já parei e notei mudança no peso','stopped_weight'],['Já usei, mas hoje não uso mais','stopped_other'],['Não uso esse tipo de medicação','never']]},
  {tag:'1 · Relação com o corpo',text:'Quando você pensa no seu corpo hoje, o que mais se aproxima?',dim:'body',options:[['Consigo olhar para ele sem transformar tudo em julgamento',5],['Tenho incômodos, mas eles não comandam meu dia',4],['Meu humor ainda muda bastante com espelho, roupa ou balança',2],['Tenho medo constante de perder o corpo que conquistei',1]]},
  {tag:'2 · Relação com a comida',text:'Quando você come algo que não planejou, o que costuma acontecer?',dim:'food',options:[['Aproveito e sigo normalmente na refeição seguinte',5],['Fico um pouco desconfortável, mas consigo seguir',4],['Sinto culpa e penso em compensar depois',2],['Parece que estraguei tudo e perco o controle do resto do dia',1]]},
  {tag:'3 · Recursos',text:'Em semanas difíceis, quanto apoio sua rotina oferece para você se cuidar?',dim:'resources',options:[['Tenho sono, apoio e algum espaço para me reorganizar',5],['Nem sempre é fácil, mas tenho onde me apoiar',4],['Quase tudo depende de esforço e sobra pouca energia',2],['Vivo no limite e a comida frequentemente vira meu único alívio',1]]},
@@ -597,6 +604,7 @@ const STAGE_MIRROR={
   thinking:'Você já se pega pensando em como vai ser quando essa fase mudar.',
   stopped_hunger:'Desde que parou, a fome e os pensamentos sobre comida voltaram a ocupar espaço.',
   stopped_weight:'A balança voltou a subir, e com ela veio a urgência de retomar o controle.',
+  stopped_other:'Você já usou esse tipo de medicação e hoje quer entender quais recursos ficaram realmente seus.',
   never:'Você não usa esse tipo de medicação, e ainda assim alguma coisa na sua relação com a comida te fez querer olhar.'
 };
 const MIRROR={
@@ -615,6 +623,7 @@ const stageText={
   thinking:'Você já começou a olhar para o depois. Este retrato transforma uma preocupação difusa em seis áreas concretas, sem presumir que você precise interromper o tratamento.',
   stopped_hunger:'Com a fome ou os pensamentos sobre comida mais presentes, antigos conflitos podem ficar visíveis de novo. Isso não apaga o que você construiu e não significa fracasso.',
   stopped_weight:'Perceber o peso subir pode acionar culpa e urgência. O radar propõe outra leitura: olhar os recursos disponíveis antes de responder com mais controle.',
+  stopped_other:'Você já usou esse tipo de medicação e hoje está em outra fase. O radar olha menos para o motivo da mudança e mais para os recursos que sustentam sua relação com a comida agora.',
   never:'Você não usa esse tipo de medicação. O radar funciona do mesmo jeito: ele olha para os recursos que sustentam a sua relação com a comida, com ou sem tratamento.'
 };
 const STAGE_BRIDGE={
@@ -638,6 +647,11 @@ const STAGE_BRIDGE={
     'Mas antes de entrar novamente em uma guerra com a comida, vale entender onde a sua segurança está mais vulnerável, porque é ali que o ciclo costuma recomeçar.',
     'É exatamente isso que o seu Radar ajuda a tornar visível.'
   ]},
+  stopped_other:{title:'O tratamento pode ter mudado. O que você construiu merece ser visto.',body:[
+    'Você já viveu uma fase com esse tipo de medicação e hoje está em outro momento. Não precisamos presumir por que isso mudou.',
+    'O ponto agora é separar o que dependia daquela fase do que já se tornou percepção, flexibilidade e recurso seu.',
+    'Seu Radar ajuda a tornar essa diferença visível, sem julgamento e sem sugerir qualquer decisão clínica.'
+  ]},
   never:{title:'O que incomoda quase nunca é a fome em si.',body:[
     'Você não usa esse tipo de medicação. Ainda assim, alguma coisa na sua relação com a comida te trouxe até aqui e te fez responder dez perguntas até o fim.',
     'Isso já diz bastante. O que costuma pesar raramente é a fome: é o que acontece em volta dela. A culpa depois de comer, o humor que muda com a roupa, o domingo em família que exige uma estratégia, a sensação de precisar de regra para se sentir segura.',
@@ -655,7 +669,7 @@ function eventId(prefix){return prefix+'_'+crypto.randomUUID()}
 function fired(name){if(fired[name])return true;fired[name]=1;return false}
 function track(name){if(fired(name))return;try{fbq('trackCustom',name,{funnel:'raiz-v2'})}catch(e){}}
 function start(){const id=eventId('qs');fbq('trackCustom','QuizStart',{funnel:'raiz-v2'},{eventID:id});fetch('/api/capi/quiz-start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_source_url:location.href})}).catch(()=>{});page('quiz');render()}
-function render(){const q=questions[current];$('qtag').textContent=q.tag;$('question').textContent=q.text;$('counter').textContent=`${current+1}/${questions.length}`;$('ticks').innerHTML=questions.map((_,i)=>`<i class="${i<=current?'on':''}"></i>`).join('');$('back').style.visibility=current?'visible':'hidden';const card=$('qcard');card.classList.remove('qcard');void card.offsetWidth;card.classList.add('qcard');$('options').innerHTML='';q.options.forEach((o,i)=>{const b=document.createElement('button');b.className='option'+(picks[current]===i?' picked':'');const label=(stage==='never'&&ALT_OPTIONS[current]&&ALT_OPTIONS[current][i])||o[0];b.innerHTML=`<b>${String.fromCharCode(65+i)}</b><span>${label}</span>`;b.onclick=()=>{b.classList.add('picked');choose(o[1],i)};$('options').appendChild(b)})}
+function render(){const q=questions[current];$('qtag').textContent=q.tag;$('question').textContent=q.text;const note=$('qnote');note.textContent=q.note||'';note.hidden=!q.note;$('counter').textContent=`${current+1}/${questions.length}`;$('ticks').innerHTML=questions.map((_,i)=>`<i class="${i<=current?'on':''}"></i>`).join('');$('back').style.visibility=current?'visible':'hidden';const card=$('qcard');card.classList.remove('qcard');void card.offsetWidth;card.classList.add('qcard');$('options').innerHTML='';q.options.forEach((o,i)=>{const b=document.createElement('button');b.className='option'+(picks[current]===i?' picked':'');const label=(stage==='never'&&ALT_OPTIONS[current]&&ALT_OPTIONS[current][i])||o[0];b.innerHTML=`<b>${String.fromCharCode(65+i)}</b><span>${label}</span>`;b.onclick=()=>{b.classList.add('picked');choose(o[1],i)};$('options').appendChild(b)})}
 function choose(value,index){answers[current]=value;picks[current]=index;if(questions[current].stage)stage=value;current++;if(current===4)fbq('trackCustom','QuizProgress',{step:4,funnel:'raiz-v2'});if(current>=questions.length){page('capture');return}render()}
 function recompute(){scores={body:0,food:0,resources:0,knowledge:0,awareness:0,adaptability:0};counts={body:0,food:0,resources:0,knowledge:0,awareness:0,adaptability:0};questions.forEach((q,i)=>{const v=answers[i];if(q.stage){stage=v;return}if(q.dim){scores[q.dim]+=Number(v);counts[q.dim]++}if(q.weights&&v)Object.entries(v).forEach(([k,n])=>{scores[k]+=n;counts[k]++})});Object.keys(scores).forEach(k=>scores[k]=Math.max(0,Math.min(5,Math.round((scores[k]/Math.max(1,counts[k]))*10)/10)))}
 function normalizePhone(v){let d=v.replace(/\D/g,'');if(d.length===10||d.length===11)d='55'+d;return d}
@@ -669,7 +683,7 @@ function renderResult(){
   const first=lead.name.split(/\s+/)[0];
   const r=ranking(),low=r.low,low2=r.low2,high=r.high;
   /* A · headline */
-  $('greeting').innerHTML=(stage==='using'||stage==='thinking'||stage==='never')
+  $('greeting').innerHTML=(stage!=='stopped_weight')
     ?`${first}, este é o pedaço da sua relação com a comida <em>que a balança não mostra.</em>`
     :`${first}, seu peso conta uma parte da história. <em>Seu Radar mostra o que existe em volta dele.</em>`;
   $('stageCopy').textContent=stageText[stage];
