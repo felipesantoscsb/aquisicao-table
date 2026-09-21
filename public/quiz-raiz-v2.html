@@ -247,7 +247,17 @@ canvas{width:100%;height:100%;display:block}
 .final .btn{width:min(100%,420px);margin-top:26px}
 .final-fine{font-size:12.5px;color:#8fa093;margin-top:14px}
 @media(max-width:680px){
-  .shell{padding-top:24px}.hero .shell{padding-top:48px;padding-bottom:48px}
+  .shell{padding-top:24px}.hero .shell{padding-top:22px;padding-bottom:28px;justify-content:flex-start}
+  /* Intro inteira na primeira dobra: o botao precisa aparecer sem rolar,
+     inclusive no navegador do Instagram, que come ~150px da tela. */
+  .hero-top{margin-bottom:0;padding-bottom:18px}
+  .hero h1{font-size:clamp(28px,7.6vw,34px);margin-top:0}
+  .hero-copy{font-size:15px;line-height:1.55;margin-top:12px}
+  .hero-art{width:96px;margin:12px 0 0}
+  .chips{margin:12px 0 16px;gap:6px;flex-wrap:nowrap}
+  .chip{font-size:11.5px;padding:5px 10px}
+  .hero .btn-lg{width:100%;padding:16px 22px}
+  .hero .fine{margin-top:12px;font-size:11.5px}
   .evelyn{grid-template-columns:64px 1fr;gap:14px}.evelyn img{width:64px;height:64px}
   .pcard{grid-template-columns:48px 1fr;gap:13px;padding:18px}.pcard img{width:48px;height:48px}
   .stack-row{flex-direction:column;gap:4px}.stack-val{align-self:flex-start}
@@ -262,7 +272,7 @@ canvas{width:100%;height:100%;display:block}
 <section class="page hero active" id="intro"><div class="shell">
   <div class="hero-top"><div class="brand">TABLE</div><p class="eyebrow">Radar Table · gratuito</p></div>
   <h1>Sentir menos fome não é o mesmo que se sentir <em>segura com a comida.</em></h1>
-  <p class="hero-copy">Em 10 perguntas, veja como estão hoje os seis pilares da sua relação com a alimentação, especialmente se você usa, já usou ou está pensando em usar medicamentos como Mounjaro, Ozempic e Wegovy.</p>
+  <p class="hero-copy">10 perguntas sobre os seis pilares da sua relação com a comida, para quem usa, já usou ou pensa em usar Mounjaro, Ozempic ou Wegovy.</p>
   <div class="hero-art" aria-hidden="true">
     <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
       <g fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1">
@@ -278,7 +288,7 @@ canvas{width:100%;height:100%;display:block}
       </g>
     </svg>
   </div>
-  <div class="chips"><span class="chip">Visual e personalizado</span><span class="chip">3 minutos</span><span class="chip">Sem julgamento</span></div>
+  <div class="chips"><span class="chip">Personalizado</span><span class="chip">3 minutos</span><span class="chip">Sem julgamento</span></div>
   <button class="btn btn-primary btn-lg" id="start">Quero ver meu Radar →</button>
   <p class="fine">O Radar não orienta dose nem interrupção de medicamentos. Decisões clínicas pertencem a você e ao seu prescritor.</p>
 </div></section>
@@ -440,14 +450,11 @@ canvas{width:100%;height:100%;display:block}
       <div class="comp-num">2</div>
       <p class="kicker">Sessão Raiz · atendimento individual</p>
       <h3>E então, uma nutricionista comportamental olha para você.</h3>
-      <p>O Radar é uma fotografia simplificada. Na Sessão Raiz, uma nutricionista comportamental da Table aprofunda o seu momento, a sua rotina, os seus gatilhos, as suas dificuldades e o seu contexto.</p>
-      <p><strong>Nutrição comportamental não é nutrição com outro nome.</strong> Em vez de começar pelo que você deveria comer, ela começa pelo que acontece antes e depois de comer: o que dispara, o que alivia, o que se repete. É o tipo de escuta que quase nunca cabe em uma consulta comum.</p>
-      <p>É a mesma lente que a Evelyn desenvolveu na Table e que sustenta os seis pilares do seu Radar. A nutricionista que vai te atender trabalha dentro desse método, olhando para os mesmos seis pontos que você acabou de ver.</p>
-      <p>Não é uma sessão de dieta. Não é um cardápio genérico. É uma conversa individual de escuta e direcionamento para entender o que está acontecendo e quais próximos passos fazem sentido para você.</p>
-      <p style="color:#eacfa4">É aqui que o método deixa de olhar apenas para respostas de um quiz e começa a olhar para a sua história.</p>
+      <p>O Radar é uma fotografia. Na Sessão Raiz, uma nutricionista comportamental da Table olha para a sua história, com os mesmos seis pilares que você acabou de ver.</p>
+      <p>Em vez de começar pelo que você deveria comer, ela começa pelo que acontece antes e depois de comer. Não é dieta nem cardápio: é uma conversa para entender o seu momento e definir os próximos passos com você.</p>
       <div class="comp-meta"><span>30 a 40 minutos</span><span>Online, por videochamada</span><span>Nutricionista comportamental da Table</span><span>Agendamento pelo seu WhatsApp</span><span class="meta-strong">Cerca de 1 semana até a sessão</span></div>
       <p class="comp-link" id="linkSessao"></p>
-      <p class="disclaimer">O agendamento acontece conforme a disponibilidade da equipe, que atende um número limitado de Sessões Raiz por semana. Na média, a sessão acontece cerca de uma semana depois da compra. Quando houver fit, acompanhamentos contínuos da Table poderão ser apresentados, sem qualquer obrigação.</p>
+      <p class="disclaimer">Vagas limitadas por semana. Se fizer sentido para você, a equipe pode apresentar um acompanhamento contínuo, sem obrigação.</p>
     </div>
 
   </div></section>
@@ -551,7 +558,7 @@ const DIMS={
   adaptability:{label:'Adaptabilidade',short:'Adaptação'}
 };
 const questions=[
- {tag:'Antes de começar',text:'Para personalizar seu Radar, qual situação descreve melhor o seu momento?',note:'Você não precisa dizer qual medicamento usa. Isso apenas adapta a leitura do resultado e não sugere nenhuma mudança no seu tratamento.',stage:true,options:[['Uso esse tipo de medicação e não penso em parar agora','using'],['Uso e já penso em como será quando essa fase mudar','thinking'],['Já parei e percebi mais fome ou pensamentos sobre comida','stopped_hunger'],['Já parei e notei mudança no peso','stopped_weight'],['Já usei, mas hoje não uso mais','stopped_other'],['Não uso esse tipo de medicação','never']]},
+ {tag:'Antes de começar',text:'Qual frase descreve melhor o seu momento com as canetas, como Mounjaro, Ozempic ou Wegovy?',note:'Se mais de uma servir, escolha a que mais pesa hoje. Sua resposta ajusta a leitura do Radar ao seu momento.',stage:true,options:[['Estou usando e não penso em parar agora','using'],['Estou usando e já penso em como vai ser quando parar','thinking'],['Parei, e a fome ou os pensamentos sobre comida voltaram','stopped_hunger'],['Parei, e o peso começou a voltar','stopped_weight'],['Parei, e nenhuma dessas mudanças me preocupa hoje','stopped_other'],['Nunca usei','never']]},
  {tag:'1 · Relação com o corpo',text:'Quando você pensa no seu corpo hoje, o que mais se aproxima?',dim:'body',options:[['Consigo olhar para ele sem transformar tudo em julgamento',5],['Tenho incômodos, mas eles não comandam meu dia',4],['Meu humor ainda muda bastante com espelho, roupa ou balança',2],['Tenho medo constante de perder o corpo que conquistei',1]]},
  {tag:'2 · Relação com a comida',text:'Quando você come algo que não planejou, o que costuma acontecer?',dim:'food',options:[['Aproveito e sigo normalmente na refeição seguinte',5],['Fico um pouco desconfortável, mas consigo seguir',4],['Sinto culpa e penso em compensar depois',2],['Parece que estraguei tudo e perco o controle do resto do dia',1]]},
  {tag:'3 · Recursos',text:'Em semanas difíceis, quanto apoio sua rotina oferece para você se cuidar?',dim:'resources',options:[['Tenho sono, apoio e algum espaço para me reorganizar',5],['Nem sempre é fácil, mas tenho onde me apoiar',4],['Quase tudo depende de esforço e sobra pouca energia',2],['Vivo no limite e a comida frequentemente vira meu único alívio',1]]},
