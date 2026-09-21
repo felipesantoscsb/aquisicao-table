@@ -169,7 +169,14 @@ canvas{width:100%;height:100%;display:block}
 .evelyn-role{font-size:13px;color:var(--muted);margin:4px 0 0;line-height:1.5}
 .evelyn-quote{font-family:'Fraunces',serif;font-size:clamp(19px,4.2vw,24px);line-height:1.45;color:var(--pine);margin:28px 0 0;font-weight:500}
 .evelyn-quote span{display:block;margin-top:14px}
-.vsl{margin:30px 0 0}
+.vsl{margin:44px 0 0;text-align:center}
+.vsl-intro{font-family:'Fraunces',serif;font-size:clamp(18px,4vw,22px);line-height:1.45;color:var(--pine);margin:12px auto 22px;max-width:34ch}
+.vsl-frame{width:min(100%,380px);margin:0 auto;border-radius:22px;overflow:hidden;box-shadow:0 14px 40px rgba(37,52,44,.16);border:1px solid var(--line);background:var(--pine)}
+.vsl-frame wistia-player{display:block;width:100%}
+.vsl-frame wistia-player:not(:defined){background:center/contain no-repeat url('https://fast.wistia.com/embed/medias/vjen9pjw56/swatch');padding-top:177.78%;filter:blur(5px)}
+.vsl-bridge{font-family:'Fraunces',serif;font-size:clamp(20px,4.6vw,26px);line-height:1.35;color:var(--pine);font-weight:500;margin:30px auto 0;max-width:26ch}
+.comp-link{border-left:2px solid var(--clay);padding-left:12px;font-size:14.5px!important;color:var(--pine)!important}
+.hero-comp .comp-link{color:#eacfa4!important}
 /* componentes da oferta */
 .comp{background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:clamp(24px,5.5vw,38px);margin-top:16px;position:relative;overflow:hidden}
 .comp-num{font:600 13px 'DM Sans';color:#fff;background:var(--pine);width:30px;height:30px;border-radius:50%;display:grid;place-items:center;margin-bottom:16px}
@@ -355,6 +362,7 @@ canvas{width:100%;height:100%;display:block}
       <span>Como percebe seus sinais.</span>
       <span>E quais recursos encontra quando a vida sai do planejado.</span>
     </p>
+    <p>Por isso o mesmo padrão volta mesmo quando você sabe exatamente o que deveria comer. Não é falta de força de vontade, nem de informação. Existe um mecanismo por trás do comportamento, e enquanto ele não é visto, a tendência é ele se repetir.</p>
     <p style="color:#eacfa4;margin-bottom:0">É essa camada que o seu Radar está mostrando.</p>
   </div></section>
 
@@ -389,7 +397,12 @@ canvas{width:100%;height:100%;display:block}
       <span>Por isso nosso trabalho não começa tentando controlar mais a alimentação. Começa entendendo o que acontece em volta dela.</span>
       <span>Foi daí que nasceu o Método Table.”</span>
     </p>
-    <div class="vsl" id="vslSlot" hidden></div>
+    <div class="vsl" id="vslSlot" hidden>
+      <p class="eyebrow">Antes do próximo passo</p>
+      <p class="vsl-intro">Antes de te mostrar o próximo passo, a Evelyn gravou este vídeo para explicar o que o seu resultado significa na prática e o que você pode fazer a partir daqui.</p>
+      <div class="vsl-frame" id="vslFrame"></div>
+      <p class="vsl-bridge">É exatamente para trabalhar essa raiz que existe o Protocolo Raiz.</p>
+    </div>
   </div></section>
 
   <!-- 8 · PONTE PARA A OFERTA -->
@@ -412,6 +425,7 @@ canvas{width:100%;height:100%;display:block}
       <p>Não tem cardápio, lista de proibições nem meta de calorias. É um trabalho de percepção, o tipo de coisa que continua valendo depois, independentemente do que aconteça com o tratamento.</p>
       <p><strong>O acesso é vitalício.</strong> As aulas e os exercícios ficam com você para sempre, para voltar quantas vezes precisar, em qualquer fase.</p>
       <div class="comp-meta"><span>12 exercícios guiados por Evelyn Liu</span><span>Aulas em vídeo</span><span>Diário de acompanhamento</span><span>Livro “Gordura Não Existe” em PDF</span><span class="meta-strong">Acesso vitalício</span></div>
+      <p class="comp-link" id="linkRaiz"></p>
     </div>
 
     <div class="comp">
@@ -422,6 +436,7 @@ canvas{width:100%;height:100%;display:block}
       <p>A LIA acompanha você pelo WhatsApp para check-ins, registros, reflexões e momentos em que comida, ansiedade ou rotina se cruzam. Você escreve como escreveria para alguém de confiança, e ela devolve uma leitura do que está ali.</p>
       <p>É tecnologia para aproximar o cuidado, nunca para substituir profissionais.</p>
       <div class="comp-meta" id="liaMeta"><span>No seu WhatsApp</span><span>Disponível quando você precisar</span></div>
+      <p class="comp-link" id="linkLia"></p>
     </div>
 
     <div class="comp hero-comp">
@@ -435,6 +450,7 @@ canvas{width:100%;height:100%;display:block}
       <p>Não é uma sessão de dieta. Não é um cardápio genérico. É uma conversa individual de escuta e direcionamento para entender o que está acontecendo e quais próximos passos fazem sentido para você.</p>
       <p style="color:#eacfa4">É aqui que o método deixa de olhar apenas para respostas de um quiz e começa a olhar para a sua história.</p>
       <div class="comp-meta"><span>30 a 40 minutos</span><span>Online, por videochamada</span><span>Nutricionista comportamental da Table</span><span>Agendamento pelo seu WhatsApp</span><span class="meta-strong">Cerca de 1 semana até a sessão</span></div>
+      <p class="comp-link" id="linkSessao"></p>
       <p class="disclaimer">O agendamento acontece conforme a disponibilidade da equipe, que atende um número limitado de Sessões Raiz por semana. Na média, a sessão acontece cerca de uma semana depois da compra. Quando houver fit, acompanhamentos contínuos da Table poderão ser apresentados, sem qualquer obrigação.</p>
     </div>
 
@@ -453,23 +469,6 @@ canvas{width:100%;height:100%;display:block}
       <div class="jarrow">↓</div>
       <div class="jstep"><b>Sessão Raiz</b><span>aprofundar e direcionar</span></div>
     </div>
-  </div></section>
-
-  <!-- 13 · PROVA SOCIAL -->
-  <section class="band band-paper"><div>
-    <hr class="rule">
-    <h2>O que muda quando você começa a olhar além da comida</h2>
-    <p class="lede">Mulheres que passaram pelo trabalho da Table.</p>
-    <div class="proof">
-      <div class="pcard"><img src="/images/Juliana Moreno.png" alt="Juliana" loading="lazy"><div><q>Depois de 12 anos tentando dietas, foi a primeira vez que me senti em paz com minhas escolhas.</q><cite>Juliana</cite></div></div>
-      <div class="pcard"><img src="/images/Adriana.png" alt="Adriana" loading="lazy"><div><q>Em 6 semanas entendi o que 3 nutricionistas não conseguiram me explicar: não era falta de força de vontade.</q><cite>Adriana</cite></div></div>
-      <div class="pcard"><img src="/images/Cris.png" alt="Cris" loading="lazy"><div><q>Finalmente me sinto em equilíbrio com o meu corpo.</q><cite>Cris</cite></div></div>
-    
-      <div class="pcard"><img src="/images/Iracema.png" alt="Iracema" loading="lazy"><div><q>Aprendi a me ouvir de um jeito que nunca tinha conseguido antes.</q><cite>Iracema</cite></div></div>
-      <div class="pcard"><img src="/images/Gracinha.png" alt="Gracinha" loading="lazy"><div><q>Aprendi a me ouvir antes de abrir a geladeira.</q><cite>Gracinha</cite></div></div>
-      <div class="pcard"><img src="/images/Liliane.png" alt="Liliane" loading="lazy"><div><q>Nunca pensei que ia me sentir assim de novo.</q><cite>Liliane</cite></div></div>
-    </div>
-    <button class="btn btn-primary proof-cta" id="proofCta">Quero trabalhar meu Radar →</button>
   </div></section>
 
   <!-- 14, 15 · STACK, ANCORAGEM E PREÇO -->
@@ -499,6 +498,23 @@ canvas{width:100%;height:100%;display:block}
       <h3 style="margin-top:10px">Garantia de 7 dias.</h3>
       <p>Entre, conheça o Protocolo Raiz e veja se essa experiência faz sentido para você. Se não fizer, você pode solicitar o reembolso dentro do período de garantia e devolvemos 100% do valor.</p>
     </div>
+  </div></section>
+
+  <!-- 13 · PROVA SOCIAL -->
+  <section class="band band-paper"><div>
+    <hr class="rule">
+    <h2>O que muda quando você começa a olhar além da comida</h2>
+    <p class="lede">Mulheres que passaram pelo trabalho da Table.</p>
+    <div class="proof">
+      <div class="pcard"><img src="/images/Juliana Moreno.png" alt="Juliana" loading="lazy"><div><q>Depois de 12 anos tentando dietas, foi a primeira vez que me senti em paz com minhas escolhas.</q><cite>Juliana</cite></div></div>
+      <div class="pcard"><img src="/images/Adriana.png" alt="Adriana" loading="lazy"><div><q>Em 6 semanas entendi o que 3 nutricionistas não conseguiram me explicar: não era falta de força de vontade.</q><cite>Adriana</cite></div></div>
+      <div class="pcard"><img src="/images/Cris.png" alt="Cris" loading="lazy"><div><q>Finalmente me sinto em equilíbrio com o meu corpo.</q><cite>Cris</cite></div></div>
+    
+      <div class="pcard"><img src="/images/Iracema.png" alt="Iracema" loading="lazy"><div><q>Aprendi a me ouvir de um jeito que nunca tinha conseguido antes.</q><cite>Iracema</cite></div></div>
+      <div class="pcard"><img src="/images/Gracinha.png" alt="Gracinha" loading="lazy"><div><q>Aprendi a me ouvir antes de abrir a geladeira.</q><cite>Gracinha</cite></div></div>
+      <div class="pcard"><img src="/images/Liliane.png" alt="Liliane" loading="lazy"><div><q>Nunca pensei que ia me sentir assim de novo.</q><cite>Liliane</cite></div></div>
+    </div>
+    <button class="btn btn-primary proof-cta" id="proofCta">Quero trabalhar meu Radar →</button>
   </div></section>
 
   <!-- 16 · FAQ -->
@@ -556,7 +572,7 @@ const questions=[
 ];
 /* ---------------- configuração editável ---------------- */
 const LIA_ACCESS_LABEL = '1 mês';   /* período de acesso à LIA incluído nesta oferta. Vazio = não exibe duração. Alimenta o chip, a linha do stack e o FAQ. */
-const VSL_MEDIA_ID     = '';   /* id Wistia da VSL deste funil. Vazio = seção some, sem placeholder. */
+const VSL_MEDIA_ID     = 'vjen9pjw56';   /* id Wistia da VSL deste funil. Vazio = seção some, sem placeholder. */
 
 /* ---------------- conteúdo dos pilares ---------------- */
 const PILLAR_MEANING={
@@ -722,8 +738,26 @@ function renderResult(){
     document.querySelectorAll('[data-lia-faq]').forEach(e=>e.textContent=` Nesta oferta, o acesso à LIA é de ${LIA_ACCESS_LABEL}.`);
     document.querySelectorAll('[data-lia-acesso]').forEach(e=>e.textContent=` O acesso à LIA nesta oferta é de ${LIA_ACCESS_LABEL}.`);
   }
-  if(VSL_MEDIA_ID){const s=$('vslSlot');s.hidden=false;s.innerHTML=`<script src="https://fast.wistia.com/player.js" async><\/script><script src="https://fast.wistia.com/embed/${VSL_MEDIA_ID}.js" async type="module"><\/script><style>wistia-player{display:block;width:100%;border-radius:22px;overflow:hidden;box-shadow:0 14px 40px rgba(37,52,44,.14)}</style><wistia-player media-id="${VSL_MEDIA_ID}" aspect="0.5625"></wistia-player>`}
+  if(VSL_MEDIA_ID)mountVsl();
+  /* cada componente ligado ao que o Radar mostrou */
+  const link=(id,t)=>{const el=$(id);if(el)el.innerHTML=t};
+  link('linkRaiz',`No seu Radar: é aqui que você começa a entender o que está por trás de <strong>${lc(low)}</strong>.`);
+  link('linkLia',`No seu Radar: ajuda a perceber <strong>${lc(low2)}</strong> no momento em que acontece, não só depois.`);
+  link('linkSessao',`No seu Radar: a nutricionista parte de <strong>${lc(low)}</strong>, usando <strong>${lc(high)}</strong> como apoio.`);
   drawRadar();
+}
+/* ---------------- mini VSL ---------------- */
+let vslMontada=false;
+function mountVsl(){
+  if(vslMontada)return;vslMontada=true;
+  $('vslSlot').hidden=false;
+  const add=(src,mod)=>{const e=document.createElement('script');e.src=src;e.async=true;if(mod)e.type='module';document.head.appendChild(e)};
+  add('https://fast.wistia.com/player.js');
+  add(`https://fast.wistia.com/embed/${VSL_MEDIA_ID}.js`,true);
+  const pl=document.createElement('wistia-player');
+  pl.setAttribute('media-id',VSL_MEDIA_ID);pl.setAttribute('aspect','0.5625');
+  let tocou=false;pl.addEventListener('play',()=>{if(!tocou){tocou=true;track('VSLPlay')}});
+  $('vslFrame').appendChild(pl);
 }
 /* ---------------- radar ---------------- */
 function drawRadar(){
@@ -759,7 +793,7 @@ $('back').onclick=()=>{if(current){current--;render()}else page('intro')};
 $('reveal').onclick=reveal;
 $('checkout').onclick=checkout;
 $('checkout2').onclick=checkout;
-$('proofCta').onclick=()=>$('priceBand').scrollIntoView({behavior:'smooth',block:'start'});
+$('proofCta').onclick=checkout;
 $('faq').addEventListener('toggle',e=>{if(e.target.open)track('FAQInteraction')},true);
 $('phone').oninput=e=>{let d=e.target.value.replace(/\D/g,'').slice(0,11);e.target.value=d.length>6?`(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`:d};
 </script>
