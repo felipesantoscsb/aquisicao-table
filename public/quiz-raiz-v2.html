@@ -285,8 +285,8 @@ canvas{width:100%;height:100%;display:block}
         <polygon points="150,74 173,87 173,113 150,126 127,113 127,87"/>
         <line x1="150" y1="22" x2="150" y2="178"/><line x1="81" y1="61" x2="219" y2="139"/><line x1="219" y1="61" x2="81" y2="139"/>
       </g>
-      <polygon points="150,40 205,70 196,126 150,160 104,126 113,79" fill="rgba(194,113,79,.3)" stroke="#d98a63" stroke-width="2"/>
-      <g fill="#f6f0e6">
+      <polygon id="heroRadarShape" points="150,40 205,70 196,126 150,160 104,126 113,79" fill="rgba(194,113,79,.3)" stroke="#d98a63" stroke-width="2" stroke-linejoin="round"/>
+      <g fill="#f6f0e6" id="heroRadarDots">
         <circle cx="150" cy="40" r="3.5"/><circle cx="205" cy="70" r="3.5"/><circle cx="196" cy="126" r="3.5"/>
         <circle cx="150" cy="160" r="3.5"/><circle cx="104" cy="126" r="3.5"/><circle cx="113" cy="79" r="3.5"/>
       </g>
@@ -296,6 +296,35 @@ canvas{width:100%;height:100%;display:block}
   <button class="btn btn-primary btn-lg" id="start">Quero ver meu Radar →</button>
   <p class="fine">O Radar não orienta dose nem interrupção de medicamentos. Decisões clínicas pertencem a você e ao seu prescritor.</p>
 </div></section>
+<script>
+/* Radar da intro "respirando": cada vertice oscila no proprio eixo, com ritmo
+   e fase diferentes, sempre dentro do hexagono. Sem animacao para quem pede
+   movimento reduzido, e o loop para quando a intro sai de cena. */
+(function(){
+  var shape=document.getElementById('heroRadarShape'),dots=document.querySelectorAll('#heroRadarDots circle'),intro=document.getElementById('intro');
+  if(!shape||dots.length!==6||!window.requestAnimationFrame) return;
+  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var cx=150,cy=100;
+  // eixos: pontas do hexagono externo, a partir do centro
+  var eixos=[[0,-78],[69,-39],[69,39],[0,78],[-69,39],[-69,-39]];
+  // raio de repouso (fracao do eixo) = desenho estatico original
+  var base=[.77,.79,.67,.77,.67,.54];
+  var per=[3.4,4.6,3.9,5.2,4.2,3.6],fase=[0,1.7,3.1,.8,2.4,4.2];
+  function quadro(ms){
+    if(!intro.classList.contains('active')) return;
+    var t=ms/1000,pts=[];
+    for(var i=0;i<6;i++){
+      var r=base[i]+.13*Math.sin(t*2*Math.PI/per[i]+fase[i])+.04*Math.sin(t*2*Math.PI/(per[i]*.37)+fase[i]*2);
+      r=Math.max(.3,Math.min(.95,r));
+      var x=(cx+eixos[i][0]*r).toFixed(1),y=(cy+eixos[i][1]*r).toFixed(1);
+      pts.push(x+','+y);dots[i].setAttribute('cx',x);dots[i].setAttribute('cy',y);
+    }
+    shape.setAttribute('points',pts.join(' '));
+    requestAnimationFrame(quadro);
+  }
+  requestAnimationFrame(quadro);
+})();
+</script>
 
 <section class="page" id="quiz"><div class="shell">
   <div class="qhead"><span class="brand">TABLE</span><div class="ticks" id="ticks"></div><span class="counter" id="counter"></span></div>
