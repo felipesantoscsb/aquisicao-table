@@ -43,9 +43,10 @@ test('resultado mantém interpolação de nome, estágio e pilares', () => {
 });
 
 test('primeira pergunta contextualiza medicação sem presumir tratamento', () => {
-  assert.match(html, /Você não precisa dizer qual medicamento usa/);
+  assert.match(html, /Se mais de uma servir, escolha a que mais pesa hoje/);
+  assert.doesNotMatch(html, /Você não precisa dizer qual medicamento usa/);
   assert.match(html, /'stopped_other'/);
-  assert.match(html, /Já usei, mas hoje não uso mais/);
+  assert.match(html, /Parei, e nenhuma dessas mudanças me preocupa hoje/);
 });
 
 test('resultado fica oculto até a conclusão e a VSL está configurada', () => {
