@@ -3301,6 +3301,16 @@ const DASH_METRICS = [
   'seq_sent_4h', 'seq_dossie_reopen_4h', 'seq_converted_4h', 'seq_revenue_cents',
 ];
 
+// PR V1 x V2 (Radar /raiz-v2, lançado 21/09/2026). A V2 tem oferta própria na
+// Cakto; o nome da oferta traz "V2". PR_V2_OFFER_IDS (ids separados por
+// vírgula) é o plano B caso o nome mude. Ticto e qualquer outra oferta = V1.
+function versaoPr(rec) {
+  const ids = (process.env.PR_V2_OFFER_IDS || '').split(',').map(s => s.trim()).filter(Boolean);
+  if (rec.offer_id != null && ids.includes(String(rec.offer_id))) return 'v2';
+  const nome = `${rec.offer_name || ''} ${rec.product_name || ''}`;
+  return /v2(?!\d)/i.test(nome) ? 'v2' : 'v1';
+}
+
 app.get('/api/dash/data', async (req, res) => {
   try {
     const daysN = Math.min(Math.max(Number(req.query.days) || 30, 1), 90);
@@ -3330,6 +3340,8 @@ app.get('/api/dash/data', async (req, res) => {
     // cada registro. Como os registros ficam 90 dias, isto vale retroativamente.
     const porCanal = {};
     const ofertasVistas = {};
+    // Vendas válidas por dia e por versão do PR (ver versaoPr).
+    const porVersaoDia = {};
     // Ticto E Cakto. O contador diário 'purchases' só é incrementado no webhook
     // da Ticto; desde que /raiz passou a servir o checkout Cakto, a maior parte
     // das vendas do funil vive só em cakto:purchase:* — sem somar as duas aqui,
@@ -3376,6 +3388,10 @@ app.get('/api/dash/data', async (req, res) => {
         // permite cruzar as duas dimensões: qual perfil compra em qual canal
         if (rec.status !== 'refunded' && rec.status !== 'chargeback') {
           const canal = rec.provider === 'cakto' ? 'cakto' : canalDaOferta(rec.offer_id);
+          const v = versaoPr(rec);
+          const pv = porVersaoDia[d] = porVersaoDia[d] || { v1: { compras: 0, receita_cents: 0 }, v2: { compras: 0, receita_cents: 0 } };
+          pv[v].compras += 1;
+          pv[v].receita_cents += Math.round((rec.value || 0) * 100);
           porCanal[canal] = porCanal[canal] || { compras: 0, receita_cents: 0, por_perfil: {} };
           porCanal[canal].compras += 1;
           porCanal[canal].receita_cents += Math.round((rec.value || 0) * 100);
@@ -3458,6 +3474,9 @@ app.get('/api/dash/data', async (req, res) => {
       // das ofertas encontradas, para mapear novos checkouts sem adivinhação.
       compras_por_canal: porCanal,
       ofertas_vistas: ofertasVistas,
+      // { 'YYYY-MM-DD': { v1: {compras, receita_cents}, v2: {...} } } — só
+      // vendas válidas, a partir dos registros individuais (Ticto + Cakto).
+      pr_por_versao_dia: porVersaoDia,
       totals: { today: windowTotals(1), d7: windowTotals(7), d30: windowTotals(Math.min(30, daysN)) },
       recovery_lifetime: {
         enabled:   process.env.RECOVERY_ENABLED === 'true',
