@@ -62,6 +62,7 @@ async function notifyEvelynCommercialEvent({ eventId, eventType, phone, name, pa
   return true;
 }
 
+const hubSync = require('./hubSync');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -144,6 +145,8 @@ app.get('/raiz-tiktok', (req, res) => res.sendFile(path.join(pub,   'quiz-tiktok
 app.get('/legal',      (req, res) => res.sendFile(path.join(funil, 'privacidade_termos_evelynliu.html')));
 app.get('/mediakit',   (req, res) => res.sendFile(path.join(pub,   'mediakit.html')));
 app.get('/protocolo-raiz', (req, res) => res.sendFile(path.join(funil, 'protocolo_raiz_bio.html')));
+// Reativação PR via WhatsApp (Hub): mesma página da bio, checkout próprio (Cakto vuq4djv).
+app.get('/protocolo-raiz-r', (req, res) => res.sendFile(path.join(funil, 'protocolo_raiz_reativacao.html')));
 app.get('/obrigado',           (req, res) => res.sendFile(path.join(funil, 'obrigado-protocolo-raiz.html')));
 app.get('/obrigado-essential',    (req, res) => res.sendFile(path.join(funil, 'obrigado-essential.html')));
 app.get('/obrigado-premium',      (req, res) => res.sendFile(path.join(funil, 'obrigado-premium.html')));
@@ -349,6 +352,10 @@ app.post('/api/capi', async (req, res) => {
   }
 
   // SDR forward só no CompleteRegistration: único momento com perfil+respostas+qualificação completos.
+  // V2: sem SDR nem dossiê, mas o contato vai para o banco de leads do Hub.
+  if ((req.body.event_name || 'Lead') === 'CompleteRegistration' && req.body.slug === 'raiz-v2') {
+    hubSync.enviarLeadV2(getRedis, req.body);
+  }
   if ((req.body.event_name || 'Lead') === 'CompleteRegistration' && req.body.slug !== 'raiz-v2') {
     forwardToSDR(req.body).catch(err =>
       console.error('[SDR-forward] Erro ao encaminhar para o SDR:', err.message)
@@ -2351,6 +2358,12 @@ app.post('/api/webhooks/ticto', async (req, res) => {
   };
   await redisPurchaseSet(transactionId, record);
 
+  // Registro permanente no Hub (fire-and-forget, não afeta nada abaixo)
+  hubSync.notificarCompra(getRedis, 'ticto', record, {
+    name: body.customer?.name || body.name || null,
+    evelyn_product: isEvelynCheckoutProduct(offerId, productName),
+  });
+
   // Atualiza estatísticas
   await redisIncrStats('total');
   await redisSetLastEvent(new Date().toISOString());
@@ -2777,6 +2790,8 @@ app.post('/api/webhooks/cakto', async (req, res) => {
         created_at:     d.paidAt || d.createdAt || new Date().toISOString(),
       };
       await redisSet(`cakto:purchase:${id}`, JSON.stringify(record), 'EX', 60 * 60 * 24 * 90);
+      // Registro permanente no Hub (fire-and-forget, não afeta nada abaixo)
+      hubSync.notificarCompra(getRedis, 'cakto', { ...record, status: 'purchase_approved' }, { name: d.customer?.name || null });
       console.log(`[Cakto] compra registrada: ${id} | R$${value} (líq R$${record.net_value}) | src=${srcLeadId || '(sem join key!)'} | offer=${record.offer_id}`);
 
       // Comprou → cancela a recuperação de checkout pendente desse telefone
@@ -2817,6 +2832,21 @@ app.post('/api/webhooks/cakto', async (req, res) => {
       } else if (!CAKTO_PURCHASE_CAPI) {
         console.log(`[Cakto] Purchase CAPI desligado (CAKTO_PURCHASE_CAPI_ENABLED != true) — ${id} só registrado.`);
       }
+    }
+
+    // 2b) Reembolso/chargeback → só avisa o Hub, que tira a compra do
+    // "comprou o PR". Nada mais do fluxo Cakto muda.
+    if (/refund|chargeback|reembols|estorn/i.test(String(event))) {
+      hubSync.notificarCompra(getRedis, 'cakto', {
+        transaction_id: id,
+        status: /chargeback/i.test(String(event)) ? 'chargeback' : 'refunded',
+        phone: normalizePhone(d.customer?.phone || ''),
+        email: d.customer?.email || null,
+        src_lead_id: extractCaktoJoinKey(d),
+        offer_id: d.offer?.id || null, offer_name: d.offer?.name || null,
+        product_name: d.product?.name || null,
+        value: typeof d.amount === 'number' ? d.amount : Number(d.amount) || null,
+      }, { name: d.customer?.name || null });
     }
 
     // 3) Pix gerado e NÃO pago (status waiting_payment) → recuperação de
@@ -3511,4 +3541,7 @@ app.listen(PORT, () => {
   // Sequência pós-quiz: verifica pendências vencidas a cada 5 min.
   setInterval(() => { seqSweep().catch(() => {}); }, 5 * 60 * 1000);
   setTimeout(() => { seqSweep().catch(() => {}); }, 90 * 1000);
+  // Hub: reenvio do que falhou e carga única das compras que estão no Redis.
+  setInterval(() => { hubSync.drenarRetry(getRedis).catch(() => {}); }, 10 * 60 * 1000);
+  setTimeout(() => { hubSync.backfillCompras(getRedis, { isEvelyn: isEvelynCheckoutProduct }).catch(() => {}); }, 2 * 60 * 1000);
 });
