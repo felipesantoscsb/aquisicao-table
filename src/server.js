@@ -2165,6 +2165,7 @@ app.post('/api/webhooks/whatsapp', async (req, res) => {
           if (isOptOutText(text)) {
             // Blocklist permanente (sem TTL) + limpa pendências se houver
             await redisSet(`recovery:optout:${from}`, new Date().toISOString());
+            hubSync.enviarOptOut(getRedis, from); // vale também para os disparos do Hub
             await redisDel(`recovery:pending:${from}`);
             await redisDel(`seq:pending:${from}`);
             await redisIncrStats('recovery_optout');
@@ -3544,4 +3545,5 @@ app.listen(PORT, () => {
   // Hub: reenvio do que falhou e carga única das compras que estão no Redis.
   setInterval(() => { hubSync.drenarRetry(getRedis).catch(() => {}); }, 10 * 60 * 1000);
   setTimeout(() => { hubSync.backfillCompras(getRedis, { isEvelyn: isEvelynCheckoutProduct }).catch(() => {}); }, 2 * 60 * 1000);
+  setTimeout(() => { hubSync.backfillOptOuts(getRedis).catch(() => {}); }, 3 * 60 * 1000);
 });

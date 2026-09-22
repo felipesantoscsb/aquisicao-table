@@ -67,3 +67,16 @@ test('backfill roda uma vez e solta a trava se o Hub falhar', async () => {
   await hub.backfillCompras(() => r);
   assert.equal(lotes.length, 1, 'não roda de novo');
 });
+
+test('backfill de opt-outs manda a lista do Redis uma vez', async () => {
+  process.env.HUB_WEBHOOK_SECRET = 's';
+  const r = fakeRedis();
+  r.kv['recovery:optout:5511918253788'] = '2026-09-01';
+  const corpos = [];
+  global.fetch = async (u, o) => { corpos.push({ u, b: JSON.parse(o.body) }); return { ok: true, json: async () => ({}) }; };
+  await hub.backfillOptOuts(() => r);
+  await hub.backfillOptOuts(() => r);
+  assert.equal(corpos.length, 1);
+  assert.match(corpos[0].u, /\/webhook\/optout$/);
+  assert.deepEqual(corpos[0].b.phones, ['5511918253788']);
+});

@@ -139,4 +139,28 @@ async function backfillCompras(getRedis, { isEvelyn } = {}) {
   }
 }
 
-module.exports = { notificarCompra, enviarLeadV2, drenarRetry, backfillCompras, purchasePayload };
+/** Opt-out (SAIR) registrado aqui também vale para os disparos do Hub. */
+function enviarOptOut(getRedis, phone) {
+  try {
+    if (!phone) return;
+    enviar(getRedis, '/webhook/optout', { phones: [phone] }, 'opt-out');
+  } catch (e) { console.error('[hubSync] opt-out:', e.message); }
+}
+
+/** Carga única da lista de SAIR que já existe no Redis. */
+async function backfillOptOuts(getRedis) {
+  const FLAG = 'hub:sync:backfill-optout:v1';
+  let redis; try { redis = getRedis(); } catch { return; }
+  const ok = await redis.set(FLAG, new Date().toISOString(), 'NX').catch(() => null);
+  if (ok !== 'OK') return;
+  try {
+    const phones = (await scanChaves(redis, 'recovery:optout:*')).map(k => k.split(':').pop()).filter(Boolean);
+    for (let i = 0; i < phones.length; i += 500) await post('/webhook/optout', { phones: phones.slice(i, i + 500) });
+    console.log(`[hubSync] backfill de opt-outs: ${phones.length} enviados ao Hub`);
+  } catch (e) {
+    console.error('[hubSync] backfill de opt-outs falhou, tenta no próximo boot:', e.message);
+    await redis.del(FLAG).catch(() => {});
+  }
+}
+
+module.exports = { notificarCompra, enviarLeadV2, enviarOptOut, drenarRetry, backfillCompras, backfillOptOuts, purchasePayload };
