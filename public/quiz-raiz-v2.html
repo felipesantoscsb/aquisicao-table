@@ -255,10 +255,10 @@ canvas{width:100%;height:100%;display:block}
   .hero h1{font-size:clamp(28px,7.6vw,34px);margin-top:0}
   .hero-copy{font-size:15px;line-height:1.55;margin-top:12px}
   /* Radar cresce ate ~1,8x (238px) quando a tela comporta e encolhe nas telas
-     baixas, sempre deixando o botao na primeira dobra. 470px = altura do resto
+     baixas, sempre deixando o botao na primeira dobra. 500px = altura do resto
      da intro; 1,5 = proporcao largura/altura do desenho. */
-  .hero-art{width:clamp(132px,calc((100vh - 470px) * 1.5),238px);width:clamp(132px,calc((100svh - 470px) * 1.5),238px);margin:14px auto 0}
-  .chips{margin:12px 0 16px;gap:6px;flex-wrap:nowrap}
+  .hero-art{width:clamp(96px,calc((100vh - 500px) * 1.5),238px);width:clamp(96px,calc((100svh - 500px) * 1.5),238px);margin:14px auto 0}
+  .chips{margin:12px 0 16px;gap:6px}
   .chip{font-size:11.5px;padding:5px 10px}
   .hero .btn-lg{width:100%;padding:16px 22px}
   .hero .fine{margin-top:12px;font-size:11.5px}
@@ -275,8 +275,8 @@ canvas{width:100%;height:100%;display:block}
 <main>
 <section class="page hero active" id="intro"><div class="shell">
   <div class="hero-top"><div class="brand">TABLE</div><p class="eyebrow">Radar Table · gratuito</p></div>
-  <h1>Sentir menos fome não é o mesmo que se sentir <em>segura com a comida.</em></h1>
-  <p class="hero-copy">10 perguntas sobre os seis pilares da sua relação com a comida, para quem usa, já usou ou pensa em usar Mounjaro, Ozempic ou Wegovy.</p>
+  <h1>E quando a fome <em>voltar?</em></h1>
+  <p class="hero-copy">A caneta resolveu a fome. Ela não resolveu o que você faz quando está ansiosa, quando o dia desanda ou quando a comida vira a única coisa sua. Em 3 minutos, veja quais dos seis pilares já sustentam você e quais ainda não.</p>
   <div class="hero-art" aria-hidden="true">
     <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
       <g fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1">
@@ -292,8 +292,8 @@ canvas{width:100%;height:100%;display:block}
       </g>
     </svg>
   </div>
-  <div class="chips"><span class="chip">Personalizado</span><span class="chip">3 minutos</span><span class="chip">Sem julgamento</span></div>
-  <button class="btn btn-primary btn-lg" id="start">Quero ver meu Radar →</button>
+  <div class="chips"><span class="chip">3 minutos</span><span class="chip">Sem julgamento</span><span class="chip">Cadastro só no fim</span></div>
+  <button class="btn btn-primary btn-lg" id="start">Ver meus seis pilares →</button>
   <p class="fine">O Radar não orienta dose nem interrupção de medicamentos. Decisões clínicas pertencem a você e ao seu prescritor.</p>
 </div></section>
 <script>
