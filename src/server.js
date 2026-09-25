@@ -4,10 +4,20 @@ const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
 const Redis = require('ioredis');
+const {
+  normalizeAndHashUserData,
+  sanitizeAttribution,
+  validateLeadTracking,
+  sanitizeLogRecord,
+} = require('./conversaTracking');
+
+// Mesmo Pixel principal do /raiz. O token da CAPI continua exclusivamente no ambiente.
+const CONVERSA_PIXEL_ID = '989971718548782';
+const CONVERSA_ALLOWED_ORIGINS = ['https://www.evelynliu.com.br', 'https://evelynliu.com.br'];
 
 // ─── Redis (compartilhado com sdr-table) ──────────────────────────────────────
 let _redis;
-const captacaoSeenEvents = new Set();
+const captacaoEventStates = new Map();
 
 function getRedis() {
   if (!_redis) {
@@ -571,7 +581,9 @@ function normalizeCaptacaoLead(body = {}) {
     maiorDificuldade: body.maiorDificuldade || body.dificuldade || '',
     dificuldade: body.dificuldade || body.maiorDificuldade || '',
     utm: body.utm || {},
+    attribution: sanitizeAttribution(body.attribution),
     event_id: body.event_id || crypto.randomUUID(),
+    event_time: Number(body.event_time) || Math.floor(Date.now() / 1000),
     source: body.source || 'formulario_captacao_table_clinic',
     created_at: body.created_at || new Date().toISOString(),
   };
@@ -580,14 +592,115 @@ function normalizeCaptacaoLead(body = {}) {
 async function reserveCaptacaoEvent(eventId) {
   const key = `captacao:event:${eventId}`;
   try {
-    const reserved = await getRedis().set(key, '1', 'EX', 24 * 60 * 60, 'NX');
-    return reserved === 'OK';
+    const result = await getRedis().eval(
+      `local current = redis.call('GET', KEYS[1])
+       if not current then redis.call('SET', KEYS[1], 'processing', 'EX', ARGV[1]); return 'new' end
+       if current == 'failed' then redis.call('SET', KEYS[1], 'processing', 'EX', ARGV[1]); return 'retry' end
+       if current == 'capi_failed' then return 'capi_retry' end
+       return current`,
+      1, key, 24 * 60 * 60
+    );
+    return result;
   } catch {
-    if (captacaoSeenEvents.has(eventId)) return false;
-    captacaoSeenEvents.add(eventId);
-    setTimeout(() => captacaoSeenEvents.delete(eventId), 24 * 60 * 60 * 1000).unref?.();
-    return true;
+    const current = captacaoEventStates.get(eventId);
+    if (!current || current === 'failed') {
+      captacaoEventStates.set(eventId, 'processing');
+      setTimeout(() => captacaoEventStates.delete(eventId), 24 * 60 * 60 * 1000).unref?.();
+      return current === 'failed' ? 'retry' : 'new';
+    }
+    return current === 'capi_failed' ? 'capi_retry' : current;
   }
+}
+
+async function setCaptacaoEventState(eventId, state) {
+  captacaoEventStates.set(eventId, state);
+  await redisSet(`captacao:event:${eventId}`, state, 'EX', 24 * 60 * 60);
+}
+
+function trackingLog(record) {
+  console.log(JSON.stringify({ scope: 'conversa_tracking', ...sanitizeLogRecord(record) }));
+}
+
+function isAllowedConversationOrigin(req) {
+  if (process.env.NODE_ENV !== 'production') return true;
+  const origin = req.get('origin');
+  return Boolean(origin && CONVERSA_ALLOWED_ORIGINS.includes(origin));
+}
+
+async function sendConversationLeadCapi({ leadData, req }) {
+  if (['development', 'test'].includes(process.env.NODE_ENV) && !process.env.META_TEST_EVENT_CODE) {
+    return { skipped: 'non_production' };
+  }
+  const token = process.env.META_CAPI_TOKEN;
+  if (!token) return { skipped: 'missing_configuration' };
+
+  const attribution = leadData.attribution || {};
+  const userData = normalizeAndHashUserData({
+    phone: leadData.whatsapp,
+    name: leadData.nome,
+    externalId: leadData.whatsapp,
+  });
+  if (attribution.fbp) userData.fbp = attribution.fbp;
+  if (attribution.fbc) userData.fbc = attribution.fbc;
+  const ip = req ? getClientIp(req) : null;
+  const userAgent = req ? req.get('user-agent') : null;
+  if (ip) userData.client_ip_address = ip;
+  if (userAgent) userData.client_user_agent = userAgent;
+
+  const customData = { content_name: 'Conversa' };
+  ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach((key) => {
+    if (attribution[key]) customData[key] = attribution[key];
+  });
+  const payload = {
+    data: [{
+      event_name: 'Lead',
+      event_time: leadData.event_time,
+      event_id: leadData.event_id,
+      action_source: 'website',
+      event_source_url: 'https://www.evelynliu.com.br/conversa',
+      user_data: userData,
+      custom_data: customData,
+    }],
+  };
+  if (process.env.META_TEST_EVENT_CODE) payload.test_event_code = process.env.META_TEST_EVENT_CODE;
+
+  const delays = [0, 400, 1200];
+  let lastError;
+  for (let attempt = 0; attempt < delays.length; attempt++) {
+    if (delays[attempt]) await sleep(delays[attempt]);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    try {
+      const response = await fetch(`https://graph.facebook.com/v21.0/${CONVERSA_PIXEL_ID}/events?access_token=${token}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+      const json = await response.json().catch(() => ({}));
+      const retryable = response.status === 429 || response.status >= 500;
+      trackingLog({
+        event_name: 'Lead', event_id: leadData.event_id, time: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development', success: response.ok,
+        meta_status: response.status, fbtrace_id: json.fbtrace_id || null,
+        match_fields: Object.fromEntries(['ph', 'fn', 'ln', 'external_id', 'fbp', 'fbc'].map(key => [key, Boolean(userData[key])])),
+        attempt: attempt + 1,
+      });
+      if (response.ok) return { ok: true, fbtrace_id: json.fbtrace_id || null };
+      lastError = new Error(json?.error?.message || `Meta HTTP ${response.status}`);
+      if (!retryable) break;
+    } catch (error) {
+      lastError = error;
+      trackingLog({
+        event_name: 'Lead', event_id: leadData.event_id, time: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development', success: false,
+        validation_reason: error.name === 'AbortError' ? 'timeout' : 'network_error', attempt: attempt + 1,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+  return { ok: false, error: lastError?.message || 'meta_failed' };
 }
 
 async function forwardCaptacaoToSDR(leadData) {
@@ -625,11 +738,11 @@ async function forwardCaptacaoToSDR(leadData) {
         throw new Error(`SDR não confirmou ativação: ${reason}`);
       }
 
-      console.log(`[captacao/conversa] SDR ativou lead — ${leadData.nome} (${leadData.whatsapp})`);
+      console.log(`[captacao/conversa] SDR ativou lead — event_id=${leadData.event_id}`);
       return sdrPayload;
     } catch (err) {
       lastError = err;
-      console.warn(`[captacao/conversa] tentativa ${attempt + 1} falhou: ${err.message}`);
+      console.warn(`[captacao/conversa] tentativa ${attempt + 1} falhou — event_id=${leadData.event_id}`);
     } finally {
       clearTimeout(timeout);
     }
@@ -639,22 +752,56 @@ async function forwardCaptacaoToSDR(leadData) {
 }
 
 app.post('/api/captacao/conversa', async (req, res) => {
+  const isTrackedConversation = !req.body?.source || req.body.source === 'formulario_captacao_table_clinic';
+  if (isTrackedConversation && !isAllowedConversationOrigin(req)) {
+    trackingLog({ event_name: 'Lead', event_id: req.body?.event_id, time: new Date().toISOString(), success: false, validation_reason: 'origin_not_allowed' });
+    return res.status(403).json({ ok: false, error: 'Origem não permitida.' });
+  }
+  if (isTrackedConversation) {
+    const validation = validateLeadTracking(req.body || {});
+    if (!validation.ok) {
+      trackingLog({ event_name: req.body?.event_name, event_id: req.body?.event_id, time: new Date().toISOString(), success: false, validation_reason: validation.errors.join(',') });
+      return res.status(400).json({ ok: false, error: 'Payload de tracking inválido.', reasons: validation.errors });
+    }
+  }
   const leadData = normalizeCaptacaoLead(req.body || {});
 
   if (!leadData.nome || leadData.nome === 'Lead' || !leadData.whatsapp) {
     return res.status(400).json({ ok: false, error: 'Nome e WhatsApp são obrigatórios.' });
   }
 
-  const isNew = await reserveCaptacaoEvent(leadData.event_id);
-  if (!isNew) {
+  const reservation = await reserveCaptacaoEvent(leadData.event_id);
+  if (reservation === 'confirmed') {
+    trackingLog({ event_name: 'Lead', event_id: leadData.event_id, time: new Date().toISOString(), success: true, idempotency: 'duplicate_confirmed' });
     return res.json({ ok: true, duplicate: true, event_id: leadData.event_id });
+  }
+  if (reservation === 'processing') {
+    return res.status(409).json({ ok: false, retryable: true, event_id: leadData.event_id, error: 'Evento em processamento.' });
+  }
+  if (reservation === 'capi_retry') {
+    await setCaptacaoEventState(leadData.event_id, 'confirmed');
+    if (isTrackedConversation) {
+      sendConversationLeadCapi({ leadData, req }).then(async capi => {
+        if (capi.ok === false) await setCaptacaoEventState(leadData.event_id, 'capi_failed');
+      }).catch(() => setCaptacaoEventState(leadData.event_id, 'capi_failed'));
+    }
+    return res.json({ ok: true, duplicate: true, event_id: leadData.event_id, capi: isTrackedConversation ? 'queued' : 'not_tracked' });
   }
 
   try {
     await forwardCaptacaoToSDR(leadData);
-    return res.json({ ok: true, event_id: leadData.event_id });
+    await redisDel(`captacao:failed:${leadData.event_id}`);
+    await setCaptacaoEventState(leadData.event_id, 'confirmed');
+    if (isTrackedConversation) {
+      sendConversationLeadCapi({ leadData, req }).then(async capi => {
+        if (capi.ok === false) await setCaptacaoEventState(leadData.event_id, 'capi_failed');
+      }).catch(() => setCaptacaoEventState(leadData.event_id, 'capi_failed'));
+    }
+    trackingLog({ event_name: 'Lead', event_id: leadData.event_id, time: new Date().toISOString(), success: true, idempotency: reservation });
+    return res.json({ ok: true, event_id: leadData.event_id, capi: isTrackedConversation ? 'queued' : 'not_tracked' });
   } catch (err) {
-    console.error('[captacao/conversa] falha ao encaminhar para SDR:', err.message);
+    await setCaptacaoEventState(leadData.event_id, 'failed');
+    console.error('[captacao/conversa] falha ao encaminhar para SDR');
     await redisSet(
       `captacao:failed:${leadData.event_id}`,
       JSON.stringify({ leadData, error: err.message, failed_at: new Date().toISOString() }),
@@ -852,11 +999,19 @@ async function drainFailedCaptacao() {
       try { pending = JSON.parse(raw); } catch { await redisDel(key); continue; }
       const leadData = pending.leadData;
       if (!leadData) { await redisDel(key); continue; }
+      const reservation = await reserveCaptacaoEvent(leadData.event_id);
+      if (reservation === 'confirmed') { await redisDel(key); continue; }
+      if (reservation !== 'retry' && reservation !== 'new') continue;
       try {
         await forwardCaptacaoToSDR(leadData);
         await redisDel(key);
-        console.log(`[captacao/conversa] drain ok — ${leadData.nome} (${leadData.whatsapp})`);
+        await setCaptacaoEventState(leadData.event_id, 'confirmed');
+        const tracked = leadData.source === 'formulario_captacao_table_clinic';
+        const capi = tracked ? await sendConversationLeadCapi({ leadData, req: null }) : { skipped: 'not_tracked' };
+        if (tracked && capi.ok === false) await setCaptacaoEventState(leadData.event_id, 'capi_failed');
+        console.log(`[captacao/conversa] drain ok — event_id=${leadData.event_id}`);
       } catch (err) {
+        await setCaptacaoEventState(leadData.event_id, 'failed');
         await redisSet(
           key,
           JSON.stringify({
