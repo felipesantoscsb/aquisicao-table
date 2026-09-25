@@ -336,7 +336,9 @@ async function submitForm(e){
     created_at: new Date().toISOString()
   };
   try{
-    const response=await fetch('/api/pre-sessao',{
+    // URL absoluta: esta página é aberta também dentro da área de membros, e
+    // com caminho relativo o envio ia para o domínio da plataforma e sumia.
+    const response=await fetch('https://www.evelynliu.com.br/api/pre-sessao',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(payload)
@@ -346,6 +348,17 @@ async function submitForm(e){
     console.error('Erro ao enviar formulário:',err);
     isSubmitting=false;
     if(errorEl){
+      // Saída de emergência: em vez de perder a resposta, a lead manda as
+      // informações pelo WhatsApp da equipe com um toque.
+      const resumo=encodeURIComponent(
+        'Oi! Preenchi o formulário da pré-consulta e deu erro no envio.\n\n'+
+        'Nome: '+(payload.nome||'')+'\nWhatsApp: '+(payload.telefone||'')+
+        '\nMelhor horário: '+(payload.horario||'')+'\nObjetivo: '+(payload.objetivo||[]).join(', ')
+      );
+      errorEl.innerHTML='Não consegui enviar seu formulário agora. '+
+        '<a href="https://wa.me/5511918253788?text='+resumo+'" target="_blank" rel="noopener" '+
+        'style="color:inherit;text-decoration:underline;font-weight:600">Clique aqui para nos mandar no WhatsApp</a> '+
+        'que a gente segue por lá.';
       errorEl.style.display='block';
       errorEl.scrollIntoView({block:'center',behavior:'smooth'});
     }

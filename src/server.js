@@ -743,12 +743,29 @@ async function attachPerfilDoQuiz(payload) {
   return payload;
 }
 
+// GET aqui só existe para não falhar em silêncio: um POST para o domínio sem
+// www vira 301, o navegador reenvia como GET e o formulário morria com 404
+// sem ninguém saber. Agora a resposta diz o que aconteceu.
+app.get('/api/pre-sessao', (req, res) => res.status(405).json({
+  ok: false,
+  error: 'Use POST em https://www.evelynliu.com.br/api/pre-sessao (com www).',
+}));
+
 app.post('/api/pre-sessao', async (req, res) => {
   const payload = await attachPerfilDoQuiz(normalizePreSessaoPayload(req.body || {}));
 
   if (!payload.nome || !payload.telefone) {
+    console.warn('[pre-sessao] recusado sem nome/telefone:', JSON.stringify(req.body || {}).slice(0, 300));
     return res.status(400).json({ ok: false, error: 'Nome e WhatsApp são obrigatórios.' });
   }
+
+  // Guarda ANTES de encaminhar: o formulário não existe em nenhum outro lugar,
+  // e já perdemos respostas por depender só do repasse ao Hub.
+  await redisSet(
+    `pre_sessao:recebido:${payload.event_id}`,
+    JSON.stringify({ payload, recebido_em: new Date().toISOString(), origem_http: req.headers.origin || req.headers.referer || null }),
+    'EX', 90 * 24 * 60 * 60
+  );
 
   try {
     await forwardPreSessaoToHub(payload);
@@ -762,6 +779,28 @@ app.post('/api/pre-sessao', async (req, res) => {
       7 * 24 * 60 * 60
     );
     return res.status(502).json({ ok: false, error: 'Falha ao encaminhar formulário para o CRM.' });
+  }
+});
+
+// Tudo que o formulário de pré-sessão recebeu, para conferência quando alguém
+// diz "preenchi e não apareceu no CRM". Protegido pelo token do dash.
+app.get('/api/dash/pre-sessao', async (req, res) => {
+  try {
+    const redis = getRedis();
+    const recebidos = [];
+    for (const key of await redis.keys('pre_sessao:recebido:*')) {
+      const raw = await redisGet(key);
+      if (raw) { try { recebidos.push(JSON.parse(raw)); } catch {} }
+    }
+    const falhas = [];
+    for (const key of await redis.keys('pre_sessao:failed:*')) {
+      const raw = await redisGet(key);
+      if (raw) { try { falhas.push(JSON.parse(raw)); } catch {} }
+    }
+    recebidos.sort((a, b) => String(b.recebido_em).localeCompare(String(a.recebido_em)));
+    res.json({ total: recebidos.length, pendentes: falhas.length, recebidos: recebidos.slice(0, 200), falhas });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
 });
 
