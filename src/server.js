@@ -13,6 +13,9 @@ const {
 
 // Mesmo Pixel principal do /raiz. O token da CAPI continua exclusivamente no ambiente.
 const CONVERSA_PIXEL_ID = '989971718548782';
+// Evento de conversao do /conversa. NAO pode ser 'Lead': o quiz do /raiz
+// dispara 'Lead' no mesmo pixel e os dois funis viravam um numero so.
+const CONVERSA_CONVERSION_EVENT = 'Schedule';
 const CONVERSA_ALLOWED_ORIGINS = ['https://www.evelynliu.com.br', 'https://evelynliu.com.br'];
 
 // ─── Redis (compartilhado com sdr-table) ──────────────────────────────────────
@@ -697,7 +700,9 @@ async function sendConversationLeadCapi({ leadData, req }) {
   });
   const payload = {
     data: [{
-      event_name: 'Lead',
+      // Tem de ser o MESMO nome que o browser dispara, senao o Meta para de
+      // deduplicar e passa a contar dois eventos por cadastro.
+      event_name: CONVERSA_CONVERSION_EVENT,
       event_time: leadData.event_time,
       event_id: leadData.event_id,
       action_source: 'website',
@@ -798,7 +803,7 @@ async function forwardCaptacaoToSDR(leadData) {
 app.post('/api/captacao/conversa', async (req, res) => {
   const isTrackedConversation = !req.body?.source || req.body.source === 'formulario_captacao_table_clinic';
   if (isTrackedConversation && !isAllowedConversationOrigin(req)) {
-    trackingLog({ event_name: 'Lead', event_id: req.body?.event_id, time: new Date().toISOString(), success: false, validation_reason: 'origin_not_allowed' });
+    trackingLog({ event_name: CONVERSA_CONVERSION_EVENT, event_id: req.body?.event_id, time: new Date().toISOString(), success: false, validation_reason: 'origin_not_allowed' });
     return res.status(403).json({ ok: false, error: 'Origem não permitida.' });
   }
   if (isTrackedConversation) {
@@ -817,13 +822,13 @@ app.post('/api/captacao/conversa', async (req, res) => {
   // torto passava ate a Z-API recusar o envio, e o lead morria em silencio.
   // Celular BR: 55 + DDD (11-99) + 8 ou 9 digitos.
   if (!whatsappPlausivel(leadData.whatsapp)) {
-    trackingLog({ event_name: 'Lead', event_id: leadData.event_id, time: new Date().toISOString(), success: false, validation_reason: 'whatsapp_implausivel' });
+    trackingLog({ event_name: CONVERSA_CONVERSION_EVENT, event_id: leadData.event_id, time: new Date().toISOString(), success: false, validation_reason: 'whatsapp_implausivel' });
     return res.status(400).json({ ok: false, error: 'WhatsApp inválido. Informe DDD e número completo.' });
   }
 
   const reservation = await reserveCaptacaoEvent(leadData.event_id);
   if (reservation === 'confirmed') {
-    trackingLog({ event_name: 'Lead', event_id: leadData.event_id, time: new Date().toISOString(), success: true, idempotency: 'duplicate_confirmed' });
+    trackingLog({ event_name: CONVERSA_CONVERSION_EVENT, event_id: leadData.event_id, time: new Date().toISOString(), success: true, idempotency: 'duplicate_confirmed' });
     return res.json({ ok: true, duplicate: true, event_id: leadData.event_id });
   }
   if (reservation === 'processing') {
@@ -851,7 +856,7 @@ app.post('/api/captacao/conversa', async (req, res) => {
         if (capi.ok === false) await setCaptacaoEventState(leadData.event_id, 'capi_failed');
       }).catch(() => setCaptacaoEventState(leadData.event_id, 'capi_failed'));
     }
-    trackingLog({ event_name: 'Lead', event_id: leadData.event_id, time: new Date().toISOString(), success: true, idempotency: reservation });
+    trackingLog({ event_name: CONVERSA_CONVERSION_EVENT, event_id: leadData.event_id, time: new Date().toISOString(), success: true, idempotency: reservation });
     return res.json({ ok: true, event_id: leadData.event_id, capi: isTrackedConversation ? 'queued' : 'not_tracked' });
   } catch (err) {
     await setCaptacaoEventState(leadData.event_id, 'failed');

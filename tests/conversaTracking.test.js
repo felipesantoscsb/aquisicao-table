@@ -157,3 +157,35 @@ test('a validação existe na página e no servidor, não só numa ponta', () =>
   assert.match(servidor, /function whatsappPlausivel/);
   assert.match(servidor, /whatsapp_implausivel/);
 });
+
+// ── O /conversa não pode dividir evento com o quiz ───────────────────────────
+// /raiz, /raiz-cakto, /raiz-vi e /raiz-google disparam 'Lead' no pixel
+// 989971718548782. Enquanto o /conversa usava 'Lead' também, o Meta somava os
+// quatro funis: a campanha de pré-consulta era creditada por cadastro do quiz
+// e otimizava para o público errado.
+
+const trackingJs = lerArquivo(juntar(__dirname, '..', 'public/js/conversa-tracking.js'), 'utf8');
+
+test('o /conversa dispara Schedule, não Lead', () => {
+  assert.match(trackingJs, /const CONVERSION_EVENT = 'Schedule'/);
+  assert.match(trackingJs, /root\.fbq\('track', CONVERSION_EVENT/);
+  assert.doesNotMatch(trackingJs, /fbq\('track', 'Lead'/);
+});
+
+test('browser e CAPI usam o MESMO nome de evento, senão o dedup cai', () => {
+  const eventoBrowser = trackingJs.match(/const CONVERSION_EVENT = '([A-Za-z]+)'/)[1];
+  const eventoServidor = servidor.match(/const CONVERSA_CONVERSION_EVENT = '([A-Za-z]+)'/)[1];
+  assert.equal(eventoBrowser, eventoServidor);
+  assert.match(servidor, /event_name: CONVERSA_CONVERSION_EVENT/);
+});
+
+test('o evento escolhido não é nenhum dos que o /raiz já usa', () => {
+  const doRaiz = ['Lead', 'CompleteRegistration', 'InitiateCheckout', 'PageView', 'ViewContent'];
+  const escolhido = trackingJs.match(/const CONVERSION_EVENT = '([A-Za-z]+)'/)[1];
+  assert.ok(!doRaiz.includes(escolhido), `${escolhido} colide com o funil do quiz`);
+});
+
+test('o validador aceita o nome novo e ainda o antigo (página em cache)', () => {
+  const val = lerArquivo(juntar(__dirname, '..', 'src/conversaTracking.js'), 'utf8');
+  assert.match(val, /ALLOWED_EVENTS = new Set\(\['Schedule', 'Lead'\]\)/);
+});

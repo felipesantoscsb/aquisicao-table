@@ -10,6 +10,13 @@
   const LATEST_COOKIE = 'table_attr_latest';
   const MAX_AGE = 60 * 60 * 24 * 90;
   const PIXEL_ID = '989971718548782'; // mesmo Pixel principal usado pelo /raiz
+  // O /raiz, /raiz-cakto, /raiz-vi e /raiz-google disparam 'Lead' neste mesmo
+  // pixel. Enquanto o /conversa tambem usava 'Lead', o Meta somava os quatro
+  // funis num balde so: a campanha de pre-consulta era creditada por cadastro
+  // do quiz e otimizava para o publico errado. 'Schedule' e evento padrao, o
+  // /raiz nao usa, e descreve o que este funil faz — agendar uma conversa.
+  // Trocar aqui exige trocar junto o evento de conversao do conjunto no Meta.
+  const CONVERSION_EVENT = 'Schedule';
   let initialized = false;
   let intentTracked = false;
   let pixelReady = false;
@@ -116,10 +123,12 @@
     root.fbq('track', 'Contact', { content_name: 'Conversa - formulário iniciado' });
   }
 
+  // Nome mantido: para o negocio isto e um lead. O que muda e o evento do
+  // pixel, para nao se misturar com o do quiz.
   function trackLead(eventId) {
     if (!pixelReady || !root.fbq || !eventId) return;
-    root.fbq('track', 'Lead', { content_name: 'Conversa' }, { eventID: eventId });
+    root.fbq('track', CONVERSION_EVENT, { content_name: 'Conversa' }, { eventID: eventId });
   }
 
-  return { parseCookies, captureValues, mergeFirst, persistAttribution, getAttribution, createEventId, init, trackIntent, trackLead };
+  return { parseCookies, captureValues, mergeFirst, persistAttribution, getAttribution, createEventId, init, trackIntent, trackLead, CONVERSION_EVENT };
 });
