@@ -792,6 +792,9 @@ app.post('/api/captacao/conversa', async (req, res) => {
     await forwardCaptacaoToSDR(leadData);
     await redisDel(`captacao:failed:${leadData.event_id}`);
     await setCaptacaoEventState(leadData.event_id, 'confirmed');
+    // Conta só o lead novo e confirmado — duplicata e retry de CAPI saem antes
+    // daqui, então o contador não infla com reenvio do mesmo formulário.
+    metricsIncr('conversa_lead').catch(() => {});
     if (isTrackedConversation) {
       sendConversationLeadCapi({ leadData, req }).then(async capi => {
         if (capi.ok === false) await setCaptacaoEventState(leadData.event_id, 'capi_failed');
@@ -3520,6 +3523,9 @@ const DASH_METRICS = [
     `evt_CompleteRegistration_${p}`, `evt_DossieView_${p}`, `evt_DossieCTA_${p}`,
     `purchases_${p}`, `revenue_cents_${p}`,
   ]),
+  // Leads do /conversa (pré-consulta). Contador próprio: o evt_Lead é
+  // compartilhado com o quiz e não separa os dois funis.
+  'conversa_lead',
   'abandoned_cart', 'waiting_payment',
   'purchases', 'revenue_cents', 'refunds',
   'recovery_sent', 'recovery_converted', 'recovery_revenue_cents',
@@ -3564,6 +3570,10 @@ app.get('/api/dash/data', async (req, res) => {
     // checkout da Ticto, e o payload traz item.offer_id — que já gravamos em
     // cada registro. Como os registros ficam 90 dias, isto vale retroativamente.
     const porCanal = {};
+    // Vendas do funil /conversa (pré-consulta) por dia. O canal sdr_conversa é
+    // a oferta que o agente manda no WhatsApp: a venda fecha dias depois da
+    // captação, então só o corte por dia permite ler no relatório diário.
+    const conversaPorDia = {};
     const ofertasVistas = {};
     // Vendas válidas por dia e por versão do PR (ver versaoPr).
     const porVersaoDia = {};
@@ -3617,6 +3627,11 @@ app.get('/api/dash/data', async (req, res) => {
           const pv = porVersaoDia[d] = porVersaoDia[d] || { v1: { compras: 0, receita_cents: 0 }, v2: { compras: 0, receita_cents: 0 } };
           pv[v].compras += 1;
           pv[v].receita_cents += Math.round((rec.value || 0) * 100);
+          if (canal === 'sdr_conversa') {
+            conversaPorDia[d] = conversaPorDia[d] || { compras: 0, receita_cents: 0 };
+            conversaPorDia[d].compras += 1;
+            conversaPorDia[d].receita_cents += Math.round((rec.value || 0) * 100);
+          }
           porCanal[canal] = porCanal[canal] || { compras: 0, receita_cents: 0, por_perfil: {} };
           porCanal[canal].compras += 1;
           porCanal[canal].receita_cents += Math.round((rec.value || 0) * 100);
@@ -3702,6 +3717,10 @@ app.get('/api/dash/data', async (req, res) => {
       // { 'YYYY-MM-DD': { v1: {compras, receita_cents}, v2: {...} } } — só
       // vendas válidas, a partir dos registros individuais (Ticto + Cakto).
       pr_por_versao_dia: porVersaoDia,
+      // { 'YYYY-MM-DD': { compras, receita_cents } } — vendas do canal
+      // sdr_conversa (funil /conversa). Leads do mesmo funil vêm na linha
+      // diária como `conversa_lead`.
+      conversa_por_dia: conversaPorDia,
       totals: { today: windowTotals(1), d7: windowTotals(7), d30: windowTotals(Math.min(30, daysN)) },
       recovery_lifetime: {
         enabled:   process.env.RECOVERY_ENABLED === 'true',
