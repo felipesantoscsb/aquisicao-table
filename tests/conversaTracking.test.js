@@ -166,8 +166,9 @@ test('a validação existe na página e no servidor, não só numa ponta', () =>
 
 const trackingJs = lerArquivo(juntar(__dirname, '..', 'public/js/conversa-tracking.js'), 'utf8');
 
-test('o /conversa dispara Schedule, não Lead', () => {
-  assert.match(trackingJs, /const CONVERSION_EVENT = 'Schedule'/);
+test('o /conversa dispara SubmitApplication, não Lead', () => {
+  // Schedule fica reservado para a pré-consulta agendada (funil de 2 passos).
+  assert.match(trackingJs, /const CONVERSION_EVENT = 'SubmitApplication'/);
   assert.match(trackingJs, /root\.fbq\('track', CONVERSION_EVENT/);
   assert.doesNotMatch(trackingJs, /fbq\('track', 'Lead'/);
 });
@@ -187,5 +188,5 @@ test('o evento escolhido não é nenhum dos que o /raiz já usa', () => {
 
 test('o validador aceita o nome novo e ainda o antigo (página em cache)', () => {
   const val = lerArquivo(juntar(__dirname, '..', 'src/conversaTracking.js'), 'utf8');
-  assert.match(val, /ALLOWED_EVENTS = new Set\(\['Schedule', 'Lead'\]\)/);
+  assert.match(val, /ALLOWED_EVENTS = new Set\(\['SubmitApplication', 'Schedule', 'Lead'\]\)/);
 });

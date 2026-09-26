@@ -13,10 +13,12 @@
   // O /raiz, /raiz-cakto, /raiz-vi e /raiz-google disparam 'Lead' neste mesmo
   // pixel. Enquanto o /conversa tambem usava 'Lead', o Meta somava os quatro
   // funis num balde so: a campanha de pre-consulta era creditada por cadastro
-  // do quiz e otimizava para o publico errado. 'Schedule' e evento padrao, o
-  // /raiz nao usa, e descreve o que este funil faz — agendar uma conversa.
+  // do quiz e otimizava para o publico errado. 'SubmitApplication' e evento
+  // padrao, o /raiz nao usa, e descreve o que acontece aqui: formulario
+  // enviado. 'Schedule' fica reservado para quando a pre-consulta for de fato
+  // agendada, o que da um funil de dois passos no pixel.
   // Trocar aqui exige trocar junto o evento de conversao do conjunto no Meta.
-  const CONVERSION_EVENT = 'Schedule';
+  const CONVERSION_EVENT = 'SubmitApplication';
   let initialized = false;
   let intentTracked = false;
   let pixelReady = false;

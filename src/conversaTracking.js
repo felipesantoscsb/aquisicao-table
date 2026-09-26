@@ -1,9 +1,9 @@
 const crypto = require('crypto');
 
-// 'Schedule' e o evento do /conversa desde 26/09/2026 (ver conversa-tracking.js:
+// 'SubmitApplication' e o evento do /conversa desde 26/09/2026 (ver conversa-tracking.js:
 // 'Lead' se misturava com o do quiz no mesmo pixel). 'Lead' fica aceito porque
 // pagina em cache no browser continua mandando o nome antigo por um tempo.
-const ALLOWED_EVENTS = new Set(['Schedule', 'Lead']);
+const ALLOWED_EVENTS = new Set(['SubmitApplication', 'Schedule', 'Lead']);
 const ATTRIBUTION_FIELDS = new Set([
   'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
   'fbclid', 'fbp', 'fbc', 'captured_at',

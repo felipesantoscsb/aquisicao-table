@@ -15,7 +15,7 @@ const {
 const CONVERSA_PIXEL_ID = '989971718548782';
 // Evento de conversao do /conversa. NAO pode ser 'Lead': o quiz do /raiz
 // dispara 'Lead' no mesmo pixel e os dois funis viravam um numero so.
-const CONVERSA_CONVERSION_EVENT = 'Schedule';
+const CONVERSA_CONVERSION_EVENT = 'SubmitApplication';
 const CONVERSA_ALLOWED_ORIGINS = ['https://www.evelynliu.com.br', 'https://evelynliu.com.br'];
 
 // ─── Redis (compartilhado com sdr-table) ──────────────────────────────────────
