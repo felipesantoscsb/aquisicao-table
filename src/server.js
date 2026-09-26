@@ -415,6 +415,12 @@ app.post('/api/capi', async (req, res) => {
       ttclid:        req.body.ttclid      || null,  // TikTok click id (Purchase server-side)
       ttp:           req.body.ttp         || null,  // TikTok cookie _ttp
       gclid:         req.body.gclid       || null,  // Google click id → import de conversão offline (Cakto→Google)
+      // IP e user agent DO COMPRADOR, capturados aqui porque este req é o
+      // browser dele. O Purchase chega depois por webhook do gateway, onde o
+      // req é do servidor da Ticto/Cakto — sem guardar agora, o Purchase vai
+      // à Meta sem os dois parâmetros e o EMQ dele fica abaixo dos demais.
+      client_ip:     getClientIp(req) || null,
+      client_ua:     req.headers['user-agent'] || null,
       saved_at:      new Date().toISOString(),
     };
     getRedis().set(
@@ -1487,7 +1493,7 @@ async function forwardToSDR(body) {
 
 // ─── Helper CAPI genérico ─────────────────────────────────────────────────────
 
-async function sendCapiEvent({ eventName, phone, fbclid, fbc, fbp, em, fn, external_id, customData, eventSourceUrl, eventId, req, pixelId, accessToken }) {
+async function sendCapiEvent({ eventName, phone, fbclid, fbc, fbp, em, fn, external_id, customData, eventSourceUrl, eventId, req, pixelId, accessToken, clientIp, clientUserAgent }) {
   // pixelId/accessToken opcionais: sem eles cai no pixel principal, que e o
   // comportamento historico. Funis isolados podem passar o proprio par para
   // nao misturar sinais de conversao.
@@ -1507,13 +1513,15 @@ async function sendCapiEvent({ eventName, phone, fbclid, fbc, fbp, em, fn, exter
   if (fbclid)      user_data.fbc = fbclid;
   if (fbc)         user_data.fbc = fbc;
   if (fbp)         user_data.fbp = fbp;
-  // ip + user_agent quando a requisição original está disponível (melhora EMQ)
-  if (req) {
-    const ip = getClientIp(req);
-    const ua = req.headers['user-agent'];
-    if (ip) user_data.client_ip_address = ip;
-    if (ua) user_data.client_user_agent  = ua;
-  }
+  // ip + user_agent: os dois parametros que mais sobem o EMQ.
+  // clientIp/clientUserAgent vem ANTES do req de proposito. Em webhook de
+  // pagamento o req e do servidor da Ticto/Cakto, nao do comprador: usar ele
+  // ali manda dado errado para a Meta. O valor certo e o capturado no browser
+  // no evento Lead e guardado em lead:{id}.
+  const ipFinal = clientIp || (req ? getClientIp(req) : null);
+  const uaFinal = clientUserAgent || (req ? req.headers['user-agent'] : null);
+  if (ipFinal) user_data.client_ip_address = ipFinal;
+  if (uaFinal) user_data.client_user_agent  = uaFinal;
 
   const event = {
     event_name:       eventName,
@@ -1626,6 +1634,8 @@ async function enrichFromLid(lid, base = {}) {
       fbc:         base.fbc         || lead.fbc,
       fbp:         base.fbp         || lead.fbp,
       external_id: base.external_id || lead.external_id || sha256(lead.email),
+      client_ip:   base.client_ip   || lead.client_ip || null,
+      client_ua:   base.client_ua   || lead.client_ua || null,
     };
   } catch { return base; }
 }
@@ -2734,8 +2744,12 @@ app.post('/api/webhooks/ticto', async (req, res) => {
         external_id: enrichedExternalId,
         fbc:         enrichedFbc  || undefined,
         fbp:         enrichedFbp  || undefined,
-        client_ip_address: getClientIp(req),
-        client_user_agent: req.headers['user-agent'] || null,
+        // Do COMPRADOR, nao do req: aqui o req e o servidor da Ticto batendo no
+        // webhook. Mandar o IP/UA dele para a Meta e pior do que nao mandar,
+        // porque e dado real e errado. Leads salvos antes desta mudanca nao tem
+        // os campos: aí vai sem, que e o comportamento honesto.
+        client_ip_address: leadData?.client_ip || null,
+        client_user_agent: leadData?.client_ua || null,
       },
       custom_data: {
         value,
@@ -3063,6 +3077,7 @@ app.post('/api/webhooks/cakto', async (req, res) => {
             content_name: record.product_name || 'Protocolo Raiz',
             content_ids: record.offer_id ? [record.offer_id] : undefined,
           },
+          clientIp: enr.client_ip, clientUserAgent: enr.client_ua,
           eventSourceUrl: 'https://www.evelynliu.com.br/raiz-cakto',
           eventId: id,
         }).catch((e) => console.error('[Cakto] Purchase CAPI erro:', e.message));
