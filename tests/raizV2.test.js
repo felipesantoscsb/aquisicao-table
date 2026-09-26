@@ -67,3 +67,35 @@ test('documento entrega matriz, doze roteiros e priorização 1A/1B', () => {
   assert.match(ads, /Batch 1B/);
   assert.match(ads, /O que ele nos ensina|se performar, ensina/i);
 });
+
+test('a V2 usa pixel próprio e não referencia mais o principal', () => {
+  // A V2 roda na conta de anúncios da LIA. Se o pixel principal voltar a
+  // aparecer aqui, o sinal dos dois funis se mistura de novo em silêncio.
+  assert.doesNotMatch(html, /989971718548782/);
+  assert.match(html, /var PIXEL_V2='519946826343805'/);
+  assert.match(html, /fbq\('init',PIXEL_V2\)/);
+  // Advanced matching e noscript precisam apontar para o mesmo pixel.
+  assert.match(html, /fbq\('init',PIXEL_V2,\{em:email/);
+  assert.match(html, /facebook\.com\/tr\?id=519946826343805/);
+});
+
+test('o CAPI da V2 nunca cai no token do pixel principal', () => {
+  assert.match(server, /const PIXEL_RAIZ_V2 = '519946826343805'/);
+  assert.match(server, /function ehRaizV2/);
+  // Sem o token próprio o evento é PULADO, não redirecionado.
+  assert.match(server, /raiz_v2_capi_token_ausente/);
+  assert.match(server, /RAIZ_V2_CAPI_TOKEN/);
+});
+
+test('ehRaizV2 reconhece o funil por slug, source e content_name', () => {
+  // Reproduz a heurística do servidor para travar o contrato dos três campos
+  // que as chamadas da página realmente mandam.
+  const ehRaizV2 = (body = {}) => [body.slug, body.source, body.content_name, body.funnel]
+    .some(v => /raiz-v2/i.test(String(v || '')));
+  assert.equal(ehRaizV2({ slug: 'raiz-v2' }), true);                        // CompleteRegistration
+  assert.equal(ehRaizV2({ source: 'raiz-v2' }), true);                      // InitiateCheckout
+  assert.equal(ehRaizV2({ content_name: 'quiz-lead-raiz-v2' }), true);      // Lead
+  assert.equal(ehRaizV2({ slug: 'raiz' }), false);
+  assert.equal(ehRaizV2({ content_name: 'InitiateCheckout_Raiz' }), false);
+  assert.equal(ehRaizV2({}), false);
+});

@@ -292,6 +292,30 @@ function requireDashToken(req, res, next) {
   next();
 }
 
+// ─── Pixel próprio do /raiz-v2 ────────────────────────────────────────────────
+// A V2 roda na conta de anúncios da LIA (1351521745339326) com pixel próprio,
+// para não misturar o sinal de conversão com o do funil principal. O id fica
+// hardcoded por decisão; o token é segredo e só pode viver em env.
+const PIXEL_RAIZ_V2 = '519946826343805';
+
+function ehRaizV2(body = {}) {
+  return [body.slug, body.source, body.content_name, body.funnel]
+    .some(v => /raiz-v2/i.test(String(v || '')));
+}
+
+/**
+ * Par pixel+token do funil que originou o evento. Para a V2 sem
+ * RAIZ_V2_CAPI_TOKEN devolve accessToken null de propósito: quem chama tem de
+ * PULAR o envio. Cair no token principal mandaria o evento da V2 para o pixel
+ * principal, que é exatamente o que a separação existe para evitar.
+ */
+function credenciaisCapi(body) {
+  if (!ehRaizV2(body)) {
+    return { pixelId: process.env.META_PIXEL_ID, accessToken: process.env.META_CAPI_TOKEN, v2: false };
+  }
+  return { pixelId: PIXEL_RAIZ_V2, accessToken: process.env.RAIZ_V2_CAPI_TOKEN || null, v2: true };
+}
+
 // ─── Rota CAPI ────────────────────────────────────────────────────────────────
 
 app.post('/api/capi', async (req, res) => {
@@ -402,9 +426,16 @@ app.post('/api/capi', async (req, res) => {
   }
 
   // Credenciais via variáveis de ambiente
-  const PIXEL_ID    = process.env.META_PIXEL_ID;
-  const CAPI_TOKEN  = process.env.META_CAPI_TOKEN;
+  const cred = credenciaisCapi(req.body);
+  const PIXEL_ID    = cred.pixelId;
+  const CAPI_TOKEN  = cred.accessToken;
 
+  if (cred.v2 && !CAPI_TOKEN) {
+    // 200 de propósito: a página não deve quebrar por falta de um segredo de
+    // servidor. O pixel do browser já registrou o evento.
+    console.warn('[CAPI] raiz-v2 sem RAIZ_V2_CAPI_TOKEN — evento nao enviado.');
+    return res.json({ ok: true, skipped: 'raiz_v2_capi_token_ausente' });
+  }
   if (!PIXEL_ID || !CAPI_TOKEN) {
     console.error('[CAPI] META_PIXEL_ID ou META_CAPI_TOKEN não configurados.');
     return res.status(500).json({ ok: false, error: 'Credenciais da Meta não configuradas no servidor.' });
@@ -1688,7 +1719,17 @@ app.post('/api/capi/initiate-checkout', async (req, res) => {
   // normalmente; só o envio à Meta CAPI é pulado quando a origem é isolada.
   if (['google', 'tiktok'].includes(String(channel || '').toLowerCase())) return;
 
+  // Mesma separação de pixel do /api/capi: a V2 tem o seu, e sem token dela o
+  // evento não vai — nunca para o pixel principal.
+  const credIc = credenciaisCapi(req.body);
+  if (credIc.v2 && !credIc.accessToken) {
+    console.warn('[CAPI] IC raiz-v2 sem RAIZ_V2_CAPI_TOKEN — evento nao enviado.');
+    return;
+  }
+
   sendCapiEvent({
+    pixelId:     credIc.pixelId,
+    accessToken: credIc.accessToken,
     eventName: 'InitiateCheckout',
     phone:       enriched.phone,
     em:          enriched.em,
