@@ -595,6 +595,13 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function whatsappPlausivel(phone) {
+  const d = String(phone || '').replace(/\D/g, '');
+  if (d.length !== 12 && d.length !== 13) return false;
+  const ddd = Number(d.slice(2, 4));
+  return ddd >= 11 && ddd <= 99;
+}
+
 function normalizeCaptacaoLead(body = {}) {
   const phone = normalizePhone(body.whats || body.whatsapp || body.WhatsApp || '');
   const historico = toArray(body.historico);
@@ -805,6 +812,13 @@ app.post('/api/captacao/conversa', async (req, res) => {
 
   if (!leadData.nome || leadData.nome === 'Lead' || !leadData.whatsapp) {
     return res.status(400).json({ ok: false, error: 'Nome e WhatsApp são obrigatórios.' });
+  }
+  // Normalizar nao e validar: o formulario prefixa 55 em qualquer coisa. Numero
+  // torto passava ate a Z-API recusar o envio, e o lead morria em silencio.
+  // Celular BR: 55 + DDD (11-99) + 8 ou 9 digitos.
+  if (!whatsappPlausivel(leadData.whatsapp)) {
+    trackingLog({ event_name: 'Lead', event_id: leadData.event_id, time: new Date().toISOString(), success: false, validation_reason: 'whatsapp_implausivel' });
+    return res.status(400).json({ ok: false, error: 'WhatsApp inválido. Informe DDD e número completo.' });
   }
 
   const reservation = await reserveCaptacaoEvent(leadData.event_id);

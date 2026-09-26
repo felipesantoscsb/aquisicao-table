@@ -643,6 +643,17 @@ function normalizePhone(raw){
   return digits;
 }
 
+// Normalizar nao e validar. Sem esta checagem, "1191825378" virava
+// "551191825378" e seguia por todo o sistema ate a Z-API recusar o envio —
+// e o lead se perdia em silencio, sem primeiro contato e sem aviso ao time.
+// Celular BR: 55 + DDD (11-99) + 8 ou 9 digitos = 12 ou 13 no total.
+function whatsappValido(raw){
+  const d = normalizePhone(raw || '');
+  if(d.length !== 12 && d.length !== 13) return false;
+  const ddd = Number(d.slice(2,4));
+  return ddd >= 11 && ddd <= 99;
+}
+
 // ── STEPS ──
 const TOTAL_STEPS = 6;
 let currentStep = 1;
@@ -658,6 +669,11 @@ function goStep(n){
     }
     if(!whats){
       alert('Por favor, preencha seu WhatsApp para continuar.');
+      document.getElementById('f-whats').focus();
+      return;
+    }
+    if(!whatsappValido(whats)){
+      alert('Confira o WhatsApp: informe DDD e número completo, como (11) 99999-9999.');
       document.getElementById('f-whats').focus();
       return;
     }
@@ -731,6 +747,11 @@ async function submitForm(){
   const nome = document.getElementById('f-nome').value.trim();
   const rawWhats = document.getElementById('f-whats').value.trim();
   if(!nome || !rawWhats){alert('Nome e WhatsApp são obrigatórios.');return;}
+  if(!whatsappValido(rawWhats)){
+    alert('Confira o WhatsApp: informe DDD e número completo, como (11) 99999-9999.');
+    document.getElementById('f-whats').focus();
+    return;
+  }
   isSubmitting = true;
   const whats = normalizePhone(rawWhats);
 

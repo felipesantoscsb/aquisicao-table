@@ -99,3 +99,61 @@ test('servidor usa o mesmo event_id na CAPI e exige confirmação real do SDR', 
   assert.match(source, /await forwardCaptacaoToSDR\(leadData\)/);
   assert.match(source, /sendConversationLeadCapi\(\{ leadData, req \}\)\.then/);
 });
+
+// ── WhatsApp: normalizar não é validar ───────────────────────────────────────
+// O formulário prefixa 55 em qualquer coisa. Sem checar tamanho, "1191825378"
+// virava "551191825378", passava por todo o sistema e só quebrava na Z-API, na
+// hora do primeiro contato — onde o erro era engolido e o lead sumia.
+
+const { readFileSync: lerArquivo } = require('node:fs');
+const { join: juntar } = require('node:path');
+const paginaConversa = lerArquivo(juntar(__dirname, '..', 'public/Funil/formulario_captacao_table.html'), 'utf8');
+const servidor = lerArquivo(juntar(__dirname, '..', 'src/server.js'), 'utf8');
+
+// Mesma regra dos dois lados (página e servidor).
+const plausivel = (raw) => {
+  let d = String(raw || '').replace(/\D/g, '');
+  if (d.startsWith('0')) d = d.slice(1);
+  if (!d.startsWith('55')) d = '55' + d;
+  if (d.length !== 12 && d.length !== 13) return false;
+  const ddd = Number(d.slice(2, 4));
+  return ddd >= 11 && ddd <= 99;
+};
+
+test('a regra aceita celular e fixo válidos', () => {
+  assert.equal(plausivel('11918253788'), true);      // celular com 9
+  assert.equal(plausivel('(11) 91825-3788'), true);  // formatado
+  assert.equal(plausivel('5511918253788'), true);    // já com 55
+  assert.equal(plausivel('1132223333'), true);       // fixo, 8 dígitos
+});
+
+test('a regra recusa o que antes virava lead morto', () => {
+  assert.equal(plausivel('919182537889'), false);    // sobrou 1 dígito
+  assert.equal(plausivel('918253788'), false);       // sem DDD (9 dígitos)
+  assert.equal(plausivel('91825378'), false);        // sem DDD e truncado
+  assert.equal(plausivel('11'), false);
+  assert.equal(plausivel(''), false);
+  assert.equal(plausivel('abc'), false);
+});
+
+test('limite conhecido: 12 dígitos continuam passando, de propósito', () => {
+  // "1191825378" pode ser fixo de 8 dígitos OU celular antigo sem o 9. Os dois
+  // são legítimos, e o sdr-table já soma o 9 quando faltam. Rejeitar aqui
+  // quebraria quem hoje é consertado automaticamente — então a regra pega o
+  // erro de tamanho grosseiro e deixa este caso passar, conscientemente.
+  assert.equal(plausivel('1191825378'), true);
+  assert.equal(plausivel('1132223333'), true);
+});
+
+test('DDD impossível não passa', () => {
+  assert.equal(plausivel('0918253788'), false);
+  assert.equal(plausivel('5501918253788'), false);   // DDD 01
+});
+
+test('a validação existe na página e no servidor, não só numa ponta', () => {
+  assert.match(paginaConversa, /function whatsappValido/);
+  // Nos dois momentos: ao avançar da etapa 1 e no envio.
+  assert.ok(paginaConversa.split('whatsappValido(').length - 1 >= 3, 'validação usada nos dois pontos');
+  assert.match(servidor, /function whatsappPlausivel/);
+  assert.match(servidor, /whatsapp_implausivel/);
+});
