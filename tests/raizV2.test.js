@@ -18,7 +18,9 @@ test('radar usa as seis dimensões oficiais do prontuário', () => {
     'Relação com o corpo', 'Relação com a comida', 'Recursos biopsicossociais',
     'Conhecimento alimentar', 'Consciência e presença', 'Adaptabilidade',
   ]) assert.match(html, new RegExp(label));
-  assert.equal((html.match(/tag:'[1-9] ·/g) || []).length, 9);
+  // conta só no conjunto do funil pago; a camada 2 tem o seu, contado abaixo
+  const glp1 = html.slice(html.indexOf('let questions=['), html.indexOf('const Q_NURTURE'));
+  assert.equal((glp1.match(/tag:'[1-9] ·/g) || []).length, 9);
 });
 
 test('mantém Pixel e CAPI com a jornada completa', () => {
@@ -98,4 +100,71 @@ test('ehRaizV2 reconhece o funil por slug, source e content_name', () => {
   assert.equal(ehRaizV2({ slug: 'raiz' }), false);
   assert.equal(ehRaizV2({ content_name: 'InitiateCheckout_Raiz' }), false);
   assert.equal(ehRaizV2({}), false);
+});
+
+// ─── Camada 2 (?source=pr_nurture) ───────────────────────────────────────────
+// O funil pago de canetas continua sendo o /raiz-v2 puro. Tudo abaixo só liga
+// com source=pr_nurture, que é o link do D+3 para quem já fez o quiz 1.
+
+test('camada 2 fica atrás do parâmetro e não toca o funil pago', () => {
+  assert.match(html, /const NURTURE = \(QS\.get\('source'\) \|\| ''\)\.toLowerCase\(\) === 'pr_nurture'/);
+  // hero, oferta e perguntas antigas seguem no arquivo, intactos
+  assert.match(html, /<h1 id="heroTitle">E quando a fome <em>voltar\?<\/em><\/h1>/);
+  assert.match(html, /https:\/\/pay\.cakto\.com\.br\/ai223ee/);
+  // e o que é da camada 2 está condicionado
+  assert.match(html, /if\(NURTURE\)aplicarNurtureResultado\(\)/);
+  assert.match(html, /!NURTURE&&stage==='never'&&ALT_OPTIONS/);
+});
+
+test('camada 2 tem 14 perguntas pontuadas e medicação vira contexto', () => {
+  const n = html.slice(html.indexOf('const Q_NURTURE'), html.indexOf('const Q_PERFIL'));
+  assert.equal((n.match(/tag:'\d+ ·/g) || []).length, 15);   // 14 pontuadas + contexto
+  assert.equal((n.match(/dim:'/g) || []).length, 6);          // um dedicado por pilar
+  assert.equal((n.match(/weights:true/g) || []).length, 8);
+  assert.equal((n.match(/stage:true/g) || []).length, 1);
+  // a de medicação é a única sem pontuação e não abre o quiz
+  assert.match(n, /Medicamentos para emagrecimento fazem parte da sua história hoje\?/);
+  assert.match(n, /Essa resposta não muda o seu Radar/);
+  const posMed = n.indexOf('Medicamentos para emagrecimento');
+  assert.ok(posMed > n.length * 0.6, 'medicação deve ficar no fim do questionário');
+});
+
+test('perfil do quiz 1 vem do lid, da URL ou da pergunta, e nunca pontua', () => {
+  assert.match(server, /app\.get\('\/api\/raiz-v2\/contexto'/);
+  assert.match(server, /quiz:perfil:\$\{phone\}/);
+  assert.match(html, /const PERFIL_DE_LETRA = \{ E:'emocional', R:'restritiva', S:'sobrevivencia', A:'desconectada' \}/);
+  assert.match(html, /if\(q\.perfil\)return;/);           // recompute ignora
+  assert.match(html, /perfil:true/);
+  for (const p of ['emocional','restritiva','sobrevivencia','desconectada','nenhum']) {
+    assert.ok(html.includes(`${p}:'`) || html.includes(`${p}:`), `transição de ${p}`);
+  }
+});
+
+test('oferta da camada 2 é a Sessão Raiz isolada, sem PR nem livro', () => {
+  assert.match(html, /const CHECKOUT_SESSAO_RAIZ_URL = 'https:\/\/pay\.cakto\.com\.br\/ak63ytv_1149729'/);
+  assert.match(html, /const PRECO_SESSAO = 67/);
+  assert.match(html, /content_name:'Sessão Raiz',currency:'BRL',value:PRECO_SESSAO/);
+  // esconde o que é da oferta de R$ 97
+  assert.match(html, /\['compBand','journeyBand','priceBand','offerAnchor'\]\.forEach/);
+  const oferta = html.slice(html.indexOf('const OFERTA_SESSAO'), html.indexOf('const FAQ_SESSAO'));
+  assert.doesNotMatch(oferta, /Protocolo Raiz/);
+  assert.doesNotMatch(oferta, /Gordura Não Existe/);
+});
+
+test('dado psicológico do funil não vai para a Meta', () => {
+  // previous_profile e pilar entram só no payload do nosso endpoint
+  const seg = html.slice(html.indexOf('function segmentoInterno'), html.indexOf('function heroNurture'));
+  assert.match(seg, /previous_profile/);
+  const ic = html.slice(html.indexOf('function checkoutSessao'), html.length);
+  const fbqCall = ic.slice(ic.indexOf("fbq('track','InitiateCheckout'"), ic.indexOf('fetch('));
+  assert.doesNotMatch(fbqCall, /previous_profile|lowest_pillar|highest_pillar/);
+});
+
+test('eventos novos da camada 2 existem e os antigos continuam', () => {
+  for (const ev of ['RadarStarted','RadarProgress','RadarCompleted','RadarResultViewed','SessaoRaizOfferViewed']) {
+    assert.match(html, new RegExp(ev));
+  }
+  for (const ev of ['QuizStart','Lead','CompleteRegistration','OfferView','InitiateCheckout','QuizProgress']) {
+    assert.match(html, new RegExp(ev));
+  }
 });

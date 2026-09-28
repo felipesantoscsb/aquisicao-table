@@ -279,8 +279,8 @@ canvas{width:100%;height:100%;display:block}
 <main>
 <section class="page hero active" id="intro"><div class="shell">
   <div class="hero-top"><div class="brand">TABLE</div><p class="eyebrow">Radar Table · gratuito</p></div>
-  <h1>E quando a fome <em>voltar?</em></h1>
-  <p class="hero-copy">A caneta resolveu a fome. Ela não resolveu o que você faz quando está ansiosa, quando o dia desanda ou quando a comida vira a única coisa sua. Em 3 minutos, veja quais dos seis pilares já sustentam você e quais ainda não.</p>
+  <h1 id="heroTitle">E quando a fome <em>voltar?</em></h1>
+  <p class="hero-copy" id="heroCopy">A caneta resolveu a fome. Ela não resolveu o que você faz quando está ansiosa, quando o dia desanda ou quando a comida vira a única coisa sua. Em 3 minutos, veja quais dos seis pilares já sustentam você e quais ainda não.</p>
   <div class="hero-art" aria-hidden="true">
     <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
       <g fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1">
@@ -298,7 +298,7 @@ canvas{width:100%;height:100%;display:block}
   </div>
   <div class="chips"><span class="chip">3 minutos</span><span class="chip">Sem julgamento</span><span class="chip">Cadastro só no fim</span></div>
   <button class="btn btn-primary btn-lg" id="start">Ver meus seis pilares →</button>
-  <p class="fine">O Radar não orienta dose nem interrupção de medicamentos. Decisões clínicas pertencem a você e ao seu prescritor.</p>
+  <p class="fine" id="heroFine">O Radar não orienta dose nem interrupção de medicamentos. Decisões clínicas pertencem a você e ao seu prescritor.</p>
 </div></section>
 <script>
 /* Radar da intro "respirando": cada vertice oscila no proprio eixo, com ritmo
@@ -351,6 +351,12 @@ canvas{width:100%;height:100%;display:block}
     <span class="error" id="phoneError"></span>
     <button class="btn btn-primary" id="reveal">Abrir meu Radar →</button>
   </div><p class="fine">Usamos esses dados para personalizar seu resultado e mensurar esta experiência. Se você decidir seguir adiante, o WhatsApp também facilita o agendamento da sessão. Consulte nossa <a href="/legal" target="_blank" rel="noopener" style="color:var(--pine)">Política de Privacidade</a>.</p>
+</div></div></section>
+
+<section class="page" id="transicao"><div class="shell"><div class="card capture">
+  <p class="eyebrow">Sua primeira leitura</p>
+  <h2 id="transTxt" style="font-size:clamp(22px,4.6vw,30px);margin:14px auto 0;max-width:600px"></h2>
+  <div class="fields"><button class="btn btn-primary" id="transGo">Continuar →</button></div>
 </div></div></section>
 
 <section class="page" id="loading"><div class="shell">
@@ -469,7 +475,7 @@ canvas{width:100%;height:100%;display:block}
   </div></section>
 
   <!-- 9, 10, 11 · COMPONENTES -->
-  <section class="band band-cream" style="padding-top:clamp(28px,6vw,44px)"><div>
+  <section class="band band-cream" id="compBand" style="padding-top:clamp(28px,6vw,44px)"><div>
 
     <div class="comp">
       <div class="comp-num">1</div>
@@ -497,7 +503,7 @@ canvas{width:100%;height:100%;display:block}
   </div></section>
 
   <!-- 12 · JORNADA -->
-  <section class="band band-dark"><div>
+  <section class="band band-dark" id="journeyBand"><div>
     <hr class="rule">
     <h2>Você não recebe apenas conteúdo. Você começa um processo.</h2>
     <div class="journey">
@@ -594,7 +600,7 @@ const DIMS={
   awareness:{label:'Consciência e presença',short:'Presença'},
   adaptability:{label:'Adaptabilidade',short:'Adaptação'}
 };
-const questions=[
+let questions=[
  {tag:'Antes de começar',text:'Qual frase descreve melhor o seu momento com as canetas, como Mounjaro, Ozempic ou Wegovy?',note:'Se mais de uma servir, escolha a que mais pesa hoje. Sua resposta ajusta a leitura do Radar ao seu momento.',stage:true,options:[['Estou usando e não penso em parar agora','using'],['Estou usando e já penso em como vai ser quando parar','thinking'],['Parei, e a fome ou os pensamentos sobre comida voltaram','stopped_hunger'],['Parei, e o peso começou a voltar','stopped_weight'],['Parei, e nenhuma dessas mudanças me preocupa hoje','stopped_other'],['Nunca usei','never']]},
  {tag:'1 · Relação com o corpo',text:'Quando você pensa no seu corpo hoje, o que mais se aproxima?',dim:'body',options:[['Consigo olhar para ele sem transformar tudo em julgamento',5],['Tenho incômodos, mas eles não comandam meu dia',4],['Meu humor ainda muda bastante com espelho, roupa ou balança',2],['Tenho medo constante de perder o corpo que conquistei',1]]},
  {tag:'2 · Relação com a comida',text:'Quando você come algo que não planejou, o que costuma acontecer?',dim:'food',options:[['Aproveito e sigo normalmente na refeição seguinte',5],['Fico um pouco desconfortável, mas consigo seguir',4],['Sinto culpa e penso em compensar depois',2],['Parece que estraguei tudo e perco o controle do resto do dia',1]]},
@@ -702,6 +708,125 @@ const STAGE_BRIDGE={
     'Seu Radar organiza exatamente essa camada. E ela não depende de medicamento nenhum para ser trabalhada.'
   ]}
 };
+/* ═══════════════════════════════════════════════════════════════════════════
+   CAMADA 2 · ?source=pr_nurture
+   O /raiz-v2 puro continua sendo o funil de tráfego pago de canetas, intacto.
+   Tudo daqui para baixo só liga quando o link traz source=pr_nurture, que é o
+   link enviado no D+3 para quem já fez o quiz 1 e não comprou o Protocolo Raiz.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const QS = new URLSearchParams(location.search);
+const NURTURE = (QS.get('source') || '').toLowerCase() === 'pr_nurture';
+const LID = (QS.get('lid') || '').trim();
+const CHECKOUT_SESSAO_RAIZ_URL = 'https://pay.cakto.com.br/ak63ytv_1149729';
+const PRECO_SESSAO = 67;
+
+/* Perfil do quiz 1. Resolvido nesta ordem: parâmetro explícito → lid no
+   servidor → pergunta para a pessoa. Nunca altera o scoring do Radar: entra só
+   em copy, conexão entre as duas leituras e segmentação. */
+const PERFIL_LABEL = { emocional:'Emocional', restritiva:'Restritivo', sobrevivencia:'Sobrevivência', desconectada:'Desconectado' };
+const PERFIL_DE_LETRA = { E:'emocional', R:'restritiva', S:'sobrevivencia', A:'desconectada' };
+const PERFIL_TRANSICAO = {
+  emocional:'Você já descobriu que o padrão Emocional aparece com força. Agora vamos olhar quais áreas podem estar alimentando ou protegendo esse padrão hoje.',
+  restritiva:'Você já descobriu que o padrão Restritivo aparece com força. Agora vamos olhar como flexibilidade, corpo, rotina e outras áreas conversam com ele.',
+  sobrevivencia:'Você já descobriu que o padrão Sobrevivência aparece com força. Agora vamos olhar o que pode estar acontecendo ao redor dele, especialmente rotina, autocuidado e autonomia.',
+  desconectada:'Você já descobriu que o padrão Desconectado aparece com força. Agora vamos ampliar a leitura para entender como presença, sinais internos, rotina e outras áreas aparecem hoje.',
+  nenhum:'Sem problema. O Radar funciona sozinho. Vamos olhar como sua relação com a comida está hoje.'
+};
+const PERFIL_PONTE = {
+  emocional:'O seu primeiro teste mostrou o padrão Emocional. O Radar amplia essa leitura e permite olhar o que está acontecendo ao redor desse padrão. Na Sessão Raiz, a nutricionista conecta essas duas camadas com a sua história.',
+  restritiva:'O primeiro teste mostrou o padrão Restritivo. O Radar ajuda a entender se hoje flexibilidade, corpo, rotina ou outras áreas estão sustentando esse ciclo.',
+  sobrevivencia:'O padrão Sobrevivência costuma existir dentro de um contexto maior. O Radar ajuda a visualizar onde rotina, autocuidado e outras dimensões estão mais pressionadas hoje.',
+  desconectada:'O padrão Desconectado mostra uma forma de funcionar. O Radar amplia a visão para entender como sinais internos, contexto e outras áreas aparecem neste momento.',
+  nenhum:'O Radar não depende de um resultado anterior. Ele olha para como as seis áreas aparecem hoje, do jeito que você respondeu agora.'
+};
+/* Pilar que costuma conversar com cada padrão do quiz 1. Serve só para escrever
+   a frase de conexão: "as duas leituras apontam para a mesma região" quando
+   bate, "apontam para regiões diferentes" quando não bate. Nunca é diagnóstico. */
+const PERFIL_PILAR = { emocional:'food', restritiva:'adaptability', sobrevivencia:'resources', desconectada:'awareness' };
+
+let perfilAnterior = null;   /* emocional | restritiva | sobrevivencia | desconectada | nenhum | null */
+let perfilOrigem = null;     /* url | lid | perguntado */
+let contexto = null;         /* { nome, email, whats } recuperado pelo lid */
+
+/* ── perguntas da camada 2 ────────────────────────────────────────────────
+   Mesma matemática do Radar: média por pilar das contribuições recebidas.
+   Mudou a narrativa e a quantidade de amostras (9 → 14 pontuadas), não a
+   fórmula. Medicação virou contexto e não pontua.                          */
+const Q_NURTURE = [
+ /* BLOCO 1 · RECONHECIMENTO */
+ {bloco:'Seu dia a dia',tag:'1 · No momento de comer',text:'Na hora em que você decide comer, o quanto consegue distinguir fome de vontade?',dim:'awareness',
+  options:[['Quase sempre percebo a diferença',5],['Percebo na maior parte das vezes',4],['Muitas vezes só percebo depois que comecei a comer',2],['Quase não consigo separar as duas coisas',1]],
+  mirror:['Você distingue fome e vontade de comer com bastante clareza.','Na maior parte das vezes você percebe a diferença, nem sempre a tempo.','Muitas vezes você só percebe o que estava sentindo depois de já ter comido.','Separar fome de vontade ainda é difícil no dia a dia.']},
+ {bloco:'Seu dia a dia',tag:'2 · Fora do planejado',text:'Quando você come algo que não planejou, o que costuma acontecer?',dim:'food',
+  options:[['Aproveito e sigo normalmente na refeição seguinte',5],['Fico um pouco desconfortável, mas consigo seguir',4],['Sinto culpa e penso em compensar depois',2],['Parece que estraguei tudo e perco o controle do resto do dia',1]],
+  mirror:['Um prato fora do planejado não derruba o seu dia.','Comer algo fora do planejado gera desconforto, mesmo quando você segue em frente.','Depois de comer algo que não estava no plano, vem a culpa e a vontade de compensar.','Um deslize pode virar “já estraguei tudo” e comprometer o resto do dia.']},
+ {bloco:'Seu dia a dia',tag:'3 · Dias difíceis',text:'Em dias de ansiedade, frustração ou cansaço, o que costuma acontecer com a comida?',weights:true,
+  options:[['Percebo o que estou sentindo, e nem sempre é a comida que responde',{awareness:5,food:5}],['Às vezes como para aliviar, mas isso não domina o dia',{awareness:4,food:4}],['A comida costuma ser o caminho mais rápido para me acalmar',{food:2,awareness:2}],['Só percebo que comi por causa disso bem depois',{awareness:1,food:1}]],
+  mirror:['Em dias difíceis, você percebe o que está sentindo antes de a comida responder.','Às vezes você come para aliviar, mas isso não toma conta do dia.','Quando o dia aperta, a comida costuma ser o caminho mais rápido para se acalmar.','Muitas vezes você só percebe depois que comeu por causa do que estava sentindo.']},
+ {bloco:'Seu dia a dia',tag:'4 · Semanas difíceis',text:'Em semanas difíceis, quanto apoio sua rotina oferece para você se cuidar?',dim:'resources',
+  options:[['Tenho sono, apoio e algum espaço para me reorganizar',5],['Nem sempre é fácil, mas tenho onde me apoiar',4],['Quase tudo depende de esforço e sobra pouca energia',2],['Vivo no limite e a comida frequentemente vira meu único alívio',1]],
+  mirror:['Você tem sono, apoio e algum espaço para se reorganizar nas semanas difíceis.','Nem toda semana é fácil, mas você ainda encontra onde se apoiar.','Quase tudo depende do seu esforço, e sobra pouca energia para você.','Quando a semana aperta, comer é o alívio mais rápido que está à mão.']},
+ {bloco:'Seu dia a dia',tag:'5 · Fora de casa',text:'Restaurante, viagem ou fim de semana muda sua relação com a comida?',dim:'adaptability',
+  options:[['Consigo me adaptar sem transformar isso em problema',5],['Saio da rotina e depois retomo com naturalidade',4],['Fico tensa e tento controlar antes ou compensar depois',2],['Ou evito, ou sinto que perco completamente minha referência',1]],
+  mirror:['Restaurante, viagem e fim de semana não viram um problema para você.','Sair da rotina não é um problema, mas o retorno ainda exige atenção.','Restaurante, viagem ou fim de semana ainda pedem mais controle do que você gostaria.','Ou você evita esses momentos, ou sente que perde completamente a sua referência.']},
+ /* BLOCO 2 · APROFUNDAMENTO */
+ {bloco:'Um pouco mais fundo',tag:'6 · Espelho e balança',text:'Quando você não gosta do que vê no espelho ou na balança, o que acontece com o seu dia?',dim:'body',
+  options:[['Incomoda, mas o dia segue do mesmo jeito',5],['Fico chateada por um tempo e depois passa',4],['Meu humor muda e isso respinga nas minhas escolhas',2],['Isso consegue redirecionar o meu dia inteiro',1]],
+  mirror:['Você consegue olhar para o seu corpo sem transformar tudo em julgamento.','Um incômodo com o corpo dura um tempo e depois passa.','Espelho, roupa ou balança ainda têm poder de mudar o seu humor no meio do dia.','O que você vê no espelho consegue redirecionar o seu dia inteiro.']},
+ {bloco:'Um pouco mais fundo',tag:'7 · Espaço na cabeça',text:'Quanto espaço pensamentos sobre comida, peso ou corpo ocupam no seu dia?',weights:true,
+  options:[['Aparecem e vão embora, sem ocupar muito espaço',{body:5,awareness:5}],['Aparecem em alguns momentos, mas eu sigo o dia',{body:4,awareness:4}],['Ocupam boa parte do meu dia',{body:2,awareness:2}],['É quase um barulho de fundo constante',{body:1,awareness:1}]],
+  mirror:['Pensamentos sobre comida e corpo aparecem e vão embora, sem ocupar muito espaço.','Pensamentos sobre comida e corpo aparecem em alguns momentos, mas não tomam o dia.','Pensar em comida, peso ou corpo ocupa boa parte do seu dia.','Pensamentos sobre comida e corpo funcionam quase como um barulho de fundo constante.']},
+ {bloco:'Um pouco mais fundo',tag:'8 · Sem cardápio',text:'Sem um cardápio pronto, como você se sente para montar uma refeição?',dim:'knowledge',
+  options:[['Segura: sei combinar o que tenho sem buscar perfeição',5],['Consigo, embora ainda tenha algumas dúvidas',4],['Preciso de regras para sentir que estou fazendo certo',2],['Fico perdida e dependo de alguém ou da internet para decidir',1]],
+  mirror:['Você monta uma refeição sem precisar de cardápio nem de regra pronta.','Você sabe bastante sobre alimentação, mas ainda restam dúvidas na hora de decidir.','Sem uma regra clara, bate a dúvida se você está fazendo certo.','Decidir sozinha o que comer ainda é desconfortável.']},
+ {bloco:'Um pouco mais fundo',tag:'9 · Regras',text:'Quando você quebra uma regra alimentar que tinha se imposto, o que vem depois?',weights:true,
+  options:[['Sigo em frente: a regra era minha e eu posso ajustar',{knowledge:5,food:5}],['Fico incomodada, mas consigo retomar',{knowledge:4,food:4}],['Aperto a regra no dia seguinte para compensar',{knowledge:2,food:2}],['Costumo largar a regra inteira por um tempo',{knowledge:1,food:1}]],
+  mirror:['Quando uma regra sua não funciona, você ajusta em vez de abandonar.','Quebrar uma regra incomoda, mas você consegue retomar.','Quando uma regra cai, o movimento seguinte costuma ser apertar ainda mais.','Quando uma regra cai, costuma cair junto o resto do plano.']},
+ {bloco:'Um pouco mais fundo',tag:'10 · Semana desandada',text:'Quando a semana inteira desanda (trabalho, casa, sono), o que acontece com o seu cuidado com a comida?',weights:true,
+  options:[['Simplifico e sigo cuidando do jeito possível',{resources:5,adaptability:5}],['Fica mais difícil, mas eu retomo sem drama',{resources:4,adaptability:4}],['Costumo abandonar e retomar do zero depois',{resources:2,adaptability:2}],['A comida vira a parte mais fora do lugar da semana',{resources:1,adaptability:1}]],
+  mirror:['Quando a semana desanda, você simplifica e segue cuidando do jeito possível.','Semana desandada dificulta, mas você retoma sem drama.','Quando a semana desanda, o cuidado costuma parar e depois recomeçar do zero.','Em semanas desandadas, a comida vira a parte mais fora do lugar.']},
+ {bloco:'Um pouco mais fundo',tag:'11 · Se a fome aumentasse',text:'Se a fome ou os pensamentos sobre comida aumentassem de repente, qual seria a sua primeira reação?',weights:true,
+  options:[['Eu observaria e usaria recursos que já construí',{awareness:5,resources:5}],['Eu procuraria apoio sem concluir que fracassei',{resources:4,food:4}],['Eu ficaria com medo e apertaria minhas regras',{food:2,adaptability:2}],['Eu não saberia por onde começar',{knowledge:1,resources:1}]],
+  mirror:['Se a fome aumentasse, você observaria e usaria recursos que já construiu.','Se a fome aumentasse, seu primeiro movimento seria procurar apoio, e não se culpar.','A ideia de a fome aumentar acende medo e a vontade de apertar as regras.','Se a fome aumentasse, você não saberia bem por onde começar.']},
+ /* BLOCO 3 · CONTEXTO */
+ {bloco:'Seu histórico',tag:'12 · Tentativas anteriores',text:'Pensando nos últimos anos, como costumam terminar as suas tentativas de mudar a alimentação?',weights:true,
+  options:[['Algumas coisas ficaram comigo e viraram parte da rotina',{resources:5,body:5}],['Funcionaram por um tempo e eu fui ajustando',{resources:4,body:4}],['Funcionaram no começo e depois desandaram',{resources:2,body:2}],['Terminaram com a sensação de ter falhado de novo',{resources:1,body:1}]],
+  mirror:['Das suas tentativas anteriores, algumas coisas ficaram e viraram rotina.','Suas tentativas funcionaram por um tempo e você foi ajustando pelo caminho.','Suas tentativas costumam funcionar no começo e desandar depois.','As tentativas anteriores costumam terminar com a sensação de ter falhado de novo.']},
+ {bloco:'Seu histórico',tag:'13 · Contexto',text:'Medicamentos para emagrecimento fazem parte da sua história hoje?',note:'Essa resposta não muda o seu Radar. Ela só ajuda a escrever a leitura final no seu contexto.',stage:true,
+  options:[['Uso atualmente','using'],['Já usei e parei','stopped_other'],['Estou considerando usar','considering'],['Nunca usei, não faz parte da minha realidade','never']]},
+ /* BLOCO 4 · DESEJO */
+ {bloco:'O que você quer agora',tag:'14 · Autonomia',text:'Quanto da sua segurança com a comida hoje parece realmente sua?',weights:true,
+  options:[['Tenho recursos meus e confio neles',{knowledge:5,adaptability:5}],['Construí algumas coisas, mas ainda estou entendendo outras',{knowledge:4,awareness:4}],['Funciono bem com regras, mas não sei como seria sem elas',{knowledge:2,adaptability:2}],['Minha segurança depende quase toda de estar controlando',{awareness:1,adaptability:1}]],
+  mirror:['Você sente que tem recursos seus e confia neles.','Parte da sua segurança já é sua; outra parte ainda está sendo construída.','Você funciona bem com regras, mas é difícil imaginar como seria sem elas.','Hoje a sua segurança depende bastante de estar no controle.']},
+ {bloco:'O que você quer agora',tag:'15 · O que mudaria',text:'O que você mais gostaria de mudar na sua relação com a comida hoje?',weights:true,
+  options:[['Entender melhor meus sinais de fome e saciedade',{awareness:2,food:3}],['Ter mais flexibilidade em situações reais',{adaptability:2,knowledge:3}],['Parar de viver entre culpa, controle e medo',{food:1,body:2}],['Construir apoio e recursos para uma nova fase',{resources:2,adaptability:3}]]}
+];
+/* Pergunta de contexto, só quando o perfil do quiz 1 não veio resolvido. */
+const Q_PERFIL = {bloco:'Antes de começar',tag:'Sua primeira leitura',text:'Você lembra qual foi o seu resultado no primeiro mapeamento da Table?',note:'Se não lembrar, tudo bem: o Radar funciona sozinho.',perfil:true,
+  options:[['Comedora Emocional','emocional'],['Comedora Restritiva','restritiva'],['Comedora Sobrevivência','sobrevivencia'],['Comedora Desconectada','desconectada'],['Não lembro ou não fiz o primeiro teste','nenhum']]};
+
+/* Contexto de medicação novo desta camada: quem está considerando começar.
+   Os outros três reaproveitam os textos que já existem no arquivo. */
+const STAGE_EXTRA = {
+  considering:{
+    mirror:'Você está considerando usar medicação e quer entender o que já é seu antes disso.',
+    text:'Você está considerando usar esse tipo de medicação. O Radar não opina sobre essa decisão, que é sua e do seu prescritor. Ele só mostra quais recursos já estão de pé hoje.',
+    bridge:{title:'Antes de qualquer decisão, vale saber de onde você parte.',body:[
+      'Você está considerando usar medicação para emagrecimento. Essa é uma decisão sua com quem te acompanha, e nada aqui empurra para um lado ou para o outro.',
+      'O que costuma ajudar é entrar em qualquer fase sabendo o que já está de pé. Percepção dos próprios sinais, flexibilidade em situações reais e menos culpa continuam sendo seus, independentemente do que acontecer depois.',
+      'É isso que o seu Radar mostra agora: o ponto de partida.'
+    ]}
+  }
+};
+
+/* 'considering' só existe nesta camada; os outros contextos reaproveitam os
+   textos que já estavam no arquivo. */
+Object.keys(STAGE_EXTRA).forEach(k=>{
+  stageText[k]    = STAGE_EXTRA[k].text;
+  STAGE_MIRROR[k] = STAGE_EXTRA[k].mirror;
+  STAGE_BRIDGE[k] = STAGE_EXTRA[k].bridge;
+});
+
 /* ---------------- estado ---------------- */
 let current=0,answers=[],picks=[],stage='using',scores={body:0,food:0,resources:0,knowledge:0,awareness:0,adaptability:0},counts={body:0,food:0,resources:0,knowledge:0,awareness:0,adaptability:0};
 const $=id=>document.getElementById(id);
@@ -712,17 +837,17 @@ function page(id){document.querySelectorAll('.page').forEach(x=>x.classList.remo
 function eventId(prefix){return prefix+'_'+crypto.randomUUID()}
 function fired(name){if(fired[name])return true;fired[name]=1;return false}
 function track(name){if(fired(name))return;try{fbq('trackCustom',name,{funnel:'raiz-v2'})}catch(e){}}
-function start(){const id=eventId('qs');fbq('trackCustom','QuizStart',{funnel:'raiz-v2'},{eventID:id});fetch('/api/capi/quiz-start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_source_url:location.href})}).catch(()=>{});page('quiz');render()}
-function render(){const q=questions[current];$('qtag').textContent=q.tag;$('question').textContent=q.text;const note=$('qnote');note.textContent=q.note||'';note.hidden=!q.note;$('counter').textContent=`${current+1}/${questions.length}`;$('ticks').innerHTML=questions.map((_,i)=>`<i class="${i<=current?'on':''}"></i>`).join('');$('back').style.visibility=current?'visible':'hidden';const card=$('qcard');card.classList.remove('qcard');void card.offsetWidth;card.classList.add('qcard');$('options').innerHTML='';q.options.forEach((o,i)=>{const b=document.createElement('button');b.className='option'+(picks[current]===i?' picked':'');const label=(stage==='never'&&ALT_OPTIONS[current]&&ALT_OPTIONS[current][i])||o[0];b.innerHTML=`<b>${String.fromCharCode(65+i)}</b><span>${label}</span>`;b.onclick=()=>{b.classList.add('picked');choose(o[1],i)};$('options').appendChild(b)})}
-function choose(value,index){answers[current]=value;picks[current]=index;if(questions[current].stage)stage=value;current++;if(current===4)fbq('trackCustom','QuizProgress',{step:4,funnel:'raiz-v2'});if(current>=questions.length){page('capture');return}render()}
-function recompute(){scores={body:0,food:0,resources:0,knowledge:0,awareness:0,adaptability:0};counts={body:0,food:0,resources:0,knowledge:0,awareness:0,adaptability:0};questions.forEach((q,i)=>{const v=answers[i];if(q.stage){stage=v;return}if(q.dim){scores[q.dim]+=Number(v);counts[q.dim]++}if(q.weights&&v)Object.entries(v).forEach(([k,n])=>{scores[k]+=n;counts[k]++})});Object.keys(scores).forEach(k=>scores[k]=Math.max(0,Math.min(5,Math.round((scores[k]/Math.max(1,counts[k]))*10)/10)))}
+function start(){const id=eventId('qs');fbq('trackCustom','QuizStart',{funnel:'raiz-v2'},{eventID:id});fetch('/api/capi/quiz-start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_source_url:location.href})}).catch(()=>{});trackN('RadarStarted');page('quiz');render()}
+function render(){const q=questions[current];$('qtag').textContent=q.bloco||q.tag;$('question').textContent=q.text;const note=$('qnote');note.textContent=q.note||'';note.hidden=!q.note;$('counter').textContent=`${current+1}/${questions.length}`;$('ticks').innerHTML=questions.map((_,i)=>`<i class="${i<=current?'on':''}"></i>`).join('');$('back').style.visibility=current?'visible':'hidden';const card=$('qcard');card.classList.remove('qcard');void card.offsetWidth;card.classList.add('qcard');$('options').innerHTML='';q.options.forEach((o,i)=>{const b=document.createElement('button');b.className='option'+(picks[current]===i?' picked':'');const label=(!NURTURE&&stage==='never'&&ALT_OPTIONS[current]&&ALT_OPTIONS[current][i])||o[0];b.innerHTML=`<b>${String.fromCharCode(65+i)}</b><span>${label}</span>`;b.onclick=()=>{b.classList.add('picked');choose(o[1],i)};$('options').appendChild(b)})}
+function choose(value,index){const q=questions[current];answers[current]=value;picks[current]=index;if(q.stage)stage=value;if(q.perfil){perfilAnterior=value;perfilOrigem=perfilOrigem||'perguntado'}current++;if(current===4)fbq('trackCustom','QuizProgress',{step:4,funnel:'raiz-v2'});if(NURTURE&&current===Math.ceil(questions.length/2))trackN('RadarProgress',{step:current});if(q.perfil){mostrarTransicao();return}if(current>=questions.length){if(NURTURE&&contexto){revelarComContexto();return}page('capture');return}render()}
+function recompute(){scores={body:0,food:0,resources:0,knowledge:0,awareness:0,adaptability:0};counts={body:0,food:0,resources:0,knowledge:0,awareness:0,adaptability:0};questions.forEach((q,i)=>{const v=answers[i];if(q.perfil)return;if(q.stage){stage=v;return}if(q.dim){scores[q.dim]+=Number(v);counts[q.dim]++}if(q.weights&&v)Object.entries(v).forEach(([k,n])=>{scores[k]+=n;counts[k]++})});Object.keys(scores).forEach(k=>scores[k]=Math.max(0,Math.min(5,Math.round((scores[k]/Math.max(1,counts[k]))*10)/10)))}
 function normalizePhone(v){let d=v.replace(/\D/g,'');if(d.length===10||d.length===11)d='55'+d;return d}
 async function sha256(v){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v.trim().toLowerCase()));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 async function reveal(){const name=$('name').value.trim(),email=$('email').value.trim(),phone=normalizePhone($('phone').value);$('nameError').textContent=name?'':'Informe seu nome.';$('emailError').textContent=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)?'':'Informe um e-mail válido.';$('phoneError').textContent=phone.length>=12?'':'Informe um WhatsApp válido com DDD.';if(!name||!email||phone.length<12)return;recompute();window.lead={name,email,phone,id:eventId('lead'),external:await sha256(email),fbp:getCookie('_fbp'),fbc:getCookie('_fbc')};fbq('init',PIXEL_V2,{em:email,ph:phone,fn:name.split(/\s+/)[0],external_id:lead.external});fbq('track','Lead',{content_name:'quiz-lead-raiz-v2'},{eventID:lead.id});fetch('/api/capi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_name:'Lead',content_name:'quiz-lead-raiz-v2',nome:name,email,whats:phone.slice(2),fbc:lead.fbc,fbp:lead.fbp,external_id:lead.external,lead_event_id:lead.id,event_source_url:location.href})}).catch(()=>{});page('loading');const steps=['Lendo seus seis pilares','Comparando forças e pontos de atenção','Preparando sua fotografia de hoje'];let i=0;const timer=setInterval(()=>{$('loadingStep').textContent=steps[++i%steps.length]},650);setTimeout(()=>{clearInterval(timer);complete()},1900)}
-function complete(){const id=eventId('complete');fbq('track','CompleteRegistration',{content_name:'quiz-completo-raiz-v2'},{eventID:id});fbq('trackCustom','QuizCompleted',{funnel:'raiz-v2'});fetch('/api/capi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_name:'CompleteRegistration',slug:'raiz-v2',nome:lead.name,email:lead.email,whats:lead.phone.slice(2),fbc:lead.fbc,fbp:lead.fbp,external_id:lead.external,lead_event_id:id,quiz_lead_event_id:lead.id,event_source_url:location.href})}).catch(()=>{});renderResult();page('result');fbq('trackCustom','OfferView',{funnel:'raiz-v2'});track('ResultView');observeSections()}
+function complete(){const id=eventId('complete');fbq('track','CompleteRegistration',{content_name:'quiz-completo-raiz-v2'},{eventID:id});fbq('trackCustom','QuizCompleted',{funnel:'raiz-v2'});fetch('/api/capi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_name:'CompleteRegistration',slug:'raiz-v2',nome:lead.name,email:lead.email,whats:lead.phone.slice(2),fbc:lead.fbc,fbp:lead.fbp,external_id:lead.external,lead_event_id:id,quiz_lead_event_id:lead.id,event_source_url:location.href})}).catch(()=>{});renderResult();if(NURTURE)aplicarNurtureResultado();page('result');fbq('trackCustom','OfferView',{funnel:'raiz-v2'});track('ResultView');trackN('RadarCompleted');observeSections()}
 /* ---------------- montagem do resultado ---------------- */
 function ranking(){const keys=Object.keys(DIMS).slice().sort((a,b)=>scores[a]-scores[b]||Object.keys(DIMS).indexOf(a)-Object.keys(DIMS).indexOf(b));const vals=keys.map(k=>scores[k]);return{low:keys[0],low2:keys[1],high:keys[keys.length-1],spread:vals[vals.length-1]-vals[0],avg:vals.reduce((a,b)=>a+b,0)/vals.length}}
-function buildMirror(){const out=[STAGE_MIRROR[stage]];const cand=[];Object.keys(MIRROR).forEach(i=>{const idx=picks[i];const alt=stage==='never'&&ALT_MIRROR[i]&&ALT_MIRROR[i][idx];const text=alt||MIRROR[i][idx];if(idx>=0&&text)cand.push({sev:idx,text})});cand.sort((a,b)=>b.sev-a.sev);cand.slice(0,3).forEach(c=>out.push(c.text));return out.slice(0,4)}
+function buildMirror(){const out=[STAGE_MIRROR[stage]].filter(Boolean);const cand=[];if(NURTURE){questions.forEach((q,i)=>{const idx=picks[i];if(q.mirror&&idx>=0&&q.mirror[idx])cand.push({sev:idx,text:q.mirror[idx]})});}else{Object.keys(MIRROR).forEach(i=>{const idx=picks[i];const alt=stage==='never'&&ALT_MIRROR[i]&&ALT_MIRROR[i][idx];const text=alt||MIRROR[i][idx];if(idx>=0&&text)cand.push({sev:idx,text})});}cand.sort((a,b)=>b.sev-a.sev);cand.slice(0,3).forEach(c=>out.push(c.text));return out.slice(0,4)}
 function renderResult(){
   const first=lead.name.split(/\s+/)[0];
   const r=ranking(),low=r.low,low2=r.low2,high=r.high;
@@ -822,6 +947,196 @@ function observeSections(){
 }
 /* ---------------- checkout ---------------- */
 function checkout(){const id=eventId('ic');fbq('track','InitiateCheckout',{content_name:'InitiateCheckout_Raiz_V2',currency:'BRL',value:97},{eventID:id});fetch('/api/capi/initiate-checkout',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:lead.phone,em:lead.email,fbp:lead.fbp,fbc:lead.fbc,external_id:lead.external,content_name:'InitiateCheckout_Raiz_V2',perfil:'raiz',source:'raiz-v2',lid:lead.id,event_id:id,event_source_url:location.href})}).catch(()=>{});const u=new URL('https://pay.cakto.com.br/ai223ee');u.searchParams.set('email',lead.email);u.searchParams.set('phone','+'+lead.phone);u.searchParams.set('name',lead.name);u.searchParams.set('sck',lead.id);location.href=u.toString()}
+
+/* ── runtime da camada 2 ─────────────────────────────────────────────────── */
+function trackN(nome, extra){ if(!NURTURE) return; if(fired('n_'+nome)) return;
+  try{ fbq('trackCustom',nome,Object.assign({source:'raiz_v2'},extra||{})) }catch(e){} }
+
+/* Segmentação fica na nossa telemetria, não na Meta. Perfil do quiz 1 e nome de
+   pilar são leitura psicológica//de saúde: o resto do funil já trata isso como
+   sensível (ver /api/capi) e a Meta recebe só o que é comercial. */
+function segmentoInterno(){
+  const r = typeof ranking==='function' && lead ? ranking() : null;
+  return {
+    previous_profile: perfilAnterior || null,
+    previous_profile_origem: perfilOrigem || null,
+    medication_context: stage || null,
+    lowest_pillar: r ? r.low : null,
+    second_lowest_pillar: r ? r.low2 : null,
+    highest_pillar: r ? r.high : null,
+  };
+}
+
+function heroNurture(){
+  const veioDoQuiz1 = !!(perfilAnterior || LID);
+  $('heroTitle').innerHTML = veioDoQuiz1
+    ? 'Você já descobriu o seu padrão. <em>Agora vamos olhar o que existe ao redor dele.</em>'
+    : 'Como está sua relação com a comida <em>hoje?</em>';
+  $('heroCopy').textContent = veioDoQuiz1
+    ? 'Em poucos minutos, o Radar Table mostra como diferentes áreas da sua relação com a comida parecem estar funcionando hoje, e onde pode valer a pena olhar com mais cuidado.'
+    : 'Responda algumas perguntas e veja em um Radar Table como diferentes áreas da sua relação com a comida parecem estar funcionando neste momento.';
+  $('start').textContent = veioDoQuiz1 ? 'Montar meu Radar Table →' : 'Montar meu Radar →';
+  $('heroFine').textContent = 'Uma segunda camada do seu mapeamento Table.';
+  const chips = document.querySelector('#intro .chips');
+  if (chips) chips.innerHTML = '<span class="chip">3 minutos</span><span class="chip">Sem julgamento</span><span class="chip">Seu Radar no fim</span>';
+}
+
+/* Perfil anterior: URL explícita → lid resolvido no servidor → pergunta. */
+async function resolverContexto(){
+  const porUrl = (QS.get('previous_profile')||'').toLowerCase();
+  if (PERFIL_LABEL[porUrl] || porUrl === 'nenhum'){ perfilAnterior = porUrl; perfilOrigem = 'url'; }
+  if (LID){
+    try{
+      const r = await fetch('/api/raiz-v2/contexto?lid='+encodeURIComponent(LID)).then(x=>x.json());
+      if (r && r.ok){
+        if (r.nome && r.email && r.whats) contexto = { nome:r.nome, email:r.email, whats:r.whats };
+        if (!perfilAnterior && r.perfil && PERFIL_DE_LETRA[r.perfil]){
+          perfilAnterior = PERFIL_DE_LETRA[r.perfil]; perfilOrigem = 'lid';
+        }
+      }
+    }catch(e){}
+  }
+  questions = Q_NURTURE.slice();
+  if (!perfilAnterior) questions.unshift(Q_PERFIL);
+  heroNurture();
+}
+
+/* Transição depois da pergunta de perfil: um respiro antes do bloco 1. */
+function mostrarTransicao(){
+  $('transTxt').textContent = PERFIL_TRANSICAO[perfilAnterior] || PERFIL_TRANSICAO.nenhum;
+  page('transicao');
+}
+
+/* Pula a captura quando o lid já entregou nome, e-mail e WhatsApp. */
+async function revelarComContexto(){
+  recompute();
+  const name = contexto.nome, email = contexto.email, phone = contexto.whats;
+  window.lead = { name, email, phone, id:eventId('lead'), external:await sha256(email), fbp:getCookie('_fbp'), fbc:getCookie('_fbc') };
+  fbq('init',PIXEL_V2,{em:email,ph:phone,fn:name.split(/\s+/)[0],external_id:lead.external});
+  fbq('track','Lead',{content_name:'quiz-lead-raiz-v2'},{eventID:lead.id});
+  fetch('/api/capi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_name:'Lead',content_name:'quiz-lead-raiz-v2',nome:name,email,whats:phone.slice(2),fbc:lead.fbc,fbp:lead.fbp,external_id:lead.external,lead_event_id:lead.id,event_source_url:location.href})}).catch(()=>{});
+  page('loading');
+  const steps=['Montando seu Radar Table…','Conectando as seis áreas…','Identificando os pontos que mais pedem atenção…'];
+  let i=0; const t=setInterval(()=>{$('loadingStep').textContent=steps[++i%steps.length]},700);
+  setTimeout(()=>{clearInterval(t);complete()},1900);
+}
+
+/* ── resultado da camada 2 ───────────────────────────────────────────────── */
+const OLHAR_TABLE = `
+  <section class="band band-paper" id="olharBand"><div>
+    <hr class="rule">
+    <p class="eyebrow">Como a Table olha para isso</p>
+    <h2 style="margin-top:12px">Comida é só uma parte da história.</h2>
+    <p class="lede">Na Table, a gente não começa perguntando apenas o que você deveria comer. Olhamos para o que acontece ao redor da comida: a sua relação com o corpo, a sua relação com a comida, os recursos biopsicossociais que a sua rotina oferece, o conhecimento alimentar que já é seu, a consciência e a presença na hora de comer e a adaptabilidade diante da vida real.</p>
+    <p class="lede">São essas seis áreas que o seu Radar acabou de medir. Elas não funcionam isoladas: quando uma está sobrecarregada, outra costuma compensar, e é isso que desenha o formato do seu mapa.</p>
+    <p class="lede" style="color:var(--pine)"><strong>É por isso que duas pessoas com a mesma meta podem precisar de caminhos completamente diferentes.</strong></p>
+  </div></section>`;
+
+const OFERTA_SESSAO = `
+  <section class="band band-cream" id="sessaoBand"><div>
+    <hr class="rule">
+    <p class="eyebrow">Se quiser ir uma camada mais fundo</p>
+    <h2 style="margin-top:12px">O Radar mostra os pontos. A Sessão Raiz ajuda a conectá-los.</h2>
+    <p class="lede">Em uma conversa individual e online, uma nutricionista comportamental da Table olha o seu Radar com você, escuta o que está acontecendo na sua rotina e ajuda a entender qual primeiro passo faz mais sentido.</p>
+    <p class="lede" id="sessaoPonte"></p>
+    <div class="comp hero-comp" style="margin-top:26px">
+      <p class="kicker">Sessão Raiz</p>
+      <h3>Uma conversa individual sobre o seu mapa.</h3>
+      <div class="comp-meta">
+        <span>Sessão individual e online</span>
+        <span>Nutricionista comportamental da Table</span>
+        <span>Leitura do seu Radar Table</span>
+        <span>Escuta da sua história e da sua rotina</span>
+        <span>Conexão entre os principais pontos do mapa</span>
+        <span class="meta-strong">Orientação sobre o próximo passo</span>
+      </div>
+      <div class="price-box" style="margin-top:24px">
+        <span class="pnum">R$ 67</span>
+        <p class="pnote">pagamento único · Pix ou cartão<br>agendamento pelo seu WhatsApp</p>
+      </div>
+      <button class="btn btn-primary btn-lg" id="ctaSessao" style="width:100%;margin-top:18px">Quero reservar minha Sessão Raiz →</button>
+      <p class="disclaimer">Vagas limitadas por semana. Se fizer sentido para você, a equipe pode apresentar um acompanhamento contínuo, sem obrigação.</p>
+    </div>
+    <p class="fine" style="margin-top:22px">Este mapeamento tem finalidade educativa e de reflexão. Não é instrumento diagnóstico e não substitui uma avaliação profissional individual.</p>
+  </div></section>`;
+
+const FAQ_SESSAO = [
+  ['O que exatamente acontece na Sessão Raiz?','É uma conversa individual e online com uma nutricionista comportamental da Table. Ela olha o seu Radar com você, escuta a sua rotina e a sua história e ajuda a entender qual primeiro passo faz mais sentido agora.'],
+  ['Isso é uma consulta de nutrição com plano alimentar?','Não. A Sessão Raiz não inclui prescrição de dieta nem plano alimentar. É uma conversa de escuta e direcionamento a partir do que o seu Radar mostrou.'],
+  ['Preciso ter feito o primeiro teste da Table?','Não. O Radar funciona sozinho. Se você fez o primeiro mapeamento, a nutricionista consegue conectar as duas leituras; se não fez, a conversa parte do Radar de hoje.'],
+  ['Como eu agendo depois de reservar?','Nossa equipe entra em contato pelo seu WhatsApp para marcar no horário que funcionar melhor para você. As vagas por semana são limitadas.'],
+  ['Isso substitui acompanhamento médico?','Não substitui. O trabalho da Table é comportamental e acontece em paralelo ao acompanhamento de saúde que você já faz. Nada aqui orienta iniciar, alterar ou interromper medicamentos.'],
+];
+
+function aplicarNurtureResultado(){
+  const r = ranking(), first = lead.name.split(/\s+/)[0];
+
+  /* O Radar, as notas, a interpretação e o espelhamento continuam iguais. */
+  $('greeting').innerHTML = `${first}, <em>este é o seu Radar Table.</em>`;
+  $('stageCopy').textContent = 'Seu padrão mostra uma parte da história. Este mapa ajuda a enxergar como outras áreas da sua relação com a comida aparecem hoje.';
+
+  /* Conexão entre as duas leituras, sem afirmar causalidade. */
+  if (perfilAnterior && perfilAnterior !== 'nenhum'){
+    const esperado = PERFIL_PILAR[perfilAnterior], nome = PERFIL_LABEL[perfilAnterior];
+    const bate = esperado === r.low || esperado === r.low2;
+    const txt = bate
+      ? `Você havia identificado o padrão ${nome}. No seu Radar de hoje, <strong>${lc(esperado)}</strong> também aparece entre as áreas que mais pedem atenção. Isso não significa diagnóstico: significa que as duas leituras estão apontando para uma região parecida da sua experiência.`
+      : `Você havia identificado o padrão ${nome}, mas hoje o seu Radar aponta <strong>${lc(r.low)}</strong> como o ponto mais sensível. Isso sugere que a dificuldade deste momento pode não estar onde você esperava, e sim no contexto em que tudo precisa funcionar.`;
+    $('interpBody').insertAdjacentHTML('beforeend', `<p style="border-top:1px solid var(--line);padding-top:16px;margin-top:4px">${txt}</p>`);
+  }
+
+  /* Contexto de medicação que só existe nesta camada. */
+  if (STAGE_EXTRA[stage]){
+    $('stageBridgeTitle').textContent = STAGE_EXTRA[stage].bridge.title;
+    $('stageBridge').innerHTML = STAGE_EXTRA[stage].bridge.body.map(p=>`<p class="lede" style="margin-top:0;margin-bottom:16px">${p}</p>`).join('');
+  }
+
+  /* Fora desta oferta: Protocolo Raiz, livro, stack de R$ 391, garantia de 7
+     dias e a VSL, que foi gravada para a oferta de R$ 97. */
+  ['compBand','journeyBand','priceBand','offerAnchor'].forEach(id=>{ const el=$(id); if(el) el.hidden = true; });
+  const vsl = $('vslSlot'); if (vsl){ vsl.hidden = true; vsl.innerHTML = ''; }
+
+  /* Entram no lugar. "Como a Table olha" segue os seis pilares, porque é a
+     mesma conversa. A oferta vai para onde a antiga estava: depois da ponte de
+     contexto e da Evelyn, nunca antes de construir valor. */
+  $('methodBand').insertAdjacentHTML('afterend', OLHAR_TABLE);
+  $('offerAnchor').insertAdjacentHTML('afterend', OFERTA_SESSAO);
+  $('sessaoPonte').textContent = PERFIL_PONTE[perfilAnterior || 'nenhum'];
+
+  /* FAQ desta oferta no lugar do FAQ do Protocolo Raiz. */
+  const faq = $('faq');
+  if (faq) faq.innerHTML = FAQ_SESSAO.map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('');
+
+  /* CTA final aponta para a mesma oferta. */
+  $('finalHeadline').textContent = `${first}, seu Radar já está pronto.`;
+  $('finalCopy').innerHTML = `O próximo passo é sentar com uma nutricionista comportamental da Table e olhar <strong>${lc(r.low)}</strong> com a sua história na frente.`;
+  const btn2 = $('checkout2'); if (btn2) btn2.textContent = 'Quero reservar minha Sessão Raiz →';
+  const fine = document.querySelector('.final-fine'); if (fine) fine.textContent = 'R$ 67 · pagamento único · agendamento pelo WhatsApp';
+
+  $('ctaSessao').onclick = checkoutSessao;
+  if (btn2) btn2.onclick = checkoutSessao;
+  const pc = $('proofCta'); if (pc){ pc.onclick = checkoutSessao; pc.textContent = 'Quero reservar minha Sessão Raiz →'; }
+
+  trackN('RadarResultViewed');
+  const alvo = $('sessaoBand');
+  if (alvo && 'IntersectionObserver' in window){
+    const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ trackN('SessaoRaizOfferViewed'); io.disconnect(); } }),{threshold:.25});
+    io.observe(alvo);
+  } else trackN('SessaoRaizOfferViewed');
+}
+
+function checkoutSessao(){
+  const id = eventId('ic');
+  fbq('track','InitiateCheckout',{content_name:'Sessão Raiz',currency:'BRL',value:PRECO_SESSAO},{eventID:id});
+  fetch('/api/capi/initiate-checkout',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(Object.assign({phone:lead.phone,em:lead.email,fbp:lead.fbp,fbc:lead.fbc,external_id:lead.external,
+      content_name:'Sessão Raiz',value:PRECO_SESSAO,perfil:'raiz',source:'raiz-v2-nurture',lid:lead.id,event_id:id,
+      event_source_url:location.href}, segmentoInterno()))}).catch(()=>{});
+  const u = new URL(CHECKOUT_SESSAO_RAIZ_URL);
+  u.searchParams.set('email',lead.email); u.searchParams.set('phone','+'+lead.phone);
+  u.searchParams.set('name',lead.name); u.searchParams.set('sck',lead.id);
+  location.href = u.toString();
+}
 /* ---------------- bindings ---------------- */
 $('start').onclick=start;
 $('back').onclick=()=>{if(current){current--;render()}else page('intro')};
@@ -831,6 +1146,14 @@ $('checkout2').onclick=checkout;
 $('proofCta').onclick=checkout;
 $('faq').addEventListener('toggle',e=>{if(e.target.open)track('FAQInteraction')},true);
 $('phone').oninput=e=>{let d=e.target.value.replace(/\D/g,'').slice(0,11);e.target.value=d.length>6?`(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`:d};
+$('transGo').onclick=()=>{page('quiz');render()};
+/* A camada 2 só libera o começo depois de resolver o perfil anterior: o
+   conjunto de perguntas muda conforme ele venha do lid ou seja perguntado. */
+if(NURTURE){
+  $('start').disabled=true;
+  resolverContexto().catch(()=>{questions=Q_NURTURE.slice();questions.unshift(Q_PERFIL);heroNurture()})
+    .finally(()=>{$('start').disabled=false});
+}
 </script>
 </body>
 </html>

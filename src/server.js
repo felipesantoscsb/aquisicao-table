@@ -1659,6 +1659,40 @@ async function enrichFromLid(lid, base = {}) {
   } catch { return base; }
 }
 
+// ─── Contexto do /raiz-v2 (camada 2 pós-quiz 1) ──────────────────────────────
+// O link do D+3 chega pelo WhatsApp como
+//   /raiz-v2?source=pr_nurture&lid=<lead_event_id do quiz 1>
+// Com o lid o servidor resolve nome, contato e o perfil do primeiro quiz, então
+// a pessoa não reescreve o que já entregou e nenhum dado pessoal viaja na URL.
+// Duas chaves que já existem: lead:<lid> (90d, gravada no Lead) e
+// quiz:perfil:<telefone> (180d, gravada no CompleteRegistration do quiz 1).
+// O telefone guardado no lead vem sem DDI; normalizePhone reconstrói a chave.
+app.get('/api/raiz-v2/contexto', async (req, res) => {
+  const lid = String(req.query.lid || '').trim();
+  if (!lid || lid.length > 80) return res.json({ ok: false });
+  try {
+    const raw = await redisGet(`lead:${lid}`);
+    if (!raw) return res.json({ ok: false });
+    const lead = JSON.parse(raw) || {};
+    const phone = lead.phone ? normalizePhone(lead.phone) : '';
+    let perfil = null;
+    if (phone) {
+      const rec = await redisGet(`quiz:perfil:${phone}`);
+      if (rec) perfil = (JSON.parse(rec) || {}).perfil || null;
+    }
+    res.json({
+      ok: true,
+      nome:   lead.nome  || null,
+      email:  lead.email || null,
+      whats:  phone || null,
+      perfil: perfil || null,   // E | R | S | A | null
+    });
+  } catch (e) {
+    console.warn('[raiz-v2/contexto]', e.message);
+    res.json({ ok: false });
+  }
+});
+
 // ─── CAPI Dossiê: DossieView ──────────────────────────────────────────────────
 
 app.post('/api/capi/dossie-view', async (req, res) => {
