@@ -1,9 +1,14 @@
-# /raiz-v2 — duas camadas no mesmo arquivo
+# Radar Table — duas camadas no mesmo arquivo
 
-`public/quiz-raiz-v2.html` serve dois funis. Qual deles roda é decidido por um
-único parâmetro na URL.
+`public/quiz-raiz-v2.html` serve dois funis, em duas rotas. A página decide qual
+camada roda pelo `location.pathname`.
 
-| | `/raiz-v2` | `/raiz-v2?source=pr_nurture` |
+Rota em vez de query param porque link encaminhado perde o `?source=`, e cair no
+funil de canetas é o pior destino possível para quem nunca usou e acabou de
+receber uma mensagem sobre "a segunda camada do seu mapeamento".
+`?source=pr_nurture` continua funcionando como alias, para links já enviados.
+
+| | `/raiz-v2` | `/raiz-radar` |
 |---|---|---|
 | Quem chega | tráfego pago frio, criativo de canetas | quem fez o quiz 1 e não comprou, no D+3 pelo WhatsApp |
 | Abertura | "E quando a fome voltar?" | "Você já descobriu o seu padrão…" |
@@ -43,8 +48,13 @@ Resolvido pelo `lid`, a captura de nome/e-mail/WhatsApp é **pulada** e o link
 não carrega dado pessoal nenhum. Link do D+3:
 
 ```
-https://www.evelynliu.com.br/raiz-v2?source=pr_nurture&lid=<lead_event_id>
+https://www.evelynliu.com.br/raiz-radar?lid=<lead_event_id>
 ```
+
+Sem o `lid` o link funciona igual: a pessoa só responde o perfil na primeira
+tela. Vale para disparar na base antiga. Lembrando que `lead:<lid>` vive 90 dias
+e `quiz:perfil:<telefone>` vive 180: passado isso, o `lid` não resolve mais e a
+pessoa cai na pergunta de perfil, que é o comportamento correto.
 
 O perfil anterior **nunca** entra no scoring. Ele só escreve copy: a transição
 antes do bloco 1, a frase que conecta as duas leituras no resultado e a ponte da

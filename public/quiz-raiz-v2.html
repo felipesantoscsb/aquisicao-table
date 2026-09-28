@@ -715,7 +715,8 @@ const STAGE_BRIDGE={
    link enviado no D+3 para quem já fez o quiz 1 e não comprou o Protocolo Raiz.
    ═══════════════════════════════════════════════════════════════════════════ */
 const QS = new URLSearchParams(location.search);
-const NURTURE = (QS.get('source') || '').toLowerCase() === 'pr_nurture';
+const NURTURE = location.pathname.replace(/\/+$/,'').toLowerCase() === '/raiz-radar'
+  || (QS.get('source') || '').toLowerCase() === 'pr_nurture';   /* alias: links já enviados */
 const LID = (QS.get('lid') || '').trim();
 const CHECKOUT_SESSAO_RAIZ_URL = 'https://pay.cakto.com.br/ak63ytv_1149729';
 const PRECO_SESSAO = 67;

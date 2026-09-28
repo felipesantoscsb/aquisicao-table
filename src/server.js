@@ -142,6 +142,11 @@ app.get('/raiz',       (req, res) => res.sendFile(path.join(pub,   'quiz-cakto.h
 // Nova avenida GLP-1: Radar Table com as seis dimensões oficiais do método.
 // Mantém Pixel/CAPI do /raiz, mas não aciona SDR, dossiê ou sequência de WhatsApp.
 app.get('/raiz-v2',    (req, res) => res.sendFile(path.join(pub,   'quiz-raiz-v2.html')));
+// Mesmo arquivo, outra camada. /raiz-v2 é o funil pago de canetas; /raiz-radar é
+// a segunda camada, enviada no D+3 para quem já fez o quiz 1. A página decide
+// pelo caminho. Rota em vez de ?source= porque link encaminhado perde query, e
+// cair no funil de canetas seria o pior destino possível para quem nunca usou.
+app.get('/raiz-radar', (req, res) => res.sendFile(path.join(pub,   'quiz-raiz-v2.html')));
 app.get('/quiz',       (req, res) => res.redirect(301, '/raiz' + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '')));
 // Teste A/B da migração de pagamento: mesmo quiz, checkout CAKTO (cópia isolada).
 // /raiz continua no Ticto; o tráfego que o Felipe direcionar pra cá vai pro Cakto.

@@ -106,8 +106,14 @@ test('ehRaizV2 reconhece o funil por slug, source e content_name', () => {
 // O funil pago de canetas continua sendo o /raiz-v2 puro. Tudo abaixo só liga
 // com source=pr_nurture, que é o link do D+3 para quem já fez o quiz 1.
 
-test('camada 2 fica atrás do parâmetro e não toca o funil pago', () => {
-  assert.match(html, /const NURTURE = \(QS\.get\('source'\) \|\| ''\)\.toLowerCase\(\) === 'pr_nurture'/);
+test('camada 2 tem rota própria e não toca o funil pago', () => {
+  assert.match(server, /app\.get\('\/raiz-radar'/);
+  assert.match(server, /app\.get\('\/raiz-v2'/);
+  // as duas rotas servem o mesmo arquivo
+  assert.equal((server.match(/'quiz-raiz-v2\.html'/g) || []).length, 2);
+  assert.match(html, /location\.pathname\.replace\(\/\\\/\+\$\/,''\)\.toLowerCase\(\) === '\/raiz-radar'/);
+  // ?source=pr_nurture segue valendo para links já enviados
+  assert.match(html, /\(QS\.get\('source'\) \|\| ''\)\.toLowerCase\(\) === 'pr_nurture'/);
   // hero, oferta e perguntas antigas seguem no arquivo, intactos
   assert.match(html, /<h1 id="heroTitle">E quando a fome <em>voltar\?<\/em><\/h1>/);
   assert.match(html, /https:\/\/pay\.cakto\.com\.br\/ai223ee/);
