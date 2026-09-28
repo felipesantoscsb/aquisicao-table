@@ -163,4 +163,28 @@ async function backfillOptOuts(getRedis) {
   }
 }
 
-module.exports = { notificarCompra, enviarLeadV2, enviarOptOut, drenarRetry, backfillCompras, backfillOptOuts, purchasePayload };
+/**
+ * Compra encerra a cadência pós-quiz do sdr-table (D+1/D+3/D+5). A Ticto
+ * avisa o sdr direto pelo webhook dela; a Cakto não, então quem compra por lá
+ * seguia recebendo "ainda dá tempo" depois de pagar.
+ */
+async function cancelarCadenciaQuiz(phone) {
+  const url = process.env.SDR_QUIZ_CADENCE_CANCEL_URL
+    || 'https://jornada.tableclinic.com.br/webhook/quiz-cadence/cancel';
+  const secret = process.env.SDR_WEBHOOK_SECRET || process.env.WEBHOOK_SECRET
+    || process.env.INTERNAL_WEBHOOK_SECRET;
+  if (!phone || !secret) return;
+  try {
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-webhook-secret': secret },
+      body: JSON.stringify({ phone, reason: 'purchase' }),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!r.ok) console.error('[hubSync] cancelar cadência do quiz:', r.status);
+  } catch (e) {
+    console.error('[hubSync] cancelar cadência do quiz:', e.message);
+  }
+}
+
+module.exports = { notificarCompra, enviarLeadV2, enviarOptOut, drenarRetry, backfillCompras, backfillOptOuts, purchasePayload, cancelarCadenciaQuiz };

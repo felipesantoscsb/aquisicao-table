@@ -3113,6 +3113,8 @@ app.post('/api/webhooks/cakto', async (req, res) => {
       // Comprou → cancela a recuperação de checkout pendente desse telefone
       // (senão o sweep manda o WhatsApp de recuperação pra quem já pagou).
       if (record.phone) cancelCheckoutRecovery(record.phone, 'compra Cakto').catch(() => {});
+      // ...e também a cadência pós-quiz no sdr-table (D+1/D+3/D+5).
+      if (record.phone) hubSync.cancelarCadenciaQuiz(record.phone).catch(() => {});
 
       // Purchase CAPI (A/B Cakto): sem pixel na Cakto, a compra vai ao Meta SÓ
       // por aqui. event_id = id da transação → o Meta deduplica retries do
