@@ -71,7 +71,7 @@ section{padding:clamp(46px,10vw,78px) 0}
 /* quem conduz */
 .who{background:var(--white);border:1px solid var(--line);border-radius:6px;padding:clamp(22px,5vw,30px);margin-top:26px}
 .who-row{display:grid;grid-template-columns:62px 1fr;gap:16px;align-items:center}
-.who-row img{width:62px;height:62px;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid var(--moss-lt)}
+.who-mark{width:62px;height:62px;border-radius:50%;background:var(--moss-pale);border:1px solid var(--moss-lt);display:grid;place-items:center;font-family:'Cormorant Garamond',serif;font-size:27px;color:var(--moss);letter-spacing:.06em}
 .who-name{font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--moss)}
 .who-role{font-size:13px;color:var(--muted);line-height:1.5;margin-top:3px}
 .who p{font-size:15.5px;color:#544a42;margin-top:18px;line-height:1.7}
@@ -131,9 +131,9 @@ section{padding:clamp(46px,10vw,78px) 0}
   <p class="eyebrow">O primeiro passo da metodologia Table</p>
   <h1>Talvez você não esteja procurando mais um curso. <em>Talvez você só queira conversar.</em></h1>
   <p>A Sessão Raiz é uma conversa individual com uma nutricionista comportamental da Table para aprofundar sua relação com a comida, organizar seus principais desafios e entender por onde começar.</p>
-  <button class="btn" data-cta="hero">Quero reservar minha Sessão Raiz</button>
+  <button class="btn" data-ver-oferta>Quero reservar minha Sessão Raiz</button>
   <p class="micro">Sessão individual online · <b>R$ 67</b>
-    <span class="credit-inline">Se depois você decidir iniciar o Protocolo Raiz, esse valor se transforma em <b style="color:#E8CFA2">R$ 97 de crédito</b>.</span>
+    <span class="credit-inline">Se depois você decidir seguir com um acompanhamento da Table, esse valor se transforma em <b style="color:#E8CFA2">R$ 97 de crédito</b>.</span>
   </p>
 </div></header>
 
@@ -173,16 +173,17 @@ section{padding:clamp(46px,10vw,78px) 0}
 <section class="band-warm"><div class="wrap">
   <hr class="rule">
   <h2>Quem fará a sua sessão</h2>
-  <p class="lede">A Sessão Raiz é conduzida por uma nutricionista comportamental da equipe Table, seguindo o mesmo método desenvolvido pela Evelyn Liu.</p>
+  <p class="lede">A Sessão Raiz é conduzida por uma das nutricionistas comportamentais da equipe Table, seguindo o mesmo método desenvolvido pela Evelyn Liu.</p>
   <div class="who">
     <div class="who-row">
-      <img src="/images/Vestido Verde Olhar amistoso.jpg" alt="Evelyn Liu" loading="lazy">
+      <div class="who-mark" aria-hidden="true">T</div>
       <div>
-        <p class="who-name">Evelyn Liu</p>
-        <p class="who-role">Nutricionista comportamental · Fundadora da Table · Autora de “Gordura Não Existe”</p>
+        <p class="who-name">Equipe Table</p>
+        <p class="who-role">Nutricionistas comportamentais · método desenvolvido por Evelyn Liu</p>
       </div>
     </div>
-    <p>Nutrição comportamental não começa pelo que você deveria comer. Começa pelo que acontece antes e depois de comer: o que dispara, o que alivia, o que se repete. É essa escuta que a equipe leva para a sua sessão.</p>
+    <p>Nutrição comportamental não começa pelo que você deveria comer. Começa pelo que acontece antes e depois de comer: o que dispara, o que alivia, o que se repete.</p>
+    <p>Todas as nutricionistas da equipe trabalham dentro desse método. Quem vai atender você depende da agenda da semana, e a escuta é a mesma.</p>
   </div>
 </div></section>
 
@@ -191,7 +192,7 @@ section{padding:clamp(46px,10vw,78px) 0}
   <div class="credit">
     <span class="tag">Crédito garantido</span>
     <h2>Seu investimento continua com você.</h2>
-    <p>Se depois da Sessão Raiz você decidir iniciar o Protocolo Raiz, os R$ 67 investidos hoje são convertidos em R$ 97 de crédito na sua entrada.</p>
+    <p>Se depois da Sessão Raiz você decidir seguir com um acompanhamento contínuo da Table, os R$ 67 investidos hoje são convertidos em R$ 97 de crédito na sua entrada.</p>
     <p>Você começa pelo passo mais simples e mantém todas as possibilidades abertas.</p>
     <div class="credit-math">
       <div><span>Você investe hoje</span><b>R$ 67</b></div>
@@ -202,7 +203,7 @@ section{padding:clamp(46px,10vw,78px) 0}
 </div></section>
 
 <!-- 7 · OFERTA -->
-<section class="band-warm"><div class="wrap">
+<section class="band-warm" id="oferta"><div class="wrap">
   <hr class="rule">
   <h2>Sessão Raiz</h2>
   <div class="offer">
@@ -213,7 +214,7 @@ section{padding:clamp(46px,10vw,78px) 0}
         <li>Aproximadamente 40 minutos</li>
         <li>Nutricionista comportamental da equipe Table</li>
         <li>Conversa focada no seu momento atual</li>
-        <li class="hl">Crédito de R$ 97 caso você continue pelo Protocolo Raiz</li>
+        <li class="hl">Crédito de R$ 97 caso você siga com um acompanhamento da Table</li>
       </ul>
       <div class="price"><b>R$ 67</b><span>pagamento único · Pix ou cartão</span></div>
       <button class="btn" data-cta="oferta">Reservar minha Sessão Raiz</button>
@@ -230,7 +231,7 @@ section{padding:clamp(46px,10vw,78px) 0}
     <details><summary>É uma consulta nutricional?</summary><p>Não. A Sessão Raiz é uma conversa individual guiada por uma nutricionista comportamental da Table. Não há avaliação física, cálculo de calorias nem prescrição. O foco é entender a sua relação com a comida e organizar o seu momento.</p></details>
     <details><summary>Vou receber um plano alimentar?</summary><p>Não. A sessão não inclui plano alimentar nem prescrição de dieta. Ela existe para trazer clareza sobre o que está acontecendo e sobre qual caminho faz sentido para você.</p></details>
     <details><summary>Preciso contratar um acompanhamento depois?</summary><p>Não. A Sessão Raiz é completa em si mesma. Se fizer sentido para você, a nutricionista pode apresentar os próximos passos da Table, mas nada disso é necessário para aproveitar a conversa.</p></details>
-    <details class="key" open><summary>E se depois eu quiser entrar no Protocolo Raiz?</summary><p><b>Os R$ 67 investidos hoje são convertidos em R$ 97 de crédito no Protocolo Raiz.</b> Você começa pelo passo mais simples sem abrir mão de nada.</p></details>
+    <details class="key" open><summary>E se depois eu quiser seguir com um acompanhamento da Table?</summary><p><b>Os R$ 67 investidos hoje são convertidos em R$ 97 de crédito na entrada do acompanhamento.</b> Você começa pelo passo mais simples sem abrir mão de nada.</p></details>
     <details><summary>Como eu agendo?</summary><p>Depois da reserva, nossa equipe entra em contato pelo seu WhatsApp para marcar no horário que funcionar melhor para você.</p></details>
     <details><summary>Isso substitui acompanhamento médico?</summary><p>Não substitui. O trabalho da Table é comportamental e soma ao acompanhamento de saúde que você já faz.</p></details>
   </div>
@@ -241,7 +242,7 @@ section{padding:clamp(46px,10vw,78px) 0}
   <h2>Se hoje você precisa de uma conversa antes de qualquer outra coisa, comece por aqui.</h2>
   <button class="btn" data-cta="final">Quero reservar minha Sessão Raiz</button>
   <p class="micro"><b>R$ 67</b> · sessão individual online
-    <span class="credit-inline">Crédito de <b style="color:#E8CFA2">R$ 97</b> caso você continue pelo Protocolo Raiz.</span>
+    <span class="credit-inline">Crédito de <b style="color:#E8CFA2">R$ 97</b> caso você siga com um acompanhamento da Table.</span>
   </p>
 </div></section>
 
@@ -284,6 +285,13 @@ function reservar(origem){
   location.href = u.toString();
 }
 document.querySelectorAll('[data-cta]').forEach(b => b.onclick = () => reservar(b.dataset.cta));
+/* O botão do topo ainda não é intenção de compra: leva para a oferta, onde
+   o preço e o que está incluído aparecem antes da decisão. Não dispara
+   InitiateCheckout, senão o evento perde o sentido. */
+document.querySelectorAll('[data-ver-oferta]').forEach(b => b.onclick = () => {
+  document.getElementById('oferta').scrollIntoView({behavior:'smooth',block:'start'});
+  try{ fbq('trackCustom','SessaoRaizOfferViewed',{source:'sessao-raiz'}) }catch(e){}
+});
 </script>
 </body>
 </html>

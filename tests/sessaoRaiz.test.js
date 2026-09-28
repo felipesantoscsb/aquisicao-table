@@ -15,10 +15,33 @@ test('rota própria servindo a página curta', () => {
 test('oferta é a conversa, nunca o Protocolo Raiz', () => {
   assert.match(html, /const CHECKOUT_SESSAO_RAIZ_URL = 'https:\/\/pay\.cakto\.com\.br\/ak63ytv_1149729'/);
   assert.match(html, /R\$ 67/);
-  // o PR só aparece como destino do crédito, nunca como item entregue
   const incluso = html.slice(html.indexOf('<ul class="incl">'), html.indexOf('</ul>', html.indexOf('<ul class="incl">')));
   assert.doesNotMatch(incluso, /12 exercícios|aulas em vídeo|Gordura Não Existe/i);
-  assert.match(incluso, /Crédito de R\$ 97 caso você continue pelo Protocolo Raiz/);
+  assert.match(incluso, /Crédito de R\$ 97 caso você siga com um acompanhamento da Table/);
+});
+
+test('o crédito aponta para o acompanhamento, não para o Protocolo Raiz', () => {
+  // um crédito de R$ 97 num produto de R$ 97 zeraria a entrada do PR
+  assert.doesNotMatch(html, /Protocolo Raiz/);
+  assert.match(html, /acompanhamento contínuo da Table, os R\$ 67 investidos hoje são convertidos em R\$ 97 de crédito/);
+});
+
+test('a sessão é conduzida pela equipe, não pela Evelyn', () => {
+  const quem = html.slice(html.indexOf('<!-- 5 · QUEM CONDUZ -->'), html.indexOf('<!-- 6 · CRÉDITO -->'));
+  assert.match(quem, /uma das nutricionistas comportamentais da equipe Table/);
+  assert.match(quem, /Equipe Table/);
+  // a Evelyn só aparece como autora do método, sem foto que sugira atendimento
+  assert.doesNotMatch(quem, /<img/);
+  assert.match(quem, /método desenvolvido por Evelyn Liu/);
+});
+
+test('o botão do topo leva à oferta, não ao checkout', () => {
+  assert.match(html, /<button class="btn" data-ver-oferta>/);
+  assert.match(html, /id="oferta"/);
+  assert.match(html, /getElementById\('oferta'\)\.scrollIntoView/);
+  // e não dispara intenção de compra antes de mostrar o preço
+  const bloco = html.slice(html.indexOf('data-ver-oferta]'), html.length);
+  assert.doesNotMatch(bloco.slice(0, 420), /InitiateCheckout/);
 });
 
 test('o benefício é crédito, jamais desconto', () => {

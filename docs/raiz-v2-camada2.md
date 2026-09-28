@@ -118,16 +118,30 @@ valendo). Sem o lid a página funciona igual, só sem preenchimento.
 
 ## O crédito de R$ 97
 
-A página promete: R$ 67 hoje viram R$ 97 de crédito na entrada do Protocolo Raiz.
-Sempre "crédito", nunca "desconto".
+A página promete: R$ 67 hoje viram R$ 97 de crédito na entrada de um
+**acompanhamento contínuo da Table**. Sempre "crédito", nunca "desconto".
 
-**Duas coisas que não existem em código e dependem de operação:**
+O crédito aponta para o acompanhamento, não para o Protocolo Raiz. Isso é
+deliberado: o PR custa R$ 97 em todos os funis, e um crédito de R$ 97 zeraria a
+entrada dele — quem pagasse R$ 67 pela sessão levaria o PR de graça, saindo mais
+barato que o pacote de R$ 97 do /raiz-v2, que entrega PR + livro + sessão.
+Apontando para o acompanhamento, o crédito tira o risco de começar pequeno sem
+canibalizar nada. O Protocolo Raiz não é citado na página.
 
-1. **Não há automação.** Nenhum cupom, nenhuma regra no checkout, nenhum gatilho.
-   Hoje a conversão do crédito é manual, feita por quem atende. A palavra
-   "automaticamente" foi deixada de fora da página por isso.
-2. **O crédito cobre o Protocolo Raiz inteiro.** O PR custa R$ 97 em todos os
-   funis. Um crédito de R$ 97 zera a entrada: quem paga R$ 67 pela sessão leva o
-   PR sem pagar mais nada. Isso é mais barato do que o pacote de R$ 97 do
-   /raiz-v2, que entrega PR + livro + sessão. Decisão comercial consciente ou não,
-   está registrada aqui.
+**O que não existe em código e depende de operação:** não há automação. Nenhum
+cupom, nenhuma regra no checkout, nenhum gatilho. Hoje a conversão do crédito é
+manual, feita por quem atende — e é por isso que a palavra "automaticamente"
+ficou de fora da página.
+
+## Quem conduz a sessão
+
+Uma das nutricionistas comportamentais da equipe, não a Evelyn. Ela aparece só
+como autora do método. Não há foto das nutris no projeto, então a seção usa um
+monograma e diz explicitamente que quem atende depende da agenda da semana. Se
+um dia houver fotos, é aqui que entram.
+
+## O botão do topo
+
+Leva para a seção da oferta, não para o checkout: no topo a pessoa ainda não viu
+preço nem o que está incluído. Ele dispara `SessaoRaizOfferViewed`, nunca
+InitiateCheckout — senão o evento de intenção de compra perde o sentido.
