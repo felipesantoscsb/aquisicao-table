@@ -44,8 +44,31 @@ no evento Lead) dá nome, e-mail e telefone; `quiz:perfil:<telefone>` (180 dias,
 gravada no CompleteRegistration do quiz 1) dá a letra E/R/S/A. O telefone é
 guardado sem DDI e a chave do perfil tem DDI: `normalizePhone` reconstrói.
 
-Resolvido pelo `lid`, a captura de nome/e-mail/WhatsApp é **pulada** e o link
-não carrega dado pessoal nenhum. Link do D+3:
+## A camada 2 não captura nada
+
+Não existe formulário em `/raiz-radar`, em nenhum cenário. Quem chega ali já é
+lead nosso e veio de uma mensagem nossa: pedir nome, e-mail e WhatsApp de novo
+seria atrito puro, cobrando duas vezes pela mesma informação. O quiz vai da
+última pergunta direto para o Radar.
+
+O que o `lid` entregar é interpolado; o que faltar, a página simplesmente não
+menciona. Sem nome, o resultado abre em "Este é o seu Radar Table" em vez de
+"Fulana, este é…", e o checkout vai sem preenchimento.
+
+Consequências de medição, todas deliberadas:
+
+- **`Lead` só dispara quando existe contato.** Sem e-mail e telefone não há como
+  falar com a pessoa, e um Lead ali seria mentira que ainda por cima sujaria a
+  métrica. `CompleteRegistration` continua disparando sempre, com o que existir.
+- **`sck` do checkout é o `lid` do quiz 1** quando ele existe, e não um id novo.
+  Assim a compra volta a casar com quem a pessoa já era, em vez de nascer órfã.
+- Sem `lid`, a Meta recebe só `fbp`/`fbc`. EMQ menor, e não tem como ser
+  diferente: não há dado para enviar.
+
+O funil pago (`/raiz-v2`) **continua com a captura**, porque ali o lead é novo e
+o formulário é o único momento em que ele entra na base.
+
+Link do D+3:
 
 ```
 https://www.evelynliu.com.br/raiz-radar?lid=<lead_event_id>

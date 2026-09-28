@@ -840,12 +840,12 @@ function fired(name){if(fired[name])return true;fired[name]=1;return false}
 function track(name){if(fired(name))return;try{fbq('trackCustom',name,{funnel:'raiz-v2'})}catch(e){}}
 function start(){const id=eventId('qs');fbq('trackCustom','QuizStart',{funnel:'raiz-v2'},{eventID:id});fetch('/api/capi/quiz-start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_source_url:location.href})}).catch(()=>{});trackN('RadarStarted');page('quiz');render()}
 function render(){const q=questions[current];$('qtag').textContent=q.bloco||q.tag;$('question').textContent=q.text;const note=$('qnote');note.textContent=q.note||'';note.hidden=!q.note;$('counter').textContent=`${current+1}/${questions.length}`;$('ticks').innerHTML=questions.map((_,i)=>`<i class="${i<=current?'on':''}"></i>`).join('');$('back').style.visibility=current?'visible':'hidden';const card=$('qcard');card.classList.remove('qcard');void card.offsetWidth;card.classList.add('qcard');$('options').innerHTML='';q.options.forEach((o,i)=>{const b=document.createElement('button');b.className='option'+(picks[current]===i?' picked':'');const label=(!NURTURE&&stage==='never'&&ALT_OPTIONS[current]&&ALT_OPTIONS[current][i])||o[0];b.innerHTML=`<b>${String.fromCharCode(65+i)}</b><span>${label}</span>`;b.onclick=()=>{b.classList.add('picked');choose(o[1],i)};$('options').appendChild(b)})}
-function choose(value,index){const q=questions[current];answers[current]=value;picks[current]=index;if(q.stage)stage=value;if(q.perfil){perfilAnterior=value;perfilOrigem=perfilOrigem||'perguntado'}current++;if(current===4)fbq('trackCustom','QuizProgress',{step:4,funnel:'raiz-v2'});if(NURTURE&&current===Math.ceil(questions.length/2))trackN('RadarProgress',{step:current});if(q.perfil){mostrarTransicao();return}if(current>=questions.length){if(NURTURE&&contexto){revelarComContexto();return}page('capture');return}render()}
+function choose(value,index){const q=questions[current];answers[current]=value;picks[current]=index;if(q.stage)stage=value;if(q.perfil){perfilAnterior=value;perfilOrigem=perfilOrigem||'perguntado'}current++;if(current===4)fbq('trackCustom','QuizProgress',{step:4,funnel:'raiz-v2'});if(NURTURE&&current===Math.ceil(questions.length/2))trackN('RadarProgress',{step:current});if(q.perfil){mostrarTransicao();return}if(current>=questions.length){if(NURTURE){finalizarNurture();return}page('capture');return}render()}
 function recompute(){scores={body:0,food:0,resources:0,knowledge:0,awareness:0,adaptability:0};counts={body:0,food:0,resources:0,knowledge:0,awareness:0,adaptability:0};questions.forEach((q,i)=>{const v=answers[i];if(q.perfil)return;if(q.stage){stage=v;return}if(q.dim){scores[q.dim]+=Number(v);counts[q.dim]++}if(q.weights&&v)Object.entries(v).forEach(([k,n])=>{scores[k]+=n;counts[k]++})});Object.keys(scores).forEach(k=>scores[k]=Math.max(0,Math.min(5,Math.round((scores[k]/Math.max(1,counts[k]))*10)/10)))}
 function normalizePhone(v){let d=v.replace(/\D/g,'');if(d.length===10||d.length===11)d='55'+d;return d}
 async function sha256(v){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v.trim().toLowerCase()));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 async function reveal(){const name=$('name').value.trim(),email=$('email').value.trim(),phone=normalizePhone($('phone').value);$('nameError').textContent=name?'':'Informe seu nome.';$('emailError').textContent=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)?'':'Informe um e-mail válido.';$('phoneError').textContent=phone.length>=12?'':'Informe um WhatsApp válido com DDD.';if(!name||!email||phone.length<12)return;recompute();window.lead={name,email,phone,id:eventId('lead'),external:await sha256(email),fbp:getCookie('_fbp'),fbc:getCookie('_fbc')};fbq('init',PIXEL_V2,{em:email,ph:phone,fn:name.split(/\s+/)[0],external_id:lead.external});fbq('track','Lead',{content_name:'quiz-lead-raiz-v2'},{eventID:lead.id});fetch('/api/capi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_name:'Lead',content_name:'quiz-lead-raiz-v2',nome:name,email,whats:phone.slice(2),fbc:lead.fbc,fbp:lead.fbp,external_id:lead.external,lead_event_id:lead.id,event_source_url:location.href})}).catch(()=>{});page('loading');const steps=['Lendo seus seis pilares','Comparando forças e pontos de atenção','Preparando sua fotografia de hoje'];let i=0;const timer=setInterval(()=>{$('loadingStep').textContent=steps[++i%steps.length]},650);setTimeout(()=>{clearInterval(timer);complete()},1900)}
-function complete(){const id=eventId('complete');fbq('track','CompleteRegistration',{content_name:'quiz-completo-raiz-v2'},{eventID:id});fbq('trackCustom','QuizCompleted',{funnel:'raiz-v2'});fetch('/api/capi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_name:'CompleteRegistration',slug:'raiz-v2',nome:lead.name,email:lead.email,whats:lead.phone.slice(2),fbc:lead.fbc,fbp:lead.fbp,external_id:lead.external,lead_event_id:id,quiz_lead_event_id:lead.id,event_source_url:location.href})}).catch(()=>{});renderResult();if(NURTURE)aplicarNurtureResultado();page('result');fbq('trackCustom','OfferView',{funnel:'raiz-v2'});track('ResultView');trackN('RadarCompleted');observeSections()}
+function complete(){const id=eventId('complete');fbq('track','CompleteRegistration',{content_name:'quiz-completo-raiz-v2'},{eventID:id});fbq('trackCustom','QuizCompleted',{funnel:'raiz-v2'});fetch('/api/capi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_name:'CompleteRegistration',slug:'raiz-v2',nome:lead.name||null,email:lead.email||null,whats:lead.phone?lead.phone.slice(2):null,fbc:lead.fbc,fbp:lead.fbp,external_id:lead.external,lead_event_id:id,quiz_lead_event_id:lead.id,event_source_url:location.href})}).catch(()=>{});renderResult();if(NURTURE)aplicarNurtureResultado();page('result');fbq('trackCustom','OfferView',{funnel:'raiz-v2'});track('ResultView');trackN('RadarCompleted');observeSections()}
 /* ---------------- montagem do resultado ---------------- */
 function ranking(){const keys=Object.keys(DIMS).slice().sort((a,b)=>scores[a]-scores[b]||Object.keys(DIMS).indexOf(a)-Object.keys(DIMS).indexOf(b));const vals=keys.map(k=>scores[k]);return{low:keys[0],low2:keys[1],high:keys[keys.length-1],spread:vals[vals.length-1]-vals[0],avg:vals.reduce((a,b)=>a+b,0)/vals.length}}
 function buildMirror(){const out=[STAGE_MIRROR[stage]].filter(Boolean);const cand=[];if(NURTURE){questions.forEach((q,i)=>{const idx=picks[i];if(q.mirror&&idx>=0&&q.mirror[idx])cand.push({sev:idx,text:q.mirror[idx]})});}else{Object.keys(MIRROR).forEach(i=>{const idx=picks[i];const alt=stage==='never'&&ALT_MIRROR[i]&&ALT_MIRROR[i][idx];const text=alt||MIRROR[i][idx];if(idx>=0&&text)cand.push({sev:idx,text})});}cand.sort((a,b)=>b.sev-a.sev);cand.slice(0,3).forEach(c=>out.push(c.text));return out.slice(0,4)}
@@ -1009,13 +1009,28 @@ function mostrarTransicao(){
 }
 
 /* Pula a captura quando o lid já entregou nome, e-mail e WhatsApp. */
-async function revelarComContexto(){
+/* A camada 2 nunca pede dado de novo: quem chega aqui já é lead nosso e veio
+   de uma mensagem nossa. O que o lid entregar, a gente usa; o que faltar, a
+   página simplesmente não menciona. Zero formulário. */
+const temContato = () => !!(contexto && contexto.email && contexto.whats);
+const primeiroNome = () => (window.lead && lead.name ? lead.name.trim().split(/\s+/)[0] : '');
+
+async function finalizarNurture(){
   recompute();
-  const name = contexto.nome, email = contexto.email, phone = contexto.whats;
-  window.lead = { name, email, phone, id:eventId('lead'), external:await sha256(email), fbp:getCookie('_fbp'), fbc:getCookie('_fbc') };
-  fbq('init',PIXEL_V2,{em:email,ph:phone,fn:name.split(/\s+/)[0],external_id:lead.external});
-  fbq('track','Lead',{content_name:'quiz-lead-raiz-v2'},{eventID:lead.id});
-  fetch('/api/capi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_name:'Lead',content_name:'quiz-lead-raiz-v2',nome:name,email,whats:phone.slice(2),fbc:lead.fbc,fbp:lead.fbp,external_id:lead.external,lead_event_id:lead.id,event_source_url:location.href})}).catch(()=>{});
+  const name  = (contexto && contexto.nome)  || '';
+  const email = (contexto && contexto.email) || '';
+  const phone = (contexto && contexto.whats) || '';
+  window.lead = { name, email, phone, id:eventId('lead'),
+    external: email ? await sha256(email) : null,
+    fbp:getCookie('_fbp'), fbc:getCookie('_fbc') };
+
+  /* Lead só dispara quando existe contato de verdade. Sem dado nenhum, um Lead
+     seria mentira: não haveria como falar com essa pessoa. */
+  if (temContato()){
+    fbq('init',PIXEL_V2,{em:email,ph:phone,fn:name.split(/\s+/)[0],external_id:lead.external});
+    fbq('track','Lead',{content_name:'quiz-lead-raiz-v2'},{eventID:lead.id});
+    fetch('/api/capi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_name:'Lead',content_name:'quiz-lead-raiz-v2',nome:name,email,whats:phone.slice(2),fbc:lead.fbc,fbp:lead.fbp,external_id:lead.external,lead_event_id:lead.id,event_source_url:location.href})}).catch(()=>{});
+  }
   page('loading');
   const steps=['Montando seu Radar Table…','Conectando as seis áreas…','Identificando os pontos que mais pedem atenção…'];
   let i=0; const t=setInterval(()=>{$('loadingStep').textContent=steps[++i%steps.length]},700);
@@ -1070,10 +1085,12 @@ const FAQ_SESSAO = [
 ];
 
 function aplicarNurtureResultado(){
-  const r = ranking(), first = lead.name.split(/\s+/)[0];
+  const r = ranking(), first = primeiroNome();
 
   /* O Radar, as notas, a interpretação e o espelhamento continuam iguais. */
-  $('greeting').innerHTML = `${first}, <em>este é o seu Radar Table.</em>`;
+  $('greeting').innerHTML = first
+    ? `${first}, <em>este é o seu Radar Table.</em>`
+    : `<em>Este é o seu Radar Table.</em>`;
   $('stageCopy').textContent = 'Seu padrão mostra uma parte da história. Este mapa ajuda a enxergar como outras áreas da sua relação com a comida aparecem hoje.';
 
   /* Conexão entre as duas leituras, sem afirmar causalidade. */
@@ -1109,7 +1126,7 @@ function aplicarNurtureResultado(){
   if (faq) faq.innerHTML = FAQ_SESSAO.map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('');
 
   /* CTA final aponta para a mesma oferta. */
-  $('finalHeadline').textContent = `${first}, seu Radar já está pronto.`;
+  $('finalHeadline').textContent = first ? `${first}, seu Radar já está pronto.` : 'Seu Radar já está pronto.';
   $('finalCopy').innerHTML = `O próximo passo é sentar com uma nutricionista comportamental da Table e olhar <strong>${lc(r.low)}</strong> com a sua história na frente.`;
   const btn2 = $('checkout2'); if (btn2) btn2.textContent = 'Quero reservar minha Sessão Raiz →';
   const fine = document.querySelector('.final-fine'); if (fine) fine.textContent = 'R$ 67 · pagamento único · agendamento pelo WhatsApp';
@@ -1130,12 +1147,16 @@ function checkoutSessao(){
   const id = eventId('ic');
   fbq('track','InitiateCheckout',{content_name:'Sessão Raiz',currency:'BRL',value:PRECO_SESSAO},{eventID:id});
   fetch('/api/capi/initiate-checkout',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(Object.assign({phone:lead.phone,em:lead.email,fbp:lead.fbp,fbc:lead.fbc,external_id:lead.external,
-      content_name:'Sessão Raiz',value:PRECO_SESSAO,perfil:'raiz',source:'raiz-v2-nurture',lid:lead.id,event_id:id,
+    body:JSON.stringify(Object.assign({phone:lead.phone||null,em:lead.email||null,fbp:lead.fbp,fbc:lead.fbc,external_id:lead.external,
+      content_name:'Sessão Raiz',value:PRECO_SESSAO,perfil:'raiz',source:'raiz-v2-nurture',lid:LID||lead.id,event_id:id,
       event_source_url:location.href}, segmentoInterno()))}).catch(()=>{});
   const u = new URL(CHECKOUT_SESSAO_RAIZ_URL);
-  u.searchParams.set('email',lead.email); u.searchParams.set('phone','+'+lead.phone);
-  u.searchParams.set('name',lead.name); u.searchParams.set('sck',lead.id);
+  if (lead.email) u.searchParams.set('email', lead.email);
+  if (lead.phone) u.searchParams.set('phone', '+' + lead.phone);
+  if (lead.name)  u.searchParams.set('name', lead.name);
+  /* sck = o lead do quiz 1 quando ele existe, para a compra voltar a casar com
+     quem ela já era; senão, o id gerado agora. */
+  u.searchParams.set('sck', LID || lead.id);
   location.href = u.toString();
 }
 /* ---------------- bindings ---------------- */

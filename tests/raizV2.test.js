@@ -174,3 +174,29 @@ test('eventos novos da camada 2 existem e os antigos continuam', () => {
     assert.match(html, new RegExp(ev));
   }
 });
+
+test('camada 2 nunca pede dado de novo; o funil pago continua capturando', () => {
+  // o quiz da camada 2 vai direto do fim para o resultado
+  assert.match(html, /if\(current>=questions\.length\)\{if\(NURTURE\)\{finalizarNurture\(\);return\}page\('capture'\);return\}/);
+  // e nada no caminho depende de ter contato
+  assert.match(html, /const temContato = \(\) => !!\(contexto && contexto\.email && contexto\.whats\)/);
+  assert.match(html, /\$\('greeting'\)\.innerHTML = first/);
+  assert.match(html, /first \? `\$\{first\}, seu Radar já está pronto\.` : 'Seu Radar já está pronto\.'/);
+  // a captura continua existindo para o funil pago
+  assert.match(html, /<section class="page" id="capture">/);
+  assert.match(html, /\$\('reveal'\)\.onclick=reveal/);
+});
+
+test('Lead só dispara quando existe contato de verdade', () => {
+  const fim = html.slice(html.indexOf('async function finalizarNurture'), html.indexOf('/* ── resultado da camada 2'));
+  const lead = fim.indexOf("fbq('track','Lead'");
+  const guarda = fim.indexOf('if (temContato())');
+  assert.ok(guarda !== -1 && guarda < lead, 'o Lead precisa estar dentro da guarda de contato');
+  // CompleteRegistration segue sempre, com o que existir
+  assert.match(html, /whats:lead\.phone\?lead\.phone\.slice\(2\):null/);
+});
+
+test('compra volta a casar com o lead do quiz 1', () => {
+  assert.match(html, /u\.searchParams\.set\('sck', LID \|\| lead\.id\)/);
+  assert.match(html, /lid:LID\|\|lead\.id/);
+});
