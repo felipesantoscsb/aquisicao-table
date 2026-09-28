@@ -127,7 +127,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
 .option-btn.selected .option-letter,.option-btn:hover .option-letter{background:var(--moss);color:var(--white)}
 .option-check{background:var(--sand)!important;color:transparent!important}
 .option-btn.selected .option-check{background:var(--moss)!important;color:var(--white)!important}
-.q-nav{display:flex;justify-content:flex-end;margin-top:28px;min-height:44px}
+.q-nav{display:flex;justify-content:space-between;align-items:center;margin-top:28px;min-height:44px}
+.q-back{background:none;border:0;padding:6px 2px;font-size:12px;line-height:1;color:var(--muted);opacity:.5;cursor:pointer;font-family:inherit;transition:opacity .2s}
+.q-back:hover,.q-back:focus-visible{opacity:.85;text-decoration:underline}
 .btn-next{background:var(--brown);color:var(--white);font-family:'Jost',sans-serif;font-size:14px;font-weight:500;padding:13px 32px;border-radius:3px;border:none;cursor:pointer;transition:all .2s}
 .btn-next.enabled:hover{background:var(--moss);transform:translateY(-1px)}
 #page-loading{background:var(--moss);align-items:center;justify-content:center;padding:48px 24px;text-align:center}
@@ -408,42 +410,42 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
     <div class="gracinha-grid">
       <div class="gracinha-card">
         <div class="gracinha-photo">
-          <img src="/images/Juliana Moreno.png" alt="Juliana com sua doação de alimentos"/>
+          <img src="/images/Juliana Moreno.jpg" alt="Juliana com sua doação de alimentos"/ loading="lazy"/>
           <span class="gracinha-kg-tag">Juliana</span>
         </div>
         <div class="gracinha-body"><p class="gracinha-quote">"Depois de 12 anos tentando dietas, foi a primeira vez que me senti em paz com minhas escolhas."</p></div>
       </div>
       <div class="gracinha-card">
         <div class="gracinha-photo">
-          <img src="/images/Adriana.png" alt="Adriana com sua doação de alimentos"/>
+          <img src="/images/Adriana.jpg" alt="Adriana com sua doação de alimentos"/ loading="lazy"/>
           <span class="gracinha-kg-tag">Adriana</span>
         </div>
         <div class="gracinha-body"><p class="gracinha-quote">"Em 6 semanas entendi o que 3 nutricionistas não conseguiram me explicar: não era falta de força de vontade."</p></div>
       </div>
       <div class="gracinha-card">
         <div class="gracinha-photo">
-          <img src="/images/Iracema.png" alt="Iracema com sua doação de alimentos"/>
+          <img src="/images/Iracema.jpg" alt="Iracema com sua doação de alimentos"/ loading="lazy"/>
           <span class="gracinha-kg-tag">Iracema</span>
         </div>
         <div class="gracinha-body"><p class="gracinha-quote">"Aprendi a me ouvir de um jeito que nunca tinha conseguido antes."</p></div>
       </div>
       <div class="gracinha-card">
         <div class="gracinha-photo">
-          <img src="/images/Gracinha.png" alt="Gracinha com sua doação de alimentos"/>
+          <img src="/images/Gracinha.jpg" alt="Gracinha com sua doação de alimentos"/ loading="lazy"/>
           <span class="gracinha-kg-tag">Gracinha</span>
         </div>
         <div class="gracinha-body"><p class="gracinha-quote">"Aprendi a me ouvir antes de abrir a geladeira."</p></div>
       </div>
       <div class="gracinha-card">
         <div class="gracinha-photo">
-          <img src="/images/Cris.png" alt="Cris com sua doação de alimentos"/>
+          <img src="/images/Cris.jpg" alt="Cris com sua doação de alimentos"/ loading="lazy"/>
           <span class="gracinha-kg-tag">Cris</span>
         </div>
         <div class="gracinha-body"><p class="gracinha-quote">"Finalmente me sinto em equilíbrio com o meu corpo."</p></div>
       </div>
       <div class="gracinha-card">
         <div class="gracinha-photo">
-          <img src="/images/Liliane.png" alt="Liliane com sua doação de alimentos"/>
+          <img src="/images/Liliane.jpg" alt="Liliane com sua doação de alimentos"/ loading="lazy"/>
           <span class="gracinha-kg-tag">Liliane</span>
         </div>
         <div class="gracinha-body"><p class="gracinha-quote">"Nunca pensei que ia me sentir assim de novo."</p></div>
@@ -456,7 +458,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
     <div class="author-card">
       <p class="author-eyebrow">Quem desenvolveu este método</p>
       <div class="author-row">
-        <img src="/images/Vestido Verde Olhar amistoso.jpg" alt="Evelyn Liu" style="width:60px;height:60px;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid var(--moss);flex-shrink:0"/>
+        <img src="/images/Vestido Verde Olhar amistoso.jpg" alt="Evelyn Liu" style="width:60px;height:60px;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid var(--moss);flex-shrink:0"/ loading="lazy"/>
         <div>
           <p class="author-name">Evelyn Liu</p>
           <p class="author-title-sm">Nutricionista comportamental · Fundadora da Table · Autora · Palestrante</p>
@@ -489,7 +491,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
   </div>
   <div class="book-strip" style="padding-top:0">
     <div class="book-card">
-      <img src="/images/Mockup 1.png" alt="Gordura Não Existe — Evelyn Liu" style="width:52px;height:52px;object-fit:contain;flex-shrink:0"/>
+      <img src="/images/Mockup 1.png" alt="Gordura Não Existe — Evelyn Liu" style="width:52px;height:52px;object-fit:contain;flex-shrink:0"/ loading="lazy"/>
       <div>
         <p class="book-label">Incluído no Protocolo Raiz</p>
         <p class="book-title">Gordura Não Existe: O que Existe é Dor</p>
@@ -923,6 +925,14 @@ function clearFieldError(fieldId){
   if(errEl) errEl.textContent = '';
 }
 
+// No celular o teclado oferece "Ir" e no desktop o Enter e' o reflexo natural.
+// Sem isto a pessoa precisa fechar o teclado, achar o botao e tocar.
+['user-name','user-email','user-phone'].forEach(function(id){
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' && e.target && e.target.id === id){ e.preventDefault(); submitCapture(); }
+  });
+});
+
 async function submitCapture(){
   const name = document.getElementById('user-name').value.trim();
   const email = document.getElementById('user-email').value.trim();
@@ -1003,7 +1013,7 @@ function renderQuestion(){
     });
     // Botão confirmar para última pergunta
     const nav = document.getElementById('q-nav');
-    nav.innerHTML = `<button class="btn-next enabled" onclick="finishQualification()">Ver meu resultado →</button>`;
+    nav.innerHTML = backHtml() + `<button class="btn-next enabled" onclick="finishQualification()">Ver meu resultado →</button>`;
   } else {
     const letters = ['A','B','C','D'];
     q.options.forEach((opt,i)=>{
@@ -1015,11 +1025,28 @@ function renderQuestion(){
       list.appendChild(btn);
     });
     const nav = document.getElementById('q-nav');
-    nav.innerHTML = ''; // sem botão nas perguntas normais
+    nav.innerHTML = backHtml(); // só o voltar discreto nas perguntas normais
   }
 
   const card = document.getElementById('question-card');
   card.style.animation='none';card.offsetHeight;card.style.animation='fadeUp .4s ease';
+}
+
+// Voltar uma pergunta. Desfaz o ponto do perfil junto, senao um toque errado
+// corrigido continuaria contando para o E/R/S/A e entregaria o pitch errado.
+function backHtml(){
+  return current > 0
+    ? '<button type="button" class="q-back" onclick="goBack()">\u2190 voltar</button>'
+    : '';
+}
+function goBack(){
+  if(current === 0) return;
+  current--;
+  const last = quizAnswers.pop();
+  if(last && scores[last.tipo] > 0) scores[last.tipo]--;
+  selectedQual.clear();
+  saveQuizState();
+  renderQuestion();
 }
 
 function selectAndAdvance(type, btn){

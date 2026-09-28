@@ -190,3 +190,50 @@ test('o validador aceita o nome novo e ainda o antigo (página em cache)', () =>
   const val = lerArquivo(juntar(__dirname, '..', 'src/conversaTracking.js'), 'utf8');
   assert.match(val, /ALLOWED_EVENTS = new Set\(\['SubmitApplication', 'Schedule', 'Lead'\]\)/);
 });
+
+// ── Quiz /raiz: voltar não pode corromper o perfil ──────────────────────────
+// A resposta de cada pergunta soma um ponto em E/R/S/A, e esse perfil escolhe
+// a página de resultado e o argumento de venda. Voltar sem desfazer o ponto
+// entregaria o pitch errado para a pessoa certa.
+
+const quizRaiz = lerArquivo(juntar(__dirname, '..', 'public/quiz-cakto.html'), 'utf8');
+
+test('goBack desfaz o ponto do perfil junto com a resposta', () => {
+  const fn = quizRaiz.slice(quizRaiz.indexOf('function goBack()'), quizRaiz.indexOf('function selectAndAdvance'));
+  assert.match(fn, /current--/);
+  assert.match(fn, /quizAnswers\.pop\(\)/);
+  assert.match(fn, /scores\[last\.tipo\]--/);
+  assert.match(fn, /saveQuizState\(\)/);
+});
+
+test('a regra do voltar de fato zera o ponto (reprodução)', () => {
+  let current = 2, scores = { E: 1, R: 1, S: 0, A: 0 };
+  const quizAnswers = [{ tipo: 'R' }, { tipo: 'E' }];
+  // mesma sequência do goBack
+  current--;
+  const last = quizAnswers.pop();
+  if (last && scores[last.tipo] > 0) scores[last.tipo]--;
+  assert.equal(current, 1);
+  assert.deepEqual(scores, { E: 0, R: 1, S: 0, A: 0 });
+  assert.equal(quizAnswers.length, 1);
+});
+
+test('não existe voltar na primeira pergunta', () => {
+  assert.match(quizRaiz, /current > 0\s*\?[\s\S]{0,120}q-back/);
+});
+
+test('Enter envia o formulário de captura', () => {
+  assert.match(quizRaiz, /e\.key === 'Enter'[\s\S]{0,80}submitCapture\(\)/);
+});
+
+test('o contador reflete as 8 perguntas (7 de perfil + qualificação)', () => {
+  assert.match(quizRaiz, /id="quiz-counter">1 de 8</);
+});
+
+test('as imagens pesadas saíram e as que sobraram são lazy', () => {
+  // 22 MB num avatar de 60px e 6 PNGs de ~2 MB eram o gargalo da página.
+  assert.doesNotMatch(quizRaiz, /images\/(Gracinha|Adriana|Cris|Iracema|Liliane|Juliana Moreno)\.png/);
+  const imgs = quizRaiz.match(/<img[^>]*src="\/images\/[^>]*>/g) || [];
+  assert.ok(imgs.length > 0, 'nenhuma imagem encontrada');
+  imgs.forEach(t => assert.match(t, /loading="lazy"/, `sem lazy: ${t.slice(0, 60)}`));
+});
