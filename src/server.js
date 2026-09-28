@@ -147,6 +147,9 @@ app.get('/raiz-v2',    (req, res) => res.sendFile(path.join(pub,   'quiz-raiz-v2
 // pelo caminho. Rota em vez de ?source= porque link encaminhado perde query, e
 // cair no funil de canetas seria o pior destino possível para quem nunca usou.
 app.get('/raiz-radar', (req, res) => res.sendFile(path.join(pub,   'quiz-raiz-v2.html')));
+// Porta de entrada barata do método, enviada no D+1 depois do quiz 1 para quem
+// não comprou o Protocolo Raiz. Página curta, sem quiz: vende só a conversa.
+app.get('/sessao-raiz', (req, res) => res.sendFile(path.join(pub,   'sessao-raiz.html')));
 app.get('/quiz',       (req, res) => res.redirect(301, '/raiz' + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '')));
 // Teste A/B da migração de pagamento: mesmo quiz, checkout CAKTO (cópia isolada).
 // /raiz continua no Ticto; o tráfego que o Felipe direcionar pra cá vai pro Cakto.
@@ -1664,7 +1667,7 @@ async function enrichFromLid(lid, base = {}) {
   } catch { return base; }
 }
 
-// ─── Contexto do /raiz-v2 (camada 2 pós-quiz 1) ──────────────────────────────
+// ─── Contexto de um lead do quiz 1 ──────────────────────────────────────────
 // O link do D+3 chega pelo WhatsApp como
 //   /raiz-v2?source=pr_nurture&lid=<lead_event_id do quiz 1>
 // Com o lid o servidor resolve nome, contato e o perfil do primeiro quiz, então
@@ -1672,7 +1675,9 @@ async function enrichFromLid(lid, base = {}) {
 // Duas chaves que já existem: lead:<lid> (90d, gravada no Lead) e
 // quiz:perfil:<telefone> (180d, gravada no CompleteRegistration do quiz 1).
 // O telefone guardado no lead vem sem DDI; normalizePhone reconstrói a chave.
-app.get('/api/raiz-v2/contexto', async (req, res) => {
+// Nome neutro: o /sessao-raiz também usa. O caminho antigo continua valendo
+// para não quebrar nada que já esteja no ar.
+app.get(['/api/lead-contexto', '/api/raiz-v2/contexto'], async (req, res) => {
   const lid = String(req.query.lid || '').trim();
   if (!lid || lid.length > 80) return res.json({ ok: false });
   try {

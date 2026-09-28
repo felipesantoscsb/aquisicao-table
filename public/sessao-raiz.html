@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sessão Raiz | Table</title>
+<meta name="description" content="Uma conversa individual com uma nutricionista comportamental da Table para entender sua relação com a comida e por onde começar.">
+<meta name="theme-color" content="#3D4A35">
+<meta property="og:title" content="Sessão Raiz | Table">
+<meta property="og:description" content="Talvez você não esteja procurando mais um curso. Talvez você só queira conversar.">
+<meta property="og:site_name" content="Table · Evelyn Liu">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+function getCookie(n){const m=document.cookie.match(new RegExp('(^| )'+n+'=([^;]+)'));return m?m[2]:null}
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','989971718548782');
+const PAGEVIEW_ID='pv_sr_'+crypto.randomUUID();
+const VIEW_ID='vc_sr_'+crypto.randomUUID();
+fbq('track','PageView',{},{eventID:PAGEVIEW_ID});
+fbq('track','ViewContent',{content_name:'Sessão Raiz'},{eventID:VIEW_ID});
+fbq('trackCustom','SessaoRaizPageViewed',{source:'sessao-raiz'});
+fetch('/api/capi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_name:'ViewContent',content_name:'Sessão Raiz',source:'sessao-raiz',lead_event_id:VIEW_ID,pageview_event_id:PAGEVIEW_ID,event_source_url:location.href,fbp:getCookie('_fbp'),fbc:getCookie('_fbc')})}).catch(()=>{});
+</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=989971718548782&ev=PageView&noscript=1"></noscript>
+<style>
+:root{--moss:#3D4A35;--moss-mid:#4E5E42;--moss-lt:#6B7D5C;--moss-pale:#E8EDE4;--cream:#F8F4EE;--warm:#EDE5D8;--sand:#D8CCBA;--terra:#B97040;--terra-dk:#8A4F28;--terra-lt:#F5EAE0;--brown:#2C2018;--muted:#7A6E64;--soft:#A89E94;--white:#fff;--line:#DDD4C4}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--cream);color:var(--brown);font-family:'Jost',sans-serif;font-weight:300;line-height:1.65;font-size:16px;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Cormorant Garamond',serif;font-weight:500;line-height:1.14;letter-spacing:-.01em}
+h1{font-size:clamp(34px,7.6vw,52px)}
+h2{font-size:clamp(27px,5.6vw,40px)}
+h3{font-size:clamp(20px,4vw,26px)}
+em{font-style:italic;color:var(--terra)}
+a{color:inherit}
+.wrap{width:min(100%,620px);margin:auto;padding:0 22px}
+section{padding:clamp(46px,10vw,78px) 0}
+.eyebrow{font-family:'Jost';font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--terra)}
+.rule{width:44px;height:1px;background:var(--terra);border:0;margin:0 0 20px}
+.lede{font-size:clamp(16px,3.4vw,17.5px);color:#544a42;margin-top:18px}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;background:var(--terra);color:#fff;border:0;border-radius:4px;padding:19px 24px;font:500 16px 'Jost';letter-spacing:.01em;cursor:pointer;text-decoration:none;transition:background .2s,transform .2s}
+.btn:hover{background:var(--terra-dk);transform:translateY(-1px)}
+.micro{font-size:13.5px;color:var(--muted);margin-top:14px;line-height:1.7}
+.micro b{font-weight:500;color:var(--brown)}
+/* hero */
+.hero{background:var(--moss);color:var(--cream);padding:clamp(40px,9vw,72px) 0 clamp(46px,10vw,78px);position:relative;overflow:hidden}
+.hero:before{content:'';position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(185,112,64,.3),transparent 70%);right:-200px;top:-190px;pointer-events:none}
+.hero .wrap{position:relative;z-index:1}
+.brand{font-family:'Cormorant Garamond',serif;font-size:21px;letter-spacing:.14em;margin-bottom:34px}
+.hero .eyebrow{color:#E0C9A8}
+.hero h1{color:#fff;margin-top:12px}
+.hero h1 em{color:#E8CFA2}
+.hero p{color:#D3DACD;margin-top:20px;font-size:clamp(15.5px,3.3vw,17px)}
+.hero .btn{margin-top:30px}
+.hero .micro{color:#AEBBA4}
+.hero .micro b{color:#fff}
+.credit-inline{display:block;margin-top:10px;padding-top:10px;border-top:1px solid rgba(248,244,238,.18);color:#E0C9A8}
+/* blocos */
+.band-warm{background:var(--warm)}
+.band-moss{background:var(--moss);color:var(--cream)}
+.band-moss h2{color:#fff}.band-moss .lede{color:#D3DACD}.band-moss .eyebrow{color:#E0C9A8}
+.steps{display:grid;gap:14px;margin-top:30px;counter-reset:s}
+.step{background:var(--white);border:1px solid var(--line);border-radius:6px;padding:22px 24px;display:grid;grid-template-columns:34px 1fr;gap:16px;align-items:start}
+.step:before{counter-increment:s;content:counter(s);font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--terra);width:34px;height:34px;border:1px solid var(--terra-lt);background:var(--terra-lt);border-radius:50%;display:grid;place-items:center;line-height:1}
+.step p{font-size:15.5px;line-height:1.6;padding-top:5px}
+.fits{list-style:none;margin-top:26px;display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.fits li{background:var(--cream);padding:16px 20px;font-size:15.5px;display:flex;gap:12px;align-items:flex-start;line-height:1.55}
+.fits li:before{content:'';flex:0 0 6px;height:6px;border-radius:50%;background:var(--terra);margin-top:9px}
+/* quem conduz */
+.who{background:var(--white);border:1px solid var(--line);border-radius:6px;padding:clamp(22px,5vw,30px);margin-top:26px}
+.who-row{display:grid;grid-template-columns:62px 1fr;gap:16px;align-items:center}
+.who-row img{width:62px;height:62px;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid var(--moss-lt)}
+.who-name{font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--moss)}
+.who-role{font-size:13px;color:var(--muted);line-height:1.5;margin-top:3px}
+.who p{font-size:15.5px;color:#544a42;margin-top:18px;line-height:1.7}
+/* crédito */
+.credit{background:var(--white);border:1px solid var(--terra);border-radius:6px;padding:clamp(24px,5.5vw,34px);position:relative;overflow:hidden}
+.credit:before{content:'';position:absolute;inset:0 auto 0 0;width:4px;background:var(--terra)}
+.credit .tag{display:inline-block;font-size:10.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--terra-dk);background:var(--terra-lt);border-radius:3px;padding:5px 11px}
+.credit h2{margin-top:16px}
+.credit p{font-size:15.5px;color:#544a42;margin-top:16px;line-height:1.75}
+.credit-math{display:flex;align-items:center;gap:12px;margin-top:24px;padding-top:22px;border-top:1px solid var(--line);flex-wrap:wrap}
+.credit-math div{flex:1;min-width:120px}
+.credit-math span{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.credit-math b{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:var(--moss);display:block;margin-top:4px;line-height:1}
+.credit-math .arrow{flex:0 0 auto;min-width:0;color:var(--terra);font-size:20px}
+.credit-math .to b{color:var(--terra)}
+/* oferta */
+.offer{background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-top:28px;box-shadow:0 18px 44px rgba(44,32,24,.07)}
+.offer-top{background:var(--moss);color:var(--cream);padding:22px 24px}
+.offer-top p{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#AEBBA4}
+.offer-top h3{color:#fff;margin-top:5px}
+.offer-body{padding:24px}
+.incl{list-style:none;display:grid;gap:13px}
+.incl li{display:grid;grid-template-columns:20px 1fr;gap:12px;font-size:15px;line-height:1.55;align-items:start}
+.incl li:before{content:'✓';color:var(--moss-lt);font-size:14px;line-height:1.5}
+.incl li.hl{color:var(--terra-dk);font-weight:400}
+.incl li.hl:before{color:var(--terra)}
+.price{display:flex;align-items:baseline;gap:10px;margin:24px 0 4px;padding-top:22px;border-top:1px solid var(--line)}
+.price b{font-family:'Cormorant Garamond',serif;font-size:46px;font-weight:600;color:var(--brown);line-height:1;white-space:nowrap;flex:0 0 auto}
+.price span{font-size:13.5px;color:var(--muted);min-width:0}
+.offer .btn{margin-top:20px}
+.avail{font-size:13.5px;color:var(--muted);line-height:1.7;margin-top:26px;text-align:center}
+/* faq */
+.faq{margin-top:28px;border-top:1px solid var(--line)}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{list-style:none;cursor:pointer;padding:18px 0;display:flex;justify-content:space-between;gap:14px;font-size:15.5px;font-weight:400;color:var(--moss);line-height:1.45}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:after{content:'+';color:var(--terra);font-size:18px;flex-shrink:0;transition:transform .25s}
+.faq details[open] summary:after{transform:rotate(45deg)}
+.faq p{font-size:14.5px;color:var(--muted);line-height:1.8;padding-bottom:20px}
+.faq details.key summary{color:var(--terra-dk)}
+.faq details.key p{color:#544a42}
+.faq details.key p b{font-weight:500;color:var(--terra-dk)}
+/* fechamento */
+.end{text-align:center}
+.end h2{color:#fff}
+.end .btn{margin-top:28px}
+.foot{font-size:12px;color:var(--soft);text-align:center;padding:0 0 46px;line-height:1.7}
+.foot a{color:var(--muted)}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- 1 · HERO -->
+<header class="hero"><div class="wrap">
+  <div class="brand">TABLE</div>
+  <p class="eyebrow">O primeiro passo da metodologia Table</p>
+  <h1>Talvez você não esteja procurando mais um curso. <em>Talvez você só queira conversar.</em></h1>
+  <p>A Sessão Raiz é uma conversa individual com uma nutricionista comportamental da Table para aprofundar sua relação com a comida, organizar seus principais desafios e entender por onde começar.</p>
+  <button class="btn" data-cta="hero">Quero reservar minha Sessão Raiz</button>
+  <p class="micro">Sessão individual online · <b>R$ 67</b>
+    <span class="credit-inline">Se depois você decidir iniciar o Protocolo Raiz, esse valor se transforma em <b style="color:#E8CFA2">R$ 97 de crédito</b>.</span>
+  </p>
+</div></header>
+
+<!-- 2 · POR QUE EXISTE -->
+<section><div class="wrap">
+  <hr class="rule">
+  <h2>Nem todo começo precisa ser um acompanhamento.</h2>
+  <p class="lede">Muitas pessoas chegam até nós sem precisar de mais informação. Precisam primeiro colocar em palavras o que estão vivendo.</p>
+  <p class="lede">A Sessão Raiz foi criada exatamente para isso.</p>
+</div></section>
+
+<!-- 3 · COMO FUNCIONA -->
+<section class="band-warm"><div class="wrap">
+  <hr class="rule">
+  <h2>Como funciona</h2>
+  <div class="steps">
+    <div class="step"><p>Reserve sua sessão.</p></div>
+    <div class="step"><p>Converse com uma nutricionista comportamental da Table.</p></div>
+    <div class="step"><p>Saia com mais clareza sobre o seu momento e sobre qual caminho faz sentido seguir.</p></div>
+  </div>
+</div></section>
+
+<!-- 4 · PARA QUEM -->
+<section><div class="wrap">
+  <hr class="rule">
+  <h2>Para quem faz sentido</h2>
+  <ul class="fits">
+    <li>Sente que já tentou muita coisa.</li>
+    <li>Entende bastante sobre alimentação, mas continua travada.</li>
+    <li>Prefere conversar antes de iniciar qualquer acompanhamento.</li>
+    <li>Quer compreender melhor a própria relação com a comida.</li>
+    <li>Procura um primeiro passo simples.</li>
+  </ul>
+</div></section>
+
+<!-- 5 · QUEM CONDUZ -->
+<section class="band-warm"><div class="wrap">
+  <hr class="rule">
+  <h2>Quem fará a sua sessão</h2>
+  <p class="lede">A Sessão Raiz é conduzida por uma nutricionista comportamental da equipe Table, seguindo o mesmo método desenvolvido pela Evelyn Liu.</p>
+  <div class="who">
+    <div class="who-row">
+      <img src="/images/Vestido Verde Olhar amistoso.jpg" alt="Evelyn Liu" loading="lazy">
+      <div>
+        <p class="who-name">Evelyn Liu</p>
+        <p class="who-role">Nutricionista comportamental · Fundadora da Table · Autora de “Gordura Não Existe”</p>
+      </div>
+    </div>
+    <p>Nutrição comportamental não começa pelo que você deveria comer. Começa pelo que acontece antes e depois de comer: o que dispara, o que alivia, o que se repete. É essa escuta que a equipe leva para a sua sessão.</p>
+  </div>
+</div></section>
+
+<!-- 6 · CRÉDITO -->
+<section><div class="wrap">
+  <div class="credit">
+    <span class="tag">Crédito garantido</span>
+    <h2>Seu investimento continua com você.</h2>
+    <p>Se depois da Sessão Raiz você decidir iniciar o Protocolo Raiz, os R$ 67 investidos hoje são convertidos em R$ 97 de crédito na sua entrada.</p>
+    <p>Você começa pelo passo mais simples e mantém todas as possibilidades abertas.</p>
+    <div class="credit-math">
+      <div><span>Você investe hoje</span><b>R$ 67</b></div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="to"><span>Vira crédito de</span><b>R$ 97</b></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- 7 · OFERTA -->
+<section class="band-warm"><div class="wrap">
+  <hr class="rule">
+  <h2>Sessão Raiz</h2>
+  <div class="offer">
+    <div class="offer-top"><p>O primeiro passo</p><h3>Uma conversa sobre o seu momento</h3></div>
+    <div class="offer-body">
+      <ul class="incl">
+        <li>Sessão individual online</li>
+        <li>Aproximadamente 40 minutos</li>
+        <li>Nutricionista comportamental da equipe Table</li>
+        <li>Conversa focada no seu momento atual</li>
+        <li class="hl">Crédito de R$ 97 caso você continue pelo Protocolo Raiz</li>
+      </ul>
+      <div class="price"><b>R$ 67</b><span>pagamento único · Pix ou cartão</span></div>
+      <button class="btn" data-cta="oferta">Reservar minha Sessão Raiz</button>
+    </div>
+  </div>
+  <p class="avail">As Sessões Raiz são individuais e dependem da disponibilidade da equipe. Por isso trabalhamos com um número limitado de horários por semana.</p>
+</div></section>
+
+<!-- 8 · FAQ -->
+<section><div class="wrap">
+  <hr class="rule">
+  <h2>Perguntas frequentes</h2>
+  <div class="faq">
+    <details><summary>É uma consulta nutricional?</summary><p>Não. A Sessão Raiz é uma conversa individual guiada por uma nutricionista comportamental da Table. Não há avaliação física, cálculo de calorias nem prescrição. O foco é entender a sua relação com a comida e organizar o seu momento.</p></details>
+    <details><summary>Vou receber um plano alimentar?</summary><p>Não. A sessão não inclui plano alimentar nem prescrição de dieta. Ela existe para trazer clareza sobre o que está acontecendo e sobre qual caminho faz sentido para você.</p></details>
+    <details><summary>Preciso contratar um acompanhamento depois?</summary><p>Não. A Sessão Raiz é completa em si mesma. Se fizer sentido para você, a nutricionista pode apresentar os próximos passos da Table, mas nada disso é necessário para aproveitar a conversa.</p></details>
+    <details class="key" open><summary>E se depois eu quiser entrar no Protocolo Raiz?</summary><p><b>Os R$ 67 investidos hoje são convertidos em R$ 97 de crédito no Protocolo Raiz.</b> Você começa pelo passo mais simples sem abrir mão de nada.</p></details>
+    <details><summary>Como eu agendo?</summary><p>Depois da reserva, nossa equipe entra em contato pelo seu WhatsApp para marcar no horário que funcionar melhor para você.</p></details>
+    <details><summary>Isso substitui acompanhamento médico?</summary><p>Não substitui. O trabalho da Table é comportamental e soma ao acompanhamento de saúde que você já faz.</p></details>
+  </div>
+</div></section>
+
+<!-- 9 · FECHAMENTO -->
+<section class="band-moss end"><div class="wrap">
+  <h2>Se hoje você precisa de uma conversa antes de qualquer outra coisa, comece por aqui.</h2>
+  <button class="btn" data-cta="final">Quero reservar minha Sessão Raiz</button>
+  <p class="micro"><b>R$ 67</b> · sessão individual online
+    <span class="credit-inline">Crédito de <b style="color:#E8CFA2">R$ 97</b> caso você continue pelo Protocolo Raiz.</span>
+  </p>
+</div></section>
+
+<p class="foot">Table · Evelyn Liu · <a href="/legal" target="_blank" rel="noopener">Política de Privacidade</a><br>A Sessão Raiz é um atendimento comportamental e não substitui avaliação médica individual.</p>
+
+<script>
+/* Checkout da Sessão Raiz. Mesma oferta usada na camada 2 do Radar. */
+const CHECKOUT_SESSAO_RAIZ_URL = 'https://pay.cakto.com.br/ak63ytv_1149729';
+const QS = new URLSearchParams(location.search);
+const LID = (QS.get('lid') || '').trim();
+const $ = s => document.querySelector(s);
+function getCookie(n){const m=document.cookie.match(new RegExp('(^| )'+n+'=([^;]+)'));return m?m[2]:null}
+function eventId(p){return p+'_'+crypto.randomUUID()}
+
+/* Link do D+1 chega pelo WhatsApp com ?lid=<lead_event_id do quiz 1>. Com ele o
+   checkout já vai preenchido: ninguém redigita o que entregou ontem. Sem ele a
+   página funciona igual, só sem o preenchimento. */
+let contato = null;
+if (LID) {
+  fetch('/api/lead-contexto?lid=' + encodeURIComponent(LID))
+    .then(r => r.json())
+    .then(r => { if (r && r.ok && r.email) contato = { nome:r.nome, email:r.email, whats:r.whats }; })
+    .catch(() => {});
+}
+
+function reservar(origem){
+  const id = eventId('ic');
+  fbq('track','InitiateCheckout',{content_name:'Sessão Raiz',currency:'BRL',value:67},{eventID:id});
+  fetch('/api/capi/initiate-checkout',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({content_name:'Sessão Raiz',value:67,source:'sessao-raiz',cta:origem,
+      lid:LID||null,em:contato&&contato.email,phone:contato&&contato.whats,
+      fbp:getCookie('_fbp'),fbc:getCookie('_fbc'),event_id:id,event_source_url:location.href})}).catch(()=>{});
+  const u = new URL(CHECKOUT_SESSAO_RAIZ_URL);
+  if (contato){
+    if (contato.email) u.searchParams.set('email', contato.email);
+    if (contato.whats) u.searchParams.set('phone', '+' + contato.whats);
+    if (contato.nome)  u.searchParams.set('name', contato.nome);
+  }
+  if (LID) u.searchParams.set('sck', LID);
+  location.href = u.toString();
+}
+document.querySelectorAll('[data-cta]').forEach(b => b.onclick = () => reservar(b.dataset.cta));
+</script>
+</body>
+</html>

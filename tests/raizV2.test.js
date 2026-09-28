@@ -136,7 +136,7 @@ test('camada 2 tem 14 perguntas pontuadas e medicação vira contexto', () => {
 });
 
 test('perfil do quiz 1 vem do lid, da URL ou da pergunta, e nunca pontua', () => {
-  assert.match(server, /app\.get\('\/api\/raiz-v2\/contexto'/);
+  assert.match(server, /app\.get\(\['\/api\/lead-contexto', '\/api\/raiz-v2\/contexto'\]/);
   assert.match(server, /quiz:perfil:\$\{phone\}/);
   assert.match(html, /const PERFIL_DE_LETRA = \{ E:'emocional', R:'restritiva', S:'sobrevivencia', A:'desconectada' \}/);
   assert.match(html, /if\(q\.perfil\)return;/);           // recompute ignora

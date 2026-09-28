@@ -95,3 +95,39 @@ Wistia e soltar o `vslSlot`.
 
 A garantia de 7 dias **não** aparece na camada 2 de propósito: ela existe por
 causa do Protocolo Raiz, e não há política definida para a Sessão Raiz avulsa.
+
+---
+
+# /sessao-raiz — a porta de entrada do D+1
+
+Página curta, sem quiz, enviada no D+1 para quem fez o quiz 1 e não comprou o
+Protocolo Raiz. Vende só a conversa: R$ 67, checkout `ak63ytv_1149729`, o mesmo
+da camada 2 do Radar.
+
+Design system do **quiz 1** (Cormorant Garamond + Jost, paleta moss/terra/cream),
+não o do Radar. A pessoa viu o quiz 1 ontem; a página precisa parecer a mesma casa.
+
+Pixel **principal** (989971718548782), não o da V2. `source: 'sessao-raiz'` não
+casa com `ehRaizV2()`, então as credenciais certas são escolhidas sozinhas.
+Eventos: ViewContent (`content_name: 'Sessão Raiz'`), `SessaoRaizPageViewed` e
+InitiateCheckout (`value: 67`). Purchase não é disparado aqui.
+
+`?lid=<lead_event_id do quiz 1>` preenche o checkout com nome, e-mail e telefone
+via `GET /api/lead-contexto` (o caminho antigo `/api/raiz-v2/contexto` continua
+valendo). Sem o lid a página funciona igual, só sem preenchimento.
+
+## O crédito de R$ 97
+
+A página promete: R$ 67 hoje viram R$ 97 de crédito na entrada do Protocolo Raiz.
+Sempre "crédito", nunca "desconto".
+
+**Duas coisas que não existem em código e dependem de operação:**
+
+1. **Não há automação.** Nenhum cupom, nenhuma regra no checkout, nenhum gatilho.
+   Hoje a conversão do crédito é manual, feita por quem atende. A palavra
+   "automaticamente" foi deixada de fora da página por isso.
+2. **O crédito cobre o Protocolo Raiz inteiro.** O PR custa R$ 97 em todos os
+   funis. Um crédito de R$ 97 zera a entrada: quem paga R$ 67 pela sessão leva o
+   PR sem pagar mais nada. Isso é mais barato do que o pacote de R$ 97 do
+   /raiz-v2, que entrega PR + livro + sessão. Decisão comercial consciente ou não,
+   está registrada aqui.
