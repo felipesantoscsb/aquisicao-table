@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Quiz Table: Descubra Sua Raiz</title>
-<meta name="description" content="Qual dos 4 padrões está por trás da sua relação com a comida? Descubra sua Raiz em 3 minutos: diagnóstico personalizado, gratuito."/>
+<meta name="description" content="Explore 4 padrões na sua relação com a comida. Em 3 minutos, receba uma leitura das suas respostas e um ponto de partida. Gratuito."/>
 <meta property="og:title" content="Qual dos 4 padrões é o seu? Descubra agora."/>
 <meta property="og:description" content="Em menos de 3 minutos, identifique o padrão emocional que comanda sua relação com a comida, e o que fazer a partir de hoje."/>
 <meta property="og:image" content="https://evelynliu.com.br/images/quiz-og.jpg"/>
@@ -252,6 +252,53 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 @keyframes loadingFill{0%{width:0%}40%{width:60%}80%{width:85%}100%{width:100%}}
 @media(max-width:480px){.question-card{padding:28px 20px}.offer-body{padding:20px}.result-body{padding:36px 16px 24px}.video-section,.gracinha-section,.author-section,.book-strip,.offer-divider,.quiz-faq{padding-left:16px;padding-right:16px}}
+
+/* Readable mobile hierarchy; keep the established Table palette. */
+.intro-title em{color:#E3B18B}
+.intro-eyebrow,.intro-sub,.promise-item{color:rgba(255,255,255,.85)}
+.intro-logo,.intro-fine{color:rgba(255,255,255,.72)}
+.intro-logo{margin-bottom:24px}
+.intro-eyebrow{margin-bottom:20px}
+.intro-divider{margin:20px auto}
+.intro-sub{margin-bottom:24px}
+.intro-promises{margin-bottom:28px}
+.btn-primary,.btn-capture,.btn-offer{background:#96582F}
+.capture-label{display:block;text-align:left;font-size:14px;font-weight:500;margin:16px 0 6px}
+.capture-help{font-size:13px;line-height:1.5;text-align:left;color:#62574D;margin-bottom:8px}
+.capture-fine{color:#62574D}
+.btn-capture:disabled{opacity:.65;cursor:wait}
+.q-back{opacity:1;min-height:44px;padding:12px 6px}
+.result-tag{color:#E3B18B;border-color:#E3B18B}
+.result-type em{color:#E3B18B}
+.result-headline{color:rgba(255,255,255,.85)}
+.result-section-title{font-family:'Cormorant Garamond',serif;font-size:25px;line-height:1.25;margin-bottom:12px}
+.result-note{font-size:13px;line-height:1.6;color:#62574D;margin-top:16px}
+.first-step{background:var(--warm);border-left:3px solid var(--terra);padding:24px;border-radius:8px;font-size:15px;line-height:1.75}
+.early-offer,.journey-section{width:calc(100% - 32px);max-width:552px;margin:0 auto 36px;padding:28px}
+.early-offer{background:var(--white);border:1px solid var(--sand);border-radius:12px;box-shadow:0 6px 28px rgba(44,32,24,.06)}
+.early-offer h3{font-family:'Cormorant Garamond',serif;font-size:32px;line-height:1.15;margin-bottom:16px}
+.early-offer h3 em{color:var(--moss)}
+.early-offer p{line-height:1.7;font-size:15px}
+.early-offer .early-price{font-size:30px;font-weight:500;margin:20px 0}
+.early-price span{display:block;font-size:13px;font-weight:400;color:var(--muted)}
+.early-offer .early-fine{font-size:13px;text-align:center;margin-top:12px}
+.details-link{display:block;text-align:center;color:var(--moss);padding:14px 0 0;font-size:14px}
+.journey-section{padding:0 12px}
+.journey-list{list-style:none;counter-reset:journey;display:grid;gap:18px}
+.journey-list li{counter-increment:journey;position:relative;padding-left:42px;font-size:14px;line-height:1.65}
+.journey-list li::before{content:counter(journey);position:absolute;left:0;top:0;background:var(--moss-pale);color:var(--moss);width:28px;height:28px;border-radius:50%;text-align:center;line-height:28px}
+.journey-list span{display:block;color:#62574D}
+#offer-anchor{scroll-margin-top:24px}
+.sticky-offer[hidden]{display:none!important}
+.sticky-offer{position:fixed;z-index:50;bottom:0;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:20px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--cream);border-top:1px solid var(--sand);box-shadow:0 -4px 20px #2c201810}
+.sticky-offer strong,.sticky-offer small{display:block;font-size:13px}
+.sticky-offer small{font-size:11px;color:#62574D;margin-top:3px}
+.sticky-offer button{border:0;border-radius:4px;background:#96582F;color:white;padding:14px;font:500 13px 'Jost',sans-serif;cursor:pointer}
+.has-sticky-offer{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
+button:focus-visible,a:focus-visible{outline:3px solid var(--terra);outline-offset:4px}
+@media(max-width:480px){#page-intro{padding:32px 20px}.intro-promises{max-width:340px}.early-offer{padding:24px 20px}.sticky-offer{gap:12px}}
+@media(max-width:360px){.early-offer h3{font-size:28px}.sticky-offer{gap:8px;padding-left:12px;padding-right:12px}.sticky-offer strong{font-size:12px;white-space:nowrap}.sticky-offer button{font-size:12px;white-space:nowrap;padding:14px 10px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-14817731667"></script>
 <script>
@@ -274,13 +321,13 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
 <div id="page-intro" class="page active">
   <p class="intro-logo">Table</p>
   <p class="intro-eyebrow">Mapeamento de raiz · gratuito</p>
-  <h1 class="intro-title">Toda relação difícil com a comida tem uma raiz.<br>Existem 4.<br><em>Em 3 minutos, você descobre a sua.</em></h1>
+  <h1 class="intro-title">O que se repete na sua<br>relação com a comida?<br><em>Comece a entender em 3 minutos.</em></h1>
   <div class="intro-divider"></div>
-  <p class="intro-sub">Cada padrão tem uma raiz diferente, e uma solução diferente. Descubra qual está por trás da sua relação com a comida <strong>e o que fazer a partir de agora.</strong></p>
+  <p class="intro-sub">Reconheça qual dos 4 padrões mais aparece nas suas respostas <strong>e descubra um ponto de partida para cuidar de você.</strong></p>
   <div class="intro-promises">
     <div class="promise-item"><div class="promise-dot"></div><span>8 perguntas diretas, sem enrolação</span></div>
     <div class="promise-item"><div class="promise-dot"></div><span>Resultado personalizado para o seu perfil</span></div>
-    <div class="promise-item"><div class="promise-dot"></div><span>Desenvolvido pela equipe da Table</span></div>
+    <div class="promise-item"><div class="promise-dot"></div><span>Por Evelyn Liu · Nutricionista comportamental da Table</span></div>
   </div>
   <button class="btn-primary" onclick="startQuiz()">Quero descobrir minha raiz →</button>
   <p class="intro-fine">Gratuito · 3 minutos · Sem spam</p>
@@ -293,15 +340,20 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
 <div id="page-capture" class="page">
   <div class="capture-inner">
     <span class="capture-tag">Seu mapeamento está pronto</span>
-    <h2 class="capture-title">Para onde enviamos<br>seu <em>resultado personalizado?</em></h2>
-    <p class="capture-sub">Você respondeu as perguntas. Seu perfil já foi identificado. Só precisamos saber para onde enviar.</p>
+    <h2 class="capture-title">Seu resultado aqui.<br>Seu dossiê completo <em>no WhatsApp.</em></h2>
+    <p class="capture-sub">Veja a leitura das suas respostas na próxima tela. Pelo WhatsApp, enviamos um dossiê mais completo para você consultar com calma.</p>
+    <label class="capture-label" for="user-name">Como podemos chamar você?</label>
     <input class="form-field" type="text" id="user-name" placeholder="Seu primeiro nome" autocomplete="given-name" oninput="clearFieldError('user-name')"/>
     <p class="field-error" id="err-name"></p>
-    <input class="form-field" type="email" id="user-email" placeholder="Seu melhor e-mail" autocomplete="email" oninput="clearFieldError('user-email')"/>
+    <label class="capture-label" for="user-email">Seu e-mail</label>
+    <p class="capture-help" id="email-help">Usamos seu e-mail para identificar seu cadastro e manter contato com você.</p>
+    <input aria-describedby="email-help err-email" class="form-field" type="email" id="user-email" placeholder="Seu melhor e-mail" autocomplete="email" oninput="clearFieldError('user-email')"/>
     <p class="field-error" id="err-email"></p>
-    <input class="form-field" type="tel" id="user-phone" placeholder="(11) 99999-9999" autocomplete="tel" oninput="formatPhone(this);clearFieldError('user-phone')" maxlength="15"/>
+    <label class="capture-label" for="user-phone">WhatsApp com DDD</label>
+    <p class="capture-help" id="phone-help">É por aqui que você recebe o dossiê mais completo.</p>
+    <input aria-describedby="phone-help err-phone" class="form-field" type="tel" id="user-phone" placeholder="(11) 99999-9999" autocomplete="tel" oninput="formatPhone(this);clearFieldError('user-phone')" maxlength="15"/>
     <p class="field-error" id="err-phone"></p>
-    <button class="btn-capture" onclick="submitCapture()">Ver meu resultado →</button>
+    <button class="btn-capture" onclick="submitCapture()">Ver resultado e receber dossiê →</button>
     <p class="capture-fine">Seus dados estão seguros. Ao continuar, você aceita o uso de cookies para personalizar sua experiência e concorda com a nossa <a href="https://evelynliu.com.br/legal" target="_blank" style="color:inherit;text-decoration:underline">Política de Privacidade</a>.</p>
   </div>
 </div>
@@ -341,7 +393,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
   <div class="loading-steps">
     <p class="loading-step" id="ls1">Cruzando suas respostas com os 4 perfis...</p>
     <p class="loading-step" id="ls2">Identificando sua raiz dominante...</p>
-    <p class="loading-step" id="ls3">Montando seu diagnóstico personalizado...</p>
+    <p class="loading-step" id="ls3">Organizando sua leitura personalizada...</p>
     <p class="loading-step" id="ls4">Seu mapeamento está pronto.</p>
   </div>
 </div>
@@ -366,11 +418,36 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
   <div class="result-body">
     <p class="result-desc" id="result-desc"></p>
     <div class="result-signals">
-      <p class="signals-title">Sinais que confirmam esse padrão em você</p>
+      <p class="signals-title">O que apareceu nas suas respostas</p>
       <p id="result-mirror" style="display:none;font-size:14px;font-style:italic;color:var(--brown);line-height:1.7;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--sand)"></p>
       <div id="result-signals-list"></div>
     </div>
+    <h3 class="result-section-title">Como isso pode se conectar</h3>
     <p class="result-desc" id="result-bridge"></p>
+    <div class="first-step">
+      <p class="signals-title">Um ponto de partida para refletir</p>
+      <h3 id="first-step-title" class="result-section-title"></h3>
+      <p id="first-step-copy"></p>
+      <p class="result-note">Você não precisa resolver tudo agora. Leve essa reflexão para aprofundar com uma nutricionista comportamental da Table.</p>
+    </div>
+    <p class="result-note">Esta leitura considera suas respostas de hoje. Padrões podem coexistir e mudar; o quiz não é um diagnóstico clínico.</p>
+  </div>
+  <section class="early-offer" id="early-offer" aria-labelledby="early-offer-title">
+    <p class="signals-title">Seu próximo passo</p>
+    <h3 id="early-offer-title">Um começo guiado.<br><em>Um olhar individual para você.</em></h3>
+    <p>O Protocolo Raiz combina 12 exercícios guiados, o livro da Evelyn em PDF e uma <strong>sessão individual de 45 minutos com uma nutricionista comportamental da Table</strong>, por videochamada.</p>
+    <p class="early-price">R$ 97 <span>pagamento único · acesso ao material após a confirmação</span></p>
+    <button class="btn-offer" onclick="goOffer()">Quero começar meu protocolo →</button>
+    <p class="early-fine">Garantia de 7 dias. A sessão está incluída na compra.</p>
+    <a class="details-link" href="#offer-anchor">Ver tudo o que está incluído ↓</a>
+  </section>
+  <div class="journey-section">
+    <h3 class="result-section-title">Como será o seu começo</h3>
+    <ol class="journey-list">
+      <li><strong>Receba seu material</strong><span>Após a confirmação do pagamento, acesse os exercícios guiados e o livro em PDF.</span></li>
+      <li><strong>Observe o seu padrão</strong><span>Explore o material e anote situações da sua rotina que você quer compreender melhor.</span></li>
+      <li><strong>Aprofunde com uma profissional</strong><span>A equipe entra em contato pelo WhatsApp em até 48h após a compra para combinar sua sessão de 45 minutos, conforme a agenda disponível.</span></li>
+    </ol>
   </div>
 
   <!-- 3. VÍDEO DA EVELYN — ponte emocional -->
@@ -406,7 +483,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
   <div class="gracinha-section">
     <p class="gracinha-eyebrow">Ação da Gracinha · Table</p>
     <h3 class="gracinha-title">Cada conquista virou<br><em>um ato de amor.</em></h3>
-    <p style="font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:18px">Mulheres que passaram pela Table doam, em alimentos, o equivalente ao que transformaram. Porque transformação real transborda.</p>
+    <p style="font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:18px">Conheça histórias de mulheres acompanhadas pela Table. São experiências com a equipe, não resultados específicos do Protocolo Raiz. Na Ação da Gracinha, suas conquistas também se transformam em doações de alimentos.</p>
     <div class="gracinha-grid">
       <div class="gracinha-card">
         <div class="gracinha-photo">
@@ -536,12 +613,12 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
         </div>
       </div>
       <div style="padding:22px 28px">
-        <p style="font-size:14px;color:rgba(255,255,255,.7);line-height:1.75;margin-bottom:18px">45 minutos com uma nutricionista comportamental da Table, por videochamada. Olhar direto para o seu caso, sem roteiro genérico. A sessão está garantida na sua compra. Nossa equipe entra em contato pelo seu WhatsApp para agendar no melhor horário para você.</p>
+        <p style="font-size:14px;color:rgba(255,255,255,.7);line-height:1.75;margin-bottom:18px">45 minutos com uma nutricionista comportamental da Table, por videochamada, para olhar o seu caso e orientar os próximos passos. A sessão está incluída e garantida na compra. Nossa equipe entra em contato pelo WhatsApp em até 48h após a compra para combinar o horário, conforme a agenda disponível.</p>
         <div style="background:rgba(185,112,64,.10);border:1px solid rgba(185,112,64,.25);border-radius:6px;padding:12px 16px;display:flex;align-items:flex-start;gap:10px">
           <span style="font-size:16px;flex-shrink:0;margin-top:1px">🗓</span>
           <div>
-            <p style="font-size:13px;font-weight:500;color:var(--terra);margin-bottom:3px">Disponibilidade limitada</p>
-            <p style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.6">Atendemos <strong style="color:var(--white)">30 pessoas por semana</strong>. Nossa equipe entra em contato pelo WhatsApp para garantir seu horário enquanto há vagas disponíveis.</p>
+            <p style="font-size:13px;font-weight:500;color:var(--terra);margin-bottom:3px">Como funciona a agenda</p>
+            <p style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.6">Nossa capacidade é de <strong style="color:var(--white)">30 sessões por semana</strong>. Se a semana estiver completa, combinamos um horário nas semanas seguintes. Sua sessão continua garantida.</p>
           </div>
         </div>
       </div>
@@ -604,7 +681,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
         <!-- 5. Escassez -->
         <div class="offer-urgency" style="align-items:flex-start;margin-bottom:20px">
           <span style="flex-shrink:0;margin-top:1px">⏳</span>
-          <span><strong style="color:var(--terra)">Vagas limitadas para a sessão:</strong> a equipe da Table atende no máximo 30 pessoas por semana. Quando as vagas fecham, o próximo horário disponível fica para a semana seguinte.</span>
+          <span><strong style="color:var(--terra)">Agendamento da sua sessão:</strong> a equipe entra em contato pelo WhatsApp em até 48h após a compra. São até 30 sessões por semana; se a agenda estiver completa, combinamos uma data nas semanas seguintes.</span>
         </div>
 
         <!-- 6. CTA -->
@@ -629,7 +706,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
     </div>
     <div class="quiz-faq-item" onclick="this.classList.toggle('open')">
       <div class="quiz-faq-q">O trabalho combina com o acompanhamento de saúde que já faço? <span class="quiz-faq-arrow">+</span></div>
-      <p class="quiz-faq-a">Sim. O trabalho da Table é comportamental e emocional, e soma ao acompanhamento de saúde que você já faz. Não substitui orientação médica. Trabalha a camada emocional, que costuma ficar de fora.</p>
+      <p class="quiz-faq-a">A proposta é complementar o acompanhamento que você já faz, com atenção à sua relação com a comida e à sua rotina. O protocolo não substitui orientação médica ou acompanhamento individual de saúde.</p>
     </div>
     <div class="quiz-faq-item" onclick="this.classList.toggle('open')">
       <div class="quiz-faq-q">O que acontece depois do Protocolo Raiz? <span class="quiz-faq-arrow">+</span></div>
@@ -637,11 +714,11 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
     </div>
     <div class="quiz-faq-item" onclick="this.classList.toggle('open')">
       <div class="quiz-faq-q">Em quanto tempo recebo o acesso? <span class="quiz-faq-arrow">+</span></div>
-      <p class="quiz-faq-a">Imediatamente após a confirmação do pagamento. Você recebe o acesso ao material e o link para agendar sua sessão no horário que melhor funcionar para você.</p>
+      <p class="quiz-faq-a">O acesso ao material é liberado após a confirmação do pagamento. Para a sessão, a equipe entra em contato pelo WhatsApp em até 48h após a compra e combina o horário conforme a agenda disponível.</p>
     </div>
     <div class="quiz-faq-item" onclick="this.classList.toggle('open')">
       <div class="quiz-faq-q">Como funciona a sessão individual? <span class="quiz-faq-arrow">+</span></div>
-      <p class="quiz-faq-a">45 minutos por videochamada com uma nutricionista comportamental da equipe da Table. Após a compra, nossa equipe entra em contato pelo seu WhatsApp em até 48h para agendar no horário mais conveniente para você.</p>
+      <p class="quiz-faq-a">São 45 minutos por videochamada com uma nutricionista comportamental da Table. A sessão está garantida na compra. Nossa equipe entra em contato pelo WhatsApp em até 48h após a compra para combinar uma data conforme a agenda disponível. Se a semana estiver completa, combinamos um horário nas semanas seguintes.</p>
     </div>
     <div class="quiz-faq-item" onclick="this.classList.toggle('open')">
       <div class="quiz-faq-q">E se não funcionar para mim? <span class="quiz-faq-arrow">+</span></div>
@@ -653,6 +730,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;ba
     </div>
   </div>
 
+  <aside class="sticky-offer" id="sticky-offer" aria-label="Começar o Protocolo Raiz" hidden>
+    <span><strong>Protocolo Raiz · R$ 97</strong><small>Inclui sessão individual</small></span>
+    <button type="button" onclick="goOffer()">Quero começar →</button>
+  </aside>
 </div><!-- /page-result -->
 <script>
 const questions = [
@@ -733,67 +814,52 @@ const questions = [
       { text: "Medicação prescrita", value: "remedios" },
       { text: "Coach ou programa online", value: "coach" },
       { text: "Cirurgia bariátrica", value: "cirurgia" },
-      { text: "Nunca fiz nenhum acompanhamento profissional", value: "nenhum" }
+      { text: "Não tentei nenhuma das opções acima", value: "nenhum" }
     ]
   }
 ];
 
+// type remains the integration label used by the dossier/CRM. displayType is presentation only.
 const profiles = {
   E: {
-    tag: "Sua Raiz",
+    tag: "Padrão predominante nas suas respostas",
     type: "A Comedora <em>Emocional</em>",
-    headline: "Você não come por fome. Você come para sobreviver emocionalmente ao que está sentindo.",
-    desc: "Desde cedo você aprendeu que a comida consola, acalma e preenche. Ela virou seu anestésico para a ansiedade, o estresse, a solidão e o cansaço. Não é fraqueza: é uma resposta que seu sistema nervoso criou para te proteger. Com o tempo, essa resposta passou a custar caro no seu corpo e na sua autoestima.",
-    signals: [
-      "Você come mais à noite, quando a correria do dia para",
-      "Sente culpa intensa depois de comer fora do planejado",
-      "Já tentou várias dietas e sempre funciona no começo, mas não sustenta",
-      "Sente que a comida é a única coisa que 'pertence a você' no dia",
-      "Reconhece que come mais quando está ansiosa, triste ou sozinha"
-    ],
-    bridge: "A maioria das mulheres com esse padrão já tentou monitorar o que come. Já criou regras. Já apostou na força de vontade. E funcionou por alguns dias. Porque monitorar comportamento sem entender o gatilho emocional por baixo é como secar o chão com a torneira aberta. O padrão emocional não mora na comida, mora no sistema nervoso. E sistema nervoso não muda com lista de regras. O Protocolo Raiz foi construído para ir exatamente onde nenhuma dieta foi antes."
+    displayType: "Comida como <em>alívio emocional</em>",
+    headline: "Nas suas respostas, a comida aparece ligada à busca de alívio em momentos difíceis.",
+    desc: "Você indicou situações em que emoções e alimentação se encontram. Isso não define quem você é nem explica toda a sua história: é um ponto para observar com mais cuidado.",
+    bridge: "Quando a comida aparece junto de ansiedade, cansaço ou outras emoções, pode ser útil olhar o contexto desses momentos. Suas respostas sugerem essa conexão, mas uma conversa individual permite entender o que faz sentido no seu caso.",
+    stepTitle: "Qual momento merece mais cuidado?",
+    stepCopy: "Pense em uma das situações que você marcou. O que estava acontecendo naquele dia e o que você gostaria de conversar sobre isso? Anote uma pergunta para levar à sessão."
   },
   R: {
-    tag: "Sua Raiz",
+    tag: "Padrão predominante nas suas respostas",
     type: "A Comedora <em>Restritiva</em>",
-    headline: "Você alterna entre controle e descontrole, e acredita que falta disciplina. Não é isso.",
-    desc: "Você vive em ciclos: restringe com rigor, 'escorrega', acha que estragou tudo e recomeça do zero. O que parece fraqueza é o efeito direto da restrição excessiva. Quanto mais você proíbe, mais o cérebro deseja. Você não tem dificuldade com disciplina. Você tem um relacionamento muito rígido com suas próprias regras.",
-    signals: [
-      "Você tem alimentos 'proibidos' e sente prazer culpado ao comê-los",
-      "Quando começa a 'errar', vai até o fim: 'já que estraguei tudo...'",
-      "Já fez dietas restritivas de calorias, carboidratos, jejum",
-      "Se sente envergonhada do seu corpo em situações sociais",
-      "Tem dificuldade de comer na frente de outras pessoas sem julgamento interno"
-    ],
-    bridge: "A maioria das mulheres com esse padrão já tentou ser menos rígida. Já ouviu que precisava relaxar. E quando tentou, o descontrole veio, e a conclusão foi a mesma de sempre: a culpa é dela. Não é. O ciclo restritivo não quebra com mais flexibilidade. Ele quebra quando a raiz da restrição é tratada. A Comedora Restritiva não tem dificuldade com comida. Tem crenças muito arraigadas sobre si mesma quando come. O Protocolo Raiz vai onde esse trabalho precisa acontecer."
+    displayType: "Regras e <em>cobrança ao comer</em>",
+    headline: "Nas suas respostas, aparecem regras rígidas, culpa ou a sensação de ter que recomeçar.",
+    desc: "Você marcou situações em que comer parece vir acompanhado de cobrança. Esse padrão é uma leitura das suas respostas de hoje, não um rótulo sobre você.",
+    bridge: "Algumas das suas respostas aproximam regras alimentares e pensamentos de tudo ou nada. Vale explorar como essas regras aparecem na rotina e quais dúvidas você quer aprofundar com orientação.",
+    stepTitle: "Que regra você gostaria de entender?",
+    stepCopy: "Lembre de uma regra sobre comida que apareceu nas suas respostas. Como você se sente quando não consegue segui-la? Anote o que gostaria de compreender melhor na sessão."
   },
   S: {
-    tag: "Sua Raiz",
+    tag: "Padrão predominante nas suas respostas",
     type: "A Comedora em <em>Modo Sobrevivência</em>",
-    headline: "Você vive tão sobrecarregada que cuidar de você mesma ficou em último lugar. O corpo está cobrando essa conta.",
-    desc: "Filhos, trabalho, casa, outros. Você cuida de tudo e de todos, menos de si mesma. A alimentação virou algo funcional: o que é mais rápido, o que cabe no intervalo, o que sobrou. Não é falta de vontade. É exaustão real. Seu corpo está pedindo atenção há muito tempo.",
-    signals: [
-      "Pula refeições ou come em pé, correndo, no trabalho",
-      "Come os restos do prato dos filhos ou da família",
-      "Seu maior inimigo é a falta de tempo e de energia",
-      "Já tentou se organizar mas a rotina derruba qualquer plano",
-      "Sente que merece cuidado mas não sabe por onde começar"
-    ],
-    bridge: "A maioria das mulheres com esse padrão já tentou se organizar. Já colocou a alimentação no planejamento. E a vida engoliu tudo, de novo. Não porque faltou compromisso. Porque nenhum plano alimentar foi construído para funcionar dentro de uma rotina de sobrevivência. O padrão de sobrevivência não muda com mais organização. Muda quando você entende por que colocar a si mesma em último lugar virou automático. O Protocolo Raiz começa exatamente aí."
+    displayType: "Cuidado em meio <em>à sobrecarga</em>",
+    headline: "Nas suas respostas, tempo e energia aparecem como obstáculos para cuidar da alimentação.",
+    desc: "Você indicou que a rotina pesa nas suas escolhas. Antes de pensar em mais uma tarefa, vale entender em quais momentos cuidar de você fica mais difícil.",
+    bridge: "Suas respostas sugerem uma relação entre sobrecarga e dificuldade de manter o cuidado. Olhar uma situação concreta ajuda a conversar sobre possibilidades que façam sentido dentro da sua rotina.",
+    stepTitle: "Onde a rotina mais aperta?",
+    stepCopy: "Escolha um momento do dia em que cuidar de você costuma ficar para depois. O que disputa sua atenção nesse horário? Leve essa situação para conversar na sessão."
   },
   A: {
-    tag: "Sua Raiz",
+    tag: "Padrão predominante nas suas respostas",
     type: "A Comedora <em>Desconectada</em>",
-    headline: "Você come no automático, e há muito tempo não sente seu próprio corpo de verdade.",
-    desc: "Você come sem fome real, para sem perceber, e muitas vezes nem recorda o que comeu. Não é negligência: é uma forma de desconexão. Você aprendeu, ao longo do tempo, a se afastar do próprio corpo como forma de se proteger de uma dor que parecia grande demais.",
-    signals: [
-      "Come sem perceber: de repente a embalagem está vazia",
-      "Não consegue identificar com clareza quando está com fome de verdade",
-      "Sente-se distante do próprio corpo, como se olhasse de longe",
-      "Já buscou apoio profissional para questões emocionais",
-      "Não lembra das refeições do dia com clareza"
-    ],
-    bridge: "A maioria das mulheres com esse padrão já tentou prestar mais atenção no que come. Já tentou comer devagar, com presença. Durou alguns dias, depois o automático voltou. Não porque faltou disciplina. A desconexão não é defeito de caráter. É uma resposta que o sistema nervoso criou para se proteger. E ela não se desfaz com atenção forçada. Desfaz-se com um processo gradual, seguro e guiado. O Protocolo Raiz começa criando as condições para que o retorno ao seu corpo aconteça. Com segurança. Com método."
+    displayType: "Alimentação <em>no automático</em>",
+    headline: "Nas suas respostas, aparecem momentos em que comer acontece com pouca atenção ao que você sente.",
+    desc: "Você marcou situações de automatismo ou distância das próprias sensações. O quiz não determina a causa disso; ele ajuda a escolher o que observar e conversar.",
+    bridge: "O automático pode aparecer em contextos diferentes. Entender quando você percebe esse padrão é um começo para uma conversa individual, sem presumir uma explicação para sua história.",
+    stepTitle: "Quando você percebe o automático?",
+    stepCopy: "Pense em uma situação que marcou no quiz. Onde você estava e o que mais estava fazendo? Anote o que chamou sua atenção para aprofundar essa leitura na sessão."
   }
 };
 
@@ -806,14 +872,15 @@ function loadQuizState(){
   return null;
 }
 function saveQuizState(){
-  try{ sessionStorage.setItem('tq', JSON.stringify({current, scores, quizAnswers})); }catch(e){}
+  try{ sessionStorage.setItem('tq', JSON.stringify({current, scores, quizAnswers, qualificationAnswer})); }catch(e){}
 }
 function clearQuizState(){ try{ sessionStorage.removeItem('tq'); }catch(e){} }
 
 const _saved = loadQuizState();
 let current = _saved ? _saved.current : 0;
 let scores = _saved ? _saved.scores : { E:0, R:0, S:0, A:0 };
-let qualificationAnswer = null;
+let qualificationAnswer = _saved ? (_saved.qualificationAnswer || null) : null;
+const selectedQual = new Set(qualificationAnswer ? qualificationAnswer.items : []);
 let quizAnswers = _saved ? _saved.quizAnswers : [];
 
 // Qualification scoring — quanto mais investiu antes, maior o score
@@ -892,6 +959,7 @@ const CAKTO_PARAMS = {
 function startQuiz(){
   clearQuizState();
   current = 0; scores = {E:0,R:0,S:0,A:0}; quizAnswers = [];
+  qualificationAnswer = null; selectedQual.clear();
   // Início do quiz — sem isso o funil tem um vão entre "visitou a página" e
   // "completou o cadastro" e não dá para saber se a perda é na página ou no quiz.
   // Só contagem própria: nada de sinal novo para a Meta, para não mexer no
@@ -906,7 +974,9 @@ function startQuiz(){
 }
 
 // Se há estado salvo, retoma quiz automaticamente (refresh)
-if(_saved && _saved.current > 0 && _saved.current < questions.length){
+if(_saved && _saved.current === questions.length - 1 && qualificationAnswer){
+  goTo('page-capture');
+} else if(_saved && _saved.current > 0 && _saved.current < questions.length){
   goTo('page-quiz');
   renderQuestion();
 }
@@ -933,7 +1003,9 @@ function clearFieldError(fieldId){
   });
 });
 
+let captureSubmitting = false;
 async function submitCapture(){
+  if(captureSubmitting) return;
   const name = document.getElementById('user-name').value.trim();
   const email = document.getElementById('user-email').value.trim();
   const rawPhone = document.getElementById('user-phone').value.trim();
@@ -945,6 +1017,8 @@ async function submitCapture(){
   const digits = rawPhone.replace(/\D/g,'');
   if(digits.length < 10 || digits.length > 11){ showFieldError('user-phone','err-phone','Informe um WhatsApp válido com DDD (ex: 11 99999-9999).'); valid=false; }
   if(!valid) return;
+  captureSubmitting = true;
+  document.querySelector('.btn-capture').disabled = true;
   const phone = normalizePhone(rawPhone);
   window._leadPhone = phone;
   window._leadName = name;
@@ -953,7 +1027,14 @@ async function submitCapture(){
   window._leadFbc = getCookie('_fbc') || null;
   window._leadFbp = getCookie('_fbp') || null;
   // external_id: SHA-256 do email normalizado — identificador estável cross-evento
-  window._leadExternalId = await sha256Email(email);
+  try {
+    window._leadExternalId = await sha256Email(email);
+  } catch(e) {
+    captureSubmitting = false;
+    document.querySelector('.btn-capture').disabled = false;
+    showFieldError('user-email','err-email','Não foi possível concluir agora. Tente novamente.');
+    return;
+  }
   // Advanced Matching: nome/email/telefone/external_id ao pixel browser
   fbq('init','989971718548782',{
     em: email,
@@ -1085,7 +1166,7 @@ function selectAndAdvance(type, btn){
 }
 
 // Multiple select para qualificação
-const selectedQual = new Set();
+// selectedQual is initialized before restoring the current screen.
 function toggleQualification(value, btn){
   if(value === 'nenhum'){
     // Nenhum deseleciona tudo
@@ -1130,8 +1211,8 @@ function finishQualification(){
     // hot = já investiu em coisas caras antes
     tier: qScore >= 4 ? 'hot' : qScore >= 2 ? 'warm' : 'cold'
   };
-  clearQuizState(); // sessão completa — limpa estado persistido
-  // Captura depois do quiz — curiosidade no pico, custo afundado
+  saveQuizState(); // Keep answers through capture refresh; contact data is not persisted.
+  // Capture remains required for dossier delivery and existing integrations.
   goTo('page-capture');
 }
 
@@ -1148,41 +1229,17 @@ function showLoading(){
   setTimeout(showResult, 3200);
 }
 
-// Extrai a parte descritiva da resposta (após o em-dash, ou resposta inteira)
-function extractContent(text){
-  const parts = text.split('—');
-  return (parts[1] || parts[0]).trim().toLowerCase().replace(/\.$/, '');
-}
-
-// Gera frase espelho a partir das 2 primeiras respostas que batem com o perfil
+// Only report observations the visitor actually selected; never fill with assumed traits.
 function buildMirrorIntro(top, answers){
-  const profileLabel = {E:'Comedora Emocional',R:'Comedora Restritiva',S:'Comedora em Modo Sobrevivência',A:'Comedora Desconectada'};
-  const matched = answers.filter(a => a.tipo === top);
-  if(matched.length < 2) return null;
-  const c1 = extractContent(matched[0].resposta);
-  const c2 = extractContent(matched[1].resposta);
-  return `Você marcou que ${c1}, e que ${c2}. Esses dois padrões juntos são a assinatura da ${profileLabel[top]}.`;
+  const count = answers.filter(a => a.tipo === top).length;
+  return count > 1
+    ? 'Estas foram algumas das respostas que orientaram esta leitura:'
+    : 'Esta resposta ajudou a orientar a leitura. Outros padrões também apareceram.';
 }
-
-// Gera lista de sinais: prioritiza respostas reais da lead, completa com estáticos
 function buildSignals(top, answers){
-  const qTemplates = [
-    r => `Seu primeiro sentimento ao pensar em mudança: ${extractContent(r)}.`,
-    r => `Você perde o controle quando ${extractContent(r)}.`,
-    r => `Depois de comer além do planejado, você sente ${extractContent(r)}.`,
-    r => `Você se identificou com: ${r.trim()}.`,
-    r => `O que mais quer resolver: ${extractContent(r)}.`,
-    r => `Sua relação com o corpo agora: ${extractContent(r)}.`,
-    r => `O que mais te impede de manter mudanças: ${extractContent(r)}.`,
-  ];
-  const result = [];
-  answers.forEach((a, i) => {
-    if(a.tipo === top && qTemplates[i]) result.push({personal:true, text:qTemplates[i](a.resposta)});
-  });
-  const statics = profiles[top].signals;
-  let si = 0;
-  while(result.length < 5 && si < statics.length){ result.push({personal:false, text:statics[si++]}); }
-  return result;
+  return answers.filter(a => a.tipo === top).slice(0, 3).map(a => ({
+    personal: true, text: a.resposta
+  }));
 }
 
 function showResult(){
@@ -1205,11 +1262,13 @@ function showResult(){
 
   // 1. Nome no hero
   if(firstName){
-    document.getElementById('result-name-greeting').textContent = firstName + ', mapeamos seu perfil:';
+    document.getElementById('result-name-greeting').textContent = firstName + ', este é um ponto de partida:';
   }
 
   document.getElementById('result-tag').textContent = p.tag;
-  document.getElementById('result-type').innerHTML = p.type;
+  document.getElementById('result-type').innerHTML = p.displayType;
+  document.getElementById('first-step-title').textContent = p.stepTitle;
+  document.getElementById('first-step-copy').textContent = p.stepCopy;
   document.getElementById('result-headline').textContent = p.headline;
   document.getElementById('result-desc').textContent = p.desc;
   document.getElementById('result-bridge').textContent = p.bridge;
@@ -1219,7 +1278,7 @@ function showResult(){
   const mirrorText = buildMirrorIntro(top, quizAnswers);
   if(mirrorText){ mirrorEl.textContent = mirrorText; mirrorEl.style.display='block'; }
 
-  // Sinais: respostas reais primeiro, estáticos como fallback
+  // Mostra somente respostas selecionadas, sem presumir outras características.
   const sigList = document.getElementById('result-signals-list');
   sigList.innerHTML = '';
   buildSignals(top, quizAnswers).forEach(s => {
@@ -1228,19 +1287,16 @@ function showResult(){
     sigList.innerHTML += `<div class="signal-item"><div class="signal-dot" style="${dot}"></div><span style="${weight}">${s.text}</span></div>`;
   });
 
-  // 2. Nome do perfil no título do card de oferta
-  const profileNameClean = p.type.replace(/<[^>]*>/g,'');
+  // 2. Oferta com título curto; os rótulos históricos permanecem nas integrações.
   document.getElementById('offer-profile-title').innerHTML =
-    `Protocolo Raiz: <em style="color:var(--terra);font-style:italic">${profileNameClean}</em><br><span style="font-size:14px;color:rgba(255,255,255,.5)">by Evelyn Liu · Table</span>`;
+    `Protocolo Raiz<br><span style="font-size:16px;color:rgba(255,255,255,.85)">Um começo guiado para você · Evelyn Liu · Table</span>`;
 
-  // 3. Include 1 com nome do perfil — artigo minúsculo
+  // 3. Entregável concreto.
   document.getElementById('offer-include-1').innerHTML =
-    `Exercícios psicoemocionais guiados para <strong style="color:var(--white)">${profileNameClean.replace(/^(A|O) /, (m,a) => a.toLowerCase()+' ')}</strong>`;
+    '12 exercícios guiados para explorar sua relação com a comida';
 
-  // 4. CTA principal com perfil interpolado ("Começar pelo meu perfil →")
-  // Extrai só o tipo sem o artigo: "Comedora Emocional", "Modo Sobrevivência", etc.
-  const profileShort = profileNameClean.replace(/^(A |O )/, '');
-  const ctaLabel = `Começar pelo meu perfil ${profileShort} →`;
+  // 4. Ação curta para caber no celular.
+  const ctaLabel = 'Quero começar meu protocolo →';
   document.querySelectorAll('.btn-offer').forEach(btn => {
     if(btn.getAttribute('onclick') === 'goOffer()') btn.textContent = ctaLabel;
   });
@@ -1265,28 +1321,28 @@ function showResult(){
     const tried = validItems.map(v => qualLabels[v]);
     const triedStr = tried.length === 1 ? tried[0] :
       tried.slice(0,-1).join(', ') + ' e ' + tried[tried.length-1];
-    transitionText = `Você já tentou ${triedStr}. Não foi falta de esforço. Foi falta da camada certa. O Protocolo Raiz trabalha onde nenhuma dessas abordagens foi.`;
+    transitionText = `Você contou que já tentou ${triedStr}. Essa experiência faz parte da sua história. Aqui, a proposta é olhar o padrão que apareceu nas suas respostas e conversar sobre os próximos passos com uma nutricionista comportamental da Table.`;
   } else if(firstName){
-    transitionText = `${firstName}, você chegou até aqui porque sente que existe algo mais profundo por trás. Existe. E o Protocolo Raiz foi construído para ir exatamente lá.`;
+    transitionText = `${firstName}, suas respostas são um ponto de partida. O Protocolo Raiz reúne material guiado e uma sessão individual para aprofundar essa leitura com uma nutricionista comportamental da Table.`;
   } else {
-    transitionText = `Você chegou até aqui porque sente que existe algo mais profundo por trás. Existe. E o Protocolo Raiz foi construído para ir exatamente lá.`;
+    transitionText = `Suas respostas são um ponto de partida. O Protocolo Raiz reúne material guiado e uma sessão individual para aprofundar essa leitura com uma nutricionista comportamental da Table.`;
   }
   document.getElementById('offer-transition').textContent = transitionText;
 
   // 5. Copy variável por tier no card
   const tierCopy = {
-    hot: 'Você já investiu antes em soluções sérias. Sabe que não é falta de comprometimento. O Protocolo Raiz é a camada que faltava: o trabalho emocional que nenhuma das outras abordagens tocou.',
-    warm: 'Você já tentou algumas coisas. Já sabe que força de vontade sozinha não resolve. O Protocolo Raiz começa exatamente onde as outras abordagens pararam.',
-    cold: 'Este é um primeiro passo concreto, sem restrições, sem julgamento, sem mais uma lista de regras. Só o trabalho real com o que está por trás do seu padrão com a comida.'
+    hot: 'Você já passou por diferentes experiências. Traga o que fez sentido e o que continua difícil para uma conversa individual, apoiada pelos exercícios guiados.',
+    warm: 'Você já experimentou caminhos para mudar. O próximo passo pode ser observar seu padrão na rotina e aprofundar essa leitura com orientação individual.',
+    cold: 'Comece com material guiado e uma sessão individual para conversar sobre sua rotina, suas dúvidas e os próximos passos.'
   };
   document.getElementById('offer-tier-copy').textContent = tierCopy[tier] || tierCopy.cold;
 
   // 6. Garantia com copy conectado ao histórico
   let guaranteeCopy = '';
   if(tier === 'hot'){
-    guaranteeCopy = 'Você já investiu antes e não teve o retorno que esperava. Por isso a garantia existe: se em 7 dias o Protocolo Raiz não fizer sentido, devolvemos 100%. Sem perguntas, sem burocracia.';
+    guaranteeCopy = 'Você pode conhecer a proposta com tranquilidade. Se o Protocolo Raiz não fizer sentido em até 7 dias, devolvemos 100% do valor. Sem perguntas, sem burocracia.';
   } else if(tier === 'warm'){
-    guaranteeCopy = 'Você já tentou outras abordagens. Se em 7 dias este método não fizer diferença para você, devolvemos 100% do valor. Sem perguntas, sem burocracia.';
+    guaranteeCopy = 'Se o Protocolo Raiz não fizer sentido em até 7 dias, devolvemos 100% do valor. Sem perguntas, sem burocracia.';
   } else {
     guaranteeCopy = 'Se por qualquer motivo o Protocolo Raiz não fizer sentido em até 7 dias, devolvemos 100% do valor. Sem perguntas, sem burocracia.';
   }
@@ -1363,7 +1419,21 @@ function showResult(){
     perfil: top,
     tier: qualificationAnswer?.tier
   });
+  clearQuizState(); // Result prepared and existing integrations dispatched.
   goTo('page-result');
+  observeOffer();
+}
+
+let offerObserver;
+function observeOffer(){
+  if(!('IntersectionObserver' in window)) return;
+  offerObserver = new IntersectionObserver(entries => {
+    if(!entries.some(entry => entry.isIntersecting)) return;
+    document.getElementById('sticky-offer').hidden = false;
+    document.getElementById('page-result').classList.add('has-sticky-offer');
+    offerObserver.disconnect();
+  }, {threshold: 0.5});
+  offerObserver.observe(document.getElementById('early-offer'));
 }
 
 function goOffer(){
