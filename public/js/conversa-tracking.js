@@ -115,8 +115,10 @@
   function init() {
     if (initialized) return;
     initialized = true;
-    persistAttribution();
+    // Pixel primeiro: o _fbp so existe depois que o fbevents.js roda. Lendo os
+    // cookies antes, a primeira visita gravava atribuicao sem fbp.
     installPixel(PIXEL_ID);
+    persistAttribution();
   }
 
   function trackIntent() {

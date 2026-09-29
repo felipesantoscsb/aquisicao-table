@@ -43,10 +43,26 @@ fbq('init', '989971718548782');
 // QuizView — dispara ao carregar a página
 (async function(){
   function _gc(name){const m=document.cookie.match(new RegExp('(^| )'+name+'=([^;]+)'));return m?m[2]:null;}
+  // O _fbp e' criado pelo fbevents.js DEPOIS do init, de forma assincrona. Ler
+  // o cookie na mesma tick mandava fbp:null para a CAPI, e numa visita organica
+  // (sem fbclid, logo sem _fbc) o user_data ficava so com IP e user agent — que
+  // a Meta nao conta como chave de correspondencia. Era a maior fatia dos
+  // eventos "sem user_data". Espera o cookie aparecer antes de postar.
+  function _esperaFbp(prazoMs){
+    return new Promise(function(resolve){
+      var t0 = Date.now();
+      (function chk(){
+        var v = _gc('_fbp');
+        if (v || Date.now() - t0 >= prazoMs) return resolve(v);
+        setTimeout(chk, 100);
+      })();
+    });
+  }
   const qvEventId = crypto.randomUUID();
   const pvEventId = crypto.randomUUID(); // par server-side do PageView browser
   fbq('track','PageView',{},{eventID:pvEventId}); // eventID no 4º arg = chave de dedup canônica do Meta
   fbq('track','ViewContent',{content_name:'QuizView'},{eventID:qvEventId});
+  const _fbp = await _esperaFbp(3000);
   fetch('/api/capi',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
@@ -56,7 +72,7 @@ fbq('init', '989971718548782');
       lead_event_id:qvEventId,
       pageview_event_id:pvEventId,
       fbc: _gc('_fbc') || null,
-      fbp: _gc('_fbp') || null,
+      fbp: _fbp || null,
       event_source_url:window.location.href
     })
   }).catch(()=>{});
@@ -990,7 +1006,11 @@ async function submitCapture(){
   });
   // Lead browser — sem value/currency (Lead não carrega valor monetário)
   fbq('track','Lead',{
-    content_name:'quiz-lead'
+    content_name:'quiz-lead',
+    // A Meta recusa o dado de moeda do Lead quando vem vazio ou malformado.
+    // Lead nao e' receita, entao vai com valor 0 — formato valido, sem inflar ROAS.
+    currency:'BRL',
+    value:0
   },{eventID: window._leadEventId});
   gtag('event','generate_lead');
   // CAPI Lead server-side — par do browser para dedup. Cobre abandono pré-resultado.

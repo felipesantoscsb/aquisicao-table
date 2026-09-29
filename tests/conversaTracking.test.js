@@ -237,3 +237,50 @@ test('as imagens pesadas saíram e as que sobraram são lazy', () => {
   assert.ok(imgs.length > 0, 'nenhuma imagem encontrada');
   imgs.forEach(t => assert.match(t, /loading="lazy"/, `sem lazy: ${t.slice(0, 60)}`));
 });
+
+// ── Qualidade de correspondência (EMQ) e deduplicação ───────────────────────
+// A Meta apontou 46% dos eventos de servidor sem nenhuma chave de user_data.
+// A causa era mecânica: o _fbp é criado pelo fbevents.js DEPOIS do init, então
+// ler o cookie na mesma tick mandava fbp nulo. Em visita orgânica (sem fbclid,
+// logo sem _fbc) sobrava só IP e user agent, que não contam como correspondência.
+
+const quizVi = lerArquivo(juntar(__dirname, '..', 'public/quiz-vi.html'), 'utf8');
+
+test('o page load espera o _fbp antes de postar na CAPI', () => {
+  [quizRaiz, quizVi].forEach(pg => {
+    assert.match(pg, /function _esperaFbp/);
+    assert.match(pg, /const _fbp = await _esperaFbp\(\d+\)/);
+    assert.match(pg, /fbp: _fbp \|\| null/);
+    // e não volta a ler o cookie na mesma tick
+    assert.doesNotMatch(pg, /fbp: _gc\('_fbp'\)/);
+  });
+});
+
+test('a espera do _fbp tem prazo e não trava o envio', () => {
+  const fn = quizRaiz.slice(quizRaiz.indexOf('function _esperaFbp'), quizRaiz.indexOf('function _esperaFbp') + 500);
+  assert.match(fn, /Date\.now\(\) - t0 >= prazoMs/, 'precisa desistir no prazo');
+  assert.match(fn, /resolve\(v\)/);
+});
+
+test('eventID vai no 4º argumento do fbq, senão não deduplica', () => {
+  // O 3º argumento é custom_data; eventID ali dentro vira propriedade e o
+  // evento do browser fica sem event_id.
+  ['quiz-cakto.html', 'quiz-vi.html', 'quiz.html'].forEach(nome => {
+    const pg = lerArquivo(juntar(__dirname, '..', 'public', nome), 'utf8');
+    const ruins = (pg.match(/fbq\('track',[^)]*eventID[^)]*\)/g) || [])
+      .filter(t => !/\},\s*\{\s*eventID/.test(t));
+    assert.equal(ruins.length, 0, `${nome}: eventID fora do 4º arg em ${ruins.join(' | ')}`);
+  });
+});
+
+test('Lead leva moeda válida nos dois lados, senão o par não casa', () => {
+  assert.match(quizRaiz, /content_name:'quiz-lead',[\s\S]{0,260}currency:'BRL',[\s\S]{0,40}value:0/);
+  assert.match(servidor, /resolvedEventName === 'Lead'[\s\S]{0,200}custom_data\.value = 0/);
+  assert.match(servidor, /resolvedEventName === 'Lead'[\s\S]{0,260}custom_data\.currency = 'BRL'/);
+});
+
+test('o /conversa instala o pixel antes de ler a atribuição', () => {
+  const init = trackingJs.slice(trackingJs.indexOf('function init()'), trackingJs.indexOf('function init()') + 400);
+  assert.ok(init.indexOf('installPixel') < init.indexOf('persistAttribution'),
+    'o pixel tem de subir antes, senão a 1ª visita grava atribuição sem fbp');
+});

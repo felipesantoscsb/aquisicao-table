@@ -923,7 +923,11 @@ async function submitCapture(){
   });
   // Lead browser — sem value/currency (Lead não carrega valor monetário)
   fbq('track','Lead',{
-    content_name:'quiz-lead'
+    content_name:'quiz-lead',
+    // A Meta recusa o dado de moeda do Lead quando vem vazio ou malformado.
+    // Lead nao e' receita, entao vai com valor 0 — formato valido, sem inflar ROAS.
+    currency:'BRL',
+    value:0
   },{eventID: window._leadEventId});
   gtag('event','generate_lead');
   // GTM: lead capturado (Enhanced Conversions via user_data). Amarre sua tag

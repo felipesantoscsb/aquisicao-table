@@ -518,11 +518,18 @@ app.post('/api/capi', async (req, res) => {
     if (content_name)     event.custom_data.content_name     = content_name;
     if (content_category) event.custom_data.content_category = content_category;
   }
-  // value/currency: apenas InitiateCheckout (paridade com o pixel browser p/ dedup).
+  // value/currency: paridade com o pixel browser, senão o par não deduplica.
   // Valor fixo da oferta (R$ 97) — não confia em valor vindo do cliente.
   if (resolvedEventName === 'InitiateCheckout') {
     event.custom_data = event.custom_data || {};
     event.custom_data.value = 97;
+    event.custom_data.currency = 'BRL';
+  }
+  // Lead não é receita, mas a Meta recusa o dado de moeda quando vem ausente ou
+  // malformado. Vai com valor 0: formato válido e ROAS intacto.
+  if (resolvedEventName === 'Lead') {
+    event.custom_data = event.custom_data || {};
+    event.custom_data.value = 0;
     event.custom_data.currency = 'BRL';
   }
 
