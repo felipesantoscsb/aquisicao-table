@@ -1950,7 +1950,9 @@ async function redisGetStats() {
 //   RECOVERY_ENABLED            → 'true' ativa envio real (padrão: SOMBRA, só loga)
 //   WHATSAPP_CLOUD_TOKEN        → token permanente da WhatsApp Cloud API
 //   WHATSAPP_PHONE_NUMBER_ID    → phone number id do remetente
-//   WHATSAPP_RECOVERY_TEMPLATE  → nome do modelo aprovado (padrão: recuperacao_checkout_raizv2)
+//   WHATSAPP_RECOVERY_TEMPLATE  → modelo Ticto (padrão: recuperacao_checkout_raizv2)
+//   WHATSAPP_RECOVERY_TEMPLATE_CAKTO → modelo Cakto (padrão: recuperacao_checkout_cakto)
+//   WHATSAPP_RECOVERY_URL_BASE  → base do botão (padrão: https://pay.cakto.com.br/)
 //   RECOVERY_DELAY_MIN          → atraso do envio após o gatilho (padrão: 30)
 //   TICTO_CHECKOUT_PATH         → path da oferta no checkout (padrão: O3EB65FBD)
 
@@ -2048,41 +2050,82 @@ async function cancelCheckoutRecovery(phone, reason) {
   } catch {}
 }
 
-async function sendRecoveryMessage(rec) {
-  const ENABLED = process.env.RECOVERY_ENABLED === 'true';
-  const URL     = process.env.SDR_RECOVERY_URL;    // endpoint do sdr-table (Karina/Z-API)
-  const TOKEN   = process.env.SDR_RECOVERY_TOKEN;  // segredo compartilhado
+// Cada modelo aprovado na Meta guarda uma base fixa no botão de URL dinâmica e
+// recebe só o sufixo como variável. Base e sufixo têm de sair do mesmo provider,
+// senão o botão aponta para um link que não existe.
+const RECOVERY_CHANNELS = {
+  cakto: {
+    template: () => process.env.WHATSAPP_RECOVERY_TEMPLATE_CAKTO || 'recuperacao_checkout_cakto',
+    urlBase:  () => process.env.WHATSAPP_RECOVERY_URL_BASE || 'https://pay.cakto.com.br/',
+    suffix:   (rec) => {
+      const qs = buildCaktoCheckoutSuffix({
+        email: rec.email, phone: rec.phone, name: rec.name, lid: rec.lid,
+      });
+      // O modelo cadastrado usa `path/?query`; sem a barra o link do botão
+      // diverge do exemplo aprovado na Meta.
+      return qs.includes('?') ? qs.replace('?', '/?') : qs;
+    },
+  },
+  ticto: {
+    template: () => process.env.WHATSAPP_RECOVERY_TEMPLATE || 'recuperacao_checkout_raizv2',
+    urlBase:  () => 'https://checkout.ticto.app/',
+    suffix:   (rec) => buildCheckoutSuffix({
+      email: rec.email, phone: rec.phone, name: rec.name, lid: rec.lid,
+    }),
+  },
+};
 
-  // Link do checkout: pix usa a URL do próprio evento (mantém o pix vivo);
-  // abandono monta um link novo com o join key (sck) para atribuição.
-  const checkoutUrl = rec.pix_url
-    || ('https://pay.cakto.com.br/' + buildCaktoCheckoutSuffix({
-         email: rec.email, phone: rec.phone, name: rec.name, lid: rec.lid,
-       }));
+function recoveryChannel(rec) {
+  return RECOVERY_CHANNELS[rec.provider] || RECOVERY_CHANNELS.ticto;
+}
+
+function recoveryTemplateName(rec) {
+  return recoveryChannel(rec).template();
+}
+
+// Com pix vivo reaproveita a URL do próprio evento (mantém o pix válido); senão
+// monta um link novo com o sck para atribuir a venda recuperada ao anúncio.
+function recoveryButtonSuffix(rec) {
+  const ch = recoveryChannel(rec);
+  const base = ch.urlBase();
+  if (rec.pix_url && rec.pix_url.startsWith(base)) return rec.pix_url.slice(base.length);
+  return ch.suffix(rec);
+}
+
+// Envio pela WhatsApp Cloud API. Tem de ser template: a lead abandonou o
+// checkout sem nunca ter escrito para nós, então não existe janela de 24h e
+// mensagem livre não seria entregue.
+async function sendRecoveryMessage(rec) {
+  const ENABLED  = process.env.RECOVERY_ENABLED === 'true';
+  const TOKEN    = process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
+  const PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
   const payload = {
-    phone:          rec.phone,
-    name:           rec.name || null,
-    stage:          rec.stage,            // waiting_payment | ic | abandoned_cart
-    touch:          rec.touch_no || 1,    // pix: 1 ou 2; abandono: sempre 1
-    pix_code:       rec.pix_code || null,
-    pix_expiration: rec.pix_expiration || null,
-    checkout_url:   checkoutUrl,
-    lid:            rec.lid || null,
+    messaging_product: 'whatsapp',
+    to: rec.phone,
+    type: 'template',
+    template: {
+      name: recoveryTemplateName(rec),
+      language: { code: 'pt_BR' },
+      components: [
+        { type: 'body',   parameters: [{ type: 'text', text: firstName(rec.name) || 'querida' }] },
+        { type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: recoveryButtonSuffix(rec) }] },
+      ],
+    },
   };
 
-  if (!ENABLED || !URL || !TOKEN) {
-    console.log('[Recovery] SOMBRA — payload SDR:', JSON.stringify(payload));
+  if (!ENABLED || !TOKEN || !PHONE_ID) {
+    console.log('[Recovery] SOMBRA — payload WhatsApp:', JSON.stringify(payload));
     return { shadow: true };
   }
 
-  const resp = await fetch(URL, {
+  const resp = await fetch(`https://graph.facebook.com/v21.0/${PHONE_ID}/messages`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-recovery-token': TOKEN },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
     body: JSON.stringify(payload),
   });
   const json = await resp.json().catch(() => ({}));
-  if (!resp.ok) throw new Error(`SDR recovery ${resp.status}: ${JSON.stringify(json)}`);
+  if (!resp.ok) throw new Error(`WhatsApp API ${resp.status}: ${JSON.stringify(json.error || json)}`);
   return json;
 }
 
@@ -2095,12 +2138,7 @@ async function registerRecoveryTemplateInHub(rec, provider) {
     return null;
   }
 
-  // Espelha a escolha de template do sendRecoveryMessage (Cakto vs Ticto) para
-  // que o hub registre o modelo realmente enviado — senão o filtro do módulo
-  // Conversa nunca vê recuperacao_checkout_cakto.
-  const templateName = rec.provider === 'cakto'
-    ? (process.env.WHATSAPP_RECOVERY_TEMPLATE_CAKTO || 'recuperacao_checkout_cakto')
-    : (process.env.WHATSAPP_RECOVERY_TEMPLATE || 'recuperacao_checkout_raizv2');
+  const templateName = recoveryTemplateName(rec);
 
   const payload = {
     phone: rec.phone,
@@ -2941,16 +2979,20 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
       return acc;
     }, {});
 
-    // Diagnóstico do canal de envio: se url/token do SDR faltam, o
+    // Diagnóstico do canal de envio: sem token/phone id da Cloud API o
     // sendRecoveryMessage cai em modo SOMBRA e a fila nunca drena (attempts 0).
     const sendReady = process.env.RECOVERY_ENABLED === 'true'
-      && !!process.env.SDR_RECOVERY_URL && !!process.env.SDR_RECOVERY_TOKEN;
+      && !!(process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN)
+      && !!process.env.WHATSAPP_PHONE_NUMBER_ID;
     recovery = {
       enabled: process.env.RECOVERY_ENABLED === 'true',
       send_mode: sendReady ? 'live' : 'shadow',
       send_channel: {
-        url_configured:   !!process.env.SDR_RECOVERY_URL,
-        token_configured: !!process.env.SDR_RECOVERY_TOKEN,
+        transport:         'whatsapp_cloud_api',
+        token_configured:  !!(process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN),
+        phone_id_configured: !!process.env.WHATSAPP_PHONE_NUMBER_ID,
+        template_cakto:    process.env.WHATSAPP_RECOVERY_TEMPLATE_CAKTO || 'recuperacao_checkout_cakto',
+        url_base:          RECOVERY_CHANNELS.cakto.urlBase(),
       },
       pending: pendingKeys.length,
       pending_breakdown: breakdown,
