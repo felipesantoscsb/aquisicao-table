@@ -66,3 +66,9 @@ test('sem credencial cai em sombra em vez de estourar', () => {
   assert.match(sendRecovery, /if \(!ENABLED \|\| !TOKEN \|\| !PHONE_ID\)/);
   assert.match(sendRecovery, /return \{ shadow: true \}/);
 });
+
+test('envio real é o padrão, mas RECOVERY_ENABLED=false ainda derruba', () => {
+  assert.match(server, /function recoveryEnabled\(\) \{\s*return process\.env\.RECOVERY_ENABLED !== 'false';/);
+  // nenhum ponto pode voltar a exigir a env ligada explicitamente
+  assert.doesNotMatch(server, /RECOVERY_ENABLED === 'true'/);
+});

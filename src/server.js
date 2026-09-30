@@ -1947,7 +1947,7 @@ async function redisGetStats() {
 // O status authorized cancela qualquer recuperação pendente do telefone.
 //
 // Env vars:
-//   RECOVERY_ENABLED            → 'true' ativa envio real (padrão: SOMBRA, só loga)
+//   RECOVERY_ENABLED            → envio real é o padrão; 'false' derruba (kill switch)
 //   WHATSAPP_CLOUD_TOKEN        → token permanente da WhatsApp Cloud API
 //   WHATSAPP_PHONE_NUMBER_ID    → phone number id do remetente
 //   WHATSAPP_RECOVERY_TEMPLATE  → modelo Ticto (padrão: recuperacao_checkout_raizv2)
@@ -2050,6 +2050,14 @@ async function cancelCheckoutRecovery(phone, reason) {
   } catch {}
 }
 
+// Envio real é o padrão desde 30/09/2026 (decisão do Felipe: volume baixo, o
+// risco de rajada não existe hoje). O kill switch continua valendo: setar
+// RECOVERY_ENABLED=false no Railway devolve a recuperação ao modo sombra sem
+// precisar de deploy.
+function recoveryEnabled() {
+  return process.env.RECOVERY_ENABLED !== 'false';
+}
+
 // Cada modelo aprovado na Meta guarda uma base fixa no botão de URL dinâmica e
 // recebe só o sufixo como variável. Base e sufixo têm de sair do mesmo provider,
 // senão o botão aponta para um link que não existe.
@@ -2096,7 +2104,7 @@ function recoveryButtonSuffix(rec) {
 // checkout sem nunca ter escrito para nós, então não existe janela de 24h e
 // mensagem livre não seria entregue.
 async function sendRecoveryMessage(rec) {
-  const ENABLED  = process.env.RECOVERY_ENABLED === 'true';
+  const ENABLED  = recoveryEnabled();
   const TOKEN    = process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
   const PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
@@ -2981,11 +2989,11 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
 
     // Diagnóstico do canal de envio: sem token/phone id da Cloud API o
     // sendRecoveryMessage cai em modo SOMBRA e a fila nunca drena (attempts 0).
-    const sendReady = process.env.RECOVERY_ENABLED === 'true'
+    const sendReady = recoveryEnabled()
       && !!(process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN)
       && !!process.env.WHATSAPP_PHONE_NUMBER_ID;
     recovery = {
-      enabled: process.env.RECOVERY_ENABLED === 'true',
+      enabled: recoveryEnabled(),
       send_mode: sendReady ? 'live' : 'shadow',
       send_channel: {
         transport:         'whatsapp_cloud_api',
@@ -3893,7 +3901,7 @@ app.get('/api/dash/data', async (req, res) => {
       conversa_por_dia: conversaPorDia,
       totals: { today: windowTotals(1), d7: windowTotals(7), d30: windowTotals(Math.min(30, daysN)) },
       recovery_lifetime: {
-        enabled:   process.env.RECOVERY_ENABLED === 'true',
+        enabled:   recoveryEnabled(),
         sent:      rcSent,
         converted: Number(rcConv) || 0,
         rate:      rcSent > 0 ? Math.round(((Number(rcConv) || 0) / rcSent) * 1000) / 10 : null,
