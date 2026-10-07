@@ -81,3 +81,33 @@ test('design system do quiz 1, para a página não parecer outro produto', () =>
   assert.match(html, /--terra:#B97040/);
   assert.match(html, /--moss:#3D4A35/);
 });
+
+// ── Purchase da Sessão Raiz ────────────────────────────────────────────────
+// O fallback fixo em 'Protocolo Raiz' fazia qualquer venda sem product_name
+// no payload chegar à Meta rotulada como PR — dois produtos de preço e margem
+// diferentes somados no mesmo sinal de conversão.
+test('o nome do produto vem do checkout, nunca de um fallback fixo', () => {
+  assert.match(server, /const PRODUTOS_CAKTO = \[/);
+  assert.match(server, /slug: 'ak63ytv',\s*nome: 'Sessão Raiz'/);
+  assert.match(server, /function produtoDaCompra/);
+  assert.doesNotMatch(server, /content_name: record\.product_name \|\| 'Protocolo Raiz'/);
+  assert.match(server, /content_name: produto/);
+});
+
+// O Radar roda na conta da LIA, com pixel próprio. Sem o funil gravado no
+// lead, a venda dele cairia no pixel do funil principal.
+test('a venda vai para o pixel do funil que a originou', () => {
+  assert.match(server, /funnel:\s*ehRaizV2\(req\.body\) \? 'raiz-v2'/);
+  assert.match(server, /const credCompra = credenciaisCapi\(\{ funnel: _leadFunnel \}\)/);
+  assert.match(server, /pixelId: credCompra\.pixelId, accessToken: credCompra\.accessToken/);
+  assert.match(server, /sem RAIZ_V2_CAPI_TOKEN — Purchase NÃO enviado/);
+});
+
+test('a página de origem do evento acompanha o produto', () => {
+  assert.match(server, /produto === 'Sessão Raiz'\s*\n\s*\? 'https:\/\/www\.evelynliu\.com\.br\/sessao-raiz'/);
+});
+
+test('existe diagnóstico para saber se a Cakto entrega a venda', () => {
+  assert.match(server, /app\.get\('\/api\/dash\/cakto-vendas', requireDashToken/);
+  assert.match(server, /por_produto/);
+});

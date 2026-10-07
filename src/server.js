@@ -423,6 +423,10 @@ app.post('/api/capi', async (req, res) => {
       fbc:           req.body.fbc         || null,
       fbp:           req.body.fbp         || null,
       channel:       req.body.channel     || null,  // 'tiktok'/'google' → atribuição de canal no webhook Cakto
+      // Funil de origem. O Purchase chega por webhook, onde não há como saber
+      // de qual quiz a pessoa veio — e /raiz-v2 tem pixel próprio. Sem isto
+      // gravado aqui, a venda do Radar iria para o pixel do funil principal.
+      funnel:        ehRaizV2(req.body) ? 'raiz-v2' : (req.body.slug || null),
       ttclid:        req.body.ttclid      || null,  // TikTok click id (Purchase server-side)
       ttp:           req.body.ttp         || null,  // TikTok cookie _ttp
       gclid:         req.body.gclid       || null,  // Google click id → import de conversão offline (Cakto→Google)
@@ -1020,6 +1024,51 @@ app.get('/api/dash/pre-sessao', async (req, res) => {
     }
     recebidos.sort((a, b) => String(b.recebido_em).localeCompare(String(a.recebido_em)));
     res.json({ total: recebidos.length, pendentes: falhas.length, recebidos: recebidos.slice(0, 200), falhas });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Vendas que a Cakto entregou, por produto, e se o Purchase foi à Meta.
+//
+// A pergunta que isto responde é "a Sessão Raiz chega aqui?": se o produto não
+// aparece na lista, a Cakto não está chamando este webhook para ele (cadastro
+// no painel), e nenhum ajuste de código resolve. Se aparece com
+// capi_sent_at nulo, o problema é nosso.
+app.get('/api/dash/cakto-vendas', requireDashToken, async (req, res) => {
+  try {
+    const redis = getRedis();
+    const compras = [];
+    for (const key of await redis.keys('cakto:purchase:*')) {
+      const raw = await redisGet(key);
+      if (!raw) continue;
+      try {
+        const c = JSON.parse(raw);
+        compras.push({
+          transaction_id: c.transaction_id, criado_em: c.created_at,
+          produto: c.produto || c.product_name || c.offer_name || null,
+          offer_id: c.offer_id, valor: c.value,
+          join_key: c.src_lead_id || null,
+          capi_enviado_em: c.capi_sent_at || null, capi_pixel: c.capi_pixel || null,
+        });
+      } catch { /* registro corrompido não derruba o diagnóstico */ }
+    }
+    compras.sort((a, b) => String(b.criado_em).localeCompare(String(a.criado_em)));
+    const porProduto = {};
+    for (const c of compras) {
+      const k = c.produto || '(sem nome)';
+      porProduto[k] = porProduto[k] || { vendas: 0, com_capi: 0, sem_capi: 0, valor: 0 };
+      porProduto[k].vendas++;
+      porProduto[k][c.capi_enviado_em ? 'com_capi' : 'sem_capi']++;
+      porProduto[k].valor += Number(c.valor || 0);
+    }
+    res.json({
+      total: compras.length,
+      capi_ligado: process.env.CAKTO_PURCHASE_CAPI_ENABLED === 'true',
+      raiz_v2_token: Boolean(process.env.RAIZ_V2_CAPI_TOKEN),
+      por_produto: porProduto,
+      compras: compras.slice(0, 200),
+    });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -3091,6 +3140,27 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
 // query string de data.checkoutUrl (a Cakto ecoa a URL de checkout com os params).
 const CAKTO_SRC_CANDIDATES = ['sck', 'utm_content', 'utm_term']; // só p/ auditoria (raw_tracking)
 
+/**
+ * Produtos vendidos pela Cakto, por slug do checkout.
+ *
+ * O nome do produto no Purchase vinha com fallback fixo em 'Protocolo Raiz':
+ * qualquer venda sem product_name no payload — inclusive a Sessão Raiz —
+ * chegava à Meta rotulada como PR, misturando dois produtos de preço e
+ * margem diferentes no mesmo sinal de conversão.
+ */
+const PRODUTOS_CAKTO = [
+  { slug: 'ak63ytv',  nome: 'Sessão Raiz' },
+  { slug: 'vuq4djv',  nome: 'Protocolo Raiz' },
+];
+
+/** Nome do produto, do mais confiável (slug do checkout) ao mais frouxo. */
+function produtoDaCompra(d = {}, record = {}) {
+  const url = String(d.checkoutUrl || '');
+  const porSlug = PRODUTOS_CAKTO.find((p) => url.includes(p.slug));
+  if (porSlug) return porSlug.nome;
+  return record.product_name || record.offer_name || d.product?.name || d.offer?.name || 'Produto Table';
+}
+
 function extractCaktoJoinKey(d) {
   const direct = d.sck && d.sck !== 'Não Informado' ? String(d.sck) : null;
   if (direct) return direct;
@@ -3182,10 +3252,21 @@ app.post('/api/webhooks/cakto', async (req, res) => {
       // Isolamento: vendas do funil TikTok NÃO vão pro Meta (têm webhook próprio,
       // /api/webhooks/cakto-tiktok). Guard só age quando o lead é channel:'tiktok'.
       let _leadChannel = null;
-      try { const _lr = await getRedis().get('lead:' + srcLeadId); if (_lr) _leadChannel = JSON.parse(_lr).channel || null; } catch {}
+      let _leadFunnel = null;
+      try {
+        const _lr = await getRedis().get('lead:' + srcLeadId);
+        if (_lr) { const _l = JSON.parse(_lr); _leadChannel = _l.channel || null; _leadFunnel = _l.funnel || null; }
+      } catch {}
       const _isolatedChannel = ['tiktok', 'google'].includes(_leadChannel);
       if (_isolatedChannel) console.log('[Cakto] venda do funil ' + _leadChannel + ' — Purchase Meta pulado (isolado).');
-      if (CAKTO_PURCHASE_CAPI && value != null && !_isolatedChannel) {
+      // Pixel do funil que originou a venda. O Radar (/raiz-v2) roda na conta
+      // da LIA com pixel próprio: mandar a venda dele para o pixel principal
+      // desfaz justamente a separação que o funil existe para manter.
+      const credCompra = credenciaisCapi({ funnel: _leadFunnel });
+      const produto = produtoDaCompra(d, record);
+      if (CAKTO_PURCHASE_CAPI && value != null && !_isolatedChannel && credCompra.v2 && !credCompra.accessToken) {
+        console.warn(`[Cakto] venda do /raiz-v2 sem RAIZ_V2_CAPI_TOKEN — Purchase NÃO enviado: ${id} | ${produto} | R$${value}`);
+      } else if (CAKTO_PURCHASE_CAPI && value != null && !_isolatedChannel) {
         const enr = await enrichFromLid(srcLeadId, {
           phone: record.phone, em: record.email, fbc: record.fbc, fbp: record.fbp,
         });
@@ -3196,15 +3277,18 @@ app.post('/api/webhooks/cakto', async (req, res) => {
           customData: {
             value,
             currency: 'BRL',
-            content_name: record.product_name || 'Protocolo Raiz',
+            content_name: produto,
             content_ids: record.offer_id ? [record.offer_id] : undefined,
           },
           clientIp: enr.client_ip, clientUserAgent: enr.client_ua,
-          eventSourceUrl: 'https://www.evelynliu.com.br/raiz-cakto',
+          eventSourceUrl: produto === 'Sessão Raiz'
+            ? 'https://www.evelynliu.com.br/sessao-raiz'
+            : 'https://www.evelynliu.com.br/raiz-cakto',
           eventId: id,
+          pixelId: credCompra.pixelId, accessToken: credCompra.accessToken,
         }).catch((e) => console.error('[Cakto] Purchase CAPI erro:', e.message));
-        await redisSet(`cakto:purchase:${id}`, JSON.stringify({ ...record, capi_sent_at: new Date().toISOString() }), 'EX', 60 * 60 * 24 * 90);
-        console.log(`[Cakto] Purchase CAPI enviado: ${id} | R$${value} | src=${srcLeadId || '(sem join key)'}`);
+        await redisSet(`cakto:purchase:${id}`, JSON.stringify({ ...record, produto, capi_sent_at: new Date().toISOString(), capi_pixel: credCompra.pixelId }), 'EX', 60 * 60 * 24 * 90);
+        console.log(`[Cakto] Purchase CAPI enviado: ${id} | ${produto} | R$${value} | pixel=${credCompra.pixelId} | src=${srcLeadId || '(sem join key)'}`);
       } else if (!CAKTO_PURCHASE_CAPI) {
         console.log(`[Cakto] Purchase CAPI desligado (CAKTO_PURCHASE_CAPI_ENABLED != true) — ${id} só registrado.`);
       }
