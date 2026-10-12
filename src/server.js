@@ -3811,6 +3811,48 @@ function versaoPr(rec) {
   return /v2(?!\d)/i.test(nome) ? 'v2' : 'v1';
 }
 
+// ─── Atribuição por anúncio (lookup em lote) ─────────────────────────────────
+//
+// Devolve, para cada lead_event_id pedido, de qual anúncio aquela lead veio.
+// Existe porque o Meta só entrega último toque dentro da janela e não mostra
+// anúncio que ajudou sem levar o crédito. Quem consome é o Hub, que tem as
+// compras em pr_purchases com a coluna `sck` — e sck É o lead_event_id, então
+// o join fecha: compra → lead → anúncio de primeiro e de último toque.
+//
+// Leitura pura: MGET em cima das chaves que o /api/capi já grava. Não varre o
+// Redis (nada de KEYS em produção) — o chamador diz quais ids quer.
+app.post('/api/dash/attribution', requireDashToken, async (req, res) => {
+  const ids = Array.isArray(req.body?.lead_event_ids) ? req.body.lead_event_ids : [];
+  if (!ids.length) return res.json({ attribution: {}, found: 0, requested: 0 });
+  // Teto por chamada: o Hub pagina. Protege contra um MGET gigante.
+  const LIMITE = 500;
+  const pedidos = [...new Set(ids.filter(x => typeof x === 'string' && x))].slice(0, LIMITE);
+  if (!pedidos.length) return res.json({ attribution: {}, found: 0, requested: 0 });
+  try {
+    const brutos = await getRedis().mget(pedidos.map(id => `lead:${id}`));
+    const out = {};
+    pedidos.forEach((id, i) => {
+      if (!brutos[i]) return;
+      let rec = null;
+      try { rec = JSON.parse(brutos[i]); } catch { return; }
+      // `attribution` só existe em leads capturadas depois de 12/10/2026 E com
+      // UTM no link do anúncio. Lead antiga devolve a chave ausente, que o Hub
+      // mostra como "sem atribuição" — nunca como se fosse tráfego direto.
+      if (!rec || !rec.attribution) return;
+      out[id] = {
+        first:  rec.attribution.first  || {},
+        latest: rec.attribution.latest || {},
+        funnel: rec.funnel || null,
+        saved_at: rec.saved_at || null,
+      };
+    });
+    res.json({ attribution: out, found: Object.keys(out).length, requested: pedidos.length });
+  } catch (e) {
+    console.error('[dash/attribution]', e.message);
+    res.status(500).json({ error: 'Falha ao ler atribuição' });
+  }
+});
+
 app.get('/api/dash/data', async (req, res) => {
   try {
     const daysN = Math.min(Math.max(Number(req.query.days) || 30, 1), 90);
