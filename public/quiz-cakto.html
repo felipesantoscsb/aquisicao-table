@@ -947,6 +947,65 @@ function getCookie(name){
   return m ? m[2] : null;
 }
 
+// ── Atribuicao de anuncio ───────────────────────────────────────────────────
+// Guarda de qual anuncio a lead veio, em cookie proprio, para ligar a venda ao
+// criativo SEM depender da atribuicao do Meta (que so da ultimo toque dentro
+// da janela e nao mostra anuncio que ajudou sem levar o credito).
+// Mesmos nomes de cookie do /conversa de proposito: o dominio e o mesmo, entao
+// quem passou pelos dois funis tem o primeiro toque preservado entre eles.
+// PRIMEIRO toque nunca e sobrescrito; ULTIMO reflete a visita atual.
+// Exige a UTM no link do anuncio (utm_content={{ad.name}}&utm_term={{ad.id}});
+// sem ela isto grava vazio e nada quebra.
+const ATTR_KEYS = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid'];
+const ATTR_FIRST = 'table_attr_first';
+const ATTR_LATEST = 'table_attr_latest';
+
+function attrFromUrl(){
+  try {
+    const p = new URLSearchParams(window.location.search);
+    const v = {};
+    ATTR_KEYS.forEach(function(k){
+      const x = p.get(k);
+      if(x && x.trim()) v[k] = x.trim().slice(0,250);
+    });
+    if(Object.keys(v).length) v.captured_at = Math.floor(Date.now()/1000);
+    return v;
+  } catch(e){ return {}; }
+}
+
+function attrReadCookie(name){
+  try { return JSON.parse(decodeURIComponent(getCookie(name) || '') || '{}'); } catch(e){ return {}; }
+}
+
+function attrWriteCookie(name, obj){
+  try {
+    document.cookie = name + '=' + encodeURIComponent(JSON.stringify(obj))
+      + ';path=/;max-age=' + (60*60*24*90) + ';SameSite=Lax';
+  } catch(e){}
+}
+
+// Blindado de proposito: isto roda DENTRO do submitCapture, e atribuicao e um
+// detalhe de medicao — nao pode derrubar a captura da lead em nenhum caso.
+function persistAttribution(){
+  try {
+    const incoming = attrFromUrl();
+    const first = attrReadCookie(ATTR_FIRST);
+    Object.keys(incoming).forEach(function(k){
+      if(first[k] === undefined || first[k] === '') first[k] = incoming[k];
+    });
+    const latest = Object.keys(incoming).length ? incoming : attrReadCookie(ATTR_LATEST);
+    if(Object.keys(first).length)  attrWriteCookie(ATTR_FIRST, first);
+    if(Object.keys(latest).length) attrWriteCookie(ATTR_LATEST, latest);
+    return { first: first, latest: latest };
+  } catch(e){
+    return { first: {}, latest: {} };
+  }
+}
+
+// Roda no carregamento: o clique no anuncio traz a UTM na URL, e a lead so e
+// capturada varias telas depois, quando a query string ja se perdeu.
+try { persistAttribution(); } catch(e){}
+
 // Remove codigo de pais (55) para o Make hashar corretamente
 function phoneForHash(normalized){
   return normalized.startsWith('55') ? normalized.slice(2) : normalized;
@@ -1081,7 +1140,8 @@ async function submitCapture(){
       fbp: window._leadFbp,
       external_id: window._leadExternalId,
       lead_event_id: window._leadEventId,
-      event_source_url: window.location.href
+      event_source_url: window.location.href,
+      attribution: persistAttribution()
     })
   }).catch(()=>{});
   showLoading();

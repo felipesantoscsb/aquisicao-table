@@ -436,6 +436,13 @@ app.post('/api/capi', async (req, res) => {
       // à Meta sem os dois parâmetros e o EMQ dele fica abaixo dos demais.
       client_ip:     getClientIp(req) || null,
       client_ua:     req.headers['user-agent'] || null,
+      // De qual anuncio a lead veio. O Meta so entrega ultimo toque dentro da
+      // janela e nao expoe anuncio que ajudou sem levar o credito; guardando
+      // aqui, a venda que chega por webhook (join por sck = lead_event_id) pode
+      // ser atribuida ao criativo pelo nosso proprio dado.
+      // `first` = primeiro toque, `latest` = ultimo. Null enquanto os anuncios
+      // nao carregarem utm_content={{ad.name}}&utm_term={{ad.id}} no link.
+      attribution:   req.body.attribution || null,
       saved_at:      new Date().toISOString(),
     };
     getRedis().set(
