@@ -2159,7 +2159,59 @@ function recoveryButtonSuffix(rec) {
 // Envio pela WhatsApp Cloud API. Tem de ser template: a lead abandonou o
 // checkout sem nunca ter escrito para nós, então não existe janela de 24h e
 // mensagem livre não seria entregue.
-async function sendRecoveryMessage(rec) {
+// Canal da recuperação. Desde 13/10/2026 a recuperação sai como CONVERSA pelo
+// agente (Z-API, número da Karina), personalizada com as respostas do quiz —
+// não como template.
+//
+// O caminho por template continua no código, dormente: foi ele que consertou
+// 30 dias de envio zero em 30/09, e é a rede se a instância Z-API cair.
+// RECOVERY_CANAL=template volta para ele sem deploy.
+function recoveryCanal() {
+  return process.env.RECOVERY_CANAL === 'template' ? 'template' : 'sdr';
+}
+
+// URL do sdr-table com o caminho certo embutido. O default errado aqui custou
+// 30 dias de recuperação sem sair: o endpoint respondia 404 e a fila era
+// descartada em silêncio. Mudar isto exige saber exatamente o que se faz.
+const SDR_RECOVERY_URL = process.env.SDR_RECOVERY_URL
+  || 'https://jornada.tableclinic.com.br/webhook/checkout-recovery';
+
+async function sendRecoveryViaSdr(rec) {
+  const TOKEN = process.env.SDR_RECOVERY_TOKEN || process.env.RECOVERY_TOKEN;
+  // O link vai montado daqui: o sdr-table não conhece oferta nem join key.
+  const checkoutUrl = rec.pix_url
+    || (RECOVERY_CHANNELS.cakto.urlBase() + RECOVERY_CHANNELS.cakto.suffix(rec));
+
+  const payload = {
+    phone:          rec.phone,
+    name:           rec.name || null,
+    stage:          rec.stage,          // waiting_payment | ic | abandoned_cart
+    touch:          rec.touch_no || 1,
+    pix_code:       rec.pix_code || null,
+    pix_expiration: rec.pix_expiration || null,
+    checkout_url:   checkoutUrl,
+    lid:            rec.lid || null,
+    // O perfil e as RESPOSTAS do quiz não vão daqui de propósito: o sdr-table
+    // já guarda as duas coisas por telefone, e dado sensível de saúde não
+    // precisa trafegar de novo entre serviços só para montar uma frase.
+  };
+
+  if (!recoveryEnabled() || !TOKEN) {
+    console.log('[Recovery] SOMBRA — payload SDR:', JSON.stringify(payload));
+    return { shadow: true };
+  }
+
+  const resp = await fetch(SDR_RECOVERY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-recovery-token': TOKEN },
+    body: JSON.stringify(payload),
+  });
+  const json = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(`SDR recovery ${resp.status}: ${JSON.stringify(json)}`);
+  return json;
+}
+
+async function sendRecoveryViaTemplate(rec) {
   const ENABLED  = recoveryEnabled();
   const TOKEN    = process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
   const PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
@@ -2193,6 +2245,14 @@ async function sendRecoveryMessage(rec) {
   return json;
 }
 
+async function sendRecoveryMessage(rec) {
+  return recoveryCanal() === 'template'
+    ? sendRecoveryViaTemplate(rec)
+    : sendRecoveryViaSdr(rec);
+}
+
+// SEM CHAMADORES desde que a recuperação deixou de ser template. Mantida para
+// o caso de RECOVERY_CANAL=template voltar a ser usado com registro no Hub.
 async function registerRecoveryTemplateInHub(rec, provider) {
   const HUB_URL = process.env.HUB_TEMPLATE_SENT_URL
     || 'https://crm.tableclinic.com.br/webhook/whatsapp-template-sent';
@@ -3045,19 +3105,34 @@ app.get('/api/webhooks/ticto/health', async (req, res) => {
 
     // Diagnóstico do canal de envio: sem token/phone id da Cloud API o
     // sendRecoveryMessage cai em modo SOMBRA e a fila nunca drena (attempts 0).
-    const sendReady = recoveryEnabled()
-      && !!(process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN)
+    // O que torna o envio possível depende do canal: pelo SDR é a URL + token
+    // do sdr-table; por template é o token + phone id da Cloud API. Mostrar o
+    // par errado foi o que escondeu 30 dias de 404 — agora o /health segue o
+    // canal que está realmente em uso.
+    const canal = recoveryCanal();
+    const sdrToken = !!(process.env.SDR_RECOVERY_TOKEN || process.env.RECOVERY_TOKEN);
+    const cloudOk = !!(process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN)
       && !!process.env.WHATSAPP_PHONE_NUMBER_ID;
+    const sendReady = recoveryEnabled() && (canal === 'template' ? cloudOk : sdrToken);
     recovery = {
       enabled: recoveryEnabled(),
       send_mode: sendReady ? 'live' : 'shadow',
-      send_channel: {
-        transport:         'whatsapp_cloud_api',
-        token_configured:  !!(process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN),
-        phone_id_configured: !!process.env.WHATSAPP_PHONE_NUMBER_ID,
-        template_cakto:    process.env.WHATSAPP_RECOVERY_TEMPLATE_CAKTO || 'recuperacao_checkout_cakto',
-        url_base:          RECOVERY_CHANNELS.cakto.urlBase(),
-      },
+      send_channel: canal === 'template'
+        ? {
+          canal:               'template',
+          transport:           'whatsapp_cloud_api',
+          token_configured:    !!(process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN),
+          phone_id_configured: !!process.env.WHATSAPP_PHONE_NUMBER_ID,
+          template_cakto:      process.env.WHATSAPP_RECOVERY_TEMPLATE_CAKTO || 'recuperacao_checkout_cakto',
+          url_base:            RECOVERY_CHANNELS.cakto.urlBase(),
+        }
+        : {
+          canal:            'sdr',
+          transport:        'zapi_agente',
+          url:              SDR_RECOVERY_URL,
+          token_configured: sdrToken,
+          url_base:         RECOVERY_CHANNELS.cakto.urlBase(),
+        },
       pending: pendingKeys.length,
       pending_breakdown: breakdown,
       pending_detail:    pendingDetail,

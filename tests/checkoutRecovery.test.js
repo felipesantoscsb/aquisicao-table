@@ -5,15 +5,31 @@ const { join } = require('node:path');
 
 const server = readFileSync(join(__dirname, '..', 'src/server.js'), 'utf8');
 
-const sendRecovery = server.slice(
-  server.indexOf('async function sendRecoveryMessage(rec)'),
-  server.indexOf('async function registerRecoveryTemplateInHub'),
+const viaSdr = server.slice(
+  server.indexOf('async function sendRecoveryViaSdr(rec)'),
+  server.indexOf('async function sendRecoveryViaTemplate(rec)'),
 );
+const viaTemplate = server.slice(
+  server.indexOf('async function sendRecoveryViaTemplate(rec)'),
+  server.indexOf('async function sendRecoveryMessage(rec)'),
+);
+const sendRecovery = viaTemplate;
 
-test('recuperação sai pela Cloud API, não mais pelo SDR/Z-API', () => {
-  assert.match(sendRecovery, /graph\.facebook\.com\/v21\.0\/\$\{PHONE_ID\}\/messages/);
-  // o caminho antigo caía em 404 silencioso; não pode voltar
-  assert.doesNotMatch(server, /SDR_RECOVERY_URL|SDR_RECOVERY_TOKEN/);
+test('canal padrão é conversa pelo agente, com template dormente como rede', () => {
+  assert.match(server, /RECOVERY_CANAL === 'template' \? 'template' : 'sdr'/);
+  assert.match(viaSdr, /SDR_RECOVERY_URL/);
+  assert.match(viaTemplate, /graph\.facebook\.com\/v21\.0\/\$\{PHONE_ID\}\/messages/);
+});
+
+test('a URL do sdr-table tem o caminho certo embutido', () => {
+  // default errado aqui custou 30 dias de recuperação sem sair: o endpoint
+  // respondia 404 e a fila era descartada em silêncio
+  assert.match(server, /'https:\/\/jornada\.tableclinic\.com\.br\/webhook\/checkout-recovery'/);
+});
+
+test('dado sensível do quiz não trafega de novo entre serviços', () => {
+  // o sdr-table já guarda perfil e respostas por telefone
+  assert.doesNotMatch(viaSdr, /respostas|perfil:/);
 });
 
 test('envia como template — lead de checkout não tem janela de 24h', () => {
