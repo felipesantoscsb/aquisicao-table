@@ -21,10 +21,12 @@ test('canal padrão é conversa pelo agente, com template dormente como rede', (
   assert.match(viaTemplate, /graph\.facebook\.com\/v21\.0\/\$\{PHONE_ID\}\/messages/);
 });
 
-test('a URL do sdr-table tem o caminho certo embutido', () => {
-  // default errado aqui custou 30 dias de recuperação sem sair: o endpoint
-  // respondia 404 e a fila era descartada em silêncio
-  assert.match(server, /'https:\/\/jornada\.tableclinic\.com\.br\/webhook\/checkout-recovery'/);
+test('a URL do sdr-table é fixa, sem override por ambiente', () => {
+  // Esta env já errou duas vezes: ausente em jul (sombra por um dia) e
+  // apontando para o domínio morto do Railway em out (30 dias de fila
+  // descartada em silêncio). O código estava certo nas duas.
+  assert.match(server, /const SDR_RECOVERY_URL = 'https:\/\/jornada\.tableclinic\.com\.br\/webhook\/checkout-recovery'/);
+  assert.doesNotMatch(server, /process\.env\.SDR_RECOVERY_URL/);
 });
 
 test('dado sensível do quiz não trafega de novo entre serviços', () => {

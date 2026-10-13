@@ -2170,11 +2170,18 @@ function recoveryCanal() {
   return process.env.RECOVERY_CANAL === 'template' ? 'template' : 'sdr';
 }
 
-// URL do sdr-table com o caminho certo embutido. O default errado aqui custou
-// 30 dias de recuperação sem sair: o endpoint respondia 404 e a fila era
-// descartada em silêncio. Mudar isto exige saber exatamente o que se faz.
-const SDR_RECOVERY_URL = process.env.SDR_RECOVERY_URL
-  || 'https://jornada.tableclinic.com.br/webhook/checkout-recovery';
+// URL do sdr-table, FIXA no código e sem override por env — de propósito.
+//
+// Esta variável já errou duas vezes: em jul/2026 estava ausente (recuperação
+// em sombra por um dia) e em out/2026 apontava para o domínio antigo do
+// Railway, que responde 404 — foram 30 dias de fila descartada em silêncio.
+// Nos dois casos o código estava certo e o ambiente, errado, e ninguém viu
+// porque falha de envio aqui não grita.
+//
+// O endereço do sdr-table é estável e público; não há cenário real em que ele
+// precise mudar por ambiente. Fixar aqui troca flexibilidade que não usamos
+// por uma classe inteira de falha silenciosa.
+const SDR_RECOVERY_URL = 'https://jornada.tableclinic.com.br/webhook/checkout-recovery';
 
 async function sendRecoveryViaSdr(rec) {
   const TOKEN = process.env.SDR_RECOVERY_TOKEN || process.env.RECOVERY_TOKEN;
