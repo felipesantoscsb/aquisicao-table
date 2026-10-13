@@ -2166,8 +2166,15 @@ function recoveryButtonSuffix(rec) {
 // O caminho por template continua no código, dormente: foi ele que consertou
 // 30 dias de envio zero em 30/09, e é a rede se a instância Z-API cair.
 // RECOVERY_CANAL=template volta para ele sem deploy.
+// REVERTIDO em 14/10/2026 para 'template'. Uma lead recebeu mensagem
+// espontanea triplicada e a origem ainda nao esta identificada; o canal por
+// agente subiu hoje e e um dos poucos caminhos que mandam sozinho. Volta para
+// o template, que e o estado anterior e estava funcionando.
+// Religar so depois de identificado o que triplicou.
+const RECOVERY_CANAL_FORCADO = 'template';
+
 function recoveryCanal() {
-  return process.env.RECOVERY_CANAL === 'template' ? 'template' : 'sdr';
+  return RECOVERY_CANAL_FORCADO;
 }
 
 // URL do sdr-table, FIXA no código e sem override por env — de propósito.

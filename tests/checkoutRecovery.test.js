@@ -15,8 +15,8 @@ const viaTemplate = server.slice(
 );
 const sendRecovery = viaTemplate;
 
-test('canal padrão é conversa pelo agente, com template dormente como rede', () => {
-  assert.match(server, /RECOVERY_CANAL === 'template' \? 'template' : 'sdr'/);
+test('canal revertido para template enquanto o agente está sob suspeita', () => {
+  assert.match(server, /const RECOVERY_CANAL_FORCADO = 'template';/);
   assert.match(viaSdr, /SDR_RECOVERY_URL/);
   assert.match(viaTemplate, /graph\.facebook\.com\/v21\.0\/\$\{PHONE_ID\}\/messages/);
 });
