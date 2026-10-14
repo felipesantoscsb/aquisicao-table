@@ -1,0 +1,28 @@
+# evelynliu.com.br — infraestrutura de aquisição da Table Clinic.
+# A entidade institucional é tableclinic.com.br; a home daqui aponta a canônica
+# para lá de propósito.
+
+User-agent: *
+Allow: /
+
+# Páginas de funil: existem para quem chegou por um link específico e não devem
+# competir com o conteúdo institucional nem aparecer solta na busca.
+Disallow: /obrigado
+Disallow: /obrigado-
+Disallow: /oferta-
+Disallow: /acesso-ebook
+Disallow: /onboardingd
+Disallow: /dash
+Disallow: /api/
+
+# Buscadores por IA liberados: o conteúdo é educativo e ser citado é distribuição.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+Sitemap: https://www.evelynliu.com.br/sitemap.xml

@@ -111,3 +111,42 @@ test('existe diagnóstico para saber se a Cakto entrega a venda', () => {
   assert.match(server, /app\.get\('\/api\/dash\/cakto-vendas', requireDashToken/);
   assert.match(server, /por_produto/);
 });
+
+// ── Home do domínio (14/10/2026) ───────────────────────────────────────────
+// A raiz servia o placeholder do Express — 278 bytes com "Olá, mundo!" — no
+// domínio da marca. Todo rastreador que chegava à raiz não achava nem o nome
+// da Evelyn.
+test('a home não é mais o placeholder do Express', () => {
+  const home = readFileSync(join(root, 'public/index.html'), 'utf8');
+  assert.doesNotMatch(home, /Olá, mundo|Minha Página|Servidor Express/);
+  assert.match(home, /Table Clinic/);
+  assert.match(home, /Evelyn Liu/);
+  assert.ok(home.length > 20000, 'home com conteúdo de verdade');
+});
+
+// A mesma página em dois domínios é conteúdo duplicado. A canônica consolida o
+// sinal no tableclinic, que é a entidade institucional.
+test('a home canoniza para o tableclinic e não lista a si mesma no sitemap', () => {
+  const home = readFileSync(join(root, 'public/index.html'), 'utf8');
+  assert.match(home, /<link rel="canonical" href="https:\/\/tableclinic\.com\.br\/"\/>/);
+  const sitemap = readFileSync(join(root, 'public/sitemap.xml'), 'utf8');
+  assert.doesNotMatch(sitemap, /<loc>https:\/\/www\.evelynliu\.com\.br\/<\/loc>/);
+});
+
+test('links internos da home existem neste domínio', () => {
+  const home = readFileSync(join(root, 'public/index.html'), 'utf8');
+  const server = readFileSync(join(root, 'src/server.js'), 'utf8');
+  for (const rota of [...home.matchAll(/href="(\/[a-z0-9-]+)"/g)].map(m => m[1])) {
+    assert.match(server, new RegExp(`app\\.get\\('${rota}'`), `rota ${rota} não existe no server`);
+  }
+});
+
+// Sem robots nem sitemap, a descoberta dependia inteiramente de link externo.
+test('robots e sitemap existem, com as páginas de funil fora do índice', () => {
+  const robots = readFileSync(join(root, 'public/robots.txt'), 'utf8');
+  assert.match(robots, /Sitemap: https:\/\/www\.evelynliu\.com\.br\/sitemap\.xml/);
+  for (const bloqueado of ['/obrigado', '/oferta-', '/dash', '/api/']) {
+    assert.ok(robots.includes(`Disallow: ${bloqueado}`), `${bloqueado} deveria ficar fora`);
+  }
+  for (const bot of ['GPTBot', 'ClaudeBot', 'PerplexityBot']) assert.match(robots, new RegExp(bot));
+});
