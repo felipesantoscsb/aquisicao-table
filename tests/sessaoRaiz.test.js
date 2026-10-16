@@ -143,8 +143,20 @@ test('/raiz-B é um protótipo isolado da etapa final', () => {
   assert.match(page, /apenas a etapa final · sem quiz, tracking ou checkout ativo/);
   assert.match(page, /name="robots" content="noindex,nofollow"/);
   assert.match(page, /Checkout desativado neste protótipo/);
+  assert.match(page, /avaliações da Table no Google/);
+  assert.match(page, /Ação da Gracinha · Table/);
+  assert.match(page, /images\/Juliana Moreno\.jpg/);
+  assert.match(page, /images\/Mockup 3\.jpg/);
   assert.doesNotMatch(page, /fbq\(|gtag\(|InitiateCheckout|\/api\/capi/);
   assert.ok(robots.includes('Disallow: /raiz-B'));
+});
+
+test('a home usa os ativos em alta resolução com a proporção real', () => {
+  const home = readFileSync(join(root, 'public/index.html'), 'utf8');
+  assert.match(home, /evelyn-liu\.png" width="1080" height="1350"/);
+  assert.match(home, /Mockup 3\.jpg" width="2324" height="2205"/);
+  assert.doesNotMatch(home, /Vestido Verde Olhar amistoso\.jpg/);
+  assert.doesNotMatch(home, /Mockup 1\.png/);
 });
 
 test('links internos da home existem neste domínio', () => {
