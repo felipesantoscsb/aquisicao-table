@@ -474,9 +474,11 @@ fbq('track', 'PageView');
 <script src="https://tableclinic.com.br/js/google-reviews.v1.js"></script>
 <script>
 (() => {
-  const reviews = (window.TABLE_GOOGLE_REVIEWS || []).filter(review =>
+  const reviewPriority = ['adriana-mendonca', 'paula-figueiredo', 'gabriel-martins-de-oliveira'];
+  const approvedReviews = (window.TABLE_GOOGLE_REVIEWS || []).filter(review =>
     review.approvedForMarketing && review.approvedPages.includes('links')
   );
+  const reviews = reviewPriority.map(id => approvedReviews.find(review => review.id === id)).filter(Boolean);
   const container = document.getElementById('social-proof');
   if (!container || !reviews.length) return;
 

@@ -34,6 +34,7 @@ test('/links exibe prova social compacta, manual e vinculada à fonte central', 
   assert.match(html, /Conheça as avaliações da Table/);
   assert.match(html, /tableclinic\.com\.br\/js\/google-reviews\.v1\.js/);
   assert.match(html, /approvedPages\.includes\('links'\)/);
+  assert.match(html, /\['adriana-mendonca', 'paula-figueiredo', 'gabriel-martins-de-oliveira'\]/);
   assert.match(html, /aria-live="polite"/);
   assert.doesNotMatch(html, /setInterval|setTimeout/);
 });
