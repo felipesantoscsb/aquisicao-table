@@ -10,7 +10,8 @@ function harness(saved) {
   const storage = new Map(saved ? [['tq',JSON.stringify(saved)]] : []);
   function node(id){
     if(!nodes.has(id)) nodes.set(id,{value:'',textContent:'',innerHTML:'',style:{},hidden:true,
-      classList:{add(){},remove(){}},focus(){},appendChild(){},insertAdjacentHTML(){},insertAdjacentElement(){},remove(){},getAttribute(){return null;}});
+      classList:{add(){},remove(){}},focus(){},appendChild(){},insertAdjacentHTML(){},insertAdjacentElement(){},remove(){},getAttribute(){return null;},
+      querySelector(){return node(id+':span');}});
     return nodes.get(id);
   }
   const context = vm.createContext({console:{log(){},error(){}},URL,TextEncoder,crypto:webcrypto,
@@ -36,16 +37,23 @@ test('all three capture fields remain mandatory and concurrent submit emits one 
   assert.equal(leads[0].body.whats,'11999999999');
   assert.equal(h.calls.find(c=>c.pixel?.[1]==='Lead').pixel[3].eventID,leads[0].body.lead_event_id);
 });
-test('capture refresh keeps answers and qualification without persisting contact data',()=>{
+// A ponte para a captura era finishQualification(); desde 16/10/2026 é a
+// propria ultima pergunta que leva lá. O que este teste protege nao mudou:
+// refresh na captura preserva as respostas e NAO persiste dado de contato.
+test('capture refresh keeps answers without persisting contact data',()=>{
   const h=harness();
-  h.run("current=7; scores.E=7; quizAnswers=[{tipo:'E',resposta:'Resposta real'}]; selectedQual.add('jejum'); finishQualification();");
-  const saved=JSON.parse(h.storage.get('tq')); assert.equal(saved.qualificationAnswer.items[0],'jejum');
-  assert.equal(saved.quizAnswers[0].resposta,'Resposta real');
-  assert.deepEqual(Object.keys(saved).sort(),['current','qualificationAnswer','quizAnswers','scores']);
+  h.run("current=6; scores.E=6; quizAnswers=[{tipo:'E',resposta:'Resposta real'}]; selectAndAdvance('E',document.getElementById('btn'));");
+  // selectAndAdvance avança dentro de um setTimeout: o harness os enfileira.
+  h.timers.forEach(timer=>timer.fn());
+  const saved=JSON.parse(h.storage.get('tq'));
+  assert.equal(saved.current,7,'responder a 7a pergunta tem de fechar o quiz');
+  assert.equal(saved.quizAnswers[0].resposta,'Resposta real','resposta anterior sobreviveu');
+  assert.equal(saved.quizAnswers.length,2);
+  // O que importa: nome, telefone e e-mail NUNCA entram no sessionStorage.
+  assert.deepEqual(Object.keys(saved).sort(),['current','quizAnswers','scores']);
   const restored=harness(saved);
-  assert.equal(restored.run('qualificationAnswer.tier'),'cold');
-  assert.equal(restored.run('quizAnswers.length'),1);
-  assert.equal(restored.calls.length,0);
+  assert.equal(restored.run('quizAnswers.length'),2);
+  assert.equal(restored.calls.length,0,'nada de rede ao restaurar');
 });
 test('each result preserves dossier labels, full answers and matching registration event IDs',()=>{
   const names={E:'A Comedora Emocional',R:'A Comedora Restritiva',S:'A Comedora em Modo Sobrevivência',A:'A Comedora Desconectada'};

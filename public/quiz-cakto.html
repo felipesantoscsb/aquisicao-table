@@ -341,7 +341,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--terra);outline-offs
   <div class="intro-divider"></div>
   <p class="intro-sub">Reconheça qual dos 4 padrões mais aparece nas suas respostas <strong>e descubra um ponto de partida para cuidar de você.</strong></p>
   <div class="intro-promises">
-    <div class="promise-item"><div class="promise-dot"></div><span>8 perguntas diretas, sem enrolação</span></div>
+    <div class="promise-item"><div class="promise-dot"></div><span>7 perguntas diretas, sem enrolação</span></div>
     <div class="promise-item"><div class="promise-dot"></div><span>Resultado personalizado para o seu perfil</span></div>
     <div class="promise-item"><div class="promise-dot"></div><span>Por Evelyn Liu · Nutricionista comportamental da Table</span></div>
   </div>
@@ -816,23 +816,6 @@ const questions = [
       { text: "Não sei, acontece sem eu perceber", type: "A" }
     ]
   },
-  {
-    // QUALIFICAÇÃO — múltipla escolha, sem auto-advance
-    qualification: true,
-    text: "Última pergunta: ela completa o seu mapeamento.",
-    hint: "O que você já tentou em relação à sua alimentação até hoje?",
-    options: [
-      { text: "Dieta de restrição calórica ou corte de carboidratos", value: "dieta_calorias" },
-      { text: "Jejum intermitente", value: "jejum" },
-      { text: "Acompanhamento com nutricionista convencional", value: "nutri_convencional" },
-      { text: "Nutrição comportamental ou psicologia alimentar", value: "nutri_comportamental" },
-      { text: "Psicólogo ou psiquiatra", value: "psicologo" },
-      { text: "Medicação prescrita", value: "remedios" },
-      { text: "Coach ou programa online", value: "coach" },
-      { text: "Cirurgia bariátrica", value: "cirurgia" },
-      { text: "Não tentei nenhuma das opções acima", value: "nenhum" }
-    ]
-  }
 ];
 
 // type remains the integration label used by the dossier/CRM. displayType is presentation only.
@@ -888,29 +871,20 @@ function loadQuizState(){
   return null;
 }
 function saveQuizState(){
-  try{ sessionStorage.setItem('tq', JSON.stringify({current, scores, quizAnswers, qualificationAnswer})); }catch(e){}
+  try{ sessionStorage.setItem('tq', JSON.stringify({current, scores, quizAnswers})); }catch(e){}
 }
 function clearQuizState(){ try{ sessionStorage.removeItem('tq'); }catch(e){} }
 
 const _saved = loadQuizState();
 let current = _saved ? _saved.current : 0;
 let scores = _saved ? _saved.scores : { E:0, R:0, S:0, A:0 };
-let qualificationAnswer = _saved ? (_saved.qualificationAnswer || null) : null;
-const selectedQual = new Set(qualificationAnswer ? qualificationAnswer.items : []);
+// A pergunta de histórico saiu do quiz em 16/10/2026: era fricção na captação
+// e o dado não era usado no tratamento de quem não compra. A variável fica,
+// sempre null, porque as integrações (Make, CAPI, SDR) leem este campo e todos
+// os pontos de leitura já tratam a ausência. Quem conversa com o agente tem o
+// histórico perguntado na conversa, onde ele custa nada.
+let qualificationAnswer = null;
 let quizAnswers = _saved ? _saved.quizAnswers : [];
-
-// Qualification scoring — quanto mais investiu antes, maior o score
-const qualificationScore = {
-  nutri_convencional: 1,
-  jejum: 1,
-  dieta_calorias: 1,
-  psicologo: 2,
-  remedios: 2,
-  nutri_comportamental: 3,
-  cirurgia: 4,
-  coach: 2,
-  nenhum: 0
-};
 
 // ── FORMATAÇÃO WHATSAPP ──
 function formatPhone(input){
@@ -1034,7 +1008,7 @@ const CAKTO_PARAMS = {
 function startQuiz(){
   clearQuizState();
   current = 0; scores = {E:0,R:0,S:0,A:0}; quizAnswers = [];
-  qualificationAnswer = null; selectedQual.clear();
+  qualificationAnswer = null;
   // Início do quiz — sem isso o funil tem um vão entre "visitou a página" e
   // "completou o cadastro" e não dá para saber se a perda é na página ou no quiz.
   // Só contagem própria: nada de sinal novo para a Meta, para não mexer no
@@ -1049,7 +1023,7 @@ function startQuiz(){
 }
 
 // Se há estado salvo, retoma quiz automaticamente (refresh)
-if(_saved && _saved.current === questions.length - 1 && qualificationAnswer){
+if(_saved && _saved.current >= questions.length){
   goTo('page-capture');
 } else if(_saved && _saved.current > 0 && _saved.current < questions.length){
   goTo('page-quiz');
@@ -1160,34 +1134,16 @@ function renderQuestion(){
   const oldHint = document.querySelector('.q-hint');
   if(oldHint) oldHint.remove();
 
-  // Última pergunta é de qualificação — multiple choice diferente
-  if(q.qualification){
-    const hintText = q.hint || 'Selecione tudo que já tentou. Pode ser mais de uma opção.';
-    list.insertAdjacentHTML('beforebegin', `<p class="q-hint">${hintText}<br><span style="font-size:11px;color:var(--soft)">Pode ser mais de uma opção.</span></p>`);
-    q.options.forEach((opt,i)=>{
-      const btn = document.createElement('button');
-      btn.className = 'option-btn';
-      btn.dataset.value = opt.value;
-      btn.innerHTML = `<span class="option-letter option-check">✓</span><span>${opt.text}</span>`;
-      btn.onclick = ()=>toggleQualification(opt.value, btn);
-      list.appendChild(btn);
-    });
-    // Botão confirmar para última pergunta
-    const nav = document.getElementById('q-nav');
-    nav.innerHTML = backHtml() + `<button class="btn-next enabled" onclick="finishQualification()">Ver meu resultado →</button>`;
-  } else {
-    const letters = ['A','B','C','D'];
-    q.options.forEach((opt,i)=>{
-      const btn = document.createElement('button');
-      btn.className = 'option-btn';
-      btn.innerHTML = `<span class="option-letter">${letters[i]}</span><span>${opt.text}</span>`;
-      // Auto-advance ao selecionar
-      btn.onclick = ()=>selectAndAdvance(opt.type, btn);
-      list.appendChild(btn);
-    });
-    const nav = document.getElementById('q-nav');
-    nav.innerHTML = backHtml(); // só o voltar discreto nas perguntas normais
-  }
+  const letters = ['A','B','C','D'];
+  q.options.forEach((opt,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="option-letter">${letters[i]}</span><span>${opt.text}</span>`;
+    // Auto-advance ao selecionar
+    btn.onclick = ()=>selectAndAdvance(opt.type, btn);
+    list.appendChild(btn);
+  });
+  document.getElementById('q-nav').innerHTML = backHtml();
 
   const card = document.getElementById('question-card');
   card.style.animation='none';card.offsetHeight;card.style.animation='fadeUp .4s ease';
@@ -1205,12 +1161,17 @@ function goBack(){
   current--;
   const last = quizAnswers.pop();
   if(last && scores[last.tipo] > 0) scores[last.tipo]--;
-  selectedQual.clear();
   saveQuizState();
   renderQuestion();
 }
 
 function selectAndAdvance(type, btn){
+  // Quiz já encerrado: questions[current] é undefined e ler .text estoura.
+  // Não é alcançável pelo dedo (a tela do quiz já saiu e os botões ficam com
+  // pointer-events none), mas clique sintético, tecla presa ou leitor de tela
+  // chegam aqui — e o custo de uma linha é menor que o de um quiz morto.
+  if(current >= questions.length) return;
+
   // Marca visualmente
   document.querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected'));
   btn.classList.add('selected');
@@ -1231,7 +1192,15 @@ function selectAndAdvance(type, btn){
   setTimeout(()=>{
     scores[type]++;
     current++;
-    // Metade do quiz (4ª de 8) — pixel + contagem própria, como no QuizStart
+    // A última pergunta agora leva direto à captura. Antes quem fazia essa
+    // ponte era finishQualification(); sem a 8ª pergunta, chegar aqui com
+    // current === questions.length renderizaria questions[undefined].
+    if(current >= questions.length){
+      saveQuizState();
+      goTo('page-capture');
+      return;
+    }
+    // Metade do quiz (4ª de 7) — pixel + contagem própria, como no QuizStart
     if(current === 4){
       try { if (typeof fbq === 'function') fbq('trackCustom','QuizProgress',{step:4}); } catch(e){}
       fetch('/api/capi/quiz-progress',{
@@ -1243,57 +1212,6 @@ function selectAndAdvance(type, btn){
     saveQuizState();
     renderQuestion();
   }, 340);
-}
-
-// Multiple select para qualificação
-// selectedQual is initialized before restoring the current screen.
-function toggleQualification(value, btn){
-  if(value === 'nenhum'){
-    // Nenhum deseleciona tudo
-    selectedQual.clear();
-    document.querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected'));
-    selectedQual.add('nenhum');
-    btn.classList.add('selected');
-    return;
-  }
-  // Deseleciona "nenhum" se existir
-  selectedQual.delete('nenhum');
-  document.querySelectorAll('[data-value="nenhum"]').forEach(b=>b.classList.remove('selected'));
-
-  if(selectedQual.has(value)){
-    selectedQual.delete(value);
-    btn.classList.remove('selected');
-  } else {
-    selectedQual.add(value);
-    btn.classList.add('selected');
-  }
-}
-
-function finishQualification(){
-  if(selectedQual.size === 0){
-    // Erro inline abaixo das opções
-    let errEl = document.getElementById('qual-error');
-    if(!errEl){
-      errEl = document.createElement('p');
-      errEl.id = 'qual-error';
-      errEl.style.cssText = 'font-size:13px;color:#c0392b;margin-top:12px;text-align:center';
-      document.getElementById('q-nav').insertAdjacentElement('beforebegin', errEl);
-    }
-    errEl.textContent = 'Selecione ao menos uma opção para continuar.';
-    return;
-  }
-  // Calcula score de qualificação
-  let qScore = 0;
-  selectedQual.forEach(v => { qScore += qualificationScore[v] || 0; });
-  qualificationAnswer = {
-    items: Array.from(selectedQual),
-    score: qScore,
-    // hot = já investiu em coisas caras antes
-    tier: qScore >= 4 ? 'hot' : qScore >= 2 ? 'warm' : 'cold'
-  };
-  saveQuizState(); // Keep answers through capture refresh; contact data is not persisted.
-  // Capture remains required for dossier delivery and existing integrations.
-  goTo('page-capture');
 }
 
 function nextQuestion(){
@@ -1337,7 +1255,15 @@ function showResult(){
   const p = profiles[top];
   const name = (window._leadName || '').trim();
   const firstName = name.split(' ')[0];
+  // Duas coisas diferentes, de propósito. A PÁGINA precisa de uma string para
+  // escolher copy, e sem a pergunta de histórico a variante genérica ('cold')
+  // é a correta: ela não presume nada sobre o que a pessoa já tentou.
+  // As INTEGRAÇÕES recebem null, porque 'cold' ali seria uma afirmação falsa
+  // ("lead desqualificada") quando a verdade é que não perguntamos. O agente
+  // do SDR trata ausência investigando; 'cold' o manda direto pro Protocolo
+  // Raiz e derrubaria agendamento de pré-consulta.
   const tier = qualificationAnswer ? qualificationAnswer.tier : 'cold';
+  const tierIntegracao = qualificationAnswer ? qualificationAnswer.tier : null;
   const qualItems = qualificationAnswer ? qualificationAnswer.items : [];
 
   // 1. Nome no hero
@@ -1475,7 +1401,7 @@ function showResult(){
       lead_event_id: crEventId,
       quiz_lead_event_id: window._leadEventId,
       perfil: top,
-      tier: tier,
+      tier: tierIntegracao,
       event_source_url: window.location.href,
       // Campos consumidos pelo SDR-forward no servidor (ignorados pela Meta CAPI)
       profileName: p.type.replace(/<[^>]*>/g, ''),

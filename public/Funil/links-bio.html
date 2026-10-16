@@ -341,10 +341,15 @@ fbq('track', 'PageView');
 
   <p class="tese">"O problema nunca foi a comida.<br>Foi sempre <em>o que veio antes.</em>"</p>
 
-  <a href="https://evelynliu.com.br/conversa" class="link-primary">
+  <!-- Vai direto para o WhatsApp, sem formulário no meio (16/10/2026). A frase
+       pré-preenchida NÃO é decorativa: é ela que o agente de entrada usa para
+       reconhecer a lead e marcar a origem como "bio". O WhatsApp não carrega
+       UTM, então mexer no texto aqui quebra a atribuição. Matcher em
+       sdr-table/src/inbound/entry.js. -->
+  <a href="https://wa.me/5511963934151?text=Oi!%20Vim%20pela%20bio%20e%20quero%20saber%20mais%20sobre%20o%20acompanhamento%20da%20Table%20Clinic" class="link-primary">
     <span class="tag">Comece aqui</span>
     <span class="label">Quero uma conversa</span>
-    <span class="sublabel">Conte o que você vive hoje e a equipe da Evelyn te chama no WhatsApp</span>
+    <span class="sublabel">Fale agora no WhatsApp com a equipe da Evelyn</span>
     <span class="arrow">›</span>
   </a>
 
