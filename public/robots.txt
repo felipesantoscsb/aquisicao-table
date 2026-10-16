@@ -1,6 +1,5 @@
-# evelynliu.com.br — infraestrutura de aquisição da Table Clinic.
-# A entidade institucional é tableclinic.com.br; a home daqui aponta a canônica
-# para lá de propósito.
+# evelynliu.com.br — presença autoral de Evelyn Liu e infraestrutura de
+# aquisição da Table Clinic.
 
 User-agent: *
 Allow: /
@@ -12,6 +11,7 @@ Disallow: /obrigado-
 Disallow: /oferta-
 Disallow: /acesso-ebook
 Disallow: /onboardingd
+Disallow: /raiz-B
 Disallow: /dash
 Disallow: /api/
 

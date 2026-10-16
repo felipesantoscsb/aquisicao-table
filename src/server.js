@@ -139,6 +139,9 @@ const pub   = path.join(__dirname, '..', 'public');
 // sempre; só o goOffer muda (Ticto→Cakto). Campanhas seguem apontando p/ /raiz.
 // REVERTER: trocar 'quiz-cakto.html' de volta por 'quiz.html' (1 linha).
 app.get('/raiz',       (req, res) => res.sendFile(path.join(pub,   'quiz-cakto.html')));
+// Protótipo isolado: somente a etapa final da futura variante B. Não carrega
+// quiz, tracking nem checkout; existe apenas para validação visual/editorial.
+app.get('/raiz-B',     (req, res) => res.sendFile(path.join(pub,   'raiz-b.html')));
 // Nova avenida GLP-1: Radar Table com as seis dimensões oficiais do método.
 // Mantém Pixel/CAPI do /raiz, mas não aciona SDR, dossiê ou sequência de WhatsApp.
 app.get('/raiz-v2',    (req, res) => res.sendFile(path.join(pub,   'quiz-raiz-v2.html')));

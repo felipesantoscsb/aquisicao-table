@@ -121,16 +121,30 @@ test('a home não é mais o placeholder do Express', () => {
   assert.doesNotMatch(home, /Olá, mundo|Minha Página|Servidor Express/);
   assert.match(home, /Table Clinic/);
   assert.match(home, /Evelyn Liu/);
-  assert.ok(home.length > 20000, 'home com conteúdo de verdade');
+  assert.ok(home.length > 15000, 'home com conteúdo de verdade');
 });
 
-// A mesma página em dois domínios é conteúdo duplicado. A canônica consolida o
-// sinal no tableclinic, que é a entidade institucional.
-test('a home canoniza para o tableclinic e não lista a si mesma no sitemap', () => {
+// A home agora é autoral e distinta do site institucional: pode ocupar a raiz
+// do domínio da Evelyn sem disputar a canônica da Table.
+test('a home autoral tem canônica própria e entra no sitemap', () => {
   const home = readFileSync(join(root, 'public/index.html'), 'utf8');
-  assert.match(home, /<link rel="canonical" href="https:\/\/tableclinic\.com\.br\/"\/>/);
+  assert.match(home, /<link rel="canonical" href="https:\/\/www\.evelynliu\.com\.br\/"\/>/);
+  assert.match(home, /Nutricionista comportamental, educadora/);
+  assert.match(home, /A Table é o principal lugar/);
   const sitemap = readFileSync(join(root, 'public/sitemap.xml'), 'utf8');
-  assert.doesNotMatch(sitemap, /<loc>https:\/\/www\.evelynliu\.com\.br\/<\/loc>/);
+  assert.match(sitemap, /<loc>https:\/\/www\.evelynliu\.com\.br\/<\/loc>/);
+});
+
+test('/raiz-B é um protótipo isolado da etapa final', () => {
+  const page = readFileSync(join(root, 'public/raiz-b.html'), 'utf8');
+  const server = readFileSync(join(root, 'src/server.js'), 'utf8');
+  const robots = readFileSync(join(root, 'public/robots.txt'), 'utf8');
+  assert.match(server, /app\.get\('\/raiz-B',[\s\S]*'raiz-b\.html'/);
+  assert.match(page, /apenas a etapa final · sem quiz, tracking ou checkout ativo/);
+  assert.match(page, /name="robots" content="noindex,nofollow"/);
+  assert.match(page, /Checkout desativado neste protótipo/);
+  assert.doesNotMatch(page, /fbq\(|gtag\(|InitiateCheckout|\/api\/capi/);
+  assert.ok(robots.includes('Disallow: /raiz-B'));
 });
 
 test('links internos da home existem neste domínio', () => {
