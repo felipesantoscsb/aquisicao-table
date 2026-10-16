@@ -3,7 +3,15 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Evelyn Liu · Table</title>
+<title>Links oficiais · Evelyn Liu · Table Clinic</title>
+<meta name="description" content="Canais oficiais de Evelyn Liu e da Table Clinic: acompanhamento, Quiz Raiz, Protocolo Raiz e o livro Gordura Não Existe."/>
+<meta name="robots" content="noindex,follow"/>
+<link rel="canonical" href="https://www.evelynliu.com.br/links"/>
+<meta property="og:type" content="profile"/>
+<meta property="og:url" content="https://www.evelynliu.com.br/links"/>
+<meta property="og:title" content="Links oficiais · Evelyn Liu · Table Clinic"/>
+<meta property="og:description" content="Acompanhamento, Quiz Raiz, Protocolo Raiz e o livro Gordura Não Existe."/>
+<meta property="og:image" content="https://www.evelynliu.com.br/images/evelyn-liu.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
 
 <!-- META PIXEL -->
@@ -23,6 +31,8 @@
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
+a:focus-visible{outline:3px solid var(--terra);outline-offset:4px}
+button:focus-visible{outline:3px solid var(--terra);outline-offset:3px}
 
 html{
   background:#3D4A35;
@@ -291,6 +301,23 @@ body::after{
   color:rgba(255,255,255,.4);
 }
 
+/* PROVA SOCIAL COMPACTA */
+.social-proof{
+  display:none;width:100%;margin-top:18px;padding:18px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);
+  border-radius:10px;color:var(--cream);
+}
+.social-proof.is-ready{display:block}
+.social-proof-label{font-size:9px;letter-spacing:.17em;text-transform:uppercase;color:rgba(255,255,255,.48);margin-bottom:10px}
+.social-proof-stars{color:#E7A64A;font-size:11px;letter-spacing:.12em;margin-bottom:8px}
+.social-proof-quote{font-family:'Cormorant Garamond',serif;font-size:19px;line-height:1.35;color:#fff;margin-bottom:10px}
+.social-proof-author{font-size:11px;color:rgba(255,255,255,.62)}
+.social-proof-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.1)}
+.social-proof-link{font-size:11px;color:rgba(255,255,255,.72);text-underline-offset:3px}
+.social-proof-controls{display:flex;gap:7px}
+.social-proof-dot{width:26px;height:26px;border:1px solid rgba(255,255,255,.18);border-radius:50%;background:transparent;color:rgba(255,255,255,.62);font:500 10px 'Jost',sans-serif;cursor:pointer}
+.social-proof-dot[aria-current="true"]{background:var(--terra);border-color:var(--terra);color:#fff}
+
 /* FOOTER */
 .footer{
   margin-top:40px;
@@ -308,11 +335,20 @@ body::after{
 }
 
 .footer-brand span{color:rgba(185,112,64,.5)}
+.footer-privacy{
+  display:inline-block;margin-top:12px;
+  color:rgba(255,255,255,.5);font-size:11px;text-underline-offset:3px;
+}
+.footer-privacy:hover{color:rgba(255,255,255,.8)}
 
 /* ANIMATIONS */
 @keyframes fadeUp{
   from{opacity:0;transform:translateY(14px)}
   to{opacity:1;transform:none}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .header,.tese,.link-primary,.divider,.link-secondary,.footer{opacity:1}
 }
 </style>
 <script>
@@ -331,13 +367,13 @@ fbq('track', 'PageView');
 </head>
 <body style="background:#3D4A35;min-height:100vh">
 
-<div class="container">
+<main class="container">
 
-  <div class="header">
-    <div class="avatar"><img src="/images/evelyn-liu.png" alt="Evelyn Liu"/></div>
-    <p class="name">Evelyn Liu</p>
+  <header class="header">
+    <div class="avatar"><img src="/images/evelyn-liu.png" width="80" height="80" alt="Evelyn Liu"/></div>
+    <h1 class="name">Evelyn Liu</h1>
     <p class="role">Nutricionista Comportamental</p>
-  </div>
+  </header>
 
   <p class="tese">"O problema nunca foi a comida.<br>Foi sempre <em>o que veio antes.</em>"</p>
 
@@ -350,7 +386,7 @@ fbq('track', 'PageView');
     <span class="tag">Comece aqui</span>
     <span class="label">Quero uma conversa</span>
     <span class="sublabel">Fale agora no WhatsApp com a equipe da Evelyn</span>
-    <span class="arrow">›</span>
+    <span class="arrow" aria-hidden="true">›</span>
   </a>
 
   <div class="divider">
@@ -371,7 +407,7 @@ fbq('track', 'PageView');
         <span class="text-label">Descubra sua Raiz</span>
         <span class="text-sub">Quiz gratuito · 3 minutos</span>
       </div>
-      <span class="chevron">›</span>
+      <span class="chevron" aria-hidden="true">›</span>
     </a>
 
     <a href="https://evelynliu.com.br/protocolo-raiz"
@@ -384,12 +420,13 @@ fbq('track', 'PageView');
         <span class="text-label">Protocolo Raiz</span>
         <span class="text-sub">Primeiro passo para tratar a raiz</span>
       </div>
-      <span class="chevron">›</span>
+      <span class="chevron" aria-hidden="true">›</span>
     </a>
 
     <a href="https://a.co/d/00dP3xNE"
        class="link-secondary"
        target="_blank"
+       rel="noopener"
        onclick="void 0">
       <div class="icon">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(185,112,64,.8)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
@@ -398,7 +435,7 @@ fbq('track', 'PageView');
         <span class="text-label">Gordura Não Existe</span>
         <span class="text-sub">O livro de Evelyn Liu</span>
       </div>
-      <span class="chevron">›</span>
+      <span class="chevron" aria-hidden="true">›</span>
     </a>
 
     <a href="https://evelynliu.com.br/table"
@@ -411,16 +448,66 @@ fbq('track', 'PageView');
         <span class="text-label">Table</span>
         <span class="text-sub">Nutrição comportamental · Moema, SP</span>
       </div>
-      <span class="chevron">›</span>
+      <span class="chevron" aria-hidden="true">›</span>
     </a>
 
   </div>
 
+  <aside class="social-proof" id="social-proof" aria-label="Trecho de avaliação da Table Clinic no Google">
+    <p class="social-proof-label">Trecho de avaliação no Google</p>
+    <p class="social-proof-stars" id="social-proof-stars"></p>
+    <blockquote class="social-proof-quote" id="social-proof-quote" aria-live="polite"></blockquote>
+    <p class="social-proof-author" id="social-proof-author"></p>
+    <div class="social-proof-footer">
+      <a class="social-proof-link" id="social-proof-link" href="#" target="_blank" rel="noopener">Conheça as avaliações da Table</a>
+      <div class="social-proof-controls" id="social-proof-controls" aria-label="Escolha uma avaliação"></div>
+    </div>
+  </aside>
+
   <div class="footer">
     <p class="footer-brand">Table</p>
+    <a class="footer-privacy" href="/legal">Privacidade e termos</a>
   </div>
 
-</div>
+</main>
+
+<script src="https://tableclinic.com.br/js/google-reviews.v1.js"></script>
+<script>
+(() => {
+  const reviews = (window.TABLE_GOOGLE_REVIEWS || []).filter(review =>
+    review.approvedForMarketing && review.approvedPages.includes('links')
+  );
+  const container = document.getElementById('social-proof');
+  if (!container || !reviews.length) return;
+
+  const quote = document.getElementById('social-proof-quote');
+  const author = document.getElementById('social-proof-author');
+  const stars = document.getElementById('social-proof-stars');
+  const link = document.getElementById('social-proof-link');
+  const controls = document.getElementById('social-proof-controls');
+
+  function showReview(index) {
+    const review = reviews[index];
+    quote.textContent = `“${review.featuredExcerpt}”`;
+    author.textContent = `— ${review.author}`;
+    stars.textContent = '★'.repeat(review.rating);
+    stars.setAttribute('aria-label', `${review.rating} de 5 estrelas`);
+    link.href = review.sourceUrl || review.businessProfileUrl;
+    controls.querySelectorAll('button').forEach((button, buttonIndex) =>
+      button.setAttribute('aria-current', String(buttonIndex === index))
+    );
+  }
+
+  controls.innerHTML = reviews.map((review, index) =>
+    `<button class="social-proof-dot" type="button" aria-label="Mostrar avaliação de ${review.author}" aria-current="${index === 0}">${index + 1}</button>`
+  ).join('');
+  controls.querySelectorAll('button').forEach((button, index) =>
+    button.addEventListener('click', () => showReview(index))
+  );
+  showReview(0);
+  container.classList.add('is-ready');
+})();
+</script>
 
 </body>
 </html>
