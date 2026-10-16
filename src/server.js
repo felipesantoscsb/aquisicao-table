@@ -2185,10 +2185,18 @@ function recoveryCanal() {
 // Nos dois casos o código estava certo e o ambiente, errado, e ninguém viu
 // porque falha de envio aqui não grita.
 //
-// O endereço do sdr-table é estável e público; não há cenário real em que ele
-// precise mudar por ambiente. Fixar aqui troca flexibilidade que não usamos
-// por uma classe inteira de falha silenciosa.
-const SDR_RECOVERY_URL = 'https://jornada.tableclinic.com.br/webhook/checkout-recovery';
+// CORRIGIDO em 16/10/2026. O endereço fixado aqui antes
+// (jornada.tableclinic.com.br) NÃO EXISTE em DNS: devolve NXDOMAIN. Ou seja,
+// a migração que era para consertar os "0 disparos em 30 dias" trocou um
+// destino morto por outro, e seguiu sem enviar nada — com um comentário
+// afirmando que o endereço era estável e público. Não era.
+//
+// O host real do sdr-table é raiz.evelynliu.com.br, confirmado por /health,
+// /d/:slug e /evelyn/:slug respondendo 200.
+//
+// A lição não é "não fixe a URL": é que destino de webhook precisa de prova
+// de vida, não de confiança. Falha de envio aqui continua não gritando.
+const SDR_RECOVERY_URL = 'https://raiz.evelynliu.com.br/webhook/checkout-recovery';
 
 async function sendRecoveryViaSdr(rec) {
   const TOKEN = process.env.SDR_RECOVERY_TOKEN || process.env.RECOVERY_TOKEN;

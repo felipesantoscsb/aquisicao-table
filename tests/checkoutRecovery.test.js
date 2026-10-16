@@ -22,11 +22,20 @@ test('canal revertido para template enquanto o agente está sob suspeita', () =>
 });
 
 test('a URL do sdr-table é fixa, sem override por ambiente', () => {
-  // Esta env já errou duas vezes: ausente em jul (sombra por um dia) e
+  // Esta env já errou três vezes: ausente em jul (sombra por um dia),
   // apontando para o domínio morto do Railway em out (30 dias de fila
-  // descartada em silêncio). O código estava certo nas duas.
-  assert.match(server, /const SDR_RECOVERY_URL = 'https:\/\/jornada\.tableclinic\.com\.br\/webhook\/checkout-recovery'/);
+  // descartada em silêncio) e, na correção dessa segunda, fixada em
+  // jornada.tableclinic.com.br — que é NXDOMAIN. Ou seja, a correção trocou um
+  // destino morto por outro e este teste CIMENTOU o erro, por afirmar a string
+  // que eu havia escolhido em vez da propriedade que importa.
+  //
+  // O host real é raiz.evelynliu.com.br (confirmado por /health, /d/:slug e
+  // /evelyn/:slug em 200). Teste não substitui prova de vida: vale conferir o
+  // /health do sdr-table antes de confiar nesta linha.
+  assert.match(server, /const SDR_RECOVERY_URL = 'https:\/\/raiz\.evelynliu\.com\.br\/webhook\/checkout-recovery'/);
   assert.doesNotMatch(server, /process\.env\.SDR_RECOVERY_URL/);
+  // Guarda contra reincidência: o domínio morto não volta por nenhum caminho.
+  assert.doesNotMatch(server, /jornada\.tableclinic\.com\.br\/webhook/);
 });
 
 test('dado sensível do quiz não trafega de novo entre serviços', () => {

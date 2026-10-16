@@ -170,7 +170,7 @@ async function backfillOptOuts(getRedis) {
  */
 async function cancelarCadenciaQuiz(phone) {
   const url = process.env.SDR_QUIZ_CADENCE_CANCEL_URL
-    || 'https://jornada.tableclinic.com.br/webhook/quiz-cadence/cancel';
+    || 'https://raiz.evelynliu.com.br/webhook/quiz-cadence/cancel';
   const secret = process.env.SDR_WEBHOOK_SECRET || process.env.WEBHOOK_SECRET
     || process.env.INTERNAL_WEBHOOK_SECRET;
   if (!phone || !secret) return;
