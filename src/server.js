@@ -1168,182 +1168,34 @@ async function drainFailedCaptacao() {
 
 // ─── Rota Purchase (webhook Infinitepay → Meta CAPI) ─────────────────────────
 
+// Webhook de compra da InfinitePay. NAO MANDA MAIS NADA PARA A META desde
+// 17/10/2026, a pedido do Felipe.
+//
+// A InfinitePay processa UPSELL (planos de acompanhamento e Evelyn), nao o
+// Protocolo Raiz — o PR entra por Cakto e Ticto, que seguem enviando. A regra
+// agora e: so venda de PR bate no Meta.
+//
+// A hipotese do Felipe era fraca, mas o codigo a sustentou. Tres upsells num
+// dia produziam MUITO mais que tres eventos de compra:
+//   - o Purchase daqui NAO tinha email nem telefone com hash, so IP e user
+//     agent. A Meta casa isso por IP, que e grosseiro — e atribuicao grosseira
+//     foi o que grudou uma venda num anuncio PAUSADO.
+//   - a pagina de obrigado disparava outro Purchase, SEM eventID, entao os
+//     dois NAO deduplicavam: a mesma venda contava duas vezes, com valor alto.
+//   - e sem guarda de recarga: cada F5 na pagina gerava mais uma.
+//
+// O endpoint continua existindo e respondendo 200: a InfinitePay precisa disso
+// para nao reenviar, e o log segue sendo a trilha de conferencia da conciliacao.
+//
+// Para religar, nao reponha como estava. Precisa de user_data com email e
+// telefone com hash, e de eventID compartilhado com a pagina.
 app.post('/api/purchase', async (req, res) => {
-  console.log('[PURCHASE] Payload recebido:', JSON.stringify(req.body, null, 2));
-
-  const {
-    paid_amount,
-    transaction_nsu,
-    order_nsu,
-    capture_method,
-    items,
-  } = req.body || {};
-
-  const PIXEL_ID   = process.env.META_PIXEL_ID;
-  const CAPI_TOKEN = process.env.META_CAPI_TOKEN;
-
-  if (!PIXEL_ID || !CAPI_TOKEN) {
-    console.error('[PURCHASE] META_PIXEL_ID ou META_CAPI_TOKEN não configurados.');
-    return res.status(500).json({ ok: false, error: 'Credenciais da Meta não configuradas.' });
-  }
-
-  // value em reais — paid_amount vem em centavos (ex: 230300 → 2303.00)
+  const { paid_amount, transaction_nsu, order_nsu } = req.body || {};
   const value = typeof paid_amount === 'number' ? paid_amount / 100 : null;
-
-  const user_data = {};
-  const clientIp = getClientIp(req);
-  const userAgent = req.headers['user-agent'] || null;
-  if (clientIp)  user_data.client_ip_address = clientIp;
-  if (userAgent) user_data.client_user_agent  = userAgent;
-
-  const custom_data = {
-    value,
-    currency:       'BRL',
-    capture_method: capture_method || null,
-    num_items:      Array.isArray(items) ? items.length : null,
-    order_id:       order_nsu       || null,
-  };
-  // Remove chaves null do custom_data
-  Object.keys(custom_data).forEach(k => {
-    if (custom_data[k] === null || custom_data[k] === undefined) delete custom_data[k];
-  });
-
-  const event = {
-    event_name:    'Purchase',
-    event_time:    Math.floor(Date.now() / 1000),
-    action_source: 'website',
-    event_id:      transaction_nsu || null,
-    user_data,
-    custom_data,
-  };
-  if (!event.event_id) delete event.event_id;
-
-  const metaPayload = { data: [event] };
-
-  const TEST_CODE = process.env.META_TEST_EVENT_CODE;
-  if (TEST_CODE) metaPayload.test_event_code = TEST_CODE;
-
-  console.log('[PURCHASE] Enviando para a Meta:', JSON.stringify(metaPayload, null, 2));
-
-  const url = `https://graph.facebook.com/v21.0/${PIXEL_ID}/events?access_token=${CAPI_TOKEN}`;
-
-  try {
-    const metaRes  = await fetch(url, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(metaPayload),
-    });
-    const metaJson = await metaRes.json();
-
-    if (!metaRes.ok) {
-      console.error('[PURCHASE] Erro da Meta:', JSON.stringify(metaJson, null, 2));
-      return res.status(500).json({ ok: false, error: 'Erro retornado pela Meta CAPI.', meta_response: metaJson });
-    }
-
-    console.log('[PURCHASE] Sucesso! fbtrace_id:', metaJson.fbtrace_id);
-    return res.json({ ok: true, meta_response: metaJson });
-
-  } catch (err) {
-    console.error('[PURCHASE] Erro de rede:', err.message);
-    return res.status(500).json({ ok: false, error: 'Falha de conexão com a Meta CAPI.', detail: err.message });
-  }
+  console.log(`[PURCHASE] InfinitePay recebida (NAO enviada a Meta): `
+    + `nsu=${transaction_nsu || '-'} pedido=${order_nsu || '-'} valor=${value != null ? `R$${value}` : '-'}`);
+  return res.json({ ok: true, enviado_meta: false, motivo: 'upsell_silenciado' });
 });
-
-// ─── Meta Insights ────────────────────────────────────────────────────────────
-
-const PERIOD_MAP = {
-  today:      'today',
-  yesterday:  'yesterday',
-  this_week:  'this_week_mon_today',
-  last_week:  'last_week_mon_sun',
-  this_month: 'this_month',
-  last_month: 'last_month',
-};
-
-const INSIGHTS_FIELDS = [
-  'spend', 'impressions', 'clicks', 'ctr', 'cpm',
-  'actions', 'action_values', 'cost_per_action_type', 'purchase_roas',
-].join(',');
-
-// Cache simples para status das campanhas (5 min TTL)
-let campaignsCache = { data: null, at: 0 };
-
-function parseInsight(d) {
-  if (!d) return null;
-  const spend     = parseFloat(d.spend || 0);
-  const ctr       = parseFloat(d.ctr   || 0);
-  const cpm       = parseFloat(d.cpm   || 0);
-  const actions   = d.actions || [];
-  const leads     = parseFloat(actions.find(a => a.action_type === 'lead')?.value     || 0);
-  const purchases = parseFloat(actions.find(a => a.action_type === 'purchase')?.value || 0);
-  const roasArr   = d.purchase_roas || [];
-  const roas      = parseFloat(roasArr.find(a => a.action_type === 'omni_purchase')?.value || 0);
-  return {
-    spend,
-    leads,
-    cpl:       leads     > 0 ? spend / leads     : null,
-    ctr,
-    cpm,
-    purchases,
-    cpa:       purchases > 0 ? spend / purchases : null,
-    roas:      roas || null,
-  };
-}
-
-async function metaFetch(path, params) {
-  const token   = process.env.META_ADS_ACCESS_TOKEN;
-  const qs      = new URLSearchParams({ ...params, access_token: token });
-  const url     = `https://graph.facebook.com/v21.0/${path}?${qs}`;
-  const res     = await fetch(url);
-  const json    = await res.json();
-  if (!res.ok) throw new Error(json.error?.message || `Meta API error ${res.status}`);
-  return json;
-}
-
-// Topo do funil (Meta, nível conta) por janela de datas — impressões/cliques/CTR.
-// Alinha com a janela do dashboard via time_range (since/until). Fail-safe:
-// retorna null se a conta não estiver configurada ou a Meta falhar, e o funil
-// simplesmente começa no PageView.
-async function fetchMetaFunnelTop(since, until) {
-  const token     = process.env.META_ADS_ACCESS_TOKEN;
-  const accountId = process.env.META_AD_ACCOUNT_ID;
-  if (!token || !accountId) return null;
-  try {
-    const json = await metaFetch(`act_${accountId}/insights`, {
-      level: 'account',
-      fields: 'impressions,clicks,ctr,spend',
-      time_range: JSON.stringify({ since, until }),
-    });
-    const d = json.data?.[0];
-    if (!d) return { impressions: 0, clicks: 0, ctr: 0, spend: 0 };
-    return {
-      impressions: parseInt(d.impressions, 10) || 0,
-      clicks:      parseInt(d.clicks, 10) || 0,
-      ctr:         parseFloat(d.ctr) || 0,        // % já vem calculado pela Meta
-      spend:       parseFloat(d.spend) || 0,
-    };
-  } catch (e) {
-    console.error('[Dash] Meta funnel top falhou:', e.message);
-    return null;
-  }
-}
-
-async function getCampaignStatuses() {
-  if (campaignsCache.data && Date.now() - campaignsCache.at < 5 * 60 * 1000) {
-    return campaignsCache.data;
-  }
-  const accountId = process.env.META_AD_ACCOUNT_ID;
-  const json = await metaFetch(`act_${accountId}/campaigns`, {
-    fields: 'id,status',
-    limit:  200,
-  });
-  const map = {};
-  for (const c of json.data || []) map[c.id] = c.status;
-  campaignsCache = { data: map, at: Date.now() };
-  return map;
-}
-
-const VALID_LEVELS = ['account', 'campaign', 'adset', 'ad'];
 
 app.get('/api/meta-insights', async (req, res) => {
   const period = req.query.period || 'today';

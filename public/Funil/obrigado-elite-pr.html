@@ -1,28 +1,23 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<!-- PIXEL REMOVIDO em 17/10/2026, a pedido do Felipe.
+     Esta pagina e de UPSELL (plano/acompanhamento), nao do Protocolo Raiz.
+     So venda de PR deve bater no Meta agora.
+
+     O que saia daqui e por que doia:
+       - Purchase de valor alto SEM eventID, logo sem dedup com o Purchase que
+         o webhook da InfinitePay mandava por CAPI: a mesma venda contava duas
+         vezes.
+       - Sem guarda de recarga: cada F5 nesta pagina gerava outra compra.
+       - O <noscript> disparava de novo, por imagem.
+
+     Para reativar, reponha o bloco COM eventID compartilhado com o CAPI e com
+     guarda de disparo unico. Sem as duas coisas, nao reponha. -->
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Bem-vinda — Table Clinic</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
-<script>
-!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
-document,'script','https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '989971718548782');
-fbq('track', 'PageView');
-fbq('track', 'Purchase', {
-  value: 2303.00,
-  currency: 'BRL',
-  content_name: 'Elite - Ascensão PR'
-});
-</script>
-<noscript>
-  <img height="1" width="1" style="display:none"
-  src="https://www.facebook.com/tr?id=989971718548782&ev=Purchase&noscript=1"/>
-</noscript>
 <style>
 :root{
   --moss:#3D4A35;--terra:#B97040;--terra-dk:#8A4F28;
