@@ -1,7 +1,12 @@
-# Radar Table — duas camadas no mesmo arquivo
+# Radar Table legado — fluxo anterior preservado em `/raiz-v2`
 
-`public/quiz-raiz-v2.html` serve dois funis, em duas rotas. A página decide qual
-camada roda pelo `location.pathname`.
+> Atualização: o novo quiz de aquisição é servido em `/raiz-radar` por
+> `public/quiz-ascensao-table.html`. Este documento descreve o arquivo anterior,
+> que continua servido em `/raiz-v2`. O alias `?source=pr_nurture` segue
+> funcionando no arquivo antigo.
+
+`public/quiz-raiz-v2.html` permanece ativo em `/raiz-v2` para não alterar links
+e campanhas existentes sem uma migração explícita.
 
 Rota em vez de query param porque link encaminhado perde o `?source=`, e cair no
 funil de canetas é o pior destino possível para quem nunca usou e acabou de

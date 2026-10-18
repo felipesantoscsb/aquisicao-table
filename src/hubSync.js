@@ -90,6 +90,11 @@ function enviarLeadV2(getRedis, body) {
     enviar(getRedis, '/webhook/quiz-v2-lead', {
       nome: body.nome, email: body.email || null, whats: body.whats,
       sck: body.quiz_lead_event_id || null,
+      commercial_route: body.commercial_route || null,
+      fit_score: body.fit_score ?? null,
+      readiness_score: body.readiness_score ?? null,
+      lowest_pillar: body.lowest_pillar || null,
+      highest_pillar: body.highest_pillar || null,
     }, 'lead V2');
   } catch (e) { console.error('[hubSync] lead V2:', e.message); }
 }

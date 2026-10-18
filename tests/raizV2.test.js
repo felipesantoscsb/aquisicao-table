@@ -33,7 +33,7 @@ test('mantém Pixel e CAPI com a jornada completa', () => {
 
 test('v2 não dispara dossiê, SDR ou sequência pós-quiz', () => {
   assert.doesNotMatch(html, /hook\.us2\.make\.com/);
-  assert.match(server, /CompleteRegistration' && req\.body\.slug !== 'raiz-v2'/);
+  assert.match(server, /CompleteRegistration' && !ehRaizV2\(req\.body\)/);
   assert.match(html, /não será enviado por WhatsApp/);
 });
 
@@ -93,8 +93,10 @@ test('ehRaizV2 reconhece o funil por slug, source e content_name', () => {
   // Reproduz a heurística do servidor para travar o contrato dos três campos
   // que as chamadas da página realmente mandam.
   const ehRaizV2 = (body = {}) => [body.slug, body.source, body.content_name, body.funnel]
-    .some(v => /raiz-v2/i.test(String(v || '')));
+    .some(v => /raiz-v2|raiz-radar|radar-table/i.test(String(v || '')));
   assert.equal(ehRaizV2({ slug: 'raiz-v2' }), true);                        // CompleteRegistration
+  assert.equal(ehRaizV2({ slug: 'raiz-radar' }), true);                     // novo Radar publicado
+  assert.equal(ehRaizV2({ content_name: 'radar-table-lead' }), true);        // Lead do novo Radar
   assert.equal(ehRaizV2({ source: 'raiz-v2' }), true);                      // InitiateCheckout
   assert.equal(ehRaizV2({ content_name: 'quiz-lead-raiz-v2' }), true);      // Lead
   assert.equal(ehRaizV2({ slug: 'raiz' }), false);
@@ -103,14 +105,13 @@ test('ehRaizV2 reconhece o funil por slug, source e content_name', () => {
 });
 
 // ─── Camada 2 (?source=pr_nurture) ───────────────────────────────────────────
-// O funil pago de canetas continua sendo o /raiz-v2 puro. Tudo abaixo só liga
-// com source=pr_nurture, que é o link do D+3 para quem já fez o quiz 1.
+// O arquivo legado segue em /raiz-v2. O novo quiz comercial ocupa /raiz-radar.
 
 test('camada 2 tem rota própria e não toca o funil pago', () => {
   assert.match(server, /app\.get\('\/raiz-radar'/);
   assert.match(server, /app\.get\('\/raiz-v2'/);
-  // as duas rotas servem o mesmo arquivo
-  assert.equal((server.match(/'quiz-raiz-v2\.html'/g) || []).length, 2);
+  assert.equal((server.match(/'quiz-raiz-v2\.html'/g) || []).length, 1);
+  assert.match(server, /app\.get\('\/raiz-v2'.*'quiz-raiz-v2\.html'/);
   assert.match(html, /location\.pathname\.replace\(\/\\\/\+\$\/,''\)\.toLowerCase\(\) === '\/raiz-radar'/);
   // ?source=pr_nurture segue valendo para links já enviados
   assert.match(html, /\(QS\.get\('source'\) \|\| ''\)\.toLowerCase\(\) === 'pr_nurture'/);

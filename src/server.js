@@ -142,14 +142,11 @@ app.get('/raiz',       (req, res) => res.sendFile(path.join(pub,   'quiz-cakto.h
 // Protótipo isolado: somente a etapa final da futura variante B. Não carrega
 // quiz, tracking nem checkout; existe apenas para validação visual/editorial.
 app.get('/raiz-B',     (req, res) => res.sendFile(path.join(pub,   'raiz-b.html')));
-// Nova avenida GLP-1: Radar Table com as seis dimensões oficiais do método.
-// Mantém Pixel/CAPI do /raiz, mas não aciona SDR, dossiê ou sequência de WhatsApp.
+// /raiz-v2 preserva o fluxo anterior de canetas. /raiz-radar passa a ser a
+// aquisição universal da Table com roteamento A/B/C: pré-consulta para A e
+// A Primeira Ruptura para B/C, com ponte educativa mais longa na rota C.
 app.get('/raiz-v2',    (req, res) => res.sendFile(path.join(pub,   'quiz-raiz-v2.html')));
-// Mesmo arquivo, outra camada. /raiz-v2 é o funil pago de canetas; /raiz-radar é
-// a segunda camada, enviada no D+3 para quem já fez o quiz 1. A página decide
-// pelo caminho. Rota em vez de ?source= porque link encaminhado perde query, e
-// cair no funil de canetas seria o pior destino possível para quem nunca usou.
-app.get('/raiz-radar', (req, res) => res.sendFile(path.join(pub,   'quiz-raiz-v2.html')));
+app.get('/raiz-radar', (req, res) => res.sendFile(path.join(pub,   'quiz-ascensao-table.html')));
 // Porta de entrada barata do método, enviada no D+1 depois do quiz 1 para quem
 // não comprou o Protocolo Raiz. Página curta, sem quiz: vende só a conversa.
 app.get('/sessao-raiz', (req, res) => res.sendFile(path.join(pub,   'sessao-raiz.html')));
@@ -314,7 +311,7 @@ const PIXEL_RAIZ_V2 = '519946826343805';
 
 function ehRaizV2(body = {}) {
   return [body.slug, body.source, body.content_name, body.funnel]
-    .some(v => /raiz-v2/i.test(String(v || '')));
+    .some(v => /raiz-v2|raiz-radar|radar-table/i.test(String(v || '')));
 }
 
 /**
@@ -401,10 +398,10 @@ app.post('/api/capi', async (req, res) => {
 
   // SDR forward só no CompleteRegistration: único momento com perfil+respostas+qualificação completos.
   // V2: sem SDR nem dossiê, mas o contato vai para o banco de leads do Hub.
-  if ((req.body.event_name || 'Lead') === 'CompleteRegistration' && req.body.slug === 'raiz-v2') {
+  if ((req.body.event_name || 'Lead') === 'CompleteRegistration' && ehRaizV2(req.body)) {
     hubSync.enviarLeadV2(getRedis, req.body);
   }
-  if ((req.body.event_name || 'Lead') === 'CompleteRegistration' && req.body.slug !== 'raiz-v2') {
+  if ((req.body.event_name || 'Lead') === 'CompleteRegistration' && !ehRaizV2(req.body)) {
     forwardToSDR(req.body).catch(err =>
       console.error('[SDR-forward] Erro ao encaminhar para o SDR:', err.message)
     );
