@@ -200,6 +200,9 @@ app.get('/oferta-elite-pr-isa',      (req, res) => res.sendFile(path.join(oferta
 app.get('/obrigado-premium-pr',   (req, res) => res.sendFile(path.join(funil, 'obrigado-premium-pr.html')));
 app.get('/obrigado-elite-pr',     (req, res) => res.sendFile(path.join(funil, 'obrigado-elite-pr.html')));
 app.get('/forms',      (req, res) => res.sendFile(path.join(funil, 'formulario-pre-sessao.html')));
+// Segundo filtro do /raiz-radar. Nao repete o que o quiz ja levantou: pede so
+// relato aberto, historico de modalidades e disponibilidade.
+app.get('/pre-consulta', (req, res) => res.sendFile(path.join(funil, 'formulario-pre-consulta-v2.html')));
 app.get('/onboardinge',(req, res) => res.sendFile(path.join(funil, 'plano-acao-emocional.html')));
 app.get('/onboardings',(req, res) => res.sendFile(path.join(funil, 'plano-acao-sobrevivencia.html')));
 app.get('/onboardingr',(req, res) => res.sendFile(path.join(funil, 'plano-acao-restritiva.html')));
@@ -825,6 +828,88 @@ async function forwardCaptacaoToSDR(leadData) {
 
   throw lastError;
 }
+
+// Solicitacao de pre-consulta vinda do /pre-consulta (segundo filtro do
+// /raiz-radar). Monta o card em "A Agendar" no Hub e pede que a Karina seja
+// avisada — este caminho NAO passa pelo agente de SDR, entao ninguem avisaria.
+//
+// O contato nunca vem do formulario: vem de lead:{lid}, gravado no evento Lead
+// do quiz. Telefone em campo de formulario seria redigitavel e redigitavel e
+// errado; e na URL seria PII em query string.
+const HISTORICO_ROTULO = {
+  dieta:'Dieta restritiva ou low carb', jejum:'Jejum intermitente',
+  nutri:'Nutricionista convencional', nutri_comp:'Nutrição comportamental',
+  psi:'Psicólogo ou psiquiatra', remedio:'Medicação prescrita',
+  coach:'Coach ou programa online', cirurgia:'Cirurgia bariátrica',
+  nenhum:'Ainda não tentou nada',
+};
+const TURNO_ROTULO = { manha:'manhã', tarde:'tarde', noite:'noite' };
+const DIA_ROTULO = { seg:'segunda', ter:'terça', qua:'quarta', qui:'quinta', sex:'sexta', sab:'sábado', dom:'domingo' };
+const soConhecidos = (v, mapa) => (Array.isArray(v) ? v : []).filter(x => mapa[x]);
+
+app.post('/api/pre-consulta/solicitar', async (req, res) => {
+  const { lid, dificuldade, historico, turnos, dias } = req.body || {};
+  const texto = String(dificuldade || '').trim();
+  const hist = soConhecidos(historico, HISTORICO_ROTULO);
+  const turnosOk = soConhecidos(turnos, TURNO_ROTULO);
+  const diasOk = soConhecidos(dias, DIA_ROTULO);
+
+  if (texto.length < 40 || !hist.length || !turnosOk.length || !diasOk.length) {
+    return res.status(400).json({ ok: false, error: 'Preencha relato, histórico e disponibilidade.' });
+  }
+
+  let lead = null;
+  try {
+    const raw = lid ? await redisGet(`lead:${lid}`) : null;
+    if (raw) lead = JSON.parse(raw);
+  } catch { /* segue sem contexto */ }
+
+  const telefone = lead?.phone ? normalizePhone(lead.phone) : null;
+  if (!telefone) {
+    console.warn(`[pre-consulta] sem telefone para lid=${lid} — solicitação não encaminhada`);
+    return res.status(409).json({ ok: false, error: 'Não encontramos seu cadastro. Refaça o Radar, por favor.' });
+  }
+
+  const disponibilidade = `${turnosOk.map(t => TURNO_ROTULO[t]).join(' / ')} — ${diasOk.map(d => DIA_ROTULO[d]).join(', ')}`;
+  const payload = {
+    nome: lead.nome || 'Lead',
+    telefone,
+    email: lead.email || null,
+    source: 'radar_table_pre_consulta',
+    origin: 'Radar Table',
+    temperatura: 'hot',
+    maiorDificuldade: texto,
+    historico: hist.map(h => HISTORICO_ROTULO[h]),
+    turno: disponibilidade,
+    notificar_karina: true,
+    briefing: [
+      'Pré-consulta solicitada pelo Radar Table (quiz + formulário).',
+      `Disponibilidade: ${disponibilidade}`,
+      `Já tentou: ${hist.map(h => HISTORICO_ROTULO[h]).join(', ')}`,
+      '',
+      'Nas palavras dela:',
+      texto,
+    ].join('\n'),
+    created_at: new Date().toISOString(),
+  };
+
+  // Responde antes de falar com o Hub: a pessoa nao pode ficar olhando spinner
+  // por causa da latencia de outro servico.
+  res.json({ ok: true });
+
+  const HUB = process.env.HUB_HANDOFF_URL || 'https://crm.tableclinic.com.br/webhook/handoff-agendamento';
+  const SECRET = process.env.HUB_WEBHOOK_SECRET || process.env.INTERNAL_WEBHOOK_SECRET;
+  try {
+    const r = await fetch(HUB, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-webhook-secret': SECRET || '' },
+      body: JSON.stringify(payload),
+    });
+    console.log(`[pre-consulta] ${payload.nome} (${telefone}) → Hub status ${r.status}`);
+  } catch (e) {
+    console.error(`[pre-consulta] Hub inalcançável para ${telefone}: ${e.message}`);
+  }
+});
 
 app.post('/api/captacao/conversa', async (req, res) => {
   const isTrackedConversation = !req.body?.source || req.body.source === 'formulario_captacao_table_clinic';

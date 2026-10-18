@@ -30,12 +30,27 @@ test('roteamento tem A, B e C com a rota C mais longa', () => {
   assert.match(html, /\.route-b \.education-band\{display:none\}/);
 });
 
-test('rota A solicita pré-consulta gratuita e envia ao SDR só no clique', () => {
+test('convite de pré-consulta leva ao formulário, não direto ao SDR', () => {
+  // 18/10/2026: o botão disparava o SDR da própria página. Agora passa pelo
+  // /pre-consulta, que é o segundo filtro — relato aberto, histórico e
+  // disponibilidade — e só de lá o card vai para a Karina.
   assert.match(html, /Pré-consulta Table · online e gratuita/);
   assert.match(html, /id="preconsult"/);
-  assert.match(html, /fetch\('\/api\/captacao\/conversa'/);
-  assert.match(html, /source:'radar_table_rota_a'/);
+  assert.match(html, /location\.href='\/pre-consulta\?lid='/);
+  assert.ok(!/fetch\('\/api\/captacao\/conversa'/.test(html),
+    'o quiz voltou a chamar o SDR direto, pulando o segundo filtro');
+  // O id vai opaco: telefone em query string seria PII na URL.
+  assert.ok(!/lid='\+.*phone/.test(html));
   assert.match(html, /autonomia, acompanhamento Table ou outro cuidado/);
+});
+
+test('quem tem fit suficiente VÊ a pré-consulta, mesmo sem prontidão', () => {
+  // Antes, routeA e routeBC eram mutuamente exclusivos: quem caía em B nunca
+  // via a conversa gratuita, e era ali que a lead qualificada e cautelosa
+  // morria.
+  assert.match(html, /const CORTE_PRE_CONSULTA=5/);
+  assert.match(html, /convidada=fitScore>=CORTE_PRE_CONSULTA/);
+  assert.match(html, /\$\('routeA'\)\.hidden=!convidada/);
 });
 
 test('tracking identifica a rota publicada sem misturar pixels', () => {

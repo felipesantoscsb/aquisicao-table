@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow"/>
+<title>Sua pré-consulta — Table Clinic</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--clay:#bd704e;--cream:#f5efe4;--gold:#dcc18b;--ink:#202a24;--line:#ded6c8;--muted:#68736c;--paper:#fffdf9;--pine:#26362d;--sand:#e9e0d1;--danger:#a54235}
+*{box-sizing:border-box}
+body{margin:0;background:var(--sand);color:var(--ink);font:16px/1.65 'DM Sans',sans-serif;-webkit-font-smoothing:antialiased}
+.shell{width:min(640px,calc(100% - 32px));margin:0 auto;padding:40px 0 72px}
+.brand{font:500 13px 'DM Sans';letter-spacing:.3em;color:var(--pine)}
+h1{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,6vw,44px);line-height:1.1;margin:22px 0 0}
+h1 em{font-style:normal;color:var(--clay)}
+.lede{color:#4e5952;margin:14px 0 0;font-size:17px}
+/* O reforco de gratuidade fica ACIMA dos campos: e exatamente ao ver tres
+   perguntas que a duvida sobre custo volta. */
+.free{margin:22px 0 0;border:1px solid var(--clay);border-radius:14px;padding:13px 16px;background:rgba(189,112,78,.07);color:var(--pine);font-size:14.5px}
+.free b{color:var(--clay)}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:clamp(20px,5vw,30px);margin-top:24px}
+.field{margin:0 0 26px}
+.field:last-of-type{margin-bottom:8px}
+label.q{display:block;font-weight:700;font-size:16px;margin:0 0 4px}
+.hint{color:var(--muted);font-size:13.5px;margin:0 0 12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 14px;font-size:14px;cursor:pointer;color:var(--ink);transition:.15s}
+.chip[aria-pressed="true"]{background:var(--pine);color:#fff;border-color:var(--pine)}
+textarea{width:100%;min-height:124px;border:1px solid var(--line);border-radius:14px;padding:13px;font:inherit;color:var(--ink);background:#fff;resize:vertical}
+textarea:focus{outline:2px solid var(--clay);outline-offset:1px}
+.count{font-size:12.5px;color:var(--muted);margin:6px 0 0;text-align:right}
+.err{color:var(--danger);font-size:13.5px;margin:7px 0 0;min-height:1.1em}
+.btn{width:100%;border:0;border-radius:999px;background:var(--gold);color:var(--pine);padding:17px;font:700 16px 'DM Sans';cursor:pointer;margin-top:10px}
+.btn:disabled{opacity:.55;cursor:default}
+.note{color:var(--muted);font-size:13px;margin:16px 0 0;text-align:center}
+.done{display:none;text-align:center;padding:14px 0}
+.done h2{font-family:'Cormorant Garamond',serif;font-size:30px;margin:0 0 10px}
+.done .steps{text-align:left;margin:22px auto 0;max-width:420px;color:#4e5952}
+.done .steps li{margin:9px 0}
+</style>
+</head>
+<body>
+<main class="shell">
+  <p class="brand">TABLE</p>
+  <h1 id="title">Falta pouco para<br><em>a nutri te conhecer.</em></h1>
+  <p class="lede">Três respostas rápidas. Elas vão direto para a nutricionista que vai conversar com você, para ela chegar já sabendo da sua história.</p>
+
+  <div class="free"><b>A pré-consulta é gratuita.</b> Nada será cobrado aqui, nem agora nem depois da conversa.</div>
+
+  <form class="card" id="form" novalidate>
+    <div class="field">
+      <label class="q" for="dificuldade">O que está mais difícil hoje?</label>
+      <p class="hint">Escreva com suas palavras, do jeito que vier. É o que a nutri lê primeiro.</p>
+      <textarea id="dificuldade" placeholder="Pode ser uma situação, um horário do dia, um sentimento que se repete…"></textarea>
+      <p class="count" id="count">0 caracteres</p>
+      <p class="err" id="errDificuldade"></p>
+    </div>
+
+    <div class="field">
+      <label class="q">O que você já tentou até aqui?</label>
+      <p class="hint">Marque tudo que fizer parte da sua história. Não há resposta errada.</p>
+      <div class="chips" id="historico"></div>
+      <p class="err" id="errHistorico"></p>
+    </div>
+
+    <div class="field">
+      <label class="q">Quando fica melhor para você?</label>
+      <p class="hint">Marque todos os turnos e dias possíveis. Quanto mais opções, mais rápido conseguimos encaixar.</p>
+      <div class="chips" id="turnos" style="margin-bottom:10px"></div>
+      <div class="chips" id="dias"></div>
+      <p class="err" id="errAgenda"></p>
+    </div>
+
+    <button class="btn" id="submit" type="submit">Enviar e garantir meu horário →</button>
+    <p class="note">Sua resposta vai para a equipe da Table. Não compartilhamos com terceiros.</p>
+  </form>
+
+  <section class="card done" id="done">
+    <h2>Recebemos, <span id="doneName">tudo certo</span>!</h2>
+    <p>A Karina, que cuida da nossa agenda, vai te chamar no WhatsApp com as opções de horário que encaixam no que você marcou.</p>
+    <ol class="steps">
+      <li>Ela escreve <b>de outro número</b>, então fica de olho.</li>
+      <li>Você escolhe o horário que preferir.</li>
+      <li>A conversa é online, com uma nutricionista comportamental da equipe.</li>
+    </ol>
+  </section>
+</main>
+
+<script>
+const HISTORICO = [
+  ['dieta','Dieta restritiva ou low carb'],['jejum','Jejum intermitente'],
+  ['nutri','Nutricionista convencional'],['nutri_comp','Nutrição comportamental'],
+  ['psi','Psicólogo ou psiquiatra'],['remedio','Medicação prescrita'],
+  ['coach','Coach ou programa online'],['cirurgia','Cirurgia bariátrica'],
+  ['nenhum','Ainda não tentei nada']
+];
+const TURNOS = [['manha','Manhã'],['tarde','Tarde'],['noite','Noite']];
+const DIAS = [['seg','Seg'],['ter','Ter'],['qua','Qua'],['qui','Qui'],['sex','Sex'],['sab','Sáb']];
+
+const $ = id => document.getElementById(id);
+const sel = { historico:new Set(), turnos:new Set(), dias:new Set() };
+let lead = null;
+const lid = new URLSearchParams(location.search).get('lid') || '';
+
+function chips(hostId, lista, grupo){
+  $(hostId).innerHTML = '';
+  lista.forEach(([v,rotulo])=>{
+    const b=document.createElement('button');
+    b.type='button'; b.className='chip'; b.textContent=rotulo; b.setAttribute('aria-pressed','false');
+    b.onclick=()=>{
+      // "Ainda não tentei nada" é exclusivo: marcar junto com outros seria
+      // contradição, e a nutri leria histórico errado.
+      if(grupo==='historico' && v==='nenhum'){ sel.historico.clear(); sel.historico.add('nenhum'); }
+      else if(sel[grupo].has(v)) sel[grupo].delete(v);
+      else { if(grupo==='historico') sel.historico.delete('nenhum'); sel[grupo].add(v); }
+      [...$(hostId).children].forEach(c=>{
+        const val = lista[[...$(hostId).children].indexOf(c)][0];
+        c.setAttribute('aria-pressed', sel[grupo].has(val) ? 'true':'false');
+      });
+    };
+    $(hostId).appendChild(b);
+  });
+}
+chips('historico', HISTORICO, 'historico');
+chips('turnos', TURNOS, 'turnos');
+chips('dias', DIAS, 'dias');
+
+$('dificuldade').addEventListener('input', e=>{
+  $('count').textContent = `${e.target.value.trim().length} caracteres`;
+});
+
+// Contexto da lead vem por id opaco, nunca por telefone na URL.
+(async()=>{
+  if(!lid) return;
+  try{
+    const r = await fetch('/api/lead-contexto?lid='+encodeURIComponent(lid));
+    const d = await r.json();
+    if(d && d.ok){
+      lead = d;
+      const primeiro = (d.nome||'').trim().split(/\s+/)[0];
+      if(primeiro){
+        $('title').innerHTML = `${primeiro}, falta pouco para<br><em>a nutri te conhecer.</em>`;
+        $('doneName').textContent = primeiro;
+      }
+    }
+  }catch(e){}
+})();
+
+$('form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const texto = $('dificuldade').value.trim();
+  // 40 caracteres é o piso do sinal: menos que isso não é relato, e relato é
+  // justamente o que prevê conversão nesse funil.
+  $('errDificuldade').textContent = texto.length >= 40 ? '' : 'Conte um pouco mais — umas duas linhas já bastam.';
+  $('errHistorico').textContent = sel.historico.size ? '' : 'Marque ao menos uma opção.';
+  $('errAgenda').textContent = (sel.turnos.size && sel.dias.size) ? '' : 'Escolha ao menos um turno e um dia.';
+  if(texto.length < 40 || !sel.historico.size || !sel.turnos.size || !sel.dias.size){
+    document.querySelector('.err:not(:empty)')?.scrollIntoView({block:'center',behavior:'smooth'});
+    return;
+  }
+  const btn = $('submit');
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  try{
+    const r = await fetch('/api/pre-consulta/solicitar',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        lid, dificuldade: texto,
+        historico: [...sel.historico], turnos: [...sel.turnos], dias: [...sel.dias],
+        event_source_url: location.href
+      })
+    });
+    const d = await r.json();
+    if(!r.ok || !d.ok) throw new Error(d.error || 'falhou');
+    try{ if(typeof fbq==='function') fbq('trackCustom','PreConsultRequest',{funnel:'radar-table'}); }catch(e){}
+    $('form').style.display='none';
+    $('done').style.display='block';
+    scrollTo(0,0);
+  }catch(err){
+    btn.disabled=false; btn.textContent='Tentar novamente →';
+    $('errAgenda').textContent = 'Não consegui enviar agora. Tente de novo em instantes.';
+  }
+});
+</script>
+</body>
+</html>
