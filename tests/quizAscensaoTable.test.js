@@ -31,7 +31,7 @@ test('roteamento tem A, B e C com a rota C mais longa', () => {
 });
 
 test('rota A solicita pré-consulta gratuita e envia ao SDR só no clique', () => {
-  assert.match(html, /pré-consulta gratuita/);
+  assert.match(html, /Pré-consulta Table · online e gratuita/);
   assert.match(html, /id="preconsult"/);
   assert.match(html, /fetch\('\/api\/captacao\/conversa'/);
   assert.match(html, /source:'radar_table_rota_a'/);
@@ -49,8 +49,37 @@ test('rotas B e C oferecem A Primeira Ruptura por R$ 97', () => {
   assert.match(html, /A Primeira Ruptura/);
   assert.match(html, /R\$ 97/);
   assert.match(html, /https:\/\/pay\.cakto\.com\.br\/ai223ee/);
-  assert.match(html, /Mapa HTML personalizado/);
-  assert.match(html, /Caminho prático de 7 dias/);
+  assert.match(html, /Um mapa pessoal que mostra onde começar/);
+  assert.match(html, /intervenção prática por dia, durante 7 dias/);
+});
+
+test('resultado sustenta promessa, autoridade e prova social visual', () => {
+  assert.match(html, /Não voltar ao mesmo ciclo é outra/);
+  assert.match(html, /o seu ciclo começa antes da comida/);
+  assert.match(html, /Evelyn Liu é nutricionista comportamental/);
+  assert.match(html, /CRN-3 70082/);
+  for (const image of ['evelyn-liu.png','Juliana Moreno.jpg','Adriana.jpg','Iracema.jpg']) {
+    assert.match(html, new RegExp(image.replace('.', '\\.')));
+  }
+  assert.match(html, /Relatos de experiências individuais/);
+});
+
+test('pré-consulta vende clareza sem antecipar tentativa de venda', () => {
+  const routeA = html.slice(html.indexOf('<div id="routeA"'), html.indexOf('<div id="routeBC"'));
+  assert.doesNotMatch(routeA, /oferta|vender/i);
+  assert.match(routeA, /começar pelo ponto certo/);
+  assert.match(routeA, /Quero descobrir meu próximo passo/);
+});
+
+test('carregamento ganhou dois segundos e comunica progresso', () => {
+  assert.match(html, /setTimeout\(\(\)=>\{clearInterval\(loadingTimer\);complete\(\)\},3350\)/);
+  assert.match(html, /Identificando o ponto que mantém o ciclo/);
+  assert.match(html, /Preparando seu próximo passo/);
+});
+
+test('prévia das rotas só funciona em localhost e não envia formulário', () => {
+  assert.match(html, /location\.hostname==='127\.0\.0\.1'\|\|location\.hostname==='localhost'/);
+  assert.match(html, /\['A','B','C'\]\.includes\(previewRoute\)/);
 });
 
 test('segmentos sensíveis não entram nos eventos Meta', () => {
