@@ -67,6 +67,7 @@ test('resultado sustenta promessa, autoridade e prova social visual', () => {
 test('pré-consulta vende clareza sem antecipar tentativa de venda', () => {
   const routeA = html.slice(html.indexOf('<div id="routeA"'), html.indexOf('<div id="routeBC"'));
   assert.doesNotMatch(routeA, /oferta|vender/i);
+  assert.doesNotMatch(html, /isso não é uma oferta/i);
   assert.match(routeA, /começar pelo ponto certo/);
   assert.match(routeA, /Quero descobrir meu próximo passo/);
 });
