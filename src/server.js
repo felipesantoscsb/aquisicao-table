@@ -318,13 +318,31 @@ function ehRaizV2(body = {}) {
 }
 
 /**
+ * Radar Table (/raiz-radar), especificamente.
+ *
+ * Existe porque ehRaizV2 decide DUAS coisas que agora divergem: qual pixel
+ * recebe o evento, e se o SDR e acordado. O Radar passou para o pixel
+ * principal, mas continua NAO acordando o SDR — concluir o quiz sozinho nao
+ * pode virar abordagem comercial, so o clique no convite vira.
+ */
+function ehRadarTable(body = {}) {
+  return [body.slug, body.source, body.content_name, body.funnel]
+    .some(v => /raiz-radar|radar-table/i.test(String(v || '')));
+}
+
+/**
  * Par pixel+token do funil que originou o evento. Para a V2 sem
  * RAIZ_V2_CAPI_TOKEN devolve accessToken null de propósito: quem chama tem de
  * PULAR o envio. Cair no token principal mandaria o evento da V2 para o pixel
  * principal, que é exatamente o que a separação existe para evitar.
  */
 function credenciaisCapi(body) {
-  if (!ehRaizV2(body)) {
+  // Radar Table usa o pixel PRINCIPAL desde 18/10/2026, por decisao do Felipe.
+  // Dois motivos: zero variavel nova no Railway — RAIZ_V2_CAPI_TOKEN nunca foi
+  // configurado e o CAPI da V2 vinha sendo pulado em silencio ha semanas — e o
+  // Radar herda um dataset com EMQ 9,3 em vez de nascer frio em zero.
+  // A separacao de pixel continua valendo para o /raiz-v2, que e outro funil.
+  if (!ehRaizV2(body) || ehRadarTable(body)) {
     return { pixelId: process.env.META_PIXEL_ID, accessToken: process.env.META_CAPI_TOKEN, v2: false };
   }
   return { pixelId: PIXEL_RAIZ_V2, accessToken: process.env.RAIZ_V2_CAPI_TOKEN || null, v2: true };
@@ -429,7 +447,8 @@ app.post('/api/capi', async (req, res) => {
       // Funil de origem. O Purchase chega por webhook, onde não há como saber
       // de qual quiz a pessoa veio — e /raiz-v2 tem pixel próprio. Sem isto
       // gravado aqui, a venda do Radar iria para o pixel do funil principal.
-      funnel:        ehRaizV2(req.body) ? 'raiz-v2' : (req.body.slug || null),
+      funnel:        ehRadarTable(req.body) ? 'raiz-radar'
+                     : ehRaizV2(req.body) ? 'raiz-v2' : (req.body.slug || null),
       ttclid:        req.body.ttclid      || null,  // TikTok click id (Purchase server-side)
       ttp:           req.body.ttp         || null,  // TikTok cookie _ttp
       gclid:         req.body.gclid       || null,  // Google click id → import de conversão offline (Cakto→Google)

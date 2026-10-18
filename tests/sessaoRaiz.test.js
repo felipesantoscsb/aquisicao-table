@@ -97,10 +97,43 @@ test('o nome do produto vem do checkout, nunca de um fallback fixo', () => {
 // O Radar roda na conta da LIA, com pixel próprio. Sem o funil gravado no
 // lead, a venda dele cairia no pixel do funil principal.
 test('a venda vai para o pixel do funil que a originou', () => {
-  assert.match(server, /funnel:\s*ehRaizV2\(req\.body\) \? 'raiz-v2'/);
   assert.match(server, /const credCompra = credenciaisCapi\(\{ funnel: _leadFunnel \}\)/);
   assert.match(server, /pixelId: credCompra\.pixelId, accessToken: credCompra\.accessToken/);
   assert.match(server, /sem RAIZ_V2_CAPI_TOKEN — Purchase NÃO enviado/);
+});
+
+// Rodando a funcao de verdade, nao casando a string: a escolha de pixel ja
+// mudou duas vezes e asserção literal quebra a cada ajuste sem dizer se o
+// COMPORTAMENTO continua certo.
+test('Radar vai ao pixel principal; /raiz-v2 continua no pixel proprio', () => {
+  const trecho = server.slice(server.indexOf('const PIXEL_RAIZ_V2'),
+                              server.indexOf('// ─── Rota CAPI'));
+  const credenciaisCapi = new Function('process', `${trecho}; return credenciaisCapi;`)(
+    { env: { META_PIXEL_ID: 'PRINCIPAL', META_CAPI_TOKEN: 'TOKEN_PRINCIPAL', RAIZ_V2_CAPI_TOKEN: 'TOKEN_V2' } }
+  );
+
+  for (const body of [{ slug: 'raiz-radar' }, { source: 'radar-table' }, { funnel: 'raiz-radar' }]) {
+    const c = credenciaisCapi(body);
+    assert.equal(c.pixelId, 'PRINCIPAL', `Radar caiu no pixel errado: ${JSON.stringify(body)}`);
+    assert.equal(c.v2, false);
+  }
+  // O funil das canetas continua separado.
+  const v2 = credenciaisCapi({ slug: 'raiz-v2' });
+  assert.notEqual(v2.pixelId, 'PRINCIPAL');
+  assert.equal(v2.v2, true);
+  // E o funil principal segue onde sempre esteve.
+  assert.equal(credenciaisCapi({ slug: 'raiz-cakto' }).pixelId, 'PRINCIPAL');
+});
+
+test('o Radar NAO acorda o SDR, mesmo usando o pixel principal', () => {
+  // ehRaizV2 decide duas coisas: qual pixel, e se o SDR e chamado. Ao mover o
+  // pixel do Radar eu quase liguei a abordagem comercial em quem so concluiu o
+  // quiz — que e exatamente o que o desenho proibe.
+  assert.match(server, /ehRaizV2\(req\.body\)\) \{\s*\n\s*hubSync\.enviarLeadV2/);
+  assert.match(server, /&& !ehRaizV2\(req\.body\)\) \{\s*\n\s*forwardToSDR/);
+  // ehRaizV2 continua casando raiz-radar, que e o que mantem o SDR fora.
+  const fn = server.slice(server.indexOf('function ehRaizV2'), server.indexOf('function ehRadarTable'));
+  assert.match(fn, /raiz-radar\|radar-table/);
 });
 
 test('a página de origem do evento acompanha o produto', () => {
