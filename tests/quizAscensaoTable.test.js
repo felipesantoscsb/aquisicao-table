@@ -160,14 +160,41 @@ test('a linha fina da caixa escura nao herda a cor das bandas claras', () => {
   assert.match(html, /\.page\.result \.route-a-box \.fine\{color:#91a397\}/);
 });
 
-test('a prova do Google colapsa em 6 e expande por botao', () => {
-  // 15 avaliacoes empilhadas davam 4.068px no mobile, quase cinco telas antes
-  // do CTA. Colapsar em 6 mantem a prova e devolve 1.355px.
+test('a prova do Google nao quantifica e manda ver todas no proprio Google', () => {
+  // Dizer "15 avaliacoes" faz 15 parecer o total da clinica, que e muito
+  // menos do que ela tem. Sem numero, e o "ver todas" aponta para a fonte.
   assert.equal((html.match(/class="google-card"/g) || []).length, 15);
-  assert.match(html, /\.google-grid:not\(\.aberto\) \.google-card:nth-child\(n\+7\)\{display:none\}/);
-  assert.match(html, /id="verAvaliacoes" aria-expanded="false" aria-controls="googleGrid"/);
-  assert.match(html, /\$\('verAvaliacoes'\)\.onclick/);
-  assert.match(html, /id="googleGrid"/);
+  assert.doesNotMatch(html, /\d+ avaliações reais no Google/);
+  assert.doesNotMatch(html, /Ver todas as \d+ avaliações/);
+  assert.doesNotMatch(html, /id="verAvaliacoes"/, 'o expansor na pagina saiu');
+  assert.match(html, /<span>Avaliações no Google<\/span>/);
+  assert.match(html, /id="verNoGoogle"[^>]*google\.com\/maps/);
+  assert.match(html, />Ver todas as avaliações no Google →<\/a>/);
+  // No mobile vira carrossel, como as fotos: 15 empilhadas eram quase cinco
+  // telas de depoimento antes do CTA.
+  assert.match(html, /@media\(max-width:720px\)\{\.google-grid\{display:flex;overflow-x:auto/);
+});
+
+test('as fotos da prova social sao quadradas', () => {
+  // aspect-ratio so governa quando um eixo e auto; o atributo height="800" do
+  // HTML dava altura definida e as fotos renderizavam 230x800.
+  assert.match(html, /\.proof-card img\{width:100%;height:auto;aspect-ratio:1\/1/);
+});
+
+test('na rota B o botao da pre-consulta leva para a oferta, nao para o formulario', () => {
+  assert.match(html, /if\(route!=='A'\)\{trackCustom\('PreConsultToOffer'\);\$\('routeBC'\)\.scrollIntoView/);
+  assert.match(html, /<span class="so-rota-b">Ver como funciona a Primeira Ruptura →<\/span>/);
+});
+
+test('o FAQ cobre objecao, reembolso e o limite do que a Table faz', () => {
+  assert.equal((html.match(/<details/g) || []).length, 7);
+  assert.match(html, /Isso é mais uma dieta\?/);
+  assert.match(html, /devolvemos os R\$ 97/);
+  assert.match(html, /Vocês tratam transtorno alimentar\?/);
+  // As duas perguntas de oferta nao aparecem para quem caiu na rota A, que
+  // nem ve a Primeira Ruptura.
+  assert.equal((html.match(/<details class="so-oferta">/g) || []).length, 2);
+  assert.match(html, /body:not\(\.route-a\) \.so-oferta\{display:block\}/);
 });
 
 test('a rota B apresenta a pre-consulta como entregavel, nao como brinde', () => {
