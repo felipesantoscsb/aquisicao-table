@@ -66,3 +66,24 @@ test('as notas do Radar nao vao para a Meta', () => {
   // psicologico sensivel.
   assert.doesNotMatch(server, /custom_data\.(pillar_scores|fit_score|lowest_pillar)/);
 });
+
+test('os dois audios com LIA na narracao estao marcados para regravar', () => {
+  // Conferido roteiro a roteiro em LIA-roteiros.pdf: 15 dos 17 entram como
+  // estao, porque o brief mandava o audio nunca se apresentar (quem
+  // apresentava era a LIA). R01 abre citando a LIA e D02 fecha prometendo um
+  // follow-up de 24h que aqui nao existe — sao resquicios do modelo push.
+  assert.ok(catalogo.intervencoes.R01.regravar, 'R01 cita a LIA na primeira frase');
+  assert.ok(catalogo.intervencoes.D02.regravar, 'D02 promete follow-up da LIA na ultima frase');
+  const limpos = Object.entries(catalogo.intervencoes).filter(([, iv]) => !iv.regravar);
+  assert.equal(limpos.length, 15);
+});
+
+test('nada marcado para regravar entra num dia universal sem alternativa', () => {
+  // R01 e o dia 3, que toda compradora ouve. Enquanto nao for regravado, isso
+  // precisa estar visivel — nao pode ir ao ar por esquecimento.
+  const universaisPendentes = catalogo.dias
+    .filter(d => d.audio && catalogo.intervencoes[d.audio].regravar)
+    .map(d => `dia ${d.n} (${d.audio})`);
+  assert.deepEqual(universaisPendentes, ['dia 3 (R01)'],
+    'mudou o elenco: revisar quais pendencias atingem todas as compradoras');
+});

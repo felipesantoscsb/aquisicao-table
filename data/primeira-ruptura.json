@@ -15,10 +15,17 @@
     "apontar para yourlia.tech — aquele caminho responde 404 e o entregavel e",
     "pago, nao pode depender do deploy de outro produto.",
     "",
-    "PENDENTE: ninguem ouviu os 17 arquivos para confirmar que a narracao nao se",
-    "apresenta como LIA. Enquanto isso nao for feito, isto aqui nao vai ao ar."
+    "MARCA: 15 dos 17 servem como estao. Os roteiros (LIA-roteiros.pdf) mandavam",
+    "que o audio nunca se apresentasse, porque quem apresentava era a LIA — entao",
+    "quem fala e a Evelyn e o audio entra direto no assunto. Conferido roteiro a",
+    "roteiro, com as duracoes dos MP3 batendo com os roteiros. Nao foi conferido",
+    "de ouvido: improviso fora do script nao apareceria nesta checagem.",
+    "",
+    "R01 e D02 estao marcados com `regravar`. As frases deles nao sao so marca,",
+    "sao resquicio do modelo push: a LIA escolhia o minuto e cobrava no dia",
+    "seguinte. O mapa e pull — ela aperta play quando quer e nao ha agente",
+    "perguntando amanha. Estariam erradas aqui mesmo sem o nome LIA."
   ],
-
   "dias": [
     {
       "n": 1,
@@ -98,7 +105,6 @@
       "audio": "C01"
     }
   ],
-
   "intervencoes": {
     "P02": {
       "nome": "O ciclo restrição-compulsão",
@@ -128,7 +134,8 @@
       "nome": "Pausa de 3 minutos na chegada",
       "arquivo": "/pr/audio/R01.mp3",
       "duracao_s": 102,
-      "client_content": "A chegada em casa costuma ser o ponto em que o dia inteiro cobra de uma vez. Três minutos antes de abrir a geladeira não são para resistir: são para o corpo sair do piloto automático e você recuperar um instante de escolha."
+      "client_content": "A chegada em casa costuma ser o ponto em que o dia inteiro cobra de uma vez. Três minutos antes de abrir a geladeira não são para resistir: são para o corpo sair do piloto automático e você recuperar um instante de escolha.",
+      "regravar": "Primeira frase cita a LIA e pressupoe envio no momento certo: 'Se a LIA te mandou isso agora, e porque voce acabou de chegar em casa.' Comecar em 'Voce acabou de chegar em casa.' — o mapa ja diz para ouvir na chegada."
     },
     "R02": {
       "nome": "Descer a ativação",
@@ -194,7 +201,8 @@
       "nome": "Não compensar é a intervenção",
       "arquivo": "/pr/audio/D02.mp3",
       "duracao_s": 154,
-      "client_content": "Pular a próxima refeição parece reparar e é o que fecha o ciclo. Voltar a comer normalmente depois de um episódio é a coisa mais difícil e mais eficaz da semana. É contraintuitivo de propósito."
+      "client_content": "Pular a próxima refeição parece reparar e é o que fecha o ciclo. Voltar a comer normalmente depois de um episódio é a coisa mais difícil e mais eficaz da semana. É contraintuitivo de propósito.",
+      "regravar": "Ultima frase promete follow-up que nao existe aqui: 'Amanha a LIA vai te perguntar como foi.' Trocar pelo registro de evidencias do mapa ou pela sessao individual."
     },
     "D04": {
       "nome": "Sessenta segundos de trégua",
