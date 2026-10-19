@@ -60,10 +60,10 @@ test('tracking identifica a rota publicada sem misturar pixels', () => {
   assert.match(server, /CompleteRegistration' && ehRaizV2\(req\.body\)/);
 });
 
-test('rotas B e C oferecem A Primeira Ruptura por R$ 97', () => {
+test('rotas B e C oferecem A Primeira Ruptura por R$ 127', () => {
   assert.match(html, /A Primeira Ruptura/);
-  assert.match(html, /R\$ 97/);
-  assert.match(html, /https:\/\/pay\.cakto\.com\.br\/ai223ee/);
+  assert.match(html, /R\$ 127/);
+  assert.match(html, /https:\/\/pay\.cakto\.com\.br\/3azm4o3_1219891/);
   assert.match(html, /Um mapa pessoal que mostra por onde começar/);
   assert.match(html, /Um exercício prático por dia, em texto e áudio/);
 });
@@ -163,7 +163,15 @@ test('a linha fina da caixa escura nao herda a cor das bandas claras', () => {
 test('a prova do Google nao quantifica e manda ver todas no proprio Google', () => {
   // Dizer "15 avaliacoes" faz 15 parecer o total da clinica, que e muito
   // menos do que ela tem. Sem numero, e o "ver todas" aponta para a fonte.
-  assert.equal((html.match(/class="google-card"/g) || []).length, 15);
+  assert.equal((html.match(/class="google-card"/g) || []).length, 6);
+  // Cortadas em 20/10. Duas prometiam resultado na voz de terceiro ("a melhor
+  // forma de emagrecer", "resultados duradouros") e o aviso de rodape nao
+  // autoriza a curadoria a destacar promessa. As outras saem por voz fora da
+  // marca, nome masculino numa pagina escrita para ela, e sobrenome da
+  // fundadora, que le como parente mesmo sem ser.
+  for (const cortada of ['Eliete Mariani', 'Bruna Chahud', 'Jamayra Araújo', 'Kelly Liu']) {
+    assert.ok(!html.includes(cortada), `${cortada} voltou para a prova social`);
+  }
   assert.doesNotMatch(html, /\d+ avaliações reais no Google/);
   assert.doesNotMatch(html, /Ver todas as \d+ avaliações/);
   assert.doesNotMatch(html, /id="verAvaliacoes"/, 'o expansor na pagina saiu');
@@ -189,7 +197,7 @@ test('na rota B o botao da pre-consulta leva para a oferta, nao para o formulari
 test('o FAQ cobre objecao, reembolso e o limite do que a Table faz', () => {
   assert.equal((html.match(/<details/g) || []).length, 7);
   assert.match(html, /Isso é mais uma dieta\?/);
-  assert.match(html, /devolvemos os R\$ 97/);
+  assert.match(html, /devolvemos os R\$ 127/);
   assert.match(html, /E se o que eu vivo for mais pesado do que isso\?/);
   // As duas perguntas de oferta nao aparecem para quem caiu na rota A, que
   // nem ve a Primeira Ruptura.
@@ -276,4 +284,33 @@ test('a promessa do hero bate com o numero real de perguntas', () => {
 test('a rota C ganha uma ponte antes da oferta', () => {
   assert.match(html, /class="ponte-c"/);
   assert.match(html, /body\.route-c \.ponte-c\{display:block\}/);
+});
+
+test('A Primeira Ruptura custa R$ 127 e so ela', () => {
+  // O endpoint de InitiateCheckout atende oito paginas. Um valor global
+  // reportaria 127 para o Protocolo Raiz dos funis antigos, que segue a 97.
+  assert.match(html, /<div class="price">R\$ 127<\/div>/);
+  assert.match(html, /content_name:'A Primeira Ruptura',currency:'BRL',value:127/);
+  assert.doesNotMatch(html, /R\$ 97/, 'sobrou preco antigo na pagina');
+  assert.match(server, /function valorDaOferta\(body = \{\}\) \{\s*return ehRadarTable\(body\) \? 127 : 97;/);
+  assert.doesNotMatch(server, /custom_data\.value = 97/);
+});
+
+test('o checkout do Radar e o novo, e so o do Radar mudou', () => {
+  assert.match(html, /pay\.cakto\.com\.br\/3azm4o3_1219891/);
+  assert.doesNotMatch(html, /ai223ee/);
+  // Na Cakto o webhook e por produto: checkout novo sem webhook cadastrado
+  // significa venda entrando e nenhum Purchase chegando.
+});
+
+test('a garantia vale durante os sete dias, nao depois', () => {
+  assert.match(html, /Se em qualquer dia dos 7 não fizer sentido/);
+  assert.doesNotMatch(html, /Faça a primeira semana inteira/);
+  assert.equal((html.match(/devolvemos os R\$ 127/g) || []).length, 2, 'oferta e FAQ precisam concordar');
+});
+
+test('a Acao da Gracinha nao e descrita como memorial da avo', () => {
+  // A Gracinha e a mulher de uma das fotos, por quem a acao comecou.
+  assert.doesNotMatch(html, /em memória da avó/);
+  assert.match(html, /leva o nome da mulher por quem ela começou/);
 });

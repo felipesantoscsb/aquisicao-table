@@ -341,6 +341,17 @@ function ehRadarTable(body = {}) {
 }
 
 /**
+ * Valor da oferta, fixo no servidor de proposito: nao confia em valor vindo
+ * do cliente. Precisa ser por funil porque o mesmo endpoint de
+ * InitiateCheckout atende oito paginas. A Primeira Ruptura subiu para 127 em
+ * 20/10/2026; o Protocolo Raiz dos funis antigos continua a 97, entao um
+ * numero global so estaria certo para um deles.
+ */
+function valorDaOferta(body = {}) {
+  return ehRadarTable(body) ? 127 : 97;
+}
+
+/**
  * Par pixel+token do funil que originou o evento. Para a V2 sem
  * RAIZ_V2_CAPI_TOKEN devolve accessToken null de propósito: quem chama tem de
  * PULAR o envio. Cair no token principal mandaria o evento da V2 para o pixel
@@ -590,10 +601,9 @@ app.post('/api/capi', async (req, res) => {
     if (content_category) event.custom_data.content_category = content_category;
   }
   // value/currency: paridade com o pixel browser, senão o par não deduplica.
-  // Valor fixo da oferta (R$ 97) — não confia em valor vindo do cliente.
   if (resolvedEventName === 'InitiateCheckout') {
     event.custom_data = event.custom_data || {};
-    event.custom_data.value = 97;
+    event.custom_data.value = valorDaOferta(req.body);
     event.custom_data.currency = 'BRL';
   }
   // Lead não é receita, mas a Meta recusa o dado de moeda quando vem ausente ou
@@ -1878,7 +1888,7 @@ app.post('/api/capi/initiate-checkout', async (req, res) => {
     customData: {
       content_name: content_name || 'InitiateCheckout_Dossie',
       currency: 'BRL',
-      value: 97,
+      value: valorDaOferta(req.body),
     },
     eventSourceUrl: event_source_url,
     eventId: event_id,
