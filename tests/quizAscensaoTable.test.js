@@ -315,3 +315,13 @@ test('a Acao da Gracinha nao e descrita como memorial da avo', () => {
   assert.doesNotMatch(html, /em memória da avó/);
   assert.match(html, /leva o nome da mulher por quem ela começou/);
 });
+
+test('o credito de R$ 100 aparece junto do preco, uma linha so', () => {
+  // Justifica o aumento de 97 para 127 sem virar secao: a pagina promete nas
+  // rotas A e B que ninguem vai vender nada para ela.
+  assert.match(html, /<p class="credito">Se depois você seguir com um acompanhamento Table, <b>R\$ 100 voltam como crédito<\/b>\.<\/p>/);
+  assert.equal((html.match(/R\$ 100/g) || []).length, 1, 'uma mencao basta');
+  // DEPENDENCIA: as nove paginas de plano ainda concedem R$ 48,50 e R$ 97. A
+  // virada precisa acontecer antes da primeira pre-consulta converter, senao
+  // a cliente le a promessa aqui e outro numero la.
+});
