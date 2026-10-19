@@ -67,23 +67,60 @@ test('as notas do Radar nao vao para a Meta', () => {
   assert.doesNotMatch(server, /custom_data\.(pillar_scores|fit_score|lowest_pillar)/);
 });
 
-test('os dois audios com LIA na narracao estao marcados para regravar', () => {
-  // Conferido roteiro a roteiro em LIA-roteiros.pdf: 15 dos 17 entram como
-  // estao, porque o brief mandava o audio nunca se apresentar (quem
-  // apresentava era a LIA). R01 abre citando a LIA e D02 fecha prometendo um
-  // follow-up de 24h que aqui nao existe — sao resquicios do modelo push.
-  assert.ok(catalogo.intervencoes.R01.regravar, 'R01 cita a LIA na primeira frase');
-  assert.ok(catalogo.intervencoes.D02.regravar, 'D02 promete follow-up da LIA na ultima frase');
-  const limpos = Object.entries(catalogo.intervencoes).filter(([, iv]) => !iv.regravar);
-  assert.equal(limpos.length, 15);
+
+test('R01 e D02 sairam do elenco de vez', () => {
+  // Citavam a LIA na propria narracao ("Se a LIA te mandou isso agora" e
+  // "Amanha a LIA vai te perguntar como foi") e nao ha regravacao no caminho
+  // critico. Decisao de 19/10: fora, nao "regravar depois".
+  assert.equal(catalogo.intervencoes.R01, undefined);
+  assert.equal(catalogo.intervencoes.D02, undefined);
+  // So o que ela LE. _leia_antes e `origem` sao nota interna e citam a LIA de
+  // proposito: dizem de onde a peca veio.
+  const visivel = [
+    ...catalogo.dias.flatMap(d => [d.titulo, d.descricao]),
+    ...Object.values(catalogo.intervencoes).flatMap(iv => [iv.nome, iv.client_content]),
+    ...Object.values(catalogo.praticas).flatMap(pr => [pr.nome, pr.client_content, pr.campo, pr.placeholder]),
+  ];
+  for (const txt of visivel) {
+    assert.doesNotMatch(String(txt), /\bLIA\b/, `texto visivel para a cliente cita a LIA: "${txt}"`);
+  }
 });
 
-test('nada marcado para regravar entra num dia universal sem alternativa', () => {
-  // R01 e o dia 3, que toda compradora ouve. Enquanto nao for regravado, isso
-  // precisa estar visivel — nao pode ir ao ar por esquecimento.
-  const universaisPendentes = catalogo.dias
-    .filter(d => d.audio && catalogo.intervencoes[d.audio].regravar)
-    .map(d => `dia ${d.n} (${d.audio})`);
-  assert.deepEqual(universaisPendentes, ['dia 3 (R01)'],
-    'mudou o elenco: revisar quais pendencias atingem todas as compradoras');
+test('todo dia entrega audio E pratica escrita', () => {
+  // Audio sozinho nao gera transformacao em sete dias: a pratica e o que ela
+  // faz, e o que ela escreve vira insumo da sessao individual.
+  for (const dia of catalogo.dias) {
+    assert.ok(dia.audio || dia.audio_por_pilar, `dia ${dia.n} sem audio`);
+    assert.ok(dia.pratica, `dia ${dia.n} sem pratica`);
+    assert.ok(catalogo.praticas[dia.pratica], `dia ${dia.n}: pratica ${dia.pratica} sem verbete`);
+  }
+  assert.equal(new Set(catalogo.dias.map(d => d.pratica)).size, 7, 'pratica repetida entre dias');
+});
+
+test('toda pratica pede algo escrito, com rotulo e exemplo', () => {
+  for (const [code, pr] of Object.entries(catalogo.praticas)) {
+    assert.ok(pr.client_content.trim().length >= 120, `${code}: instrucao curta demais`);
+    assert.ok(pr.campo && pr.campo.length > 5, `${code}: sem rotulo de campo`);
+    assert.ok(pr.placeholder, `${code}: sem exemplo no campo`);
+    assert.ok(['texto', 'exercicio'].includes(pr.tipo), `${code}: tipo invalido`);
+  }
+});
+
+test('nenhuma pratica cobra resposta a um agente', () => {
+  // Os roteiros foram escritos para a LIA empurrar e cobrar no dia seguinte.
+  // Aqui e pull: ela escreve na pagina e a nutri le antes da sessao.
+  for (const [code, pr] of Object.entries(catalogo.praticas)) {
+    assert.doesNotMatch(pr.client_content, /me conta|me responde|manda em áudio|eu te devolvo/i,
+      `${code}: sobrou linguagem de conversa com agente`);
+  }
+});
+
+test('os quinze audios limpos entram todos no elenco', () => {
+  const usados = new Set();
+  for (const dia of catalogo.dias) {
+    if (dia.audio) usados.add(dia.audio);
+    else Object.values(dia.audio_por_pilar).forEach(c => usados.add(c));
+  }
+  assert.equal(usados.size, 15);
+  assert.deepEqual([...usados].sort(), Object.keys(catalogo.intervencoes).sort());
 });

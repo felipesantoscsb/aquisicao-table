@@ -2,29 +2,28 @@
   "_leia_antes": [
     "Catalogo curado da Primeira Ruptura. NAO e o catalogo da LIA.",
     "",
-    "O catalogo da LIA (lia/db/interventions/catalogo.json) e conversacional: o",
-    "conteudo mora em agent_intro_instructions, escrito como ordem para o agente",
-    "('Entregue este conteudo como esta', 'Marca autonomia explicitamente').",
-    "Renderizar aquilo numa pagina faz a cliente ler instrucoes sobre ela mesma.",
-    "Por isso aqui existe `client_content`: o texto que ELA le, na voz da Evelyn.",
+    "O catalogo da LIA e conversacional: o conteudo mora em",
+    "agent_intro_instructions, escrito como ordem para o agente. Renderizar",
+    "aquilo numa pagina faz a cliente ler instrucoes sobre ela mesma. Por isso",
+    "aqui existe `client_content`: o texto que ELA le.",
     "",
-    "A espinha de 7 dias veio do demo de 17/10. Quatro dias sao universais e tres",
-    "(2, 4 e 6) trocam de audio conforme o pilar mais fragil do Radar dela.",
+    "CADA DIA TEM DUAS PECAS: um audio e uma pratica escrita. A pratica e o que",
+    "ela FAZ, e o que ela escreve na pratica vai para a nutricionista ler antes",
+    "da sessao individual. Audio sozinho nao gera transformacao em 7 dias.",
     "",
-    "Audios: 17 arquivos em public/pr/audio/, copiados do repo da LIA. Nao",
-    "apontar para yourlia.tech — aquele caminho responde 404 e o entregavel e",
-    "pago, nao pode depender do deploy de outro produto.",
+    "Dias 1, 3, 5 e 7 sao universais. Nos dias 2 e 4 o audio troca conforme o",
+    "pilar mais fragil do Radar dela.",
     "",
-    "MARCA: 15 dos 17 servem como estao. Os roteiros (LIA-roteiros.pdf) mandavam",
-    "que o audio nunca se apresentasse, porque quem apresentava era a LIA — entao",
-    "quem fala e a Evelyn e o audio entra direto no assunto. Conferido roteiro a",
-    "roteiro, com as duracoes dos MP3 batendo com os roteiros. Nao foi conferido",
-    "de ouvido: improviso fora do script nao apareceria nesta checagem.",
+    "ADAPTACAO PUSH -> PULL. Os roteiros foram escritos para a LIA empurrar no",
+    "momento certo e cobrar no dia seguinte. Aqui ela aperta play quando quer e",
+    "nao ha agente perguntando amanha. Por isso todo 'me conta' virou 'escreve",
+    "aqui', e o retorno acontece na sessao, nao no dia seguinte.",
     "",
-    "R01 e D02 estao marcados com `regravar`. As frases deles nao sao so marca,",
-    "sao resquicio do modelo push: a LIA escolhia o minuto e cobrava no dia",
-    "seguinte. O mapa e pull — ela aperta play quando quer e nao ha agente",
-    "perguntando amanha. Estariam erradas aqui mesmo sem o nome LIA."
+    "R01 e D02 foram REMOVIDOS: citavam a LIA na propria narracao. Os 15 audios",
+    "restantes foram conferidos roteiro a roteiro em LIA-roteiros.pdf, com as",
+    "duracoes dos MP3 batendo. Nao foi conferido de ouvido.",
+    "",
+    "Audio servido por public/pr/audio/, nunca por yourlia.tech (404)."
   ],
   "dias": [
     {
@@ -32,15 +31,14 @@
       "etapa": "Entender",
       "titulo": "Veja o ciclo antes de tentar corrigi-lo.",
       "descricao": "Hoje você vai reconhecer em que momento a rotina deixa de sustentar o cuidado. Ainda não é dia de mudar tudo.",
-      "experimento": "Ao fim do dia, anote o primeiro momento em que percebeu que estava funcionando no limite.",
-      "audio": "P02"
+      "audio": "P02",
+      "pratica": "O02"
     },
     {
       "n": 2,
       "etapa": "Reconhecer",
       "titulo": "Encontre o primeiro sinal.",
       "descricao": "O automático costuma dar sinais antes de parecer inevitável. Vamos descobrir qual é o seu.",
-      "experimento": "Escolha um sinal físico, emocional ou ambiental que costuma aparecer antes do padrão.",
       "audio_por_pilar": {
         "body": "R04",
         "food": "P04",
@@ -48,61 +46,55 @@
         "knowledge": "P01",
         "awareness": "R03",
         "adaptability": "P04"
-      }
+      },
+      "pratica": "D05"
     },
     {
       "n": 3,
       "etapa": "Experimentar",
       "titulo": "Use a pausa antes de decidir.",
       "descricao": "A pausa não existe para impedir a comida. Existe para devolver um instante de decisão.",
-      "experimento": "Quando o sinal aparecer, faça a pausa e nomeie a necessidade mais urgente.",
-      "audio": "R01"
+      "audio": "R02",
+      "pratica": "R05"
     },
     {
       "n": 4,
       "etapa": "Observar",
       "titulo": "Registre sem corrigir.",
       "descricao": "Hoje o foco é separar observação de julgamento. Informação útil não precisa virar cobrança.",
-      "experimento": "Registre uma situação usando apenas fatos: onde, quando, o que sentiu e o que fez.",
       "audio_por_pilar": {
         "body": "C05",
         "food": "C02",
-        "resources": "R02",
+        "resources": "D04",
         "knowledge": "P05",
         "awareness": "C07",
         "adaptability": "C03"
-      }
+      },
+      "pratica": "O04"
     },
     {
       "n": 5,
       "etapa": "Preparar",
       "titulo": "Crie espaço para perceber.",
       "descricao": "Nos dias difíceis, boas decisões dependem menos de força de vontade e mais de alternativas disponíveis.",
-      "experimento": "Antes do horário em que o ciclo costuma apertar, deixe uma alternativa pronta e ao alcance.",
-      "audio": "R08"
+      "audio": "R08",
+      "pratica": "A04"
     },
     {
       "n": 6,
       "etapa": "Retornar",
       "titulo": "Não transforme um episódio em recomeço.",
       "descricao": "A reparação começa na refeição seguinte, sem compensação e sem promessa de perfeição.",
-      "experimento": "Escreva uma frase de retorno que você aceitaria ouvir de alguém em quem confia.",
-      "audio_por_pilar": {
-        "body": "D04",
-        "food": "D02",
-        "resources": "D04",
-        "knowledge": "D02",
-        "awareness": "D01",
-        "adaptability": "D01"
-      }
+      "audio": "D01",
+      "pratica": "D03"
     },
     {
       "n": 7,
       "etapa": "Consolidar",
       "titulo": "Leve evidências para a sessão.",
       "descricao": "Você não precisa chegar com tudo resolvido. Precisa chegar sabendo um pouco mais sobre onde o ciclo começa.",
-      "experimento": "Escolha a intervenção mais útil, a mais difícil e uma pergunta para levar à nutricionista.",
-      "audio": "C01"
+      "audio": "C01",
+      "pratica": "O05"
     }
   ],
   "intervencoes": {
@@ -129,13 +121,6 @@
       "arquivo": "/pr/audio/P05.mp3",
       "duracao_s": 127,
       "client_content": "Não foi você que falhou com ela. Foi ela que foi desenhada para funcionar só enquanto tudo estivesse sob controle, e a vida real não é assim em nenhuma semana. Saber por que não funcionou importa mais do que tentar de novo com mais rigor."
-    },
-    "R01": {
-      "nome": "Pausa de 3 minutos na chegada",
-      "arquivo": "/pr/audio/R01.mp3",
-      "duracao_s": 102,
-      "client_content": "A chegada em casa costuma ser o ponto em que o dia inteiro cobra de uma vez. Três minutos antes de abrir a geladeira não são para resistir: são para o corpo sair do piloto automático e você recuperar um instante de escolha.",
-      "regravar": "Primeira frase cita a LIA e pressupoe envio no momento certo: 'Se a LIA te mandou isso agora, e porque voce acabou de chegar em casa.' Comecar em 'Voce acabou de chegar em casa.' — o mapa ja diz para ouvir na chegada."
     },
     "R02": {
       "nome": "Descer a ativação",
@@ -197,18 +182,69 @@
       "duracao_s": 86,
       "client_content": "O que mantém o ciclo vivo quase nunca é o episódio. É a hora seguinte, em que a culpa pede compensação e a compensação prepara o próximo. Este áudio é para essa hora."
     },
-    "D02": {
-      "nome": "Não compensar é a intervenção",
-      "arquivo": "/pr/audio/D02.mp3",
-      "duracao_s": 154,
-      "client_content": "Pular a próxima refeição parece reparar e é o que fecha o ciclo. Voltar a comer normalmente depois de um episódio é a coisa mais difícil e mais eficaz da semana. É contraintuitivo de propósito.",
-      "regravar": "Ultima frase promete follow-up que nao existe aqui: 'Amanha a LIA vai te perguntar como foi.' Trocar pelo registro de evidencias do mapa ou pela sessao individual."
-    },
     "D04": {
       "nome": "Sessenta segundos de trégua",
       "arquivo": "/pr/audio/D04.mp3",
       "duracao_s": 87,
       "client_content": "Um minuto, para usar logo depois, quando a cobrança chega antes mesmo de você respirar. Não resolve o episódio. Impede que ele vire o resto do dia."
+    }
+  },
+  "praticas": {
+    "O02": {
+      "nome": "Mapa do seu fim de dia",
+      "tipo": "exercicio",
+      "origem": "LIA O02",
+      "client_content": "Escreve aqui como é o seu fim de dia num dia comum, hora a hora, desde a hora que você sai do trabalho até a hora que deita. Onde você está, com quem, o que está fazendo, como está o seu corpo. Não precisa ficar bonito nem organizado, e ninguém vai corrigir. A nutricionista lê isso antes da sua sessão.",
+      "campo": "Seu fim de dia, hora a hora",
+      "placeholder": "18h saio do trabalho… 19h chego em casa…"
+    },
+    "D05": {
+      "nome": "O que veio antes",
+      "tipo": "exercicio",
+      "origem": "LIA D05",
+      "client_content": "Pensa na última vez que aconteceu, e responde quando estiver tranquila, nunca no meio da culpa. Três coisas: que horas era, o que você tinha comido na refeição anterior, e como estava o seu dia até ali. Não é para achar culpado. É que essas três respostas, repetidas algumas vezes, mostram uma coisa que uma vez sozinha não mostra.",
+      "campo": "Que horas era, o que tinha comido antes, como estava o dia",
+      "placeholder": "Era por volta das…"
+    },
+    "R05": {
+      "nome": "Dez minutos antes de decidir",
+      "tipo": "texto",
+      "origem": "LIA R05",
+      "client_content": "Hoje, quando a vontade chegar, espera dez minutos antes de decidir. Não é para não comer. Nesses dez minutos você pode fazer qualquer coisa, menos decidir: toma um banho, responde uma mensagem, sai do cômodo. Se em dez minutos ainda for isso que você quer, é isso que você faz, sem culpa, porque foi escolha.",
+      "campo": "O que aconteceu nos dez minutos?",
+      "placeholder": "Esperei e…"
+    },
+    "O04": {
+      "nome": "Onde acontece",
+      "tipo": "exercicio",
+      "origem": "LIA O04",
+      "client_content": "Pensa nas últimas vezes que aconteceu. Onde você estava, fisicamente? Cozinha em pé, sofá, cama, carro, trabalho? Às vezes o padrão não é a emoção, é o lugar. E lugar é bem mais fácil de mudar do que emoção.",
+      "campo": "Os lugares que se repetem",
+      "placeholder": "Quase sempre na…"
+    },
+    "A04": {
+      "nome": "Seu plano para o fim de dia",
+      "tipo": "exercicio",
+      "origem": "LIA A04",
+      "client_content": "Agora inverte: em vez de alguém te dizer o que fazer, escreve o seu plano. O que funciona pra você quando chega naquele horário? O que já deu certo, o que você faria diferente, o que precisa estar pronto antes. Escreve com as suas palavras, porque você vai reler isso no dia 7 e é ele que vai para a sessão.",
+      "campo": "Seu plano, com as suas palavras",
+      "placeholder": "Quando chegar naquele horário, eu…"
+    },
+    "D03": {
+      "nome": "A próxima refeição normal",
+      "tipo": "texto",
+      "origem": "LIA D03",
+      "client_content": "Se um episódio acontecer esta semana, a próxima refeição é uma refeição comum. Não é reparação, não é compensação, não é recomeço. Come do jeito que você comeria se hoje não tivesse acontecido nada. É só isso, e é mais difícil do que parece.",
+      "campo": "Se aconteceu, como foi a refeição seguinte?",
+      "placeholder": "Se não aconteceu esta semana, pode deixar em branco."
+    },
+    "O05": {
+      "nome": "O que já funcionou",
+      "tipo": "texto",
+      "origem": "LIA O05",
+      "client_content": "Uma pergunta que quase ninguém faz. Teve alguma vez, nesses sete dias, em que a situação estava montada para acontecer e não aconteceu? Ou aconteceu bem menos? Escreve essa. Não interessa se foi pequena: o que você fez ali é a coisa mais útil que você leva para a sessão.",
+      "campo": "A vez em que não aconteceu",
+      "placeholder": "Teve um dia em que…"
     }
   }
 }
