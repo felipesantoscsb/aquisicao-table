@@ -7,45 +7,40 @@ const root = join(__dirname, '..');
 const dir = join(root, 'public/Ofertas');
 const prPages = readdirSync(dir).filter(f => f.includes('-pr-'));
 
-// Credito unico de R$ 100 em qualquer plano, desde 20/10/2026. Antes era 50%
-// no Essential (R$ 48,50) e 100% do Protocolo Raiz nos outros (R$ 97,00), o
-// que amarrava o desconto ao preco do produto de entrada — e ele mudou.
-const ESPERADO = {
-  essential: { vista: 'R$ 798,00',   parcela: 'R$82,53'   },
-  premium:   { vista: 'R$ 1.398,00', parcela: 'R$ 144,58' },
-  elite:     { vista: 'R$ 2.300,00', parcela: 'R$ 237,86' },
+// Estado ATUAL, no ar, com lead acessando. O credito unico de R$ 100 esta
+// decidido mas NAO aplicado: a virada precisa ser deliberada, nao um efeito
+// colateral de outra mudanca. Estes testes guardam o que esta publicado.
+//
+// Quando a chave virar, os valores sao:
+//   Essential  R$ 798,00   12x R$ 82,53
+//   Premium    R$ 1.398,00 12x R$ 144,58
+//   Elite      R$ 2.300,00 12x R$ 237,86
+// A parcela sai do fator embutido nas proprias paginas (1,241018), que bate
+// nos tres tiers ate a quarta casa. Conferir uma contra a tabela do gateway.
+const NO_AR = {
+  essential: { vista: 'R$ 849,50',   parcela: 'R$87,85'   },
+  premium:   { vista: 'R$ 1.401,00', parcela: 'R$ 144,89' },
+  elite:     { vista: 'R$ 2.303,00', parcela: 'R$ 238,18' },
 };
 
 test('as nove paginas com credito existem', () => {
   assert.equal(prPages.length, 9, '3 tiers x 3 nutris');
 });
 
-test('cada plano mostra o preco com credito de R$ 100 aplicado', () => {
+test('os precos publicados nao mudam por acidente', () => {
   for (const arq of prPages) {
-    const tier = Object.keys(ESPERADO).find(t => arq.includes(t));
+    const tier = Object.keys(NO_AR).find(t => arq.includes(t));
     const html = readFileSync(join(dir, arq), 'utf8');
-    assert.ok(html.includes(ESPERADO[tier].vista), `${arq}: falta ${ESPERADO[tier].vista}`);
-    assert.ok(html.includes(ESPERADO[tier].parcela), `${arq}: falta a parcela ${ESPERADO[tier].parcela}`);
+    assert.ok(html.includes(NO_AR[tier].vista), `${arq}: preco publicado mudou`);
+    assert.ok(html.includes(NO_AR[tier].parcela), `${arq}: parcela publicada mudou`);
   }
 });
 
-test('nenhum valor do credito antigo sobrou', () => {
+test('o credito de R$ 100 ainda nao foi aplicado em nenhuma das nove', () => {
+  // Se este teste falhar, a virada aconteceu: atualize NO_AR junto.
   for (const arq of prPages) {
     const html = readFileSync(join(dir, arq), 'utf8');
-    for (const velho of ['R$48,50', '- R$ 97,00', 'R$ 849,50', 'R$ 1.401,00', 'R$ 2.303,00',
-                         '50% do valor', 'volta integralmente']) {
-      assert.ok(!html.includes(velho), `${arq}: sobrou "${velho}"`);
-    }
-  }
-});
-
-test('a conta do credito fecha em cada tier', () => {
-  // Preco cheio menos 100 tem que dar o preco com credito, senao a pagina
-  // mostra uma subtracao errada para quem le os dois numeros.
-  const cheio = { essential: 898.0, premium: 1498.0, elite: 2400.0 };
-  for (const [tier, { vista }] of Object.entries(ESPERADO)) {
-    const n = Number(vista.replace('R$ ', '').replace(/\./g, '').replace(',', '.'));
-    assert.equal(n, cheio[tier] - 100, `${tier}: ${cheio[tier]} - 100 != ${n}`);
+    assert.ok(!html.includes('R$ 100,00'), `${arq}: credito novo entrou sem a virada combinada`);
   }
 });
 
