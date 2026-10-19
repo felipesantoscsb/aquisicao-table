@@ -375,6 +375,38 @@ function credenciaisCapi(body) {
 
 // ─── Rota CAPI ────────────────────────────────────────────────────────────────
 
+const RADAR_EVENT_NAMES = new Set([
+  'page_view','quiz_started','question_answered','capture_viewed','lead_submitted',
+  'result_viewed','preconsult_started','preconsult_requested','checkout_started',
+]);
+
+// Telemetria própria do Radar. A página manda somente marcos anônimos; este
+// backend remove qualquer campo extra e assina o envio ao Hub. Assim o segredo
+// interno nunca aparece no navegador e nenhuma resposta do quiz é armazenada.
+app.post('/api/radar-event', (req, res) => {
+  if (/bot|crawler|spider|preview|facebookexternalhit|whatsapp/i.test(String(req.headers['user-agent'] || ''))) {
+    return res.status(202).json({ ok: true, ignored: 'bot' });
+  }
+  const b = req.body && typeof req.body === 'object' ? req.body : {};
+  const eventName = String(b.event_name || '').slice(0, 40);
+  const eventId = String(b.event_id || '').slice(0, 120);
+  const sessionId = String(b.session_id || '').slice(0, 120);
+  if (!RADAR_EVENT_NAMES.has(eventName) || !eventId || !sessionId) {
+    return res.status(400).json({ ok: false, error: 'Evento inválido' });
+  }
+  const keep = {};
+  for (const key of ['lead_sck','milestone','route','lowest_pillar','highest_pillar',
+    'utm_source','utm_medium','utm_campaign','utm_content','utm_term','device_type',
+    'occurred_at','page_version']) {
+    if (b[key] != null) keep[key] = String(b[key]).slice(0, 250);
+  }
+  for (const key of ['question_number','fit_score','readiness_score','elapsed_ms']) {
+    if (b[key] != null && Number.isFinite(Number(b[key]))) keep[key] = Number(b[key]);
+  }
+  hubSync.enviarRadarEvento(getRedis, { event_id: eventId, session_id: sessionId, event_name: eventName, ...keep });
+  res.status(202).json({ ok: true });
+});
+
 app.post('/api/capi', async (req, res) => {
   console.log('[CAPI] Payload recebido:', JSON.stringify(req.body, null, 2));
 

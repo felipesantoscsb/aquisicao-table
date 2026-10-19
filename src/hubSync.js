@@ -99,6 +99,14 @@ function enviarLeadV2(getRedis, body) {
   } catch (e) { console.error('[hubSync] lead V2:', e.message); }
 }
 
+/** Marco anônimo do funil /raiz-radar. Nunca recebe PII nem respostas. */
+function enviarRadarEvento(getRedis, body) {
+  try {
+    if (!body || !body.event_id || !body.session_id || !body.event_name) return;
+    enviar(getRedis, '/webhook/radar-event', body, `Radar ${body.event_name}`);
+  } catch (e) { console.error('[hubSync] Radar:', e.message); }
+}
+
 async function scanChaves(redis, pattern) {
   const out = [];
   let cursor = '0';
@@ -192,4 +200,4 @@ async function cancelarCadenciaQuiz(phone) {
   }
 }
 
-module.exports = { notificarCompra, enviarLeadV2, enviarOptOut, drenarRetry, backfillCompras, backfillOptOuts, purchasePayload, cancelarCadenciaQuiz };
+module.exports = { notificarCompra, enviarLeadV2, enviarRadarEvento, enviarOptOut, drenarRetry, backfillCompras, backfillOptOuts, purchasePayload, cancelarCadenciaQuiz };

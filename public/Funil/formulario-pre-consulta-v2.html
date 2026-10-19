@@ -102,6 +102,17 @@ const $ = id => document.getElementById(id);
 const sel = { historico:new Set(), turnos:new Set(), dias:new Set() };
 let lead = null;
 const lid = new URLSearchParams(location.search).get('lid') || '';
+const RADAR_SESSION_KEY='table_radar_session',RADAR_STARTED_KEY='table_radar_started_at';
+let radarSessionId='';try{radarSessionId=sessionStorage.getItem(RADAR_SESSION_KEY)||''}catch(e){}
+let radarStartedAt=Date.now();try{radarStartedAt=Number(sessionStorage.getItem(RADAR_STARTED_KEY))||Date.now()}catch(e){}
+function radarEvent(event_name){
+  if(!radarSessionId||!lid||location.hostname==='127.0.0.1'||location.hostname==='localhost')return;
+  try{fetch('/api/radar-event',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    event_id:'re_'+crypto.randomUUID(),session_id:radarSessionId,event_name,lead_sck:lid,route:'A',
+    occurred_at:new Date().toISOString(),elapsed_ms:Date.now()-radarStartedAt,page_version:'pre-consulta-2026-10-19'
+  })}).catch(()=>{})}catch(e){}
+}
+radarEvent('preconsult_started');
 
 function chips(hostId, lista, grupo){
   $(hostId).innerHTML = '';
@@ -172,6 +183,7 @@ $('form').addEventListener('submit', async e=>{
     });
     const d = await r.json();
     if(!r.ok || !d.ok) throw new Error(d.error || 'falhou');
+    radarEvent('preconsult_requested');
     try{ if(typeof fbq==='function') fbq('trackCustom','PreConsultRequest',{funnel:'radar-table'}); }catch(e){}
     $('form').style.display='none';
     $('done').style.display='block';
