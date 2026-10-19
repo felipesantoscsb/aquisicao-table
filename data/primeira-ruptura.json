@@ -1,0 +1,206 @@
+{
+  "_leia_antes": [
+    "Catalogo curado da Primeira Ruptura. NAO e o catalogo da LIA.",
+    "",
+    "O catalogo da LIA (lia/db/interventions/catalogo.json) e conversacional: o",
+    "conteudo mora em agent_intro_instructions, escrito como ordem para o agente",
+    "('Entregue este conteudo como esta', 'Marca autonomia explicitamente').",
+    "Renderizar aquilo numa pagina faz a cliente ler instrucoes sobre ela mesma.",
+    "Por isso aqui existe `client_content`: o texto que ELA le, na voz da Evelyn.",
+    "",
+    "A espinha de 7 dias veio do demo de 17/10. Quatro dias sao universais e tres",
+    "(2, 4 e 6) trocam de audio conforme o pilar mais fragil do Radar dela.",
+    "",
+    "Audios: 17 arquivos em public/pr/audio/, copiados do repo da LIA. Nao",
+    "apontar para yourlia.tech — aquele caminho responde 404 e o entregavel e",
+    "pago, nao pode depender do deploy de outro produto.",
+    "",
+    "PENDENTE: ninguem ouviu os 17 arquivos para confirmar que a narracao nao se",
+    "apresenta como LIA. Enquanto isso nao for feito, isto aqui nao vai ao ar."
+  ],
+
+  "dias": [
+    {
+      "n": 1,
+      "etapa": "Entender",
+      "titulo": "Veja o ciclo antes de tentar corrigi-lo.",
+      "descricao": "Hoje você vai reconhecer em que momento a rotina deixa de sustentar o cuidado. Ainda não é dia de mudar tudo.",
+      "experimento": "Ao fim do dia, anote o primeiro momento em que percebeu que estava funcionando no limite.",
+      "audio": "P02"
+    },
+    {
+      "n": 2,
+      "etapa": "Reconhecer",
+      "titulo": "Encontre o primeiro sinal.",
+      "descricao": "O automático costuma dar sinais antes de parecer inevitável. Vamos descobrir qual é o seu.",
+      "experimento": "Escolha um sinal físico, emocional ou ambiental que costuma aparecer antes do padrão.",
+      "audio_por_pilar": {
+        "body": "R04",
+        "food": "P04",
+        "resources": "R03",
+        "knowledge": "P01",
+        "awareness": "R03",
+        "adaptability": "P04"
+      }
+    },
+    {
+      "n": 3,
+      "etapa": "Experimentar",
+      "titulo": "Use a pausa antes de decidir.",
+      "descricao": "A pausa não existe para impedir a comida. Existe para devolver um instante de decisão.",
+      "experimento": "Quando o sinal aparecer, faça a pausa e nomeie a necessidade mais urgente.",
+      "audio": "R01"
+    },
+    {
+      "n": 4,
+      "etapa": "Observar",
+      "titulo": "Registre sem corrigir.",
+      "descricao": "Hoje o foco é separar observação de julgamento. Informação útil não precisa virar cobrança.",
+      "experimento": "Registre uma situação usando apenas fatos: onde, quando, o que sentiu e o que fez.",
+      "audio_por_pilar": {
+        "body": "C05",
+        "food": "C02",
+        "resources": "R02",
+        "knowledge": "P05",
+        "awareness": "C07",
+        "adaptability": "C03"
+      }
+    },
+    {
+      "n": 5,
+      "etapa": "Preparar",
+      "titulo": "Crie espaço para perceber.",
+      "descricao": "Nos dias difíceis, boas decisões dependem menos de força de vontade e mais de alternativas disponíveis.",
+      "experimento": "Antes do horário em que o ciclo costuma apertar, deixe uma alternativa pronta e ao alcance.",
+      "audio": "R08"
+    },
+    {
+      "n": 6,
+      "etapa": "Retornar",
+      "titulo": "Não transforme um episódio em recomeço.",
+      "descricao": "A reparação começa na refeição seguinte, sem compensação e sem promessa de perfeição.",
+      "experimento": "Escreva uma frase de retorno que você aceitaria ouvir de alguém em quem confia.",
+      "audio_por_pilar": {
+        "body": "D04",
+        "food": "D02",
+        "resources": "D04",
+        "knowledge": "D02",
+        "awareness": "D01",
+        "adaptability": "D01"
+      }
+    },
+    {
+      "n": 7,
+      "etapa": "Consolidar",
+      "titulo": "Leve evidências para a sessão.",
+      "descricao": "Você não precisa chegar com tudo resolvido. Precisa chegar sabendo um pouco mais sobre onde o ciclo começa.",
+      "experimento": "Escolha a intervenção mais útil, a mais difícil e uma pergunta para levar à nutricionista.",
+      "audio": "C01"
+    }
+  ],
+
+  "intervencoes": {
+    "P02": {
+      "nome": "O ciclo restrição-compulsão",
+      "arquivo": "/pr/audio/P02.mp3",
+      "duracao_s": 160,
+      "client_content": "Antes de mudar qualquer coisa, vale entender o que está acontecendo. Restringir e perder o controle não são dois problemas separados: são as duas pontas do mesmo ciclo, e um alimenta o outro. Enquanto ele parecer falta de disciplina, a resposta vai continuar sendo mais controle — que é justamente o que reinicia tudo."
+    },
+    "P04": {
+      "nome": "Fome física e vontade de comer",
+      "arquivo": "/pr/audio/P04.mp3",
+      "duracao_s": 117,
+      "client_content": "As duas são legítimas e pedem coisas diferentes. Confundir uma com a outra é o que faz você comer e continuar faltando algo. Hoje não é sobre acertar a distinção, é só sobre começar a perceber qual das duas chegou."
+    },
+    "P01": {
+      "nome": "Por que pular o almoço te pega à noite",
+      "arquivo": "/pr/audio/P01.mp3",
+      "duracao_s": 118,
+      "client_content": "O episódio da noite raramente começa à noite. Ele começa num dia em que faltou comida de verdade, e o corpo só está cobrando o que não recebeu. Entender isso tira o episódio do lugar de falha de caráter."
+    },
+    "P05": {
+      "nome": "Por que a dieta restritiva falhou",
+      "arquivo": "/pr/audio/P05.mp3",
+      "duracao_s": 127,
+      "client_content": "Não foi você que falhou com ela. Foi ela que foi desenhada para funcionar só enquanto tudo estivesse sob controle, e a vida real não é assim em nenhuma semana. Saber por que não funcionou importa mais do que tentar de novo com mais rigor."
+    },
+    "R01": {
+      "nome": "Pausa de 3 minutos na chegada",
+      "arquivo": "/pr/audio/R01.mp3",
+      "duracao_s": 102,
+      "client_content": "A chegada em casa costuma ser o ponto em que o dia inteiro cobra de uma vez. Três minutos antes de abrir a geladeira não são para resistir: são para o corpo sair do piloto automático e você recuperar um instante de escolha."
+    },
+    "R02": {
+      "nome": "Descer a ativação",
+      "arquivo": "/pr/audio/R02.mp3",
+      "duracao_s": 119,
+      "client_content": "Quando o corpo está acelerado, nenhuma decisão sai boa, e comer é a forma mais rápida de baixar a rotação. Este áudio oferece outra. Não é melhor nem mais nobre, é só mais uma opção disponível na hora em que você tiver só uma."
+    },
+    "R03": {
+      "nome": "Isso é fome de quê?",
+      "arquivo": "/pr/audio/R03.mp3",
+      "duracao_s": 87,
+      "client_content": "Uma pergunta só, feita antes de comer, sem exigir resposta certa. Às vezes a resposta é comida mesmo, e está tudo bem. A ruptura está em ter perguntado."
+    },
+    "R04": {
+      "nome": "O primeiro garfo",
+      "arquivo": "/pr/audio/R04.mp3",
+      "duracao_s": 59,
+      "client_content": "Um minuto, sobre a primeira garfada. É o momento em que o corpo ainda está disponível para ser percebido, antes de a refeição virar automática. Não precisa durar a refeição inteira."
+    },
+    "R08": {
+      "nome": "O que eu preciso que não é comida",
+      "arquivo": "/pr/audio/R08.mp3",
+      "duracao_s": 126,
+      "client_content": "Nos dias difíceis a comida costuma ser a única coisa disponível que não cobra nada em troca. Isso não é fraqueza, é falta de alternativa. Hoje é sobre deixar uma segunda opção pronta antes de precisar dela."
+    },
+    "C01": {
+      "nome": "Tudo ou nada",
+      "arquivo": "/pr/audio/C01.mp3",
+      "duracao_s": 109,
+      "client_content": "O pensamento tudo ou nada é o que transforma um deslize em uma semana perdida. Ele promete recomeço limpo e entrega o mesmo ciclo. Fechar a semana percebendo onde ele apareceu vale mais do que ter cumprido os sete dias à risca."
+    },
+    "C02": {
+      "nome": "Estraguei tudo",
+      "arquivo": "/pr/audio/C02.mp3",
+      "duracao_s": 80,
+      "client_content": "Essa frase costuma aparecer antes de qualquer avaliação real do que aconteceu. Ela não descreve o episódio: ela decide o que vem depois dele. Observar a frase chegando já muda o que vem depois."
+    },
+    "C03": {
+      "nome": "Segunda-feira não existe",
+      "arquivo": "/pr/audio/C03.mp3",
+      "duracao_s": 90,
+      "client_content": "Adiar para segunda não é preguiça, é o ciclo pedindo um recomeço limpo que nunca chega. A alternativa não é começar agora com mais força. É perceber que não existe recomeço, só a próxima refeição."
+    },
+    "C05": {
+      "nome": "Peso não é caráter",
+      "arquivo": "/pr/audio/C05.mp3",
+      "duracao_s": 106,
+      "client_content": "Enquanto o número no corpo for lido como prova de quem você é, qualquer observação vira julgamento. E ninguém consegue observar com clareza aquilo que está usando para se condenar."
+    },
+    "C07": {
+      "nome": "A voz crítica não é você",
+      "arquivo": "/pr/audio/C07.mp3",
+      "duracao_s": 101,
+      "client_content": "Ela aprendeu a falar assim em algum momento, provavelmente para te proteger de algo. Hoje atrapalha. Dá para ouvir sem obedecer, e isso já é diferente de calar."
+    },
+    "D01": {
+      "nome": "O episódio já acabou",
+      "arquivo": "/pr/audio/D01.mp3",
+      "duracao_s": 86,
+      "client_content": "O que mantém o ciclo vivo quase nunca é o episódio. É a hora seguinte, em que a culpa pede compensação e a compensação prepara o próximo. Este áudio é para essa hora."
+    },
+    "D02": {
+      "nome": "Não compensar é a intervenção",
+      "arquivo": "/pr/audio/D02.mp3",
+      "duracao_s": 154,
+      "client_content": "Pular a próxima refeição parece reparar e é o que fecha o ciclo. Voltar a comer normalmente depois de um episódio é a coisa mais difícil e mais eficaz da semana. É contraintuitivo de propósito."
+    },
+    "D04": {
+      "nome": "Sessenta segundos de trégua",
+      "arquivo": "/pr/audio/D04.mp3",
+      "duracao_s": 87,
+      "client_content": "Um minuto, para usar logo depois, quando a cobrança chega antes mesmo de você respirar. Não resolve o episódio. Impede que ele vire o resto do dia."
+    }
+  }
+}

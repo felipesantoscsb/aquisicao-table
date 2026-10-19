@@ -427,6 +427,34 @@ app.post('/api/capi', async (req, res) => {
     }
   }
 
+  // Resultado do Radar, indexado pelo MESMO id que vira `sck` no checkout da
+  // Cakto. E daqui que o mapa da Primeira Ruptura nasce: sem as seis notas
+  // guardadas, a venda chega e nao ha de onde montar nada.
+  // Nada disto vai para a Meta — custom_data leva so content_name/category.
+  if ((event_name || '') === 'CompleteRegistration' && ehRadarTable(req.body)) {
+    const radarId = req.body.quiz_lead_event_id || req.body.lead_event_id || null;
+    const notas = req.body.pillar_scores;
+    if (radarId && notas && typeof notas === 'object') {
+      const registro = {
+        scores:          notas,
+        route:           req.body.commercial_route || null,
+        fit_score:       Number(req.body.fit_score) || 0,
+        readiness_score: Number(req.body.readiness_score) || 0,
+        lowest_pillar:   req.body.lowest_pillar  || null,
+        highest_pillar:  req.body.highest_pillar || null,
+        nome:            req.body.nome || null,
+        phone:           normalizePhone(req.body.whats) || null,
+        at:              new Date().toISOString(),
+      };
+      getRedis().set(
+        `radar:${radarId}`,
+        JSON.stringify(registro),
+        'EX', 60 * 60 * 24 * 180 // 180 dias: cobre a distancia entre quiz e compra
+      ).catch(e => console.error('[radar-persist] Redis:', e.message));
+      console.log(`[radar-persist] ${radarId} rota=${registro.route} baixo=${registro.lowest_pillar}`);
+    }
+  }
+
   // SDR forward só no CompleteRegistration: único momento com perfil+respostas+qualificação completos.
   // V2: sem SDR nem dossiê, mas o contato vai para o banco de leads do Hub.
   if ((req.body.event_name || 'Lead') === 'CompleteRegistration' && ehRaizV2(req.body)) {
