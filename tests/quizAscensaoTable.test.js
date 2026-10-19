@@ -113,3 +113,49 @@ test('rota e scores seguem apenas para mensuração interna no Hub', () => {
   const capiExtraction = server.slice(server.indexOf("app.post('/api/capi'"), server.indexOf("app.post('/api/capi/initiate-checkout'"));
   assert.match(capiExtraction, /profileName, scores,[\s\S]*são ignorados intencionalmente/);
 });
+
+// Um splice ruim duplicou o documento inteiro de #quiz em diante e aninhou a
+// copia dentro de #result. Como getElementById pega sempre o primeiro, os CTAs
+// ficaram na copia morta: a pagina de resultado rodou SEM nenhum botao. Nada
+// quebrava, nada gritava no console — so nao convertia.
+test('estrutura do quiz nao tem id duplicado', () => {
+  const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map(m => m[1]);
+  const vistos = new Set();
+  const repetidos = [...new Set(ids.filter(id => vistos.has(id) || (vistos.add(id), false)))];
+  assert.deepEqual(repetidos, [], `ids duplicados: ${repetidos.join(', ')}`);
+});
+
+test('as paginas do funil existem uma unica vez', () => {
+  for (const id of ['intro', 'quiz', 'respiro', 'capture', 'loading', 'result']) {
+    assert.equal((html.match(new RegExp(`id="${id}"`, 'g')) || []).length, 1, `#${id} duplicado`);
+  }
+  assert.equal((html.match(/<section class="page/g) || []).length, 6);
+});
+
+test('os dois CTAs ficam dentro da pagina de resultado', () => {
+  const resultado = html.slice(html.indexOf('<section class="page result" id="result">'));
+  const fim = resultado.indexOf('\n</section>');
+  const dentro = resultado.slice(0, fim);
+  for (const id of ['routeA', 'routeBC', 'preconsult', 'checkout']) {
+    assert.ok(dentro.includes(`id="${id}"`), `#${id} ficou fora de #result`);
+  }
+});
+
+test('o preview local combina com a regua de corte da pre-consulta', () => {
+  // O convite olha fitScore, nao a rota. Preview que forca a rota sem mexer no
+  // score mostra uma tela sem CTA nenhum e parece funil quebrado.
+  assert.match(html, /fitScore=previewRoute==='A'\?8:previewRoute==='B'\?5:2/);
+  assert.match(html, /const CORTE_PRE_CONSULTA=5;/);
+});
+
+test('atribuicao de primeiro toque viaja junto com a lead', () => {
+  assert.match(html, /attribution:persistAttribution\(\)/);
+  assert.match(html, /table_attr_first/);
+  assert.doesNotMatch(html, /function utm\(\)/, 'utm() morta deve sair');
+});
+
+test('a linha fina da caixa escura nao herda a cor das bandas claras', () => {
+  // .page.result .paper .fine (0,3,0) vencia .route-a-box .fine (0,2,0) e
+  // pintava o texto de --muted sobre o verde: 2,58 de contraste.
+  assert.match(html, /\.page\.result \.route-a-box \.fine\{color:#91a397\}/);
+});

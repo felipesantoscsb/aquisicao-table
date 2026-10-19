@@ -249,7 +249,10 @@ function sha256(value) {
 function normalizePhone(raw) {
   if (!raw) return null;
   let digits = String(raw).replace(/\D/g, '');
-  if (!digits.startsWith('55')) digits = '55' + digits;
+  // Testar só o prefixo quebra DDD 55 (Santa Maria/RS): 55999887766 ja parece
+  // ter pais e fica sem ele. Numero brasileiro com pais tem 12 ou 13 digitos,
+  // entao o que vem com 11 ou menos e local, inclusive o que comeca com 55.
+  if (digits.length <= 11) digits = '55' + digits;
   return digits;
 }
 
@@ -890,6 +893,12 @@ app.post('/api/pre-consulta/solicitar', async (req, res) => {
   }
 
   const disponibilidade = `${turnosOk.map(t => TURNO_ROTULO[t]).join(' / ')} — ${diasOk.map(d => DIA_ROTULO[d]).join(', ')}`;
+
+  // De qual anuncio ela veio. Fica no briefing porque e o unico campo que a
+  // Karina le de fato; o objeto cru vai junto para o Hub poder usar depois.
+  const attr = lead.attribution?.first || {};
+  const campanha = [attr.utm_campaign, attr.utm_content].filter(Boolean).join(' / ');
+
   const payload = {
     nome: lead.nome || 'Lead',
     telefone,
@@ -901,10 +910,12 @@ app.post('/api/pre-consulta/solicitar', async (req, res) => {
     historico: hist.map(h => HISTORICO_ROTULO[h]),
     turno: disponibilidade,
     notificar_karina: true,
+    attribution: lead.attribution || null,
     briefing: [
       'Pré-consulta solicitada pelo Radar Table (quiz + formulário).',
       `Disponibilidade: ${disponibilidade}`,
       `Já tentou: ${hist.map(h => HISTORICO_ROTULO[h]).join(', ')}`,
+      ...(campanha ? [`Veio de: ${campanha}`] : []),
       '',
       'Nas palavras dela:',
       texto,
