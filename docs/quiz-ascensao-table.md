@@ -34,7 +34,9 @@ de distribuição lógica; o comportamento real precisa ser calibrado com dados.
 - caminho prático de sete dias;
 - exercícios em texto e áudio selecionados do banco existente;
 - vídeos de Evelyn Liu associados às intervenções;
-- Sessão Raiz individual com nutricionista comportamental;
+- a conversa individual com nutricionista comportamental — a mesma que a
+  rota A recebe de graça como pré-consulta e que `/sessao-raiz` vende
+  avulsa por R$ 67. Não é um item à parte;
 - recomendação final entre autonomia, acompanhamento Table ou outro cuidado.
 
 O quiz não reconstrói a matriz de intervenções da LIA. Ele apenas identifica o
@@ -48,8 +50,9 @@ contexto e prepara o encaminhamento para a matriz já existente.
   enviados à Meta.
 - O Hub recebe rota, scores de fit/prontidão e pilares extremos para análise
   interna e futura calibração.
-- A Rota A só é encaminhada ao SDR quando a pessoa clica para solicitar a
-  pré-consulta. Concluir o quiz sozinho não ativa abordagem comercial.
+- A Rota A só avança quando a pessoa clica para solicitar a pré-consulta, e
+  mesmo aí ela vai para o formulário `/pre-consulta`, não direto para o SDR.
+  Concluir o quiz sozinho não ativa abordagem comercial.
 
 ## Pontos antes da publicação
 

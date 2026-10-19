@@ -32,12 +32,35 @@ ao mesmo ciclo. Não é público de dieta nova; é público cansado de dieta.
 | Produto | Preço | Checkout (Cakto) | Papel |
 |---|---|---|---|
 | Ebook "Gordura Não Existe" / quiz Cores | R$ 19,90 | `exrc2pi` | isca de entrada, funil próprio |
+| **A conversa individual** | grátis, R$ 67 ou inclusa | `ak63ytv` quando avulsa | um objeto só com três nomes — ver abaixo |
 | **Protocolo Raiz** | R$ 97 | `pjgpde8`, `5n62wpr`, `ai223ee` | produto de entrada, o "PR" do código |
-| Sessão Raiz | — | `ak63ytv` | sessão individual, vendida avulsa e inclusa no PR |
-| Pré-consulta | gratuita | — | conversa de qualificação, porta para os planos |
 | Table Essential | R$ 898 à vista (R$ 849,50 com cashback do PR) | — | acompanhamento, 3 meses |
 | Table Premium | R$ 1.498 – R$ 1.798 | — | acompanhamento, 3 meses |
 | Table Elite | R$ 2.400 – R$ 3.100 | — | acompanhamento, 3 meses, 12 encontros |
+
+### A conversa individual tem três nomes e três preços
+
+**Pré-consulta, Sessão Raiz e "sessão individual com nutricionista
+comportamental" são a mesma coisa:** uma conversa individual online com uma
+nutricionista comportamental da Table, para ligar o momento da pessoa ao
+caminho que faz sentido. A descrição é literalmente a mesma nos três lugares.
+O que muda é por onde ela entra e quanto custa.
+
+| Nome | Preço | Onde aparece |
+|---|---|---|
+| Pré-consulta | gratuita | rota A do Radar, inbound de WhatsApp |
+| Sessão Raiz | R$ 67 | `/sessao-raiz`, checkout `ak63ytv`. Vira R$ 97 de crédito se a pessoa depois assinar um acompanhamento |
+| Sessão individual | inclusa | entregável do Protocolo Raiz de R$ 97 |
+
+É por isso que na rota B ela é **entregável, não brinde**, e o botão de lá
+desce para a oferta em vez de abrir o formulário: dar acesso direto entregaria
+de graça parte do que a oferta vende.
+
+**Dívida de copy em aberto.** As páginas ainda tratam as três como itens
+distintos. Na rota B a pessoa vê a caixa "Pré-consulta Table" e, logo abaixo,
+a oferta listando "Sessão individual com nutricionista comportamental Table"
+como entregável — mesmo objeto, nomeado duas vezes, lido como duas conversas.
+Quem for mexer em copy de oferta precisa alinhar isso antes.
 
 ### Atenção ao nome do produto de entrada
 
@@ -278,5 +301,7 @@ nenhum `Purchase`. E o webhook exige `www` (301 vira 404).
   `RAIZ · 02`;
 - `POST /api/funil/whatsapp/corrigir-agendadas` (roda com `dry_run` primeiro)
   para os cards que nasceram em `Agendada` indevidamente;
+- alinhar a copy para que pré-consulta, Sessão Raiz e "sessão individual"
+  não leiam como entregáveis distintos;
 - decidir se a garantia sai de dentro da caixa de oferta e vira faixa própria;
 - `RAIZ_V2_CAPI_TOKEN` segue ausente, então o CAPI do `/raiz-v2` é pulado.
