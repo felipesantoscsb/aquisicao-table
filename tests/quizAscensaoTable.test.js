@@ -169,3 +169,40 @@ test('a prova do Google colapsa em 6 e expande por botao', () => {
   assert.match(html, /\$\('verAvaliacoes'\)\.onclick/);
   assert.match(html, /id="googleGrid"/);
 });
+
+test('a rota B apresenta a pre-consulta como entregavel, nao como brinde', () => {
+  // Anunciar "gratuita" logo acima da oferta de R$97 que ja a inclui tira a
+  // razao de comprar. Em A ela segue sendo a porta de entrada gratuita.
+  assert.match(html, /<span class="so-rota-a">Pré-consulta Table · online e gratuita<\/span>/);
+  assert.match(html, /<span class="so-rota-b">Pré-consulta Table · um dos entregáveis da Primeira Ruptura<\/span>/);
+  assert.doesNotMatch(html, /<span class="so-rota-b">[^<]*gratuit/i, 'rota B nao pode dizer gratuita');
+  assert.match(html, /\.so-rota-b\{display:none\}/);
+  assert.match(html, /body\.route-b \.so-rota-a\{display:none\}/);
+  assert.match(html, /body\.route-b \.so-rota-b\{display:inline\}/);
+});
+
+test('a headline da caixa de pre-consulta nao herda a cor das bandas claras', () => {
+  // .page.result .band:not(.dark) h3 vale 0,4,1 e vencia .route-a-box h3
+  // (0,2,1): a promessa saia cor de pinho sobre caixa cor de pinho, contraste
+  // 1,0. Eram 97px de vazio no lugar do titulo da oferta gratuita.
+  assert.match(html, /\.page\.result \.band \.route-a-box h3\{color:#fff\}/);
+});
+
+test('rotas de revisao servem o quiz com noindex', () => {
+  assert.match(server, /app\.get\(\['\/raiz-radar-a', '\/raiz-radar-b', '\/raiz-radar-c'\]/);
+  assert.match(server, /X-Robots-Tag', 'noindex, nofollow/);
+});
+
+test('a revisao nao toca no pixel', () => {
+  // Um PageView de revisao entra no mesmo dataset do funil e suja a otimizacao.
+  assert.match(html, /var PREVIEW_ROTA=\(location\.pathname\.match\(\/\^\\\/raiz-radar-\(\[abc\]\)/);
+  assert.match(html, /if\(!PREVIEW_ROTA\)\{\s*fbq\('init',PIXEL_V2\);/);
+  assert.match(html, /function trackCustom\(name,data=\{\}\)\{if\(PREVIEW_ROTA\)return;/);
+  assert.match(html, /function checkout\(\)\{const id=eventId\('ic'\);if\(!PREVIEW_ROTA\)\{/);
+});
+
+test('o noscript aponta para o mesmo pixel do script', () => {
+  const doScript = html.match(/var PIXEL_V2='(\d+)'/)[1];
+  const doNoscript = html.match(/facebook\.com\/tr\?id=(\d+)&ev=PageView&noscript=1/)[1];
+  assert.equal(doNoscript, doScript);
+});

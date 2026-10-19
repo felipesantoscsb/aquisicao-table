@@ -147,6 +147,13 @@ app.get('/raiz-B',     (req, res) => res.sendFile(path.join(pub,   'raiz-b.html'
 // A Primeira Ruptura para B/C, com ponte educativa mais longa na rota C.
 app.get('/raiz-v2',    (req, res) => res.sendFile(path.join(pub,   'quiz-raiz-v2.html')));
 app.get('/raiz-radar', (req, res) => res.sendFile(path.join(pub,   'quiz-ascensao-table.html')));
+// Revisao das telas finais sem refazer o quiz: mesma pagina, com o resultado
+// ja montado na rota pedida. noindex porque sao a mesma copy de /raiz-radar e
+// nao podem competir com ela na busca; a pagina desliga o pixel sozinha.
+app.get(['/raiz-radar-a', '/raiz-radar-b', '/raiz-radar-c'], (req, res) => {
+  res.set('X-Robots-Tag', 'noindex, nofollow');
+  res.sendFile(path.join(pub, 'quiz-ascensao-table.html'));
+});
 // Porta de entrada barata do método, enviada no D+1 depois do quiz 1 para quem
 // não comprou o Protocolo Raiz. Página curta, sem quiz: vende só a conversa.
 app.get('/sessao-raiz', (req, res) => res.sendFile(path.join(pub,   'sessao-raiz.html')));
