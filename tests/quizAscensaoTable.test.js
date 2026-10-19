@@ -159,3 +159,13 @@ test('a linha fina da caixa escura nao herda a cor das bandas claras', () => {
   // pintava o texto de --muted sobre o verde: 2,58 de contraste.
   assert.match(html, /\.page\.result \.route-a-box \.fine\{color:#91a397\}/);
 });
+
+test('a prova do Google colapsa em 6 e expande por botao', () => {
+  // 15 avaliacoes empilhadas davam 4.068px no mobile, quase cinco telas antes
+  // do CTA. Colapsar em 6 mantem a prova e devolve 1.355px.
+  assert.equal((html.match(/class="google-card"/g) || []).length, 15);
+  assert.match(html, /\.google-grid:not\(\.aberto\) \.google-card:nth-child\(n\+7\)\{display:none\}/);
+  assert.match(html, /id="verAvaliacoes" aria-expanded="false" aria-controls="googleGrid"/);
+  assert.match(html, /\$\('verAvaliacoes'\)\.onclick/);
+  assert.match(html, /id="googleGrid"/);
+});
