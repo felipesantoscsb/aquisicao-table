@@ -64,8 +64,8 @@ test('rotas B e C oferecem A Primeira Ruptura por R$ 97', () => {
   assert.match(html, /A Primeira Ruptura/);
   assert.match(html, /R\$ 97/);
   assert.match(html, /https:\/\/pay\.cakto\.com\.br\/ai223ee/);
-  assert.match(html, /Um mapa pessoal que mostra onde começar/);
-  assert.match(html, /intervenção prática por dia, durante 7 dias/);
+  assert.match(html, /Um mapa pessoal que mostra por onde começar/);
+  assert.match(html, /Um exercício prático por dia, em texto e áudio/);
 });
 
 test('resultado sustenta promessa, autoridade e prova social visual', () => {
@@ -84,7 +84,7 @@ test('pré-consulta vende clareza sem antecipar tentativa de venda', () => {
   assert.doesNotMatch(routeA, /oferta|vender/i);
   assert.doesNotMatch(html, /isso não é uma oferta/i);
   assert.match(routeA, /começar pelo ponto certo/);
-  assert.match(routeA, /Quero descobrir meu próximo passo/);
+  assert.match(routeA, /Quero marcar minha conversa/);
 });
 
 test('carregamento ganhou dois segundos e comunica progresso', () => {
@@ -183,14 +183,14 @@ test('as fotos da prova social sao quadradas', () => {
 
 test('na rota B o botao da pre-consulta leva para a oferta, nao para o formulario', () => {
   assert.match(html, /if\(route!=='A'\)\{trackCustom\('PreConsultToOffer'\);\$\('routeBC'\)\.scrollIntoView/);
-  assert.match(html, /<span class="so-rota-b">Ver como funciona a Primeira Ruptura →<\/span>/);
+  assert.match(html, /<span class="so-rota-b">Ver o que vem na Primeira Ruptura ↓<\/span>/);
 });
 
 test('o FAQ cobre objecao, reembolso e o limite do que a Table faz', () => {
   assert.equal((html.match(/<details/g) || []).length, 7);
   assert.match(html, /Isso é mais uma dieta\?/);
   assert.match(html, /devolvemos os R\$ 97/);
-  assert.match(html, /Vocês tratam transtorno alimentar\?/);
+  assert.match(html, /E se o que eu vivo for mais pesado do que isso\?/);
   // As duas perguntas de oferta nao aparecem para quem caiu na rota A, que
   // nem ve a Primeira Ruptura.
   assert.equal((html.match(/<details class="so-oferta">/g) || []).length, 2);
@@ -201,7 +201,7 @@ test('a rota B apresenta a pre-consulta como entregavel, nao como brinde', () =>
   // Anunciar "gratuita" logo acima da oferta de R$97 que ja a inclui tira a
   // razao de comprar. Em A ela segue sendo a porta de entrada gratuita.
   assert.match(html, /<span class="so-rota-a">Pré-consulta Table · online e gratuita<\/span>/);
-  assert.match(html, /<span class="so-rota-b">Pré-consulta Table · um dos entregáveis da Primeira Ruptura<\/span>/);
+  assert.match(html, /<span class="so-rota-b">Conversa individual · incluída na Primeira Ruptura<\/span>/);
   assert.doesNotMatch(html, /<span class="so-rota-b">[^<]*gratuit/i, 'rota B nao pode dizer gratuita');
   assert.match(html, /\.so-rota-b\{display:none\}/);
   assert.match(html, /body\.route-b \.so-rota-a\{display:none\}/);
@@ -232,4 +232,48 @@ test('o noscript aponta para o mesmo pixel do script', () => {
   const doScript = html.match(/var PIXEL_V2='(\d+)'/)[1];
   const doNoscript = html.match(/facebook\.com\/tr\?id=(\d+)&ev=PageView&noscript=1/)[1];
   assert.equal(doNoscript, doScript);
+});
+
+test('o nome do pilar entra como palavra dentro do convite de cada rota', () => {
+  // Aposta principal da revisao de copy: o convite servia para qualquer pessoa
+  // que terminasse o quiz. Repetindo em texto o que ela acabou de ler sobre
+  // si, deixa de parecer script e passa a parecer consequencia.
+  assert.match(html, /id="conviteCorpo"/);
+  assert.match(html, /id="conviteConversa"/);
+  assert.match(html, /id="pontseC"/);
+  assert.match(html, /const pilar=DIMS\[r\.low\]\.toLowerCase\(\)/);
+  // Corpos diferentes por rota: afirmar urgencia que a B nao demonstrou
+  // contradiz a oferta logo abaixo.
+  assert.match(html, /route==='A'\s*\?\s*`Pelas suas respostas, o que falta não é consciência/);
+  assert.match(html, /: `Pelas suas respostas, o padrão já está claro para você/);
+});
+
+test('a copy nao volta a usar as formulas e os nomes derrubados', () => {
+  assert.doesNotMatch(html, /Sessão Raiz/, 'nome que a cliente nunca viu nesta pagina');
+  assert.doesNotMatch(html, /Descubra/, 'formula generica de quiz');
+  assert.doesNotMatch(html, /transtorno/i, 'palavra vetada na comunicacao');
+  // Pre-consulta so pode existir na rota A: e o unico nome que aquela rota ve.
+  assert.equal((html.match(/Pré-consulta/g) || []).length, 1);
+  assert.match(html, /so-rota-a">Pré-consulta Table · online e gratuita/);
+});
+
+test('video nao aparece como entregavel enquanto o banco nao tiver nenhum', () => {
+  // Decisao de 19/10: o banco tem 20 audios, 16 exercicios e 10 textos, e zero
+  // videos. Prometer video na oferta e vender o que nao existe.
+  assert.doesNotMatch(html, /Vídeos de Evelyn/);
+  assert.doesNotMatch(html, /<li>[^<]*[Vv]ídeo[^<]*<\/li>/);
+});
+
+test('a promessa do hero bate com o numero real de perguntas', () => {
+  // Dizer "seis perguntas" e entregar doze queima a confianca na primeira tela.
+  // A estrutura real e 6 do Radar + respiro + 6 comerciais.
+  assert.equal((html.match(/\{tag:'/g) || []).length, 12);
+  assert.match(html, /Seis perguntas sobre corpo, comida e vida real desenham o seu Radar\. Outras seis/);
+  assert.match(html, /Faltam seis perguntas/);
+  assert.doesNotMatch(html, /Faltam 5 perguntas/);
+});
+
+test('a rota C ganha uma ponte antes da oferta', () => {
+  assert.match(html, /class="ponte-c"/);
+  assert.match(html, /body\.route-c \.ponte-c\{display:block\}/);
 });
