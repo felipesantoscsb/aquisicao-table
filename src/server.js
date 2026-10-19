@@ -348,7 +348,11 @@ function ehRadarTable(body = {}) {
  * numero global so estaria certo para um deles.
  */
 function valorDaOferta(body = {}) {
-  return ehRadarTable(body) ? 127 : 97;
+  if (ehRadarTable(body)) return 127;
+  // A Sessao Raiz custa 67 e mandava esse valor no corpo desde sempre; o
+  // servidor descartava e reportava 97 para a Meta.
+  if (String(body.source || '') === 'sessao-raiz') return 67;
+  return 97;
 }
 
 /**

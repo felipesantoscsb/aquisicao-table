@@ -292,7 +292,8 @@ test('A Primeira Ruptura custa R$ 127 e so ela', () => {
   assert.match(html, /<div class="price">R\$ 127<\/div>/);
   assert.match(html, /content_name:'A Primeira Ruptura',currency:'BRL',value:127/);
   assert.doesNotMatch(html, /R\$ 97/, 'sobrou preco antigo na pagina');
-  assert.match(server, /function valorDaOferta\(body = \{\}\) \{\s*return ehRadarTable\(body\) \? 127 : 97;/);
+  assert.match(server, /function valorDaOferta\(body = \{\}\) \{\s*if \(ehRadarTable\(body\)\) return 127;/);
+  assert.match(server, /return 97;\s*\}/, 'os funis antigos continuam em 97 por padrao');
   assert.doesNotMatch(server, /custom_data\.value = 97/);
 });
 
