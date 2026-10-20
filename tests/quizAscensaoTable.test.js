@@ -291,11 +291,16 @@ test('a promessa do hero bate com o numero real de perguntas', () => {
   // A marca aparece uma vez na primeira linha: o logo ancora, o eyebrow diz
   // so o produto. "TABLE" ao lado de "Radar Table" era a mesma palavra duas
   // vezes no mesmo olhar.
-  // O topo deixou de ser rotulo e virou prova social. "gratuito" desceu para
-  // os microbullets, junto do resto do custo.
-  assert.match(html, /<div class="brand">TABLE<\/div><p class="selo">/);
-  assert.match(html, /<span class="estrelas">★★★★★<\/span> avaliações no Google/);
+  // O topo diz o que a Table E. Sem isso, "nossas clientes" la embaixo nao
+  // tem dono e a prova social fica sem empresa por tras.
+  assert.match(html, /<div class="brand">TABLE<\/div><p class="tagline">para a fome que a comida não resolve<\/p>/);
   assert.doesNotMatch(html, /Radar · gratuito/);
+  // A nota explicita e o que tira as estrelas do lugar de enfeite.
+  assert.match(html, /<span class="estrelas">★★★★★<\/span> <b>5,0<\/b> é como nossas clientes avaliam a Table no Google/);
+  // Botao, custo, selo e bullets centralizados.
+  assert.match(html, /\.hero \.btn\{margin-top:30px;display:flex;margin-left:auto;margin-right:auto\}/);
+  assert.match(html, /\.hero \.descobre\{text-align:center\}/);
+  assert.match(html, /\.hero \.promise span\{text-align:center\}/);
 });
 
 test('o hero abre na frase que reconhece, nao no lugar-comum', () => {
