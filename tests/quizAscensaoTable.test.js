@@ -329,3 +329,10 @@ test('o credito de R$ 100 aparece junto do preco, uma linha so', () => {
   // virada precisa acontecer antes da primeira pre-consulta converter, senao
   // a cliente le a promessa aqui e outro numero la.
 });
+
+test('a versao da pagina acompanha a mudanca do hero', () => {
+  // O Codex instrumentou o funil carimbando `page_version` em cada evento. Se
+  // a constante nao sobe junto com uma reescrita de copy, os dados de antes e
+  // depois entram no mesmo balde e a mudanca vira immensuravel.
+  assert.match(html, /RADAR_PAGE_VERSION='radar-2026-10-20-hero-v2'/);
+});
