@@ -312,19 +312,18 @@ test('a promessa do hero bate com o numero real de perguntas', () => {
   assert.match(html, /<div class="top"><div class="brand">TABLE<\/div><\/div>/);
   assert.match(html, /\.top\{display:flex;justify-content:center/);
   assert.doesNotMatch(html, /class="tagline"/);
-  // O slogan nao sumiu: achou dono. Ao lado do rosto dela, a tese da marca
-  // ganha autor em vez de flutuar num canto a 12px.
-  assert.match(html, /<strong>Para a fome que a comida não resolve\.<\/strong>/);
+  // O slogan virou citacao assinada, dentro do bloco de prova.
+  assert.doesNotMatch(html, /Para a fome que a comida não resolve/);
   assert.doesNotMatch(html, /Radar · gratuito/);
-  // A prova fica LOGO ACIMA do botao: e a ponte entre reconhecer o problema e
-  // clicar. Antes ficava orfã entre o custo e os beneficios.
-  assert.match(html, /<p class="selo"><span class="estrelas">★★★★★<\/span> <b>5,0<\/b> no Google, de quem é cliente<\/p><button class="btn" id="start">/);
-  // nowrap garante a linha unica; a regra de tela estreita evita que ela
-  // encoste nas bordas num aparelho de 360.
-  assert.match(html, /\.selo\{[^}]*white-space:nowrap/);
-  assert.match(html, /@media\(max-width:400px\)\{\.selo\{font-size:12px/);
+  // Rosto, citacao, credencial e nota num bloco so: deixa de ser assinatura
+  // solta e vira prova social com quem assina, o que diz, e quem confirma.
+  assert.match(html, /<div class="prova"><img src="\/images\/evelyn-avatar\.jpg"/);
+  assert.match(html, /<p class="citacao-evelyn">“Cuidamos da fome que a comida não resolve\.”<\/p>/);
+  assert.match(html, /<p class="selo"><span class="estrelas">★★★★★<\/span> <b>5,0<\/b> no Google, de quem é cliente<\/p><\/div><\/div>/);
+  // A nota e a ultima linha do bloco, separada por um filete.
+  assert.match(html, /\.selo\{margin:12px 0 0;padding-top:12px;border-top:1px solid var\(--line\)/);
   // Botao, custo, selo e bullets centralizados.
-  assert.match(html, /\.hero \.btn\{margin-top:14px;display:flex;margin-left:auto;margin-right:auto\}/);
+  assert.match(html, /\.hero \.btn\{margin-top:30px;display:flex;margin-left:auto;margin-right:auto\}/);
   assert.match(html, /\.hero \.descobre\{text-align:center\}/);
   assert.match(html, /\.hero \.promise span\{text-align:center\}/);
 });
@@ -446,5 +445,5 @@ test('o retrato da Evelyn usa o recorte proprio, nao o thumbnail', () => {
   // do retrato de 530x1047, enquadrado no rosto.
   assert.match(html, /<img src="\/images\/evelyn-avatar\.jpg" width="320" height="320" alt="Evelyn Liu">/);
   assert.doesNotMatch(html, /Vestido Verde Olhar amistoso/);
-  assert.match(html, /\.hero-authority img\{width:64px;height:64px/);
+  assert.match(html, /\.prova img\{width:68px;height:68px/);
 });
