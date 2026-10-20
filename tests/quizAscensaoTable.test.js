@@ -278,9 +278,20 @@ test('a promessa do hero bate com o numero real de perguntas', () => {
   assert.equal((html.match(/\{tag:'/g) || []).length, 12);
   // Dizer o numero inteiro, doze, custa menos clique do que um numero bonito
   // que ela descobre falso na setima pergunta.
-  assert.match(html, /Doze perguntas sobre corpo, comida e vida real mostram onde esse ponto está/);
   assert.match(html, /12 perguntas de marcar, nenhuma de escrever\. Cerca de 3 minutos\. Começa sem cadastro\./);
   assert.doesNotMatch(html, /Seis perguntas sobre corpo/, 'o hero nao pode prometer seis');
+  // O numero aparece UMA vez na primeira tela, na linha de custo sob o botao,
+  // que e onde ele vira informacao em vez de aviso. Dize-lo tambem no
+  // subtitulo era redundancia na dobra, que e o espaco mais caro da pagina.
+  assert.doesNotMatch(html.slice(0, html.indexOf('id="quiz"')), /Doze perguntas/);
+  assert.equal((html.slice(0, html.indexOf('id="quiz"')).match(/12 perguntas/g) || []).length, 1);
+});
+
+test('o hero abre na frase que reconhece, nao no lugar-comum', () => {
+  // "Começar na segunda" e clichê de anuncio de dieta e gastava a primeira
+  // linha do subtitulo, que e a que mais custa atencao.
+  assert.doesNotMatch(html, /Começar na segunda você já sabe/);
+  assert.match(html, /<p class="hero-copy">O que nunca ficou claro é em que ponto a vida aperta/);
   assert.match(html, /Faltam seis perguntas/);
   assert.doesNotMatch(html, /Faltam 5 perguntas/);
 });
@@ -335,4 +346,15 @@ test('a versao da pagina acompanha a mudanca do hero', () => {
   // a constante nao sobe junto com uma reescrita de copy, os dados de antes e
   // depois entram no mesmo balde e a mudanca vira immensuravel.
   assert.match(html, /RADAR_PAGE_VERSION='radar-2026-10-20-hero-v2'/);
+});
+
+test('a pagina nao usa "Clinic" em texto nenhum', () => {
+  // Decisao de 20/10/2026: a marca na pagina e Table. A unica ocorrencia
+  // permitida e dentro da URL do Google Maps, que e o nome cadastrado la e
+  // quebra o link do perfil de avaliacoes se mudar.
+  const semUrl = html.replace(/https:\/\/www\.google\.com\/maps[^"']*/g, '');
+  assert.ok(!semUrl.includes('Clinic'), 'sobrou "Clinic" fora da URL do Maps');
+  assert.match(html, /maps\/place\/Table\+Clinic/, 'a URL do Maps precisa continuar intacta');
+  assert.match(html, /fundadora da Table\./);
+  assert.match(html, /© Table · Evelyn Liu/);
 });
