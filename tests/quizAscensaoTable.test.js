@@ -307,14 +307,21 @@ test('a promessa do hero bate com o numero real de perguntas', () => {
   // A marca aparece uma vez na primeira linha: o logo ancora, o eyebrow diz
   // so o produto. "TABLE" ao lado de "Radar Table" era a mesma palavra duas
   // vezes no mesmo olhar.
-  // O topo diz o que a Table E. Sem isso, "nossas clientes" la embaixo nao
-  // tem dono e a prova social fica sem empresa por tras.
-  assert.match(html, /<div class="brand">TABLE<\/div><p class="tagline">para a fome que a comida não resolve<\/p>/);
+  // Topo so com o logo. O slogan saiu em 20/10/2026: era a unica asserção sem
+  // prova da primeira tela, e a pilula do Google ja nomeia a Table, ja diz que
+  // ela tem clientes e ainda traz evidencia junto.
+  assert.match(html, /<div class="top"><div class="brand">TABLE<\/div><\/div>/);
+  assert.doesNotMatch(html, /class="tagline"/);
   assert.doesNotMatch(html, /Radar · gratuito/);
-  // A nota explicita e o que tira as estrelas do lugar de enfeite.
-  assert.match(html, /<span class="estrelas">★★★★★<\/span> <b>5,0<\/b> é como nossas clientes avaliam a Table no Google/);
+  // A prova fica LOGO ACIMA do botao: e a ponte entre reconhecer o problema e
+  // clicar. Antes ficava orfã entre o custo e os beneficios.
+  assert.match(html, /<p class="selo"><span class="estrelas">★★★★★<\/span> <b>5,0<\/b> no Google, de quem é cliente<\/p><button class="btn" id="start">/);
+  // nowrap garante a linha unica; a regra de tela estreita evita que ela
+  // encoste nas bordas num aparelho de 360.
+  assert.match(html, /\.selo\{[^}]*white-space:nowrap/);
+  assert.match(html, /@media\(max-width:400px\)\{\.selo\{font-size:12px/);
   // Botao, custo, selo e bullets centralizados.
-  assert.match(html, /\.hero \.btn\{margin-top:30px;display:flex;margin-left:auto;margin-right:auto\}/);
+  assert.match(html, /\.hero \.btn\{margin-top:14px;display:flex;margin-left:auto;margin-right:auto\}/);
   assert.match(html, /\.hero \.descobre\{text-align:center\}/);
   assert.match(html, /\.hero \.promise span\{text-align:center\}/);
 });
