@@ -19,6 +19,10 @@ test('quiz mede seis pilares e separa qualificação de leitura educativa', () =
   assert.equal((html.match(/dim:'/g) || []).length, 6);
   assert.equal((html.match(/fit:true/g) || []).length, 4);
   assert.equal((html.match(/ready:true/g) || []).length, 2);
+  assert.equal((html.match(/confirm:'/g) || []).length, 3);
+  assert.match(html, /radar-identities\.js/);
+  assert.match(html, /id="identityTitle"/);
+  assert.match(html, /RadarIdentity\.classify\(scores,confirmations\)/);
 });
 
 test('roteamento tem A, B e C com a rota C mais longa', () => {
@@ -70,7 +74,8 @@ test('rotas B e C oferecem A Primeira Ruptura por R$ 127', () => {
 
 test('resultado sustenta promessa, autoridade e prova social visual', () => {
   assert.match(html, /Não voltar ao mesmo ciclo é outra/);
-  assert.match(html, /o seu ciclo começa antes da comida/);
+  assert.match(html, /O desenho que sustenta esta leitura/);
+  assert.match(html, /o nome não veio de uma nota isolada/);
   assert.match(html, /Evelyn Liu é nutricionista comportamental/);
   assert.match(html, /CRN-3 70082/);
   for (const image of ['evelyn-liu.png','Juliana Moreno.jpg','Adriana.jpg','Iracema.jpg']) {
@@ -89,8 +94,8 @@ test('pré-consulta vende clareza sem antecipar tentativa de venda', () => {
 
 test('carregamento ganhou dois segundos e comunica progresso', () => {
   assert.match(html, /setTimeout\(\(\)=>\{clearInterval\(loadingTimer\);complete\(\)\},3350\)/);
-  assert.match(html, /Identificando o ponto que mantém o ciclo/);
-  assert.match(html, /Preparando seu próximo passo/);
+  assert.match(html, /Identificando a dinâmica entre eles/);
+  assert.match(html, /Traduzindo o desenho em uma história/);
 });
 
 test('prévia das rotas só funciona em localhost e não envia formulário', () => {
@@ -107,7 +112,7 @@ test('segmentos sensíveis não entram nos eventos Meta', () => {
 
 test('rota e scores seguem apenas para mensuração interna no Hub', () => {
   const hub = readFileSync(join(root, 'src/hubSync.js'), 'utf8');
-  for (const field of ['commercial_route','fit_score','readiness_score','lowest_pillar','highest_pillar']) {
+  for (const field of ['commercial_route','fit_score','readiness_score','lowest_pillar','highest_pillar','identity_key','identity_confidence']) {
     assert.match(hub, new RegExp(field));
   }
   const capiExtraction = server.slice(server.indexOf("app.post('/api/capi'"), server.indexOf("app.post('/api/capi/initiate-checkout'"));
@@ -242,18 +247,18 @@ test('o noscript aponta para o mesmo pixel do script', () => {
   assert.equal(doNoscript, doScript);
 });
 
-test('o nome do pilar entra como palavra dentro do convite de cada rota', () => {
+test('a identidade e sua ruptura entram no convite de cada rota', () => {
   // Aposta principal da revisao de copy: o convite servia para qualquer pessoa
   // que terminasse o quiz. Repetindo em texto o que ela acabou de ler sobre
   // si, deixa de parecer script e passa a parecer consequencia.
   assert.match(html, /id="conviteCorpo"/);
   assert.match(html, /id="conviteConversa"/);
   assert.match(html, /id="pontseC"/);
-  assert.match(html, /const pilar=DIMS\[r\.low\]\.toLowerCase\(\)/);
+  assert.match(html, /O padrão “\$\{identity\.name\}” mostra por onde a conversa precisa começar/);
   // Corpos diferentes por rota: afirmar urgencia que a B nao demonstrou
   // contradiz a oferta logo abaixo.
-  assert.match(html, /route==='A'\s*\?\s*`Pelas suas respostas, o que falta não é consciência/);
-  assert.match(html, /: `Pelas suas respostas, o padrão já está claro para você/);
+  assert.match(html, /: `O padrão “\$\{identity\.name\}” já mostrou o primeiro movimento/);
+  assert.match(html, /\$\{identity\.rupture\}/);
 });
 
 test('a copy nao volta a usar as formulas e os nomes derrubados', () => {
@@ -273,12 +278,9 @@ test('video nao aparece como entregavel enquanto o banco nao tiver nenhum', () =
 });
 
 test('a promessa do hero bate com o numero real de perguntas', () => {
-  // Dizer "seis perguntas" e entregar doze queima a confianca na primeira tela.
-  // A estrutura real e 6 do Radar + respiro + 6 comerciais.
-  assert.equal((html.match(/\{tag:'/g) || []).length, 12);
-  // Dizer o numero inteiro, doze, custa menos clique do que um numero bonito
-  // que ela descobre falso na setima pergunta.
-  assert.match(html, /<ul class="custo"><li>gratuito<\/li><li>12 perguntas múltipla escolha<\/li><li>3 minutos<\/li><li>sem cadastro<\/li><\/ul>/);
+  // A estrutura real e 6 pilares + 3 confirmações + 6 perguntas comerciais.
+  assert.equal((html.match(/\{tag:'/g) || []).length, 15);
+  assert.match(html, /<ul class="custo"><li>gratuito<\/li><li>15 perguntas de múltipla escolha<\/li><li>4 minutos<\/li><li>sem cadastro<\/li><\/ul>/);
   // Centralizado: com quatro itens a quebra a esquerda deixava a ultima linha
   // solta e torta. Centralizado, a quebra vira simetria.
   assert.match(html, /\.custo\{[^}]*justify-content:center/);
@@ -287,7 +289,7 @@ test('a promessa do hero bate com o numero real de perguntas', () => {
   // que e onde ele vira informacao em vez de aviso. Dize-lo tambem no
   // subtitulo era redundancia na dobra, que e o espaco mais caro da pagina.
   assert.doesNotMatch(html.slice(0, html.indexOf('id="quiz"')), /Doze perguntas/);
-  assert.equal((html.slice(0, html.indexOf('id="quiz"')).match(/12 perguntas/g) || []).length, 1);
+  assert.equal((html.slice(0, html.indexOf('id="quiz"')).match(/15 perguntas/g) || []).length, 1);
   // A marca aparece uma vez na primeira linha: o logo ancora, o eyebrow diz
   // so o produto. "TABLE" ao lado de "Radar Table" era a mesma palavra duas
   // vezes no mesmo olhar.
@@ -308,8 +310,8 @@ test('o hero abre na frase que reconhece, nao no lugar-comum', () => {
   // linha do subtitulo, que e a que mais custa atencao.
   assert.doesNotMatch(html, /Começar na segunda você já sabe/);
   assert.match(html, /<p class="hero-copy">O que nunca ficou claro é em que ponto a vida aperta/);
-  assert.match(html, /Faltam seis perguntas/);
-  assert.doesNotMatch(html, /Faltam 5 perguntas/);
+  assert.match(html, /três perguntas confirmam como esses pilares se relacionam/);
+  assert.match(html, /As seis finais apontam um próximo passo/);
 });
 
 test('a rota C ganha uma ponte antes da oferta', () => {
@@ -357,11 +359,11 @@ test('o credito de R$ 100 aparece junto do preco, uma linha so', () => {
   // a cliente le a promessa aqui e outro numero la.
 });
 
-test('a versao da pagina acompanha a mudanca do hero', () => {
+test('a versao da pagina acompanha a arquitetura de identidades', () => {
   // O Codex instrumentou o funil carimbando `page_version` em cada evento. Se
   // a constante nao sobe junto com uma reescrita de copy, os dados de antes e
   // depois entram no mesmo balde e a mudanca vira immensuravel.
-  assert.match(html, /RADAR_PAGE_VERSION='radar-2026-10-20-hero-v2'/);
+  assert.match(html, /RADAR_PAGE_VERSION='radar-2026-10-20-identities-v1'/);
 });
 
 test('a pagina nao usa "Clinic" em texto nenhum', () => {

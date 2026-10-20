@@ -95,6 +95,8 @@ function enviarLeadV2(getRedis, body) {
       readiness_score: body.readiness_score ?? null,
       lowest_pillar: body.lowest_pillar || null,
       highest_pillar: body.highest_pillar || null,
+      identity_key: body.identity_key || null,
+      identity_confidence: body.identity_confidence || null,
     }, 'lead V2');
   } catch (e) { console.error('[hubSync] lead V2:', e.message); }
 }

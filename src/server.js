@@ -395,7 +395,7 @@ app.post('/api/radar-event', (req, res) => {
     return res.status(400).json({ ok: false, error: 'Evento inválido' });
   }
   const keep = {};
-  for (const key of ['lead_sck','milestone','route','lowest_pillar','highest_pillar',
+  for (const key of ['lead_sck','milestone','route','lowest_pillar','highest_pillar','identity_key','identity_confidence',
     'utm_source','utm_medium','utm_campaign','utm_content','utm_term','device_type',
     'occurred_at','page_version']) {
     if (b[key] != null) keep[key] = String(b[key]).slice(0, 250);
