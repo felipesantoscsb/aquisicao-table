@@ -51,7 +51,7 @@
     compass: {
       name: 'Sem Bússola Própria',
       summary: 'Informação e percepção ainda não formam uma direção segura para a vida real.',
-      mechanism: 'Sem uma referência interna disponível, qualquer nova regra parece solução — até o dia em que ela deixa de caber.',
+      mechanism: 'Sem uma referência interna disponível, qualquer nova regra parece solução, até o dia em que ela deixa de caber.',
       rupture: 'construir uma referência interna pequena o bastante para ser usada na hora da decisão',
     },
     alone: {
@@ -220,7 +220,7 @@
       clear: 'O desenho mostra um padrão predominante, sem tratar isso como diagnóstico.',
       soft: 'Esta é uma tendência do seu Radar, não um rótulo definitivo.',
       hybrid: 'Mais de um movimento apareceu; por isso a leitura preserva a combinação.',
-      balanced: 'Não há um único ponto dominante — e o resultado não força um desempate.',
+      balanced: 'Não há um único ponto dominante, e o resultado não força um desempate.',
     }[confidence];
 
     const strongText = strongDomains.length === 1

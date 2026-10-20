@@ -58,3 +58,12 @@ test('cada link editorial simula exatamente a identidade pedida', () => {
     assert.equal(RadarIdentity.classify(example.scores, example.confirmations).key, key, key);
   }
 });
+
+test('nenhum texto de identidade usa travessao', () => {
+  // Regra de comunicacao da Table: travessao denuncia texto gerado. No sdr a
+  // limpeza e feita no codigo; aqui o conteudo e estatico, entao e o teste
+  // que segura.
+  const fonte = require('node:fs').readFileSync(
+    require('node:path').join(__dirname, '../public/js/radar-identities.js'), 'utf8');
+  assert.ok(!/[—–]/.test(fonte), 'travessao ou meia-risca no arquivo de identidades');
+});
