@@ -80,7 +80,7 @@ button,input{font:inherit}.page{display:none;min-height:100svh}.page.active{disp
   <h1>Perder peso é uma coisa.<br><em>Não voltar ao mesmo ciclo é outra.</em></h1>
   <p class="hero-copy">O que nunca ficou claro é em que ponto a vida aperta e tudo volta. Aqui você encontra esse ponto, olhando corpo, comida e vida real.</p>
   <button class="btn" id="start">Descobrir o que me puxa de volta →</button>
-  <ul class="custo"><li>gratuito</li><li>15 perguntas de múltipla escolha</li><li>4 minutos</li><li>sem cadastro</li></ul><p class="selo"><span class="estrelas">★★★★★</span> <b>5,0</b> é como nossas clientes avaliam a Table no Google</p>
+  <ul class="custo"><li>gratuito</li><li>12 perguntas de múltipla escolha</li><li>3 minutos</li><li>sem cadastro</li></ul><p class="selo"><span class="estrelas">★★★★★</span> <b>5,0</b> é como nossas clientes avaliam a Table no Google</p>
   <p class="descobre">Você descobre:</p>
   <div class="promise"><span>O ponto onde o seu ciclo recomeça. Quase nunca é onde você se cobra.</span><span>O que já está funcionando a seu favor hoje.</span><span>Um próximo passo para o seu momento, não o mesmo para todo mundo.</span></div>
   <div class="hero-authority"><img src="/images/Vestido Verde Olhar amistoso.jpg" alt="Evelyn Liu"><span>Criado por Evelyn Liu, nutricionista comportamental (CRN-3 70082), autora de “Gordura Não Existe” e fundadora da Table.</span></div>
@@ -152,12 +152,9 @@ const QUESTIONS=[
  {tag:'7 · Confirmação',text:'Quando a insatisfação com o corpo aparece, o que costuma acontecer depois?',note:'Esta resposta confirma como os dois primeiros pilares se relacionam.',confirm:'relation',options:[['Ela fica no espelho e muda a forma como eu me trato','body'],['Vai para a comida: aperto regras, compenso ou sinto que estraguei tudo','food'],['As duas coisas se alimentam: corpo e comida entram na mesma guerra','both'],['Não reconheço um padrão claro entre corpo e comida','none']]},
  {tag:'8 · Confirmação',text:'Quando o que você sabe entra em conflito com o que sente no corpo, o que acontece?',confirm:'compass',options:[['A cabeça assume: sigo a regra e só percebo meu corpo depois','head'],['Percebo os sinais, mas não confio neles sem uma regra dizendo o que fazer','distrust'],['Fico sem referência dos dois lados','both'],['Consigo fazer conhecimento e sinais conversarem','none']]},
  {tag:'9 · Confirmação',text:'Quando a semana sai do plano, o que costuma quebrar primeiro?',confirm:'sustain',options:[['Falta espaço ou apoio; quase tudo depende de eu dar conta','alone'],['Eu tinha uma estrutura, mas sem o plano tendo a ir para o tudo ou nada','perfect'],['Faltam as duas coisas: margem na rotina e uma forma flexível de continuar','both'],['Consigo me reorganizar sem um padrão claro de queda','none']]},
- {tag:'10 · Histórico',text:'Faz quanto tempo que você volta para o mesmo lugar?',fit:true,options:[['É recente, começou agora',0],['Uns meses',1],['Mais de um ano',2],['Anos. Já tentei de tudo e sempre volto',3]]},
- {tag:'11 · Impacto',text:'O quanto isso toma da sua vida hoje?',fit:true,options:[['Pouco. Vim mais por curiosidade',0],['Incomoda às vezes, mas sigo o dia',1],['Tira minha energia e muda o que eu aceito fazer',2],['Virou a coisa que eu mais quero resolver',3]]},
- {tag:'12 · Tentativas',text:'Como costumam terminar as suas tentativas?',fit:true,options:[['Nunca tentei nada organizado',0],['Consigo manter parte do que mudo',1],['Funciona um tempo, e aí o padrão volta',2],['Já tentei de tudo e recomeço sempre do zero',3]]},
- {tag:'13 · Objetivo',text:'Daqui a 90 dias, o que você queria que estivesse diferente?',fit:true,options:[['Entender melhor o assunto',0],['Ter dado o primeiro passo de verdade',1],['Me sustentar sozinha na vida real',2],['Estar acompanhada e, enfim, constante',3]]},
- {tag:'14 · Disponibilidade',text:'Se fizer sentido, você conseguiria começar agora?',ready:true,options:[['Sim, e consigo abrir espaço na semana',3],['Quero, só preciso organizar umas coisas antes',2],['Prefiro experimentar algo curto primeiro',1],['Agora não é hora de ter alguém me acompanhando',0]]},
- {tag:'15 · Investimento',text:'Se o seu Radar indicar que um apoio contínuo faria sentido, qual cenário é mais verdadeiro?',note:'Sua resposta ajuda a apontar um próximo passo compatível com o seu momento real.',ready:true,options:[['Consigo investir se houver encaixe e confiança',3],['Preciso entender proposta e condições antes de decidir',2],['Hoje só consigo começar por uma entrada de baixo valor',1],['Não tenho possibilidade de investir agora',0]]}
+ {tag:'10 · Disponibilidade',text:'Se fizer sentido, você conseguiria começar agora?',ready:true,options:[['Sim, e consigo abrir espaço na semana',3],['Quero, só preciso organizar umas coisas antes',2],['Prefiro experimentar algo curto primeiro',1],['Agora não é hora de ter alguém me acompanhando',0]]},
+ {tag:'11 · Investimento',text:'Se o seu Radar indicar que um apoio contínuo faria sentido, qual cenário é mais verdadeiro?',note:'Sua resposta ajuda a apontar um próximo passo compatível com o seu momento real.',ready:true,options:[['Consigo investir se houver encaixe e confiança',3],['Preciso entender proposta e condições antes de decidir',2],['Hoje só consigo começar por uma entrada de baixo valor',1],['Não tenho possibilidade de investir agora',0]]},
+ {tag:'12 · Objetivo',text:'Daqui a 90 dias, o que você queria que estivesse diferente?',fit:true,options:[['Entender melhor o assunto',0],['Ter dado o primeiro passo de verdade',1],['Me sustentar sozinha na vida real',2],['Estar acompanhada e, enfim, constante',3]]}
 ];
 let current=0,answers=[],answerTexts=[],confirmations={},scores={},lead=null,route=null,fitScore=0,readinessScore=0,loadingTimer=null;
 const $=id=>document.getElementById(id);
@@ -183,16 +180,19 @@ function radarEvent(event_name,extra={}){
 function start(){trackCustom('QuizStart');radarEvent('quiz_started');page('quiz');render()}
 function render(){const q=QUESTIONS[current];$('qtag').textContent=q.tag;$('qtitle').textContent=q.text;$('qnote').textContent=q.note||'';$('qnote').hidden=!q.note;$('counter').textContent=`${current+1}/${QUESTIONS.length}`;$('progress').style.width=`${(current+1)/QUESTIONS.length*100}%`;$('back').style.visibility=current?'visible':'hidden';$('options').innerHTML='';q.options.forEach((o,i)=>{const b=document.createElement('button');b.className='option';b.innerHTML=`<b>${String.fromCharCode(65+i)}</b><span>${o[0]}</span>`;b.onclick=()=>choose(o[1],o[0]);$('options').appendChild(b)})}
 function choose(value,text){const q=QUESTIONS[current];answers[current]=value;answerTexts[current]=text;if(q.confirm)confirmations[q.confirm]=value;const answered=current+1;current++;
-const milestone=current===6?'radar_complete':current===9?'identity_confirmed':current===13?'qualification_complete':current===QUESTIONS.length?'quiz_complete':null;
+const milestone=current===6?'radar_complete':current===9?'identity_confirmed':current===12?'qualification_complete':current===QUESTIONS.length?'quiz_complete':null;
 if(current>=QUESTIONS.length)calculate();
 radarEvent('question_answered',{question_number:answered,...(milestone?{milestone}:{}),...(route?{route}:{} )});
-if(current===6){trackCustom('QuizProgress',{step:'radar_complete'});mostrarRespiro();return}if(current===9)trackCustom('QuizProgress',{step:'identity_confirmed'});if(current===13)trackCustom('QuizProgress',{step:'qualification'});if(current>=QUESTIONS.length){const r=ranking(),identity=RadarIdentity.classify(scores,confirmations);radarEvent('capture_viewed',{route,fit_score:fitScore,readiness_score:readinessScore,identity_key:identity.key,identity_confidence:identity.confidence,...(r.low?{lowest_pillar:r.low}:{}),...(r.high?{highest_pillar:r.high}:{})});page('capture');return}render()}
+if(current===6){trackCustom('QuizProgress',{step:'radar_complete'});mostrarRespiro();return}if(current===9)trackCustom('QuizProgress',{step:'identity_confirmed'});if(current===12)trackCustom('QuizProgress',{step:'qualification'});if(current>=QUESTIONS.length){const r=ranking(),identity=RadarIdentity.classify(scores,confirmations);radarEvent('capture_viewed',{route,fit_score:fitScore,readiness_score:readinessScore,identity_key:identity.key,identity_confidence:identity.confidence,...(r.low?{lowest_pillar:r.low}:{}),...(r.high?{highest_pillar:r.high}:{})});page('capture');return}render()}
 // Fit minimo para receber o convite de pre-consulta. Em uma constante de
 // proposito: a capacidade da equipe e 20/semana hoje, 40 com uma chave, e
 // acima disso exige contratar. Subir este numero aperta o funil sem tocar em
 // mais nada.
-const CORTE_PRE_CONSULTA=5;
-function calculate(){scores={};fitScore=0;readinessScore=0;QUESTIONS.forEach((q,i)=>{const value=Number(answers[i]);if(q.dim)scores[q.dim]=value;if(q.fit)fitScore+=value;if(q.ready)readinessScore+=value});route=fitScore>=7&&readinessScore>=4?'A':fitScore>=5?'B':'C'}
+//
+// Escala nova desde 20/10/2026: o bloco comercial caiu de seis perguntas para
+// tres, entao o fit vem de UMA pergunta (max 3) e nao mais de quatro (max 12).
+const CORTE_PRE_CONSULTA=1;
+function calculate(){scores={};fitScore=0;readinessScore=0;QUESTIONS.forEach((q,i)=>{const value=Number(answers[i]);if(q.dim)scores[q.dim]=value;if(q.fit)fitScore+=value;if(q.ready)readinessScore+=value});route=fitScore>=3&&readinessScore>=3?'A':fitScore>=1?'B':'C'}
 // Respiro depois dos seis pilares. Nao e tela de transicao: nomeia o pilar
 // mais fragil a partir das respostas DELA e devolve isso antes de pedir mais
 // seis perguntas. Entregar valor no meio e o que converte a segunda metade de
@@ -289,8 +289,8 @@ if((PREVIEW_ROTA||location.hostname==='127.0.0.1'||location.hostname==='localhos
   // Os scores precisam ser coerentes com a rota forcada: o convite da
   // pre-consulta nao olha a rota, olha o fitScore. Sem isto o preview mostra
   // uma tela sem nenhum CTA e da a impressao de que o funil quebrou.
-  fitScore=previewRoute==='A'?8:previewRoute==='B'?5:2;
-  readinessScore=previewRoute==='A'?4:2;
+  fitScore=previewRoute==='A'?3:previewRoute==='B'?2:0;
+  readinessScore=previewRoute==='A'?3:1;
   renderResult();page('result')}
 radarEvent('page_view');
 </script>

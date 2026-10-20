@@ -17,8 +17,17 @@ test('quiz mede seis pilares e separa qualificação de leitura educativa', () =
     assert.match(html, new RegExp(label));
   }
   assert.equal((html.match(/dim:'/g) || []).length, 6);
-  assert.equal((html.match(/fit:true/g) || []).length, 4);
+  // Bloco comercial enxugado em 20/10/2026: de seis perguntas para tres. Saem
+  // Historico, Impacto e Tentativas, que o Radar ja cobre pelos pilares; ficam
+  // as tres que ele NAO ve, e a ordem termina no Objetivo em vez de terminar
+  // em dinheiro.
+  assert.equal((html.match(/fit:true/g) || []).length, 1);
   assert.equal((html.match(/ready:true/g) || []).length, 2);
+  for (const fora of ['Faz quanto tempo que você volta', 'O quanto isso toma da sua vida',
+                      'Como costumam terminar as suas tentativas']) {
+    assert.ok(!html.includes(fora), `pergunta cortada voltou: ${fora}`);
+  }
+  assert.match(html, /\{tag:'12 · Objetivo'/, 'o quiz precisa terminar no Objetivo');
   assert.equal((html.match(/confirm:'/g) || []).length, 3);
   assert.match(html, /radar-identities\.js/);
   assert.match(html, /id="identityTitle"/);
@@ -26,7 +35,10 @@ test('quiz mede seis pilares e separa qualificação de leitura educativa', () =
 });
 
 test('roteamento tem A, B e C com a rota C mais longa', () => {
-  assert.match(html, /fitScore>=7&&readinessScore>=4\?'A':fitScore>=5\?'B':'C'/);
+  // Reguas recalibradas para a escala nova: fit vem de UMA pergunta (max 3) e
+  // prontidao de duas (max 6). Reproduzem a distribuicao antiga, com a rota A
+  // em 15,6% contra 15,5%, que e o que protege a capacidade de 20 por semana.
+  assert.match(html, /fitScore>=3&&readinessScore>=3\?'A':fitScore>=1\?'B':'C'/);
   assert.match(html, /id="routeA"/);
   assert.match(html, /id="routeBC"/);
   assert.match(html, /class="band paper education-band education-only"/);
@@ -52,7 +64,7 @@ test('quem tem fit suficiente VÊ a pré-consulta, mesmo sem prontidão', () => 
   // Antes, routeA e routeBC eram mutuamente exclusivos: quem caía em B nunca
   // via a conversa gratuita, e era ali que a lead qualificada e cautelosa
   // morria.
-  assert.match(html, /const CORTE_PRE_CONSULTA=5/);
+  assert.match(html, /const CORTE_PRE_CONSULTA=1/);
   assert.match(html, /convidada=fitScore>=CORTE_PRE_CONSULTA/);
   assert.match(html, /\$\('routeA'\)\.hidden=!convidada/);
 });
@@ -151,8 +163,8 @@ test('os dois CTAs ficam dentro da pagina de resultado', () => {
 test('o preview local combina com a regua de corte da pre-consulta', () => {
   // O convite olha fitScore, nao a rota. Preview que forca a rota sem mexer no
   // score mostra uma tela sem CTA nenhum e parece funil quebrado.
-  assert.match(html, /fitScore=previewRoute==='A'\?8:previewRoute==='B'\?5:2/);
-  assert.match(html, /const CORTE_PRE_CONSULTA=5;/);
+  assert.match(html, /fitScore=previewRoute==='A'\?3:previewRoute==='B'\?2:0/);
+  assert.match(html, /const CORTE_PRE_CONSULTA=1;/);
 });
 
 test('atribuicao de primeiro toque viaja junto com a lead', () => {
@@ -281,8 +293,8 @@ test('video nao aparece como entregavel enquanto o banco nao tiver nenhum', () =
 
 test('a promessa do hero bate com o numero real de perguntas', () => {
   // A estrutura real e 6 pilares + 3 confirmações + 6 perguntas comerciais.
-  assert.equal((html.match(/\{tag:'/g) || []).length, 15);
-  assert.match(html, /<ul class="custo"><li>gratuito<\/li><li>15 perguntas de múltipla escolha<\/li><li>4 minutos<\/li><li>sem cadastro<\/li><\/ul>/);
+  assert.equal((html.match(/\{tag:'/g) || []).length, 12);
+  assert.match(html, /<ul class="custo"><li>gratuito<\/li><li>12 perguntas de múltipla escolha<\/li><li>3 minutos<\/li><li>sem cadastro<\/li><\/ul>/);
   // Centralizado: com quatro itens a quebra a esquerda deixava a ultima linha
   // solta e torta. Centralizado, a quebra vira simetria.
   assert.match(html, /\.custo\{[^}]*justify-content:center/);
@@ -291,7 +303,7 @@ test('a promessa do hero bate com o numero real de perguntas', () => {
   // que e onde ele vira informacao em vez de aviso. Dize-lo tambem no
   // subtitulo era redundancia na dobra, que e o espaco mais caro da pagina.
   assert.doesNotMatch(html.slice(0, html.indexOf('id="quiz"')), /Doze perguntas/);
-  assert.equal((html.slice(0, html.indexOf('id="quiz"')).match(/15 perguntas/g) || []).length, 1);
+  assert.equal((html.slice(0, html.indexOf('id="quiz"')).match(/12 perguntas/g) || []).length, 1);
   // A marca aparece uma vez na primeira linha: o logo ancora, o eyebrow diz
   // so o produto. "TABLE" ao lado de "Radar Table" era a mesma palavra duas
   // vezes no mesmo olhar.
@@ -400,4 +412,20 @@ test('o aviso legal do hero e legivel sobre o bege', () => {
   // bege do hero. Passou a importar quando o link de privacidade entrou
   // nessa linha: aviso legal ilegivel e pior do que nao ter.
   assert.match(html, /\.hero \.fine\{color:#5a655e\}/);
+});
+
+test('o QUESTIONS continua sendo um array valido depois do corte', () => {
+  // A primeira tentativa de reordenar quebrou a pagina inteira: a pergunta que
+  // era a ultima nao tinha virgula final e foi parar no meio. Teste de regex
+  // nao pega isso, so o parse pega.
+  const i = html.indexOf('const QUESTIONS');
+  const trecho = html.slice(i, html.indexOf('\n];', i) + 2);
+  const arr = eval('(' + trecho.slice(trecho.indexOf('[')) + ')');
+  assert.equal(arr.length, 12);
+  assert.deepEqual(arr.map(q => q.tag.split(' · ')[1]).slice(9),
+    ['Disponibilidade', 'Investimento', 'Objetivo'], 'o bloco comercial termina no Objetivo');
+  assert.equal(arr.filter(q => q.fit).length, 1);
+  assert.equal(arr.filter(q => q.ready).length, 2);
+  // Toda pergunta precisa de opcoes, senao a tela trava sem botao.
+  for (const q of arr) assert.ok(Array.isArray(q.options) && q.options.length >= 2, q.tag);
 });
