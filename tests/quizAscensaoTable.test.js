@@ -278,7 +278,10 @@ test('a promessa do hero bate com o numero real de perguntas', () => {
   assert.equal((html.match(/\{tag:'/g) || []).length, 12);
   // Dizer o numero inteiro, doze, custa menos clique do que um numero bonito
   // que ela descobre falso na setima pergunta.
-  assert.match(html, /<ul class="custo"><li>12 perguntas de alternativas<\/li><li>3 minutos<\/li><li>sem cadastro<\/li><\/ul>/);
+  assert.match(html, /<ul class="custo"><li>gratuito<\/li><li>12 perguntas múltipla escolha<\/li><li>3 minutos<\/li><li>sem cadastro<\/li><\/ul>/);
+  // Centralizado: com quatro itens a quebra a esquerda deixava a ultima linha
+  // solta e torta. Centralizado, a quebra vira simetria.
+  assert.match(html, /\.custo\{[^}]*justify-content:center/);
   assert.doesNotMatch(html, /Seis perguntas sobre corpo/, 'o hero nao pode prometer seis');
   // O numero aparece UMA vez na primeira tela, na linha de custo sob o botao,
   // que e onde ele vira informacao em vez de aviso. Dize-lo tambem no
@@ -288,7 +291,11 @@ test('a promessa do hero bate com o numero real de perguntas', () => {
   // A marca aparece uma vez na primeira linha: o logo ancora, o eyebrow diz
   // so o produto. "TABLE" ao lado de "Radar Table" era a mesma palavra duas
   // vezes no mesmo olhar.
-  assert.match(html, /<div class="brand">TABLE<\/div><p class="eyebrow">Radar · gratuito<\/p>/);
+  // O topo deixou de ser rotulo e virou prova social. "gratuito" desceu para
+  // os microbullets, junto do resto do custo.
+  assert.match(html, /<div class="brand">TABLE<\/div><p class="selo">/);
+  assert.match(html, /<span class="estrelas">★★★★★<\/span> avaliações no Google/);
+  assert.doesNotMatch(html, /Radar · gratuito/);
 });
 
 test('o hero abre na frase que reconhece, nao no lugar-comum', () => {
