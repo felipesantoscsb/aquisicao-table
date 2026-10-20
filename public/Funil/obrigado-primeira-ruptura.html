@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bem-vinda à Primeira Ruptura · Table</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#26362d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Lora:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* Mesma paleta do /raiz-radar de proposito: ela acabou de vir de la, e chegar
+   numa identidade visual diferente e o primeiro sinal de "comprei outra
+   coisa", logo depois de pagar. */
+:root{--pine:#26362d;--cream:#f5efe4;--paper:#fffdf9;--sand:#e9e0d1;--clay:#bd704e;--gold:#dcc18b;--sage:#92a693;--ink:#202a24;--muted:#68736c;--line:#ded6c8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font:16px/1.6 'DM Sans',sans-serif;-webkit-font-smoothing:antialiased}
+.shell{width:min(100%,720px);margin:auto;padding:36px 22px 70px}
+.brand{font:600 20px 'Lora',serif;letter-spacing:.13em;color:var(--pine)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:40px}
+.tagline{margin:0;font-size:12px;font-weight:600;letter-spacing:.04em;color:var(--clay);text-align:right;max-width:265px;line-height:1.35}
+h1{font-family:'Lora',serif;font-weight:500;font-size:clamp(30px,7.4vw,46px);line-height:1.1;letter-spacing:-.025em;margin:0}
+h1 em{font-style:normal;color:var(--clay)}
+h2{font-family:'Lora',serif;font-weight:500;font-size:clamp(22px,4.6vw,30px);line-height:1.15;letter-spacing:-.02em;margin:0 0 6px}
+.selo{display:inline-flex;align-items:center;gap:8px;background:rgba(146,166,147,.18);border:1px solid rgba(146,166,147,.4);color:var(--pine);border-radius:999px;padding:7px 15px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:22px}
+.lede{font-size:clamp(16px,2.8vw,18px);color:#4e5952;margin:18px 0 0}
+.passos{display:grid;gap:12px;margin:38px 0 0;padding:0;list-style:none;counter-reset:p}
+.passo{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:22px;display:grid;grid-template-columns:34px 1fr;gap:16px}
+.passo:before{counter-increment:p;content:counter(p);width:34px;height:34px;border-radius:50%;background:var(--pine);color:var(--gold);display:grid;place-items:center;font:600 15px 'Lora',serif}
+.passo h3{font:600 17px 'DM Sans',sans-serif;margin:4px 0 7px;color:var(--pine)}
+.passo p{margin:0;color:#4c5850;font-size:15px;line-height:1.6}
+.quando{display:inline-block;margin-top:12px;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--clay);text-transform:uppercase}
+.btn{border:0;border-radius:999px;background:var(--gold);color:var(--pine);padding:15px 26px;font:700 15px 'DM Sans',sans-serif;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;margin-top:14px;transition:.2s}
+.btn:hover{transform:translateY(-2px)}
+.btn.vazado{background:transparent;border:1px solid var(--pine);color:var(--pine)}
+.aviso{margin:14px 0 0;padding:13px 16px;border-left:3px solid var(--gold);background:rgba(220,193,139,.14);border-radius:0 12px 12px 0;font-size:14px;line-height:1.55;color:#4c5850}
+.fecho{background:var(--pine);color:#fff;border-radius:26px;padding:clamp(26px,6vw,40px);margin-top:38px}
+.fecho h2{color:#fff}
+.fecho p{color:#cad6cd;margin:14px 0 0;font-size:15.5px;line-height:1.65}
+.citacao{font:500 clamp(18px,3.4vw,22px)/1.5 'Lora',serif;color:var(--pine);border-left:3px solid var(--clay);padding-left:18px;margin:38px 0 0}
+.citacao small{display:block;font:600 11px 'DM Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:12px}
+.rodape{margin-top:44px;padding-top:22px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.rodape a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+@media(max-width:620px){.passo{grid-template-columns:1fr;gap:10px}.passo:before{margin-bottom:2px}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <div class="top"><div class="brand">TABLE</div><p class="tagline">para a fome que a comida não resolve</p></div>
+
+  <p class="selo">✓ Compra confirmada</p>
+  <h1>Bem-vinda à<br><em>Primeira Ruptura.</em></h1>
+  <p class="lede">Seu Radar apontou onde o ciclo recomeça. A partir de agora, isso deixa de ser leitura e vira prática, com uma conversa individual no fim para conectar os pontos.</p>
+
+  <ol class="passos">
+    <li class="passo">
+      <div>
+        <h3>Acesse os exercícios</h3>
+        <p>Os dados de acesso foram enviados para o seu e-mail. Confira a caixa de entrada e também o spam. Lá dentro estão os 12 exercícios psicoemocionais guiados pela Evelyn e o livro “Gordura Não Existe” em PDF.</p>
+        <p class="aviso">A sua área de acesso ainda aparece com o nome antigo, Protocolo Raiz. É o mesmo produto que você acabou de comprar, só não renomeamos a plataforma ainda.</p>
+        <a class="btn" href="https://protocoloraiz.ticto.club" target="_blank" rel="noopener">Entrar na área de membros →</a>
+      </div>
+    </li>
+    <li class="passo">
+      <div>
+        <h3>Receba o seu mapa</h3>
+        <p>Em até uma hora chega no seu WhatsApp o mapa pessoal: quais exercícios vêm primeiro no seu caso e por onde começar a semana.</p>
+        <span class="quando">chega em até 1h por WhatsApp</span>
+      </div>
+    </li>
+    <li class="passo">
+      <div>
+        <h3>Marque a sua conversa individual</h3>
+        <p>Não precisa esperar o mapa chegar. Preenchendo agora, a equipe entra em contato em até 24 horas para combinar o horário com você.</p>
+        <a class="btn vazado" href="https://evelynliu.com.br/forms" target="_blank" rel="noopener">Preencher o formulário agora →</a>
+      </div>
+    </li>
+  </ol>
+
+  <section class="fecho">
+    <h2>Não espere a conversa para começar.</h2>
+    <p>Os exercícios já estão com você e foram feitos para serem aplicados agora, no seu ritmo e no seu espaço. A conversa individual aprofunda o que você já tiver experimentado, e é por isso que chegar nela com alguma coisa testada muda o que dá para fazer ali.</p>
+  </section>
+
+  <p class="citacao">“Você já deu o passo mais difícil. O que vem agora é trabalho com propósito, e você não vai fazer isso sozinha.”
+    <small>Evelyn Liu</small>
+  </p>
+
+  <p class="rodape">© Table · Evelyn Liu · Moema, São Paulo · <a href="/legal" target="_blank" rel="noopener">Privacidade e termos</a><br>
+  Experiência educativa e comportamental. Não promete perda de peso nem substitui cuidado médico ou psicológico.</p>
+</main>
+</body>
+</html>

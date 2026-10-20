@@ -176,6 +176,10 @@ app.get('/protocolo-raiz', (req, res) => res.sendFile(path.join(funil, 'protocol
 // Reativação PR via WhatsApp (Hub): mesma página da bio, checkout próprio (Cakto vuq4djv).
 app.get('/protocolo-raiz-r', (req, res) => res.sendFile(path.join(funil, 'protocolo_raiz_reativacao.html')));
 app.get('/obrigado',           (req, res) => res.sendFile(path.join(funil, 'obrigado-protocolo-raiz.html')));
+// Obrigado da Primeira Ruptura. A pagina antiga continua servindo /obrigado
+// porque os checkouts dos funis antigos apontam para la e dizem Protocolo
+// Raiz, que e o nome que aquelas compradoras viram.
+app.get('/obrigado-primeira-ruptura', (req, res) => res.sendFile(path.join(funil, 'obrigado-primeira-ruptura.html')));
 app.get('/obrigado-essential',    (req, res) => res.sendFile(path.join(funil, 'obrigado-essential.html')));
 app.get('/obrigado-premium',      (req, res) => res.sendFile(path.join(funil, 'obrigado-premium.html')));
 app.get('/obrigado-elite',        (req, res) => res.sendFile(path.join(funil, 'obrigado-elite.html')));
