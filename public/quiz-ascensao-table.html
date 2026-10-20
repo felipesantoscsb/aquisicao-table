@@ -276,14 +276,16 @@ function requestPreconsult(){
 }
 function checkout(){const id=eventId('ic');if(!PREVIEW_ROTA){radarEvent('checkout_started',{lead_sck:lead.id,route});fbq('track','InitiateCheckout',{content_name:'A Primeira Ruptura',currency:'BRL',value:127},{eventID:id});fetch('/api/capi/initiate-checkout',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:lead.phone,em:lead.email,fbp:lead.fbp,fbc:lead.fbc,external_id:lead.external,content_name:'A Primeira Ruptura',value:127,perfil:'raiz',source:'raiz-radar',lid:lead.id,event_id:id,event_source_url:location.href,commercial_route:route})}).catch(()=>{})}const u=new URL('https://pay.cakto.com.br/3azm4o3_1219891');u.searchParams.set('email',lead.email);u.searchParams.set('phone','+'+lead.phone);u.searchParams.set('name',lead.name);u.searchParams.set('sck',lead.id);location.href=u.toString()}
 $('start').onclick=start;$('respiroGo').onclick=()=>{page('quiz');render()};$('back').onclick=()=>{if(current){current--;const q=QUESTIONS[current];answers[current]=undefined;answerTexts[current]=undefined;if(q.confirm)delete confirmations[q.confirm];render()}else page('intro')};$('reveal').onclick=reveal;$('preconsult').onclick=requestPreconsult;$('checkout').onclick=checkout;$('phone').oninput=e=>{let d=e.target.value.replace(/\D/g,'').slice(0,11);e.target.value=d.length>6?`(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`:d};
-/* Prévia editorial local: permite revisar A/B/C sem enviar formulário, Pixel ou
-   dados para integrações. Nunca é ativada no domínio público. */
+/* Prévia editorial: /raiz-radar-a|b|c permite revisar A/B/C em produção sem
+   enviar formulário, Pixel ou telemetria. ?identity= seleciona uma identidade. */
 const previewRoute=(PREVIEW_ROTA||new URLSearchParams(location.search).get('preview')||'').toUpperCase();
 if((PREVIEW_ROTA||location.hostname==='127.0.0.1'||location.hostname==='localhost')&&['A','B','C'].includes(previewRoute)){
   route=previewRoute;lead={name:'Marina',email:'',phone:'',id:'preview'};
-  scores={body:2,food:2,resources:4,knowledge:4,awareness:2,adaptability:4};
-  answerTexts=['Meu humor muda bastante com espelho, roupa ou balança','Penso em compensar ou apertar as regras','Nem sempre é fácil, mas encontro algum apoio','Ajuda na maior parte do tempo','Geralmente noto só depois que passei do ponto','Faço ajustes e retomo sem grande culpa','As duas coisas se alimentam: corpo e comida entram na mesma guerra','A cabeça assume: sigo a regra e só percebo meu corpo depois','Consigo me reorganizar sem um padrão claro de queda'];
-  confirmations={relation:'both',compass:'head',sustain:'none'};
+  const requestedIdentity=new URLSearchParams(location.search).get('identity')||'war';
+  const previewCase=RadarIdentity.PREVIEW_CASES[requestedIdentity]||RadarIdentity.PREVIEW_CASES.war;
+  scores={...previewCase.scores};confirmations={...previewCase.confirmations};
+  answerTexts=QUESTIONS.slice(0,6).map(q=>(q.options.find(o=>o[1]===scores[q.dim])||[])[0]).concat(
+    QUESTIONS.slice(6,9).map(q=>(q.options.find(o=>o[1]===confirmations[q.confirm])||[])[0]));
   // Os scores precisam ser coerentes com a rota forcada: o convite da
   // pre-consulta nao olha a rota, olha o fitScore. Sem isto o preview mostra
   // uma tela sem nenhum CTA e da a impressao de que o funil quebrou.

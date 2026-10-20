@@ -51,3 +51,10 @@ test('todas as 4.096 configurações possíveis têm classificação determinís
     }
   assert.equal(total, 4096);
 });
+
+test('cada link editorial simula exatamente a identidade pedida', () => {
+  assert.equal(Object.keys(RadarIdentity.PREVIEW_CASES).length, 15);
+  for (const [key, example] of Object.entries(RadarIdentity.PREVIEW_CASES)) {
+    assert.equal(RadarIdentity.classify(example.scores, example.confirmations).key, key, key);
+  }
+});

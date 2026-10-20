@@ -101,6 +101,8 @@ test('carregamento ganhou dois segundos e comunica progresso', () => {
 test('prévia das rotas só funciona em localhost e não envia formulário', () => {
   assert.match(html, /location\.hostname==='127\.0\.0\.1'\|\|location\.hostname==='localhost'/);
   assert.match(html, /\['A','B','C'\]\.includes\(previewRoute\)/);
+  assert.match(html, /get\('identity'\)/);
+  assert.match(html, /RadarIdentity\.PREVIEW_CASES\[requestedIdentity\]/);
 });
 
 test('segmentos sensíveis não entram nos eventos Meta', () => {

@@ -136,6 +136,26 @@
     sustain: { alone: 'alone', perfect: 'perfect', both: 'margin' },
   };
 
+  // Casos editoriais para revisar cada leitura no front. São usados apenas
+  // pelas rotas /raiz-radar-a|b|c, que já não disparam Pixel ou telemetria.
+  const PREVIEW_CASES = {
+    mirror: { scores: { body: 1, food: 5, resources: 5, knowledge: 5, awareness: 5, adaptability: 5 }, confirmations: { relation: 'body' } },
+    bill: { scores: { body: 5, food: 1, resources: 5, knowledge: 5, awareness: 5, adaptability: 5 }, confirmations: { relation: 'food' } },
+    war: { scores: { body: 2, food: 2, resources: 5, knowledge: 5, awareness: 5, adaptability: 5 }, confirmations: { relation: 'both' } },
+    head: { scores: { body: 5, food: 5, resources: 5, knowledge: 4, awareness: 1, adaptability: 5 }, confirmations: { compass: 'head' } },
+    distrust: { scores: { body: 5, food: 5, resources: 5, knowledge: 1, awareness: 4, adaptability: 5 }, confirmations: { compass: 'distrust' } },
+    compass: { scores: { body: 5, food: 5, resources: 5, knowledge: 2, awareness: 2, adaptability: 5 }, confirmations: { compass: 'both' } },
+    alone: { scores: { body: 5, food: 5, resources: 1, knowledge: 5, awareness: 5, adaptability: 4 }, confirmations: { sustain: 'alone' } },
+    perfect: { scores: { body: 5, food: 5, resources: 4, knowledge: 5, awareness: 5, adaptability: 1 }, confirmations: { sustain: 'perfect' } },
+    margin: { scores: { body: 5, food: 5, resources: 2, knowledge: 5, awareness: 5, adaptability: 2 }, confirmations: { sustain: 'both' } },
+    relation_compass: { scores: { body: 1, food: 2, resources: 5, knowledge: 1, awareness: 2, adaptability: 5 }, confirmations: { relation: 'both', compass: 'both' } },
+    relation_sustain: { scores: { body: 1, food: 2, resources: 1, knowledge: 5, awareness: 5, adaptability: 2 }, confirmations: { relation: 'both', sustain: 'both' } },
+    compass_sustain: { scores: { body: 5, food: 5, resources: 1, knowledge: 1, awareness: 2, adaptability: 2 }, confirmations: { compass: 'both', sustain: 'both' } },
+    tightrope: { scores: { body: 1, food: 5, resources: 1, knowledge: 1, awareness: 5, adaptability: 5 }, confirmations: { relation: 'both', compass: 'both', sustain: 'both' } },
+    all_effort: { scores: { body: 1, food: 2, resources: 1, knowledge: 2, awareness: 1, adaptability: 2 }, confirmations: { relation: 'both', compass: 'both', sustain: 'both' } },
+    base: { scores: { body: 4, food: 5, resources: 4, knowledge: 5, awareness: 4, adaptability: 5 }, confirmations: { relation: 'none', compass: 'none', sustain: 'none' } },
+  };
+
   function confirmedSubtype(domain, numericSubtype, confirmations) {
     const answer = confirmations && confirmations[domain];
     const direct = CONFIRM_MAP[domain][answer];
@@ -226,5 +246,5 @@
     };
   }
 
-  return { classify, IDENTITIES, DOMAINS, PILLARS };
+  return { classify, IDENTITIES, DOMAINS, PILLARS, PREVIEW_CASES };
 });
