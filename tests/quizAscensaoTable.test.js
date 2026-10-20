@@ -362,3 +362,26 @@ test('a pagina nao usa "Clinic" em texto nenhum', () => {
   assert.match(html, /fundadora da Table\./);
   assert.match(html, /© Table · Evelyn Liu/);
 });
+
+test('a pagina linka a politica de privacidade nos tres momentos que importam', () => {
+  // O /legal existe e e LGPD desde maio/2026, e TODOS os outros quizzes do
+  // repo linkavam. O Radar era o unico funil sem o link, coletando nome,
+  // e-mail e WhatsApp e disparando pixel e CAPI.
+  assert.equal((html.match(/href="\/legal"/g) || []).length, 3);
+  // O que pesa juridicamente: no ponto de coleta, antes de ela enviar.
+  assert.match(html, /Ao continuar, você concorda com a <a href="\/legal"[^>]*>Política de Privacidade e os Termos de Uso<\/a>/);
+  // E onde se procura por reflexo: abertura e rodape.
+  assert.match(html, /não são usadas para personalizar anúncios\. <a href="\/legal"/);
+  assert.match(html, /Nutrição comportamental · <a href="\/legal"/);
+  for (const m of html.match(/<a href="\/legal"[^>]*>/g) || []) {
+    assert.match(m, /target="_blank"/, 'nao pode tirar a lead do quiz no meio');
+    assert.match(m, /rel="noopener"/);
+  }
+});
+
+test('o aviso legal do hero e legivel sobre o bege', () => {
+  // #91a397 foi desenhado para fundo escuro e dava 2,03 de contraste sobre o
+  // bege do hero. Passou a importar quando o link de privacidade entrou
+  // nessa linha: aviso legal ilegivel e pior do que nao ter.
+  assert.match(html, /\.hero \.fine\{color:#5a655e\}/);
+});
