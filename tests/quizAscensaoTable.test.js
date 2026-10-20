@@ -307,11 +307,14 @@ test('a promessa do hero bate com o numero real de perguntas', () => {
   // A marca aparece uma vez na primeira linha: o logo ancora, o eyebrow diz
   // so o produto. "TABLE" ao lado de "Radar Table" era a mesma palavra duas
   // vezes no mesmo olhar.
-  // Topo so com o logo. O slogan saiu em 20/10/2026: era a unica asserção sem
-  // prova da primeira tela, e a pilula do Google ja nomeia a Table, ja diz que
-  // ela tem clientes e ainda traz evidencia junto.
+  // Topo so com o logo, centralizado: era o unico elemento fora do eixo, com
+  // pilula, botao, bullets e cartoes todos centrados.
   assert.match(html, /<div class="top"><div class="brand">TABLE<\/div><\/div>/);
+  assert.match(html, /\.top\{display:flex;justify-content:center/);
   assert.doesNotMatch(html, /class="tagline"/);
+  // O slogan nao sumiu: achou dono. Ao lado do rosto dela, a tese da marca
+  // ganha autor em vez de flutuar num canto a 12px.
+  assert.match(html, /<strong>Para a fome que a comida não resolve\.<\/strong>/);
   assert.doesNotMatch(html, /Radar · gratuito/);
   // A prova fica LOGO ACIMA do botao: e a ponte entre reconhecer o problema e
   // clicar. Antes ficava orfã entre o custo e os beneficios.
@@ -435,4 +438,13 @@ test('o QUESTIONS continua sendo um array valido depois do corte', () => {
   assert.equal(arr.filter(q => q.ready).length, 2);
   // Toda pergunta precisa de opcoes, senao a tela trava sem botao.
   for (const q of arr) assert.ok(Array.isArray(q.options) && q.options.length >= 2, q.tag);
+});
+
+test('o retrato da Evelyn usa o recorte proprio, nao o thumbnail', () => {
+  // A foto antiga tinha 160x240, corpo inteiro, rosto minusculo. Ampliar
+  // aquilo borrava. evelyn-avatar.jpg e um recorte de 320x320 feito a partir
+  // do retrato de 530x1047, enquadrado no rosto.
+  assert.match(html, /<img src="\/images\/evelyn-avatar\.jpg" width="320" height="320" alt="Evelyn Liu">/);
+  assert.doesNotMatch(html, /Vestido Verde Olhar amistoso/);
+  assert.match(html, /\.hero-authority img\{width:64px;height:64px/);
 });
