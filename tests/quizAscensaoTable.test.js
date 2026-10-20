@@ -276,7 +276,11 @@ test('a promessa do hero bate com o numero real de perguntas', () => {
   // Dizer "seis perguntas" e entregar doze queima a confianca na primeira tela.
   // A estrutura real e 6 do Radar + respiro + 6 comerciais.
   assert.equal((html.match(/\{tag:'/g) || []).length, 12);
-  assert.match(html, /Seis perguntas sobre corpo, comida e vida real desenham o seu Radar\. Outras seis/);
+  // Dizer o numero inteiro, doze, custa menos clique do que um numero bonito
+  // que ela descobre falso na setima pergunta.
+  assert.match(html, /Doze perguntas sobre corpo, comida e vida real mostram onde esse ponto está/);
+  assert.match(html, /12 perguntas de marcar, nenhuma de escrever\. Cerca de 3 minutos\. Começa sem cadastro\./);
+  assert.doesNotMatch(html, /Seis perguntas sobre corpo/, 'o hero nao pode prometer seis');
   assert.match(html, /Faltam seis perguntas/);
   assert.doesNotMatch(html, /Faltam 5 perguntas/);
 });
