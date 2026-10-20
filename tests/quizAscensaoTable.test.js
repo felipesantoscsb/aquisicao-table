@@ -278,13 +278,17 @@ test('a promessa do hero bate com o numero real de perguntas', () => {
   assert.equal((html.match(/\{tag:'/g) || []).length, 12);
   // Dizer o numero inteiro, doze, custa menos clique do que um numero bonito
   // que ela descobre falso na setima pergunta.
-  assert.match(html, /12 perguntas de marcar, nenhuma de escrever\. Cerca de 3 minutos\. Começa sem cadastro\./);
+  assert.match(html, /<ul class="custo"><li>12 perguntas, só marcar<\/li><li>3 minutos<\/li><li>sem cadastro<\/li><\/ul>/);
   assert.doesNotMatch(html, /Seis perguntas sobre corpo/, 'o hero nao pode prometer seis');
   // O numero aparece UMA vez na primeira tela, na linha de custo sob o botao,
   // que e onde ele vira informacao em vez de aviso. Dize-lo tambem no
   // subtitulo era redundancia na dobra, que e o espaco mais caro da pagina.
   assert.doesNotMatch(html.slice(0, html.indexOf('id="quiz"')), /Doze perguntas/);
   assert.equal((html.slice(0, html.indexOf('id="quiz"')).match(/12 perguntas/g) || []).length, 1);
+  // A marca aparece uma vez na primeira linha: o logo ancora, o eyebrow diz
+  // so o produto. "TABLE" ao lado de "Radar Table" era a mesma palavra duas
+  // vezes no mesmo olhar.
+  assert.match(html, /<div class="brand">TABLE<\/div><p class="eyebrow">Radar · gratuito<\/p>/);
 });
 
 test('o hero abre na frase que reconhece, nao no lugar-comum', () => {
