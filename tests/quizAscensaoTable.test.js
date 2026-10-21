@@ -453,7 +453,7 @@ test('o retrato da Evelyn usa o recorte proprio, nao o thumbnail', () => {
 
 test('cada rota recebe a sua mini VSL, e nenhuma trava o CTA', () => {
   // Rota A: o video explica a conversa. B e C: explica os sete dias.
-  assert.match(html, /<p id="conviteConversa"><\/p><div class="vsl"><wistia-player media-id="8mtci512mj"/);
+  assert.match(html, /<p id="conviteConversa"><\/p><div class="vsl so-rota-a"><wistia-player media-id="8mtci512mj"/);
   assert.match(html, /<div class="vsl"><wistia-player media-id="ajd9oltmv3"[\s\S]{0,180}<div class="offer">/);
   assert.equal((html.match(/<wistia-player/g) || []).length, 2);
   // O runtime do Wistia carrega UMA vez no head: os dois embeds compartilham.
