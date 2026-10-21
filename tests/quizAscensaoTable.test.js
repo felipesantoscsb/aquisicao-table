@@ -252,7 +252,7 @@ test('a revisao nao toca no pixel', () => {
   assert.match(html, /var PREVIEW_ROTA=\(location\.pathname\.match\(\/\^\\\/raiz-radar-\(\[abc\]\)/);
   assert.match(html, /if\(!PREVIEW_ROTA\)\{\s*fbq\('init',PIXEL_V2\);/);
   assert.match(html, /function trackCustom\(name,data=\{\}\)\{if\(PREVIEW_ROTA\)return;/);
-  assert.match(html, /function checkout\(\)\{const id=eventId\('ic'\);if\(!PREVIEW_ROTA\)\{/);
+  assert.match(html, /function checkout\(cupom\)\{const id=eventId\('ic'\);if\(!PREVIEW_ROTA\)\{/);
 });
 
 test('o noscript aponta para o mesmo pixel do script', () => {
@@ -470,4 +470,49 @@ test('a lead ve UM video, nunca dois', () => {
   // entregavel do produto pago.
   assert.match(html, /<div class="vsl so-rota-a"><wistia-player media-id="8mtci512mj"/);
   assert.match(html, /body\.route-b \.so-rota-a\{display:none\}/);
+});
+
+test('o painel de resgate so existe nas rotas B e C', () => {
+  // Na rota A o proximo passo e uma conversa gratuita: nao ha o que descontar.
+  assert.match(html, /if\(route==='A'[\s\S]{0,30}\) return;/);
+  assert.match(html, /id="resgate" hidden/);
+});
+
+test('o resgate nao usa pressao falsa', () => {
+  // O cupom nao expira, entao contagem regressiva seria mentira. A urgencia
+  // que existe de verdade e a da dor.
+  assert.match(html, /O ciclo não fica esperando você decidir\. Amanhã ele recomeça do mesmo jeito\./);
+  // So o texto que ELA le: o comentario do codigo explica justamente por que
+  // nao ha expiracao, e varrer o arquivo inteiro acusaria a propria nota.
+  const painel = html.slice(html.indexOf('id="resgate"'), html.indexOf('</aside>'));
+  for (const proibido of ['últimas vagas', 'expira', 'acaba em', 'restam', 'tempo limitado']) {
+    assert.ok(!painel.toLowerCase().includes(proibido), `pressao falsa: ${proibido}`);
+  }
+  // Nao bloqueia a tela nem trava a rolagem.
+  assert.doesNotMatch(html, /\.resgate[^}]*overflow:hidden/);
+  assert.match(html, /\.resgate\{position:fixed/);
+});
+
+test('o cupom nao depende de acertar o parametro da Cakto', () => {
+  // O nome do parametro nao esta confirmado na documentacao deles. Por isso o
+  // codigo e copiavel e fica visivel: se o param falhar, ela cola no checkout
+  // em vez de pagar cheio sem perceber.
+  assert.match(html, /<button type="button" class="cupom" id="resgateCodigo">TABLE15<\/button>/);
+  assert.match(html, /await navigator\.clipboard\.writeText\(CUPOM\.codigo\)/);
+  assert.match(html, /\$\('resgateIr'\)\.onclick=async\(\)=>\{[\s\S]{0,90}await copiar\(\); checkout\(true\);/);
+  // Falha de clipboard nao pode impedir a navegacao.
+  assert.match(html, /catch\(e\)\{ return false; \}/);
+});
+
+test('o gatilho observa o botao, nao o bloco da rota', () => {
+  // routeBC e alto demais: um threshold nele nunca dispara num celular.
+  assert.match(html, /\},\{threshold:\.6\}\)\.observe\(\$\('checkout'\)\)/);
+  assert.match(html, /const RESGATE_SEG=20;/);
+  // Clicar no checkout cancela o resgate.
+  assert.match(html, /\$\('checkout'\)\.addEventListener\('click',\(\)=>\{ disparado=true;/);
+});
+
+test('o desconto bate com o preco', () => {
+  assert.match(html, /CUPOM=\{codigo:'TABLE15',percentual:15/);
+  assert.match(html, /const preco=127\*\(1-CUPOM\.percentual\/100\)/);
 });
