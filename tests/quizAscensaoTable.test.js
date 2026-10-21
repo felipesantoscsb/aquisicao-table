@@ -345,7 +345,10 @@ test('a rota C ganha uma ponte antes da oferta', () => {
 test('A Primeira Ruptura custa R$ 127 e so ela', () => {
   // O endpoint de InitiateCheckout atende oito paginas. Um valor global
   // reportaria 127 para o Protocolo Raiz dos funis antigos, que segue a 97.
-  assert.match(html, /<div class="price">R\$ 127<\/div>/);
+  // O parcelado e o numero grande: em compra por impulso no celular, 13,12
+  // decide mais que 127. O a vista fica logo abaixo, sem sumir.
+  assert.match(html, /<div class="price">12x <b>R\$ 13,12<\/b><\/div>/);
+  assert.match(html, /<p class="avista">ou <b>R\$ 127<\/b> à vista · Pix ou cartão<\/p>/);
   assert.match(html, /content_name:'A Primeira Ruptura',currency:'BRL',value:127/);
   assert.doesNotMatch(html, /R\$ 97/, 'sobrou preco antigo na pagina');
   assert.match(server, /function valorDaOferta\(body = \{\}\) \{\s*if \(ehRadarTable\(body\)\) return 127;/);
@@ -446,4 +449,25 @@ test('o retrato da Evelyn usa o recorte proprio, nao o thumbnail', () => {
   assert.match(html, /<img src="\/images\/evelyn-avatar\.jpg" width="320" height="320" alt="Evelyn Liu">/);
   assert.doesNotMatch(html, /Vestido Verde Olhar amistoso/);
   assert.match(html, /\.prova img\{width:68px;height:68px/);
+});
+
+test('cada rota recebe a sua mini VSL, e nenhuma trava o CTA', () => {
+  // Rota A: o video explica a conversa. B e C: explica os sete dias.
+  assert.match(html, /<p id="conviteConversa"><\/p><div class="vsl"><wistia-player media-id="8mtci512mj"/);
+  assert.match(html, /<div class="vsl"><wistia-player media-id="ajd9oltmv3"[\s\S]{0,180}<div class="offer">/);
+  assert.equal((html.match(/<wistia-player/g) || []).length, 2);
+  // O runtime do Wistia carrega UMA vez no head: os dois embeds compartilham.
+  assert.equal((html.match(/fast\.wistia\.com\/player\.js/g) || []).length, 1);
+  assert.match(html, /embed\/8mtci512mj\.js/);
+  assert.match(html, /embed\/ajd9oltmv3\.js/);
+  // Largura limitada: 9:16 em largura total viraria um poste de 1280px.
+  assert.match(html, /\.vsl\{margin:30px auto 0;max-width:330px\}/);
+});
+
+test('a lead ve UM video, nunca dois', () => {
+  // Na rota B a caixa da pre-consulta tambem aparece. Sem escopo, a lead de B
+  // veria os dois videos, e o primeiro fala de uma conversa gratuita que ali e
+  // entregavel do produto pago.
+  assert.match(html, /<div class="vsl so-rota-a"><wistia-player media-id="8mtci512mj"/);
+  assert.match(html, /body\.route-b \.so-rota-a\{display:none\}/);
 });
