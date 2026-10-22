@@ -226,8 +226,14 @@ test('a mensagem sai pela Z-API da satisfacao, com os dois links', () => {
   // Cloud API exigiria template aprovado: ela acabou de pagar e nunca nos
   // escreveu, entao nao ha janela de 24h. Z-API manda texto livre, e por isso
   // os dois links cabem na mesma mensagem.
-  assert.match(server, /ZAPI_INSTANCE_ID/);
-  assert.match(server, /ZAPI_CLIENT_TOKEN/);
+  // Instancia da SATISFACAO, nao a da Karina: separadas desde 30/09/2026 para
+  // manter este trafego sem ligacao com a conta de anuncios.
+  assert.match(server, /ZAPI_SATISFACAO_INSTANCE_ID/);
+  assert.match(server, /ZAPI_SATISFACAO_CLIENT_TOKEN/);
+  // Sem fallback silencioso para o ZAPI_* puro: cair na instancia da Karina
+  // sem ninguem ver desfaria a separacao.
+  assert.doesNotMatch(server, /process\.env\.ZAPI_INSTANCE_ID/);
+  assert.doesNotMatch(server, /process\.env\.ZAPI_CLIENT_TOKEN/);
   assert.match(server, /\/send-text/);
   // Os dois links na mesma mensagem e o pedido explicito: ela agenda a
   // pre-consulta enquanto ainda faz os sete dias.

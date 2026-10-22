@@ -3467,8 +3467,13 @@ async function entregarMapaPrimeiraRuptura(record, d = {}) {
 }
 
 /**
- * Mensagem do mapa pela Z-API, a mesma instancia que a pesquisa de satisfacao
- * do Hub usa (ZAPI_INSTANCE_ID / ZAPI_TOKEN / ZAPI_CLIENT_TOKEN).
+ * Mensagem do mapa pela Z-API da PESQUISA DE SATISFACAO
+ * (ZAPI_SATISFACAO_INSTANCE_ID / _TOKEN / _CLIENT_TOKEN).
+ *
+ * E uma instancia separada da Karina desde 30/09/2026, de proposito: mantem
+ * este trafego sem ligacao com a conta de anuncios e nao arrisca a instancia
+ * que ja esta de pe. NAO existe fallback para o ZAPI_* puro: cair na instancia
+ * da Karina em silencio desfaria essa separacao sem ninguem perceber.
  *
  * Z-API manda texto livre e nao conhece janela de 24h, entao os dois links
  * cabem na mesma mensagem sem depender de template aprovado na Meta. Era esse
@@ -3479,10 +3484,10 @@ async function entregarMapaPrimeiraRuptura(record, d = {}) {
  * dias enviando zero sem ninguem ver, porque falha de envio nao grita.
  */
 async function enviarMapaPorWhatsapp({ phone, nome, urlMapa, urlObrig }) {
-  const base        = process.env.ZAPI_BASE_URL || 'https://api.z-api.io';
-  const instanceId  = process.env.ZAPI_INSTANCE_ID;
-  const token       = process.env.ZAPI_TOKEN;
-  const clientToken = process.env.ZAPI_CLIENT_TOKEN;
+  const base        = process.env.ZAPI_SATISFACAO_BASE_URL || process.env.ZAPI_BASE_URL || 'https://api.z-api.io';
+  const instanceId  = process.env.ZAPI_SATISFACAO_INSTANCE_ID;
+  const token       = process.env.ZAPI_SATISFACAO_TOKEN;
+  const clientToken = process.env.ZAPI_SATISFACAO_CLIENT_TOKEN;
 
   const primeiro = firstName(nome);
   const mensagem = [
@@ -3498,9 +3503,9 @@ async function enviarMapaPorWhatsapp({ phone, nome, urlMapa, urlObrig }) {
   ].join('\n');
 
   const faltando = [
-    !instanceId  && 'ZAPI_INSTANCE_ID',
-    !token       && 'ZAPI_TOKEN',
-    !clientToken && 'ZAPI_CLIENT_TOKEN',
+    !instanceId  && 'ZAPI_SATISFACAO_INSTANCE_ID',
+    !token       && 'ZAPI_SATISFACAO_TOKEN',
+    !clientToken && 'ZAPI_SATISFACAO_CLIENT_TOKEN',
   ].filter(Boolean);
 
   if (faltando.length) {
