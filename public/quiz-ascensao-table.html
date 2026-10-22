@@ -294,10 +294,10 @@ $('start').onclick=start;$('respiroGo').onclick=()=>{page('quiz');render()};$('b
    So nas rotas B e C. Na A o proximo passo e uma conversa gratuita, nao ha o
    que descontar. */
 const CUPOM={codigo:'TABLE15',percentual:15,
-  // Parametro de URL da Cakto para cupom. NAO confirmado na documentacao
-  // deles: o codigo aparece visivel no painel justamente para que, se este
-  // nome estiver errado, ela ainda consiga digitar e o desconto nao se perca
-  // em silencio.
+  // Parametro de URL da Cakto para cupom. CONFIRMADO em checkout real em
+  // 22/10/2026: `?coupon=TABLE15` derruba 127 para 107,95. O codigo segue
+  // visivel no painel de proposito, para ela conseguir digitar caso o link
+  // chegue sem o parametro.
   param:'coupon'};
 const RESGATE_SEG=20;
 function armarResgate(){
