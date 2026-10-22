@@ -3425,10 +3425,10 @@ function extractCaktoJoinKey(d) {
  * sentidos: `pr:mapa:<token>` para abrir a pagina, e `pr:mapa:lead:<radarId>`
  * para a pagina de obrigado achar o mapa sem depender do WhatsApp.
  *
- * Essa segunda via existe porque a primeira e fragil: a cliente acabou de pagar
- * e NUNCA nos escreveu, entao nao ha janela de 24h e mensagem livre nao e
- * entregue. Template depende de aprovacao na Meta. Enquanto isso, a pagina de
- * obrigado entrega o link na hora, dentro da sessao em que ela ainda esta.
+ * A segunda via existe porque envio nao e garantido: numero errado, instancia
+ * Z-API fora do ar, compra sem telefone. A pagina de obrigado entrega o link na
+ * hora, dentro da sessao em que ela ainda esta, e o WhatsApp vira redundancia
+ * em vez de ser o unico caminho ate o que ela pagou.
  */
 async function entregarMapaPrimeiraRuptura(record, d = {}) {
   const token   = crypto.randomBytes(16).toString('hex');
@@ -3449,58 +3449,61 @@ async function entregarMapaPrimeiraRuptura(record, d = {}) {
     console.warn('[pr-mapa] compra sem telefone — mapa existe, entrega por WhatsApp impossivel');
     return { token, urlMapa, sem_telefone: true };
   }
-  await sendMapaViaTemplate({ phone: record.phone, nome, token, urlMapa, urlObrig });
+  await enviarMapaPorWhatsapp({ phone: record.phone, nome, urlMapa, urlObrig });
   return { token, urlMapa };
 }
 
 /**
- * Template da WhatsApp Cloud API com o mapa.
+ * Mensagem do mapa pela Z-API, a mesma instancia que a pesquisa de satisfacao
+ * do Hub usa (ZAPI_INSTANCE_ID / ZAPI_TOKEN / ZAPI_CLIENT_TOKEN).
  *
- * O template precisa existir e estar aprovado na Meta com esta forma:
- *   body   : "{{1}}, seu mapa da Primeira Ruptura esta pronto." + o link do
- *            obrigado ESCRITO FIXO no corpo (variavel de corpo com URL costuma
- *            ser recusada na revisao da Meta).
- *   botao 0: URL dinamica, base https://www.evelynliu.com.br/ e sufixo variavel
- *            (recebe `mapa-primeira-ruptura?t=<token>`).
+ * Z-API manda texto livre e nao conhece janela de 24h, entao os dois links
+ * cabem na mesma mensagem sem depender de template aprovado na Meta. Era esse
+ * o impedimento: a compradora acabou de pagar e nunca nos escreveu.
  *
- * Sem token/phone_id/nome de template configurados, nao envia: loga o payload
- * em SOMBRA, igual a recuperacao de checkout faz. Assim o mapa nunca deixa de
- * ser criado por causa da entrega.
+ * As credenciais ficam AQUI e nao num salto para o Hub de proposito. Worker
+ * novo que depende de resolver URL e segredo de outro servico ja passou quatro
+ * dias enviando zero sem ninguem ver, porque falha de envio nao grita.
  */
-async function sendMapaViaTemplate({ phone, nome, token, urlMapa, urlObrig }) {
-  const TOKEN    = process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
-  const PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const TEMPLATE = process.env.WHATSAPP_MAPA_TEMPLATE;
+async function enviarMapaPorWhatsapp({ phone, nome, urlMapa, urlObrig }) {
+  const base        = process.env.ZAPI_BASE_URL || 'https://api.z-api.io';
+  const instanceId  = process.env.ZAPI_INSTANCE_ID;
+  const token       = process.env.ZAPI_TOKEN;
+  const clientToken = process.env.ZAPI_CLIENT_TOKEN;
 
-  const payload = {
-    messaging_product: 'whatsapp',
-    to: phone,
-    type: 'template',
-    template: {
-      name: TEMPLATE || '(template nao configurado)',
-      language: { code: 'pt_BR' },
-      components: [
-        { type: 'body',   parameters: [{ type: 'text', text: firstName(nome) || 'querida' }] },
-        { type: 'button', sub_type: 'url', index: '0',
-          parameters: [{ type: 'text', text: `mapa-primeira-ruptura?t=${token}` }] },
-      ],
-    },
-  };
+  const primeiro = firstName(nome);
+  const mensagem = [
+    `${primeiro ? 'Oi, ' + primeiro + '!' : 'Oi!'} Aqui é a Table.`,
+    '',
+    'Seu mapa da Primeira Ruptura está pronto. São sete dias, com um áudio e uma prática por dia, e os áudios foram escolhidos pelo ponto em que a sua rotina aperta:',
+    urlMapa,
+    '',
+    'A sua conversa individual com a nutricionista já pode ser marcada. Não precisa esperar terminar os sete dias, e chegar nela com alguma coisa testada muda o que dá para fazer ali:',
+    urlObrig,
+    '',
+    'Qualquer dúvida, é só responder por aqui.',
+  ].join('\n');
 
-  if (!TOKEN || !PHONE_ID || !TEMPLATE) {
-    console.log(`[pr-mapa] SOMBRA — nao enviado (falta ${!TEMPLATE ? 'WHATSAPP_MAPA_TEMPLATE' : 'credencial'}). mapa=${urlMapa} obrigado=${urlObrig} payload=${JSON.stringify(payload)}`);
-    return { shadow: true };
+  const faltando = [
+    !instanceId  && 'ZAPI_INSTANCE_ID',
+    !token       && 'ZAPI_TOKEN',
+    !clientToken && 'ZAPI_CLIENT_TOKEN',
+  ].filter(Boolean);
+
+  if (faltando.length) {
+    console.log(`[pr-mapa] SOMBRA — nao enviado, falta ${faltando.join(', ')}. destino=${phone} mapa=${urlMapa}`);
+    return { shadow: true, faltando };
   }
 
-  const resp = await fetch(`https://graph.facebook.com/v21.0/${PHONE_ID}/messages`, {
+  const resp = await fetch(`${base}/instances/${instanceId}/token/${token}/send-text`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
-    body: JSON.stringify(payload),
+    headers: { 'Content-Type': 'application/json', 'Client-Token': clientToken },
+    body: JSON.stringify({ phone, message: mensagem }),
   });
-  const json = await resp.json().catch(() => ({}));
-  if (!resp.ok) throw new Error(`WhatsApp API ${resp.status}: ${JSON.stringify(json.error || json)}`);
-  console.log(`[pr-mapa] template enviado para ${phone}`);
-  return json;
+  const corpo = await resp.text();
+  if (!resp.ok) throw new Error(`Z-API ${resp.status}: ${corpo.slice(0, 200)}`);
+  console.log(`[pr-mapa] enviado para ${phone} | ${corpo.slice(0, 120)}`);
+  return { ok: true };
 }
 
 app.post('/api/webhooks/cakto', async (req, res) => {

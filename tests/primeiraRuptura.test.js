@@ -221,10 +221,18 @@ test('a URL do mapa nao carrega dado pessoal nem o sck', () => {
   assert.doesNotMatch(page, /[?&](email|nome|name|phone|whats|sck)=/);
 });
 
-test('a entrega tem segunda via, porque template depende de aprovacao', () => {
-  // Ela acabou de pagar e nunca nos escreveu: sem janela de 24h, mensagem livre
-  // nao e entregue. Se o mapa dependesse so do WhatsApp, ficaria no limbo.
-  assert.match(server, /WHATSAPP_MAPA_TEMPLATE/);
+test('a mensagem sai pela Z-API da satisfacao, com os dois links', () => {
+  // Cloud API exigiria template aprovado: ela acabou de pagar e nunca nos
+  // escreveu, entao nao ha janela de 24h. Z-API manda texto livre, e por isso
+  // os dois links cabem na mesma mensagem.
+  assert.match(server, /ZAPI_INSTANCE_ID/);
+  assert.match(server, /ZAPI_CLIENT_TOKEN/);
+  assert.match(server, /\/send-text/);
+  // Os dois links na mesma mensagem e o pedido explicito: ela agenda a
+  // pre-consulta enquanto ainda faz os sete dias.
+  assert.match(server, /urlMapa,\n\s+'',\n\s+'A sua conversa individual/);
+  assert.match(server, /enviarMapaPorWhatsapp\(\{ phone: record\.phone/);
+  // Credencial ausente nao pode derrubar a criacao do mapa.
   assert.match(server, /\[pr-mapa\] SOMBRA/);
   const obrigado = readFileSync(join(root, 'public/Funil/obrigado-primeira-ruptura.html'), 'utf8');
   assert.match(obrigado, /\/api\/pr\/meu-mapa/);
