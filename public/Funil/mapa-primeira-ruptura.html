@@ -33,6 +33,25 @@ h1 em{font-style:normal;color:var(--clay)}
 .btn{display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:999px;padding:14px 24px;font:700 15px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;transition:.2s}
 .btn:hover{transform:translateY(-2px)}
 
+/* O radar. Existe para ela ver a propria forma antes de comecar os sete dias:
+   o mapa inteiro foi montado a partir da ponta mais curta, e sem mostrar o
+   desenho isso vira afirmacao sem prova. */
+.radar{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:24px;margin-top:28px}
+.radar h2{font:500 clamp(19px,3.3vw,24px)/1.22 'Lora',serif;margin:0 0 8px;color:var(--pine)}
+.radarLede{margin:0 0 20px;color:#4c5850;font-size:14.5px;max-width:58ch}
+.radarGrid{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:26px;align-items:center}
+.radarArte svg{display:block;width:100%;height:auto;max-width:100%}
+.pilares{list-style:none;margin:0;padding:0;display:grid;gap:11px;min-width:0}
+.pilares li{display:grid;grid-template-columns:1fr auto;gap:3px 10px;align-items:baseline}
+.pilares .nome{font-size:14px;font-weight:600;color:var(--pine);min-width:0}
+.pilares .nota{font-size:13px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.pilares .estado{grid-column:1/-1;font-size:12px;color:var(--muted);margin:0}
+.pilares .barra{grid-column:1/-1;height:6px;border-radius:999px;background:var(--sand);overflow:hidden}
+.pilares .barra i{display:block;height:100%;border-radius:999px;background:var(--sage)}
+.pilares li.destaque .nome{color:var(--clay)}
+.pilares li.destaque .barra i{background:var(--clay)}
+.pilares li.destaque .nota{color:var(--clay)}
+@media(max-width:620px){.radarGrid{grid-template-columns:1fr;gap:20px}.radarArte{max-width:300px;margin:0 auto}}
 .dias{margin:36px 0 0;padding:0;list-style:none;display:grid;gap:16px}
 .dia{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:24px}
 .cab{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
@@ -76,6 +95,15 @@ textarea:focus{outline:2px solid var(--sage);outline-offset:1px}
     <h1 id="titulo">Seu mapa da<br><em>Primeira Ruptura.</em></h1>
     <p class="lede" id="lede"></p>
     <p class="foco" id="foco"></p>
+
+    <section class="radar" id="radarBloco" hidden>
+      <h2>Os seis pilares, como você respondeu.</h2>
+      <p class="radarLede">Não existe nota boa nem ruim aqui. O que o desenho mostra é onde você já tem recurso e onde a sua rotina pede mais, e é a ponta mais curta que define por onde este mapa começa.</p>
+      <div class="radarGrid">
+        <div class="radarArte" id="radarArte"></div>
+        <ul class="pilares" id="pilares"></ul>
+      </div>
+    </section>
 
     <section class="ponte">
       <h2>Não espere o sétimo dia para marcar a sua conversa.</h2>
@@ -132,10 +160,80 @@ async function salvar(n,ta,estado){
   }
 }
 
+/* Hexagono desenhado a mao. Sem biblioteca: sao seis pontos e duas formas, e
+   carregar um pacote de grafico para isso pesaria mais que a pagina inteira.
+   A ordem dos pontos e a ordem canonica dos pilares — mudar uma muda a outra. */
+function desenharRadar(mapa){
+  const cx=170, cy=118, r=76, max=mapa.nota_max||5, n=mapa.pilares.length;
+  const ponto=(i,raio)=>{
+    const ang=(-90+i*(360/n))*Math.PI/180;
+    return [cx+raio*Math.cos(ang), cy+raio*Math.sin(ang)];
+  };
+  const anel=nivel=>mapa.pilares.map((_,i)=>ponto(i,r*nivel/max).map(v=>v.toFixed(1)).join(',')).join(' ');
+
+  /* Nota ausente entra como 0 para a forma fechar, mas o rotulo nao mente:
+     mostra "sem resposta" na lista ao lado. */
+  const forma=mapa.pilares.map((p,i)=>ponto(i,r*(p.nota||0)/max).map(v=>v.toFixed(1)).join(',')).join(' ');
+
+  const aneis=[1,2,3,4,5].filter(v=>v<=max)
+    .map(v=>`<polygon points="${anel(v)}" fill="none" stroke="var(--line)" stroke-width="1"${v===max?'':' opacity=".55"'}/>`).join('');
+  const eixos=mapa.pilares.map((_,i)=>{
+    const [x,y]=ponto(i,r);
+    return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--line)" stroke-width="1" opacity=".7"/>`;
+  }).join('');
+  const rotulos=mapa.pilares.map((p,i)=>{
+    const [x,y]=ponto(i,r+17);
+    const meio=(i===0||i===n/2);
+    const ancora=meio?'middle':(x>cx?'start':'end');
+    const dy=i===0?-4:(i===n/2?12:4);
+    const cor=p.foco?'var(--clay)':'var(--muted)';
+    const peso=p.foco?'700':'600';
+    return `<text x="${x.toFixed(1)}" y="${(y+dy).toFixed(1)}" text-anchor="${ancora}" font-size="11" font-weight="${peso}" fill="${cor}">${esc(p.curto)}</text>`;
+  }).join('');
+  const pontas=mapa.pilares.map((p,i)=>{
+    const [x,y]=ponto(i,r*(p.nota||0)/max);
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${p.foco?4:3}" fill="${p.foco?'var(--clay)':'var(--pine)'}"/>`;
+  }).join('');
+
+  return `<svg viewBox="0 0 340 250" role="img" aria-label="Suas notas nos seis pilares, de 1 a ${max}">
+    ${aneis}${eixos}
+    <polygon points="${forma}" fill="var(--sage)" fill-opacity=".34" stroke="var(--pine)" stroke-width="2" stroke-linejoin="round"/>
+    ${pontas}${rotulos}
+  </svg>`;
+}
+
+function desenharPilares(mapa){
+  const max=mapa.nota_max||5;
+  /* Do mais apertado para o mais folgado: e a ordem em que a leitura faz
+     sentido, porque o mapa foi montado a partir do primeiro da lista. */
+  const ordem=mapa.ranking.length?mapa.ranking:mapa.pilares.map(p=>p.chave);
+  return ordem.map(ch=>{
+    const p=mapa.pilares.find(x=>x.chave===ch);
+    const pct=p.nota===null?0:Math.round(p.nota/max*100);
+    return `<li class="${p.foco?'destaque':''}">
+      <span class="nome">${esc(p.nome)}</span>
+      <span class="nota">${p.nota===null?'—':p.nota+'/'+max}</span>
+      <span class="barra"><i style="width:${pct}%"></i></span>
+      <span class="estado">${p.estado?esc(p.estado):'sem resposta'}${p.foco?' · por aqui o mapa começa':''}</span>
+    </li>`;
+  }).join('');
+}
+
 function render(mapa){
   $('titulo').innerHTML=mapa.nome?`${esc(mapa.nome.split(/\s+/)[0])}, este é o<br><em>seu mapa.</em>`:'Seu mapa da<br><em>Primeira Ruptura.</em>';
-  $('lede').textContent='Sete dias, na ordem em que fazem sentido. Um áudio e uma prática por dia, e no fim uma conversa individual para transformar o que você viu em plano.';
-  $('foco').textContent='seu ponto de aperto: '+(NOME_PILAR[mapa.pilar_foco]||mapa.pilar_foco);
+  /* A lede nomeia o pilar dela. O mapa inteiro foi montado a partir dessa nota,
+     e dizer qual e e o que separa "entregavel generico" de "feito para mim". */
+  const foco=mapa.pilar_foco_nome||NOME_PILAR[mapa.pilar_foco]||'';
+  $('lede').textContent=foco
+    ? `Sete dias, na ordem em que fazem sentido. Um áudio e uma prática por dia, com os áudios escolhidos pela sua nota mais apertada, ${foco.toLowerCase()}. No fim, uma conversa individual para transformar o que você viu em plano.`
+    : 'Sete dias, na ordem em que fazem sentido. Um áudio e uma prática por dia, e no fim uma conversa individual para transformar o que você viu em plano.';
+  $('foco').textContent='seu ponto de aperto: '+(mapa.pilar_foco_nome||NOME_PILAR[mapa.pilar_foco]||mapa.pilar_foco);
+
+  if(mapa.pilares&&mapa.pilares.length){
+    $('radarArte').innerHTML=desenharRadar(mapa);
+    $('pilares').innerHTML=desenharPilares(mapa);
+    $('radarBloco').hidden=false;
+  }
 
   $('dias').innerHTML=mapa.dias.map(d=>`
     <li class="dia">

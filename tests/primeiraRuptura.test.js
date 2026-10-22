@@ -240,3 +240,61 @@ test('a mensagem sai pela Z-API da satisfacao, com os dois links', () => {
   // E o Radar precisa guardar a chave, senao a segunda via nao acha nada.
   assert.match(quiz, /localStorage\.setItem\('table_radar_lead'/);
 });
+
+// ─── Personalizacao visivel ─────────────────────────────────────────────────
+
+test('o mapa carrega as seis notas, na ordem que desenha o hexagono', () => {
+  const m = pr.montarMapa({ scores: { body: 4, food: 2, resources: 1, knowledge: 5, awareness: 3, adaptability: 4 } });
+  assert.deepEqual(m.pilares.map(p => p.chave), pr.PILARES);
+  assert.deepEqual(m.pilares.map(p => p.nota), [4, 2, 1, 5, 3, 4]);
+  assert.equal(m.nota_max, 5);
+  // Exatamente um pilar e o foco, e e o da nota mais baixa.
+  assert.equal(m.pilares.filter(p => p.foco).length, 1);
+  assert.equal(m.pilares.find(p => p.foco).chave, 'resources');
+});
+
+test('os nomes e estados sao os mesmos do /raiz-radar', () => {
+  // Ela leu estes rotulos no resultado do quiz minutos antes. Vocabulario novo
+  // aqui faria o mapa parecer outro produto.
+  const quizDims = (quiz.match(/DIMS=\{[^}]*\}/) || [''])[0];
+  for (const nome of Object.values(pr.DIMS)) {
+    assert.ok(quizDims.includes(nome), `"${nome}" nao existe no DIMS do quiz`);
+  }
+  assert.equal(pr.estadoDoPilar(1), 'pede muito recurso');
+  assert.equal(pr.estadoDoPilar(2), 'pede recurso');
+  assert.equal(pr.estadoDoPilar(4), 'recurso disponível');
+  assert.ok(quiz.includes("v===1?'pede muito recurso'"), 'o pillarState do quiz mudou — reconciliar com estadoDoPilar');
+});
+
+test('o ranking vai do mais apertado para o mais folgado', () => {
+  const m = pr.montarMapa({ scores: { body: 4, food: 2, resources: 1, knowledge: 5, awareness: 3, adaptability: 4 } });
+  assert.equal(m.ranking[0], 'resources');
+  assert.equal(m.ranking[m.ranking.length - 1], 'knowledge');
+  const notas = m.ranking.map(c => m.pilares.find(p => p.chave === c).nota);
+  assert.deepEqual(notas, [...notas].sort((a, b) => a - b));
+});
+
+test('nota ausente vira null, nunca zero, e fica fora do ranking', () => {
+  // Zero no grafico desenharia uma ponta encostada no centro e diria a ela que
+  // tirou a nota minima numa pergunta que nunca foi respondida.
+  const m = pr.montarMapa({ scores: { body: 3, food: null } });
+  assert.equal(m.pilares.find(p => p.chave === 'food').nota, null);
+  assert.equal(m.pilares.find(p => p.chave === 'food').estado, null);
+  assert.deepEqual(m.ranking, ['body']);
+});
+
+test('a pagina desenha o radar e nomeia o pilar dela', () => {
+  const page = readFileSync(join(root, 'public/Funil/mapa-primeira-ruptura.html'), 'utf8');
+  assert.match(page, /function desenharRadar/);
+  assert.match(page, /<polygon/);
+  assert.match(page, /pilar_foco_nome/);
+  // Sem biblioteca de grafico: seis pontos e duas formas nao justificam um pacote.
+  assert.doesNotMatch(page, /cdnjs|jsdelivr|unpkg/);
+  // O nome dela no titulo.
+  assert.match(page, /mapa\.nome\s*\?/);
+});
+
+test('o nome do quiz vence o nome do pagador', () => {
+  // O da Cakto as vezes e o marido, a mae, ou vem em CAIXA ALTA do cartao.
+  assert.match(server, /nomeRadar \|\| ref\.nome \|\| null/);
+});

@@ -219,13 +219,22 @@ app.get('/api/pr/mapa', async (req, res) => {
   // tem de abrir: cai nas notas de exemplo e a dramaturgia dos sete dias
   // continua inteira. Entregar erro aqui seria entregar nada a quem pagou.
   let scores = null;
+  let nomeRadar = null;
   if (ref.radar_id) {
     const r = await redisGet(`radar:${ref.radar_id}`);
-    if (r) { try { scores = (JSON.parse(r) || {}).scores || null; } catch {} }
+    if (r) {
+      try {
+        const reg = JSON.parse(r) || {};
+        scores = reg.scores || null;
+        // O nome do quiz e como ELA se chama; o da Cakto e o do pagador, que as
+        // vezes e o marido, a mae, ou vem em CAIXA ALTA do cadastro do cartao.
+        nomeRadar = reg.nome || null;
+      } catch {}
+    }
   }
   if (!scores) console.warn(`[pr-mapa] ${t}: sem notas do Radar (radar_id=${ref.radar_id || 'ausente'}), caindo no exemplo`);
 
-  const mapa = primeiraRuptura.montarMapa({ nome: ref.nome || null, scores: scores || primeiraRuptura.SCORES_DEMO });
+  const mapa = primeiraRuptura.montarMapa({ nome: nomeRadar || ref.nome || null, scores: scores || primeiraRuptura.SCORES_DEMO });
 
   // Devolve o que ela ja escreveu, para o mapa nao parecer vazio num segundo
   // aparelho (o localStorage nao atravessa dispositivo).
