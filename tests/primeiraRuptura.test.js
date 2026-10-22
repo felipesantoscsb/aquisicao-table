@@ -124,3 +124,111 @@ test('os quinze audios limpos entram todos no elenco', () => {
   assert.equal(usados.size, 15);
   assert.deepEqual([...usados].sort(), Object.keys(catalogo.intervencoes).sort());
 });
+
+// ─── O mapa montado ─────────────────────────────────────────────────────────
+// O catalogo acima garante que a materia-prima existe. Estes testes garantem
+// que ela chega inteira na cliente, que era exatamente o que faltava: o JSON e
+// os audios estavam no repo desde 19/10 e ninguem montava nada com eles.
+
+const pr = require('../src/primeiraRuptura');
+
+test('o mapa entrega sete dias, todos com audio e pratica', () => {
+  const mapa = pr.montarMapa({ nome: 'Ana Souza', scores: { body: 3, food: 2, resources: 1, knowledge: 3, awareness: 2, adaptability: 3 } });
+  assert.equal(mapa.dias.length, 7);
+  for (const d of mapa.dias) {
+    assert.ok(d.audio, `dia ${d.n} sem audio`);
+    assert.ok(d.audio.texto && d.audio.texto.length > 60, `dia ${d.n}: texto do audio curto`);
+    assert.ok(d.audio.arquivo.startsWith('/pr/audio/'), `dia ${d.n}: audio fora de /pr/audio`);
+    assert.ok(d.pratica, `dia ${d.n} sem pratica`);
+    assert.ok(d.pratica.campo, `dia ${d.n}: pratica sem rotulo de campo`);
+  }
+});
+
+test('o pilar mais fraco muda os dias 2 e 4, e so eles', () => {
+  // Sem isto a personalizacao seria decorativa: a cliente veria "escolhido
+  // pelas suas respostas" num dia igual para todas.
+  const a = pr.montarMapa({ scores: { body: 0, food: 3, resources: 3, knowledge: 3, awareness: 3, adaptability: 3 } });
+  const b = pr.montarMapa({ scores: { body: 3, food: 3, resources: 3, knowledge: 3, awareness: 3, adaptability: 0 } });
+  assert.equal(a.pilar_foco, 'body');
+  assert.equal(b.pilar_foco, 'adaptability');
+
+  const difs = a.dias.filter((d, i) => d.audio.codigo !== b.dias[i].audio.codigo).map(d => d.n);
+  assert.deepEqual(difs, [2, 4], `dias que mudaram: ${JSON.stringify(difs)}`);
+  for (const d of a.dias) assert.equal(d.personalizado, d.n === 2 || d.n === 4);
+});
+
+test('nota ausente nao vira zero nem rouba o foco', () => {
+  // `knowledge` sem resposta valendo zero seria o pilar mais fraco e mandaria
+  // a cliente para um conteudo que nada no quiz dela justificou.
+  assert.equal(pr.pilarMaisFraco({ body: 2, food: 1, knowledge: null, awareness: undefined }), 'food');
+  assert.equal(pr.pilarMaisFraco({ body: 2, food: 1, resources: 'nao' }), 'food');
+});
+
+test('empate no fundo resolve sempre igual', () => {
+  // Mapa que muda entre duas aberturas, sem ela ter feito nada, parece defeito.
+  const e = { body: 1, food: 1, resources: 1, knowledge: 1, awareness: 1, adaptability: 1 };
+  assert.equal(pr.pilarMaisFraco(e), 'body');
+  assert.equal(pr.montarMapa({ scores: e }).dias[1].audio.codigo, pr.montarMapa({ scores: e }).dias[1].audio.codigo);
+});
+
+test('sem nota nenhuma o mapa ainda abre inteiro', () => {
+  // Compra que nao passou pelo quiz, ou registro expirado. Entregar erro a quem
+  // pagou seria pior do que entregar a espinha com audio de exemplo.
+  const mapa = pr.montarMapa({ scores: {} });
+  assert.equal(mapa.dias.length, 7);
+  for (const d of mapa.dias) assert.ok(d.audio, `dia ${d.n} vazio sem notas`);
+});
+
+test('o mapa leva a pre-consulta no topo e no fim', () => {
+  // Ela nao precisa terminar os sete dias para agendar, e esperar o fim e o que
+  // faz a conversa nunca acontecer.
+  const page = readFileSync(join(root, 'public/Funil/mapa-primeira-ruptura.html'), 'utf8');
+  const links = page.match(/\/obrigado-primeira-ruptura/g) || [];
+  assert.ok(links.length >= 2, `so ${links.length} link(s) para a pre-consulta`);
+  assert.match(page, /id="ponteTopo"/);
+  assert.match(page, /id="ponteFim"/);
+});
+
+test('a pratica nao vive so no navegador', () => {
+  // O _leia_antes do catalogo promete que a nutricionista le isto antes da
+  // sessao. localStorage nao atravessa aparelho nem chega a ela.
+  const page = readFileSync(join(root, 'public/Funil/mapa-primeira-ruptura.html'), 'utf8');
+  assert.match(page, /\/api\/pr\/pratica/);
+  assert.match(server, /app\.post\('\/api\/pr\/pratica'/);
+  assert.match(server, /pr:pratica:/);
+});
+
+test('as rotas do mapa existem e nao vao para a busca', () => {
+  assert.match(server, /app\.get\('\/mapa-primeira-ruptura'/);
+  assert.match(server, /app\.get\('\/api\/pr\/mapa'/);
+  assert.match(server, /app\.get\('\/api\/pr\/meu-mapa'/);
+  // A pagina e entregavel pago: indexada, vaza.
+  assert.match(server, /\/mapa-primeira-ruptura'[\s\S]{0,200}noindex/);
+});
+
+test('a compra do Radar cria o mapa, e o checkout novo tem nome proprio', () => {
+  // Sem o slug cadastrado a venda chegava na Meta com o nome de outro produto.
+  assert.match(server, /slug: '3azm4o3'/);
+  assert.match(server, /nome: 'A Primeira Ruptura'/);
+  assert.match(server, /entregarMapaPrimeiraRuptura\(record, d\)/);
+});
+
+test('a URL do mapa nao carrega dado pessoal nem o sck', () => {
+  // O sck aparece em link de atribuicao, e link de atribuicao vaza para fora.
+  assert.match(server, /crypto\.randomBytes\(16\)\.toString\('hex'\)/);
+  assert.match(server, /pr:mapa:lead:/);
+  const page = readFileSync(join(root, 'public/Funil/mapa-primeira-ruptura.html'), 'utf8');
+  assert.doesNotMatch(page, /[?&](email|nome|name|phone|whats|sck)=/);
+});
+
+test('a entrega tem segunda via, porque template depende de aprovacao', () => {
+  // Ela acabou de pagar e nunca nos escreveu: sem janela de 24h, mensagem livre
+  // nao e entregue. Se o mapa dependesse so do WhatsApp, ficaria no limbo.
+  assert.match(server, /WHATSAPP_MAPA_TEMPLATE/);
+  assert.match(server, /\[pr-mapa\] SOMBRA/);
+  const obrigado = readFileSync(join(root, 'public/Funil/obrigado-primeira-ruptura.html'), 'utf8');
+  assert.match(obrigado, /\/api\/pr\/meu-mapa/);
+  assert.match(obrigado, /table_radar_lead/);
+  // E o Radar precisa guardar a chave, senao a segunda via nao acha nada.
+  assert.match(quiz, /localStorage\.setItem\('table_radar_lead'/);
+});

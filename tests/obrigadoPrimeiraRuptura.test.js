@@ -35,7 +35,12 @@ test('os tres passos preservam a entrega real', () => {
   assert.equal((html.match(/class="passo"/g) || []).length, 3);
   assert.match(html, /12 exercícios psicoemocionais guiados pela Evelyn/);
   assert.match(html, /“Gordura Não Existe” em PDF/);
-  assert.match(html, /chega em até 1h por WhatsApp/);
+  // Era "chega em até 1h por WhatsApp". Mudou porque a promessa nao se
+  // sustentava: a cliente acabou de pagar e nunca nos escreveu, entao nao ha
+  // janela de 24h e so um template aprovado sairia. Agora o mapa e revelado
+  // nesta pagina, na sessao em que ela ainda esta, e o WhatsApp e redundancia.
+  assert.match(html, /Abrir o meu mapa/);
+  assert.match(html, /O link também chega no seu WhatsApp/);
   assert.match(html, /evelynliu\.com\.br\/forms/);
   assert.match(html, /em até 24 horas/);
 });

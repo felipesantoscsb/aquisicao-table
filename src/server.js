@@ -10,6 +10,7 @@ const {
   validateLeadTracking,
   sanitizeLogRecord,
 } = require('./conversaTracking');
+const primeiraRuptura = require('./primeiraRuptura');
 
 // Mesmo Pixel principal do /raiz. O token da CAPI continua exclusivamente no ambiente.
 const CONVERSA_PIXEL_ID = '989971718548782';
@@ -180,6 +181,90 @@ app.get('/obrigado',           (req, res) => res.sendFile(path.join(funil, 'obri
 // porque os checkouts dos funis antigos apontam para la e dizem Protocolo
 // Raiz, que e o nome que aquelas compradoras viram.
 app.get('/obrigado-primeira-ruptura', (req, res) => res.sendFile(path.join(funil, 'obrigado-primeira-ruptura.html')));
+
+// ───── Mapa da Primeira Ruptura ─────────────────────────────────────────────
+// O entregavel pago. A espinha dos sete dias vive em data/primeira-ruptura.json
+// e o montador em src/primeiraRuptura.js; aqui sao so a pagina, a leitura por
+// token e o salvamento das praticas.
+//
+// O token e opaco e sorteado na compra (pr:mapa:<token> -> radarId). NAO e o
+// radarId na URL: ele tambem e `sck` no checkout e aparece em link de
+// atribuicao, e link de atribuicao vaza para fora. Nenhum dado pessoal vai na
+// query, so o token.
+app.get('/mapa-primeira-ruptura', (req, res) => {
+  res.set('X-Robots-Tag', 'noindex, nofollow');
+  res.sendFile(path.join(funil, 'mapa-primeira-ruptura.html'));
+});
+
+// `t=demo` monta o mapa com notas de exemplo, para revisar a estrutura sem
+// precisar de uma compra real. Nao le nem escreve nada da cliente.
+app.get('/api/pr/mapa', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.set('X-Robots-Tag', 'noindex, nofollow');
+  const t = String(req.query.t || '').trim();
+  if (!t) return res.status(400).json({ error: 'token ausente' });
+
+  if (t === 'demo') {
+    return res.json(primeiraRuptura.montarMapa({ nome: null, scores: primeiraRuptura.SCORES_DEMO }));
+  }
+
+  const cru = await redisGet(`pr:mapa:${t}`);
+  if (!cru) return res.status(404).json({ error: 'token desconhecido' });
+
+  let ref;
+  try { ref = JSON.parse(cru); } catch { return res.status(500).json({ error: 'registro ilegivel' }); }
+
+  // As notas do Radar ficam em radar:<radarId>, gravadas no CompleteRegistration.
+  // Se a compra veio sem passar pelo quiz (ou o registro expirou), o mapa ainda
+  // tem de abrir: cai nas notas de exemplo e a dramaturgia dos sete dias
+  // continua inteira. Entregar erro aqui seria entregar nada a quem pagou.
+  let scores = null;
+  if (ref.radar_id) {
+    const r = await redisGet(`radar:${ref.radar_id}`);
+    if (r) { try { scores = (JSON.parse(r) || {}).scores || null; } catch {} }
+  }
+  if (!scores) console.warn(`[pr-mapa] ${t}: sem notas do Radar (radar_id=${ref.radar_id || 'ausente'}), caindo no exemplo`);
+
+  const mapa = primeiraRuptura.montarMapa({ nome: ref.nome || null, scores: scores || primeiraRuptura.SCORES_DEMO });
+
+  // Devolve o que ela ja escreveu, para o mapa nao parecer vazio num segundo
+  // aparelho (o localStorage nao atravessa dispositivo).
+  const praticas = {};
+  for (const dia of mapa.dias) {
+    const txt = await redisGet(`pr:pratica:${t}:${dia.n}`);
+    if (txt) praticas[dia.n] = txt;
+  }
+  res.json({ ...mapa, praticas });
+});
+
+// O que ela escreve na pratica. O `_leia_antes` do catalogo e explicito: isto e
+// lido pela nutricionista antes da sessao, entao nao pode viver so no navegador.
+// Segunda via de entrega. A pagina de obrigado chama isto com o id da lead que
+// o Radar guardou no navegador, e revela o link do mapa na hora — sem depender
+// de template aprovado nem da janela de 24h do WhatsApp.
+app.get('/api/pr/meu-mapa', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const lid = String(req.query.lid || '').trim();
+  if (!lid) return res.status(400).json({ error: 'lid ausente' });
+  const token = await redisGet(`pr:mapa:lead:${lid}`);
+  if (!token) return res.status(404).json({ error: 'sem mapa para esta lead' });
+  res.json({ url: `/mapa-primeira-ruptura?t=${token}` });
+});
+
+app.post('/api/pr/pratica', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const t = String(req.body?.t || '').trim();
+  const dia = Number(req.body?.dia);
+  const texto = String(req.body?.texto ?? '');
+  if (!t || t === 'demo' || !Number.isInteger(dia) || dia < 1 || dia > 7) {
+    return res.status(400).json({ error: 'requisicao invalida' });
+  }
+  // Token tem de existir: sem isto qualquer um escreveria em qualquer chave.
+  if (!(await redisGet(`pr:mapa:${t}`))) return res.status(404).json({ error: 'token desconhecido' });
+  // Teto de tamanho. E campo de texto livre exposto na internet.
+  await redisSet(`pr:pratica:${t}:${dia}`, texto.slice(0, 8000), 'EX', 60 * 60 * 24 * 365);
+  res.json({ ok: true });
+});
 app.get('/obrigado-essential',    (req, res) => res.sendFile(path.join(funil, 'obrigado-essential.html')));
 app.get('/obrigado-premium',      (req, res) => res.sendFile(path.join(funil, 'obrigado-premium.html')));
 app.get('/obrigado-elite',        (req, res) => res.sendFile(path.join(funil, 'obrigado-elite.html')));
@@ -3307,6 +3392,10 @@ const CAKTO_SRC_CANDIDATES = ['sck', 'utm_content', 'utm_term']; // só p/ audit
 const PRODUTOS_CAKTO = [
   { slug: 'ak63ytv',  nome: 'Sessão Raiz' },
   { slug: 'vuq4djv',  nome: 'Protocolo Raiz' },
+  // Checkout do /raiz-radar, R$ 127. Sem esta linha a compra caia no fallback
+  // e chegava à Meta com o nome de outro produto, misturando preço e margem
+  // no mesmo sinal — o mesmo bug que a Sessão Raiz já teve.
+  { slug: '3azm4o3',  nome: 'A Primeira Ruptura' },
 ];
 
 /** Nome do produto, do mais confiável (slug do checkout) ao mais frouxo. */
@@ -3327,6 +3416,91 @@ function extractCaktoJoinKey(d) {
     } catch { /* checkoutUrl malformada — ignora */ }
   }
   return null;
+}
+
+/**
+ * Cria o mapa da compradora e tenta entregar por WhatsApp.
+ *
+ * O token e sorteado aqui e e a unica chave do entregavel. Guardamos os dois
+ * sentidos: `pr:mapa:<token>` para abrir a pagina, e `pr:mapa:lead:<radarId>`
+ * para a pagina de obrigado achar o mapa sem depender do WhatsApp.
+ *
+ * Essa segunda via existe porque a primeira e fragil: a cliente acabou de pagar
+ * e NUNCA nos escreveu, entao nao ha janela de 24h e mensagem livre nao e
+ * entregue. Template depende de aprovacao na Meta. Enquanto isso, a pagina de
+ * obrigado entrega o link na hora, dentro da sessao em que ela ainda esta.
+ */
+async function entregarMapaPrimeiraRuptura(record, d = {}) {
+  const token   = crypto.randomBytes(16).toString('hex');
+  const radarId = record.src_lead_id || null;
+  const nome    = d.customer?.name || null;
+
+  const ref = { radar_id: radarId, nome, phone: record.phone || null, at: new Date().toISOString() };
+  // Um ano: a cliente volta ao mapa durante os sete dias e depois da sessao.
+  await redisSet(`pr:mapa:${token}`, JSON.stringify(ref), 'EX', 60 * 60 * 24 * 365);
+  if (radarId) await redisSet(`pr:mapa:lead:${radarId}`, token, 'EX', 60 * 60 * 24 * 365);
+
+  const base     = 'https://www.evelynliu.com.br';
+  const urlMapa  = `${base}/mapa-primeira-ruptura?t=${token}`;
+  const urlObrig = `${base}/obrigado-primeira-ruptura`;
+  console.log(`[pr-mapa] token criado: ${token} | radar=${radarId || '(sem join key)'} | ${urlMapa}`);
+
+  if (!record.phone) {
+    console.warn('[pr-mapa] compra sem telefone — mapa existe, entrega por WhatsApp impossivel');
+    return { token, urlMapa, sem_telefone: true };
+  }
+  await sendMapaViaTemplate({ phone: record.phone, nome, token, urlMapa, urlObrig });
+  return { token, urlMapa };
+}
+
+/**
+ * Template da WhatsApp Cloud API com o mapa.
+ *
+ * O template precisa existir e estar aprovado na Meta com esta forma:
+ *   body   : "{{1}}, seu mapa da Primeira Ruptura esta pronto." + o link do
+ *            obrigado ESCRITO FIXO no corpo (variavel de corpo com URL costuma
+ *            ser recusada na revisao da Meta).
+ *   botao 0: URL dinamica, base https://www.evelynliu.com.br/ e sufixo variavel
+ *            (recebe `mapa-primeira-ruptura?t=<token>`).
+ *
+ * Sem token/phone_id/nome de template configurados, nao envia: loga o payload
+ * em SOMBRA, igual a recuperacao de checkout faz. Assim o mapa nunca deixa de
+ * ser criado por causa da entrega.
+ */
+async function sendMapaViaTemplate({ phone, nome, token, urlMapa, urlObrig }) {
+  const TOKEN    = process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
+  const PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const TEMPLATE = process.env.WHATSAPP_MAPA_TEMPLATE;
+
+  const payload = {
+    messaging_product: 'whatsapp',
+    to: phone,
+    type: 'template',
+    template: {
+      name: TEMPLATE || '(template nao configurado)',
+      language: { code: 'pt_BR' },
+      components: [
+        { type: 'body',   parameters: [{ type: 'text', text: firstName(nome) || 'querida' }] },
+        { type: 'button', sub_type: 'url', index: '0',
+          parameters: [{ type: 'text', text: `mapa-primeira-ruptura?t=${token}` }] },
+      ],
+    },
+  };
+
+  if (!TOKEN || !PHONE_ID || !TEMPLATE) {
+    console.log(`[pr-mapa] SOMBRA — nao enviado (falta ${!TEMPLATE ? 'WHATSAPP_MAPA_TEMPLATE' : 'credencial'}). mapa=${urlMapa} obrigado=${urlObrig} payload=${JSON.stringify(payload)}`);
+    return { shadow: true };
+  }
+
+  const resp = await fetch(`https://graph.facebook.com/v21.0/${PHONE_ID}/messages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
+    body: JSON.stringify(payload),
+  });
+  const json = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(`WhatsApp API ${resp.status}: ${JSON.stringify(json.error || json)}`);
+  console.log(`[pr-mapa] template enviado para ${phone}`);
+  return json;
 }
 
 app.post('/api/webhooks/cakto', async (req, res) => {
@@ -3398,6 +3572,11 @@ app.post('/api/webhooks/cakto', async (req, res) => {
       if (record.phone) cancelCheckoutRecovery(record.phone, 'compra Cakto').catch(() => {});
       // ...e também a cadência pós-quiz no sdr-table (D+1/D+3/D+5).
       if (record.phone) hubSync.cancelarCadenciaQuiz(record.phone).catch(() => {});
+
+      // Comprou A Primeira Ruptura → nasce o mapa dela.
+      if (produtoDaCompra(d, record) === 'A Primeira Ruptura') {
+        entregarMapaPrimeiraRuptura(record, d).catch(e => console.error('[pr-mapa] entrega:', e.message));
+      }
 
       // Purchase CAPI (A/B Cakto): sem pixel na Cakto, a compra vai ao Meta SÓ
       // por aqui. event_id = id da transação → o Meta deduplica retries do

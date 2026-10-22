@@ -64,9 +64,10 @@ h2{font-family:'Lora',serif;font-weight:500;font-size:clamp(22px,4.6vw,30px);lin
     </li>
     <li class="passo">
       <div>
-        <h3>Receba o seu mapa</h3>
-        <p>Em até uma hora chega no seu WhatsApp o mapa pessoal: quais exercícios vêm primeiro no seu caso e por onde começar a semana.</p>
-        <span class="quando">chega em até 1h por WhatsApp</span>
+        <h3>Abra o seu mapa</h3>
+        <p>Os sete dias na ordem em que fazem sentido: um áudio e uma prática escrita por dia, com os áudios escolhidos pelo ponto em que a sua rotina aperta.</p>
+        <a class="btn" id="btnMapa" href="#" hidden>Abrir o meu mapa →</a>
+        <p class="aviso" id="mapaEspera">Estamos montando o seu mapa com as respostas do seu Radar. O link também chega no seu WhatsApp. Se ele não aparecer aqui em alguns minutos, responda a mensagem que a gente reenvia.</p>
       </div>
     </li>
     <li class="passo">
@@ -90,5 +91,30 @@ h2{font-family:'Lora',serif;font-weight:500;font-size:clamp(22px,4.6vw,30px);lin
   <p class="rodape">© Table · Evelyn Liu · Moema, São Paulo · <a href="/legal" target="_blank" rel="noopener">Privacidade e termos</a><br>
   Experiência educativa e comportamental. Não promete perda de peso nem substitui cuidado médico ou psicológico.</p>
 </main>
+<script>
+/* O Radar guarda o id da lead no localStorage; ele e o mesmo `sck` que vai no
+   checkout, entao serve de chave para achar o mapa recem-criado. Isto e a via
+   que nao depende do WhatsApp: ela acabou de pagar e ainda esta nesta aba. */
+(async () => {
+  let lid = null;
+  try { lid = localStorage.getItem('table_radar_lead'); } catch (e) {}
+  if (!lid) return;
+  const btn = document.getElementById('btnMapa');
+  const espera = document.getElementById('mapaEspera');
+  /* A compra e o webhook da Cakto correm em paralelo: o mapa pode nascer
+     segundos depois desta pagina abrir. Por isso tenta algumas vezes antes de
+     desistir, em vez de concluir "sem mapa" no primeiro 404. */
+  for (let i = 0; i < 10; i++) {
+    try {
+      const r = await fetch('/api/pr/meu-mapa?lid=' + encodeURIComponent(lid));
+      if (r.ok) {
+        const j = await r.json();
+        if (j.url) { btn.href = j.url; btn.hidden = false; espera.hidden = true; return; }
+      }
+    } catch (e) {}
+    await new Promise(ok => setTimeout(ok, 3000));
+  }
+})();
+</script>
 </body>
 </html>

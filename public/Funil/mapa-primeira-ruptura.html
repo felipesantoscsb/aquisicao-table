@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Seu mapa · A Primeira Ruptura</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#26362d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Lora:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* Mesma paleta do /raiz-radar e do obrigado: ela chega aqui vindo de la, e
+   mudar de identidade visual no entregavel pago e o primeiro sinal de "comprei
+   outra coisa". */
+:root{--pine:#26362d;--cream:#f5efe4;--paper:#fffdf9;--sand:#e9e0d1;--clay:#bd704e;--gold:#dcc18b;--sage:#92a693;--ink:#202a24;--muted:#68736c;--line:#ded6c8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font:16px/1.6 'DM Sans',sans-serif;-webkit-font-smoothing:antialiased}
+.shell{width:min(100%,760px);margin:auto;padding:34px 22px 80px}
+.brand{font:600 20px 'Lora',serif;letter-spacing:.13em;color:var(--pine);text-align:center;margin-bottom:34px}
+h1{font-family:'Lora',serif;font-weight:500;font-size:clamp(28px,6.6vw,42px);line-height:1.12;letter-spacing:-.025em;margin:0}
+h1 em{font-style:normal;color:var(--clay)}
+.lede{font-size:clamp(15.5px,2.7vw,17.5px);color:#4e5952;margin:16px 0 0}
+.foco{display:inline-flex;align-items:center;gap:8px;background:rgba(146,166,147,.18);border:1px solid rgba(146,166,147,.4);color:var(--pine);border-radius:999px;padding:7px 15px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-top:20px}
+
+/* A ponte para a pre-consulta. Aparece no topo e no fim de proposito: ela nao
+   precisa terminar os sete dias para agendar, e esperar o fim e justamente o
+   que faz a conversa nunca acontecer. */
+.ponte{background:var(--pine);color:#fff;border-radius:22px;padding:24px;margin:30px 0 0}
+.ponte h2{font:500 clamp(19px,3.4vw,24px)/1.2 'Lora',serif;margin:0 0 8px;color:#fff}
+.ponte p{margin:0;color:#cad6cd;font-size:15px;line-height:1.6}
+.ponte .btn{background:var(--gold);color:var(--pine);margin-top:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:999px;padding:14px 24px;font:700 15px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;transition:.2s}
+.btn:hover{transform:translateY(-2px)}
+
+.dias{margin:36px 0 0;padding:0;list-style:none;display:grid;gap:16px}
+.dia{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:24px}
+.cab{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.n{width:32px;height:32px;flex:0 0 32px;border-radius:50%;background:var(--pine);color:var(--gold);display:grid;place-items:center;font:600 14px 'Lora',serif}
+.etapa{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--clay)}
+.sua{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--pine);background:rgba(220,193,139,.34);border-radius:999px;padding:3px 9px}
+.dia h3{font:500 clamp(18px,3.2vw,22px)/1.25 'Lora',serif;margin:0 0 6px;color:var(--pine)}
+.dia .desc{margin:0;color:#4c5850;font-size:15px}
+
+.peca{margin-top:18px;padding-top:18px;border-top:1px dashed var(--line)}
+.rotulo{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.peca h4{font:600 16px 'DM Sans',sans-serif;margin:0 0 8px;color:var(--pine)}
+.peca p{margin:0 0 12px;color:#4c5850;font-size:15px}
+audio{width:100%;height:40px}
+.dur{font-size:12px;color:var(--muted);margin-top:6px}
+label{display:block;font-size:13px;font-weight:600;color:var(--pine);margin:0 0 6px}
+textarea{width:100%;min-height:118px;border:1px solid var(--line);border-radius:14px;padding:13px;font:15px/1.55 'DM Sans',sans-serif;color:var(--ink);background:#fff;resize:vertical}
+textarea:focus{outline:2px solid var(--sage);outline-offset:1px}
+.estado{font-size:12px;color:var(--muted);margin-top:7px;min-height:17px}
+.estado.ok{color:#4a7a52}
+.estado.erro{color:#a4472c}
+
+.rodape{margin-top:44px;padding-top:22px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.rodape a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.aviso{background:rgba(220,193,139,.16);border-left:3px solid var(--gold);border-radius:0 12px 12px 0;padding:13px 16px;font-size:14px;color:#4c5850;margin:22px 0 0}
+#erro{display:none;text-align:center;padding:50px 0}
+#erro h1{font-size:clamp(24px,5vw,32px)}
+@media(max-width:620px){.dia{padding:20px}.ponte{padding:20px}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <div class="brand">TABLE</div>
+
+  <div id="erro">
+    <h1>Este link não abriu.</h1>
+    <p class="lede">Ele pode ter expirado ou vindo incompleto. Procure a mensagem que chegou no seu WhatsApp depois da compra, ou responda por lá que a gente reenvia.</p>
+  </div>
+
+  <div id="conteudo" hidden>
+    <h1 id="titulo">Seu mapa da<br><em>Primeira Ruptura.</em></h1>
+    <p class="lede" id="lede"></p>
+    <p class="foco" id="foco"></p>
+
+    <section class="ponte">
+      <h2>Não espere o sétimo dia para marcar a sua conversa.</h2>
+      <p>A sessão individual com a nutricionista é parte do que você comprou, e ela aprofunda o que você já tiver experimentado. Preenchendo agora, a equipe combina o horário com você em até 24 horas, e você segue os sete dias enquanto isso.</p>
+      <a class="btn" id="ponteTopo" href="/obrigado-primeira-ruptura">Marcar a minha conversa →</a>
+    </section>
+
+    <p class="aviso">Cada dia tem duas peças: um áudio para ouvir e uma prática para escrever. O que você escreve fica salvo aqui e a nutricionista lê antes da sua sessão.</p>
+
+    <ol class="dias" id="dias"></ol>
+
+    <section class="ponte">
+      <h2>Chegou até aqui?</h2>
+      <p>Se ainda não marcou a sua conversa, é agora. É nela que o que você escreveu nos sete dias vira plano.</p>
+      <a class="btn" id="ponteFim" href="/obrigado-primeira-ruptura">Marcar a minha conversa →</a>
+    </section>
+
+    <p class="rodape">© Table · Evelyn Liu · Moema, São Paulo · <a href="/legal" target="_blank" rel="noopener">Privacidade e termos</a><br>
+    Experiência educativa e comportamental. Não promete perda de peso nem substitui cuidado médico ou psicológico.</p>
+  </div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const TOKEN=new URLSearchParams(location.search).get('t')||'';
+
+const NOME_PILAR={body:'corpo',food:'comida',resources:'recursos',knowledge:'conhecimento',awareness:'consciência',adaptability:'adaptação'};
+
+function esc(s){const d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML}
+function mmss(s){if(!s)return'';const m=Math.floor(s/60),r=s%60;return `${m}:${String(r).padStart(2,'0')}`}
+
+/* Autosave com debounce. Sem debounce cada tecla viraria um POST, e o que ela
+   escreve aqui e texto longo. O estado por dia e proprio: salvar o dia 3 nao
+   pode dizer "salvo" embaixo do dia 5. */
+const relogios={};
+function agendarSalvar(n,ta,estado){
+  clearTimeout(relogios[n]);
+  estado.className='estado';estado.textContent='escrevendo…';
+  relogios[n]=setTimeout(()=>salvar(n,ta,estado),1200);
+}
+async function salvar(n,ta,estado){
+  const texto=ta.value;
+  try{localStorage.setItem(`pr_pratica_${TOKEN}_${n}`,texto)}catch(e){}
+  if(!TOKEN||TOKEN==='demo'){estado.className='estado ok';estado.textContent='salvo neste navegador';return}
+  try{
+    const r=await fetch('/api/pr/pratica',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({t:TOKEN,dia:n,texto})});
+    if(!r.ok) throw new Error('http '+r.status);
+    estado.className='estado ok';estado.textContent='salvo';
+  }catch(e){
+    /* Falhou no servidor mas esta no navegador: dizer "salvo" seria mentira e
+       dizer "perdido" tambem. */
+    estado.className='estado erro';estado.textContent='salvo só aqui no aparelho, sem conexão com o servidor';
+  }
+}
+
+function render(mapa){
+  $('titulo').innerHTML=mapa.nome?`${esc(mapa.nome.split(/\s+/)[0])}, este é o<br><em>seu mapa.</em>`:'Seu mapa da<br><em>Primeira Ruptura.</em>';
+  $('lede').textContent='Sete dias, na ordem em que fazem sentido. Um áudio e uma prática por dia, e no fim uma conversa individual para transformar o que você viu em plano.';
+  $('foco').textContent='seu ponto de aperto: '+(NOME_PILAR[mapa.pilar_foco]||mapa.pilar_foco);
+
+  $('dias').innerHTML=mapa.dias.map(d=>`
+    <li class="dia">
+      <div class="cab"><span class="n">${d.n}</span><span class="etapa">${esc(d.etapa)}</span>${d.personalizado?'<span class="sua">escolhido pelas suas respostas</span>':''}</div>
+      <h3>${esc(d.titulo)}</h3>
+      <p class="desc">${esc(d.descricao)}</p>
+      ${d.audio?`<div class="peca">
+        <p class="rotulo">para ouvir</p>
+        <h4>${esc(d.audio.nome)}</h4>
+        <p>${esc(d.audio.texto)}</p>
+        <audio controls preload="none" src="${esc(d.audio.arquivo)}"></audio>
+        ${d.audio.duracao_s?`<p class="dur">${mmss(d.audio.duracao_s)} min</p>`:''}
+      </div>`:''}
+      ${d.pratica?`<div class="peca">
+        <p class="rotulo">para escrever</p>
+        <h4>${esc(d.pratica.nome)}</h4>
+        <p>${esc(d.pratica.texto)}</p>
+        <label for="pr${d.n}">${esc(d.pratica.campo)}</label>
+        <textarea id="pr${d.n}" data-dia="${d.n}" placeholder="${esc(d.pratica.placeholder)}"></textarea>
+        <p class="estado" id="st${d.n}"></p>
+      </div>`:''}
+    </li>`).join('');
+
+  for(const ta of document.querySelectorAll('textarea[data-dia]')){
+    const n=ta.dataset.dia, estado=$('st'+n);
+    const prévio=(mapa.praticas&&mapa.praticas[n])||(()=>{try{return localStorage.getItem(`pr_pratica_${TOKEN}_${n}`)}catch(e){return null}})();
+    if(prévio){ta.value=prévio;estado.className='estado ok';estado.textContent='salvo'}
+    ta.addEventListener('input',()=>agendarSalvar(n,ta,estado));
+    ta.addEventListener('blur',()=>{clearTimeout(relogios[n]);salvar(n,ta,estado)});
+  }
+
+  $('conteudo').hidden=false;
+}
+
+(async()=>{
+  try{
+    const r=await fetch('/api/pr/mapa?t='+encodeURIComponent(TOKEN));
+    if(!r.ok) throw new Error('http '+r.status);
+    render(await r.json());
+  }catch(e){
+    $('erro').style.display='block';
+  }
+})();
+</script>
+</body>
+</html>
