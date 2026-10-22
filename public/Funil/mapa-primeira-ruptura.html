@@ -111,13 +111,13 @@ textarea:focus{outline:2px solid var(--sage);outline-offset:1px}
       <a class="btn" id="ponteTopo" href="/obrigado-primeira-ruptura">Marcar a minha conversa →</a>
     </section>
 
-    <p class="aviso">Cada dia tem duas peças: um áudio para ouvir e uma prática para escrever. O que você escreve fica salvo aqui e a nutricionista lê antes da sua sessão.</p>
+    <p class="aviso">Cada dia tem duas peças: um áudio para ouvir e uma prática para escrever. O que você escreve fica salvo aqui, para você reler quando quiser. Ninguém corrige, e não precisa ficar bonito: escrever é o que faz você ver de fora o que vive por dentro.</p>
 
     <ol class="dias" id="dias"></ol>
 
     <section class="ponte">
       <h2>Chegou até aqui?</h2>
-      <p>Se ainda não marcou a sua conversa, é agora. É nela que o que você escreveu nos sete dias vira plano.</p>
+      <p>Se ainda não marcou a sua conversa, é agora. Sete dias prestando atenção mudam as perguntas que valem a pena fazer, e é com elas que essa hora rende.</p>
       <a class="btn" id="ponteFim" href="/obrigado-primeira-ruptura">Marcar a minha conversa →</a>
     </section>
 
@@ -137,7 +137,12 @@ function mmss(s){if(!s)return'';const m=Math.floor(s/60),r=s%60;return `${m}:${S
 
 /* Autosave com debounce. Sem debounce cada tecla viraria um POST, e o que ela
    escreve aqui e texto longo. O estado por dia e proprio: salvar o dia 3 nao
-   pode dizer "salvo" embaixo do dia 5. */
+   pode dizer "salvo" embaixo do dia 5.
+
+   Salva no servidor para ela reencontrar o que escreveu em outro aparelho. A
+   pagina NAO diz que a nutricionista le: a equipe pode ler, mas anunciar isso
+   transforma o exercicio em dever de casa e ela passa a escrever para ser
+   avaliada em vez de para se enxergar. */
 const relogios={};
 function agendarSalvar(n,ta,estado){
   clearTimeout(relogios[n]);

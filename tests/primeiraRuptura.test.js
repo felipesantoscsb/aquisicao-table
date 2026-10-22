@@ -108,7 +108,7 @@ test('toda pratica pede algo escrito, com rotulo e exemplo', () => {
 
 test('nenhuma pratica cobra resposta a um agente', () => {
   // Os roteiros foram escritos para a LIA empurrar e cobrar no dia seguinte.
-  // Aqui e pull: ela escreve na pagina e a nutri le antes da sessao.
+  // Aqui e pull: ela escreve na pagina, para si, e releia quando quiser.
   for (const [code, pr] of Object.entries(catalogo.praticas)) {
     assert.doesNotMatch(pr.client_content, /me conta|me responde|manda em áudio|eu te devolvo/i,
       `${code}: sobrou linguagem de conversa com agente`);
@@ -190,8 +190,9 @@ test('o mapa leva a pre-consulta no topo e no fim', () => {
 });
 
 test('a pratica nao vive so no navegador', () => {
-  // O _leia_antes do catalogo promete que a nutricionista le isto antes da
-  // sessao. localStorage nao atravessa aparelho nem chega a ela.
+  // Ela reabre o mapa no celular depois de escrever no computador. localStorage
+  // nao atravessa aparelho, e o caderno dela sumir entre dois dias do protocolo
+  // e perder o proprio exercicio.
   const page = readFileSync(join(root, 'public/Funil/mapa-primeira-ruptura.html'), 'utf8');
   assert.match(page, /\/api\/pr\/pratica/);
   assert.match(server, /app\.post\('\/api\/pr\/pratica'/);
@@ -297,4 +298,21 @@ test('a pagina desenha o radar e nomeia o pilar dela', () => {
 test('o nome do quiz vence o nome do pagador', () => {
   // O da Cakto as vezes e o marido, a mae, ou vem em CAIXA ALTA do cartao.
   assert.match(server, /nomeRadar \|\| ref\.nome \|\| null/);
+});
+
+test('a pratica e dela, nao entrega para a sessao', () => {
+  // Decisao do Felipe em 22/10/2026: a equipe pode ler o que ela escreve, mas
+  // dizer isso a ela transforma o exercicio em dever de casa, e ela passa a
+  // escrever para ser avaliada em vez de para se enxergar.
+  const page = readFileSync(join(root, 'public/Funil/mapa-primeira-ruptura.html'), 'utf8');
+  for (const frase of ['nutricionista lê', 'antes da sua sessão', 'vai para a sessão', 'leva para a sessão']) {
+    assert.ok(!page.includes(frase), `a pagina ainda diz "${frase}"`);
+  }
+  for (const [cod, pr_] of Object.entries(catalogo.praticas)) {
+    const t = pr_.client_content.toLowerCase();
+    assert.ok(!t.includes('sessão') && !t.includes('sessao'), `pratica ${cod} amarra o que ela escreve a sessao`);
+  }
+  // A ponte para agendar continua existindo: o que saiu foi a amarra entre o
+  // que ela ESCREVE e a consulta, nao o convite para marcar.
+  assert.ok((page.match(/\/obrigado-primeira-ruptura/g) || []).length >= 2);
 });

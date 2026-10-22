@@ -246,8 +246,12 @@ app.get('/api/pr/mapa', async (req, res) => {
   res.json({ ...mapa, praticas });
 });
 
-// O que ela escreve na pratica. O `_leia_antes` do catalogo e explicito: isto e
-// lido pela nutricionista antes da sessao, entao nao pode viver so no navegador.
+// O que ela escreve na pratica. Fica no servidor para ela reencontrar em outro
+// aparelho, nao so no navegador em que digitou.
+//
+// A equipe PODE ler isto, mas a pagina nao diz isso a ela: amarrar a pratica a
+// sessao transforma o exercicio em dever de casa e ela passa a escrever para
+// ser avaliada em vez de para se enxergar. Decisao do Felipe em 22/10/2026.
 // Segunda via de entrega. A pagina de obrigado chama isto com o id da lead que
 // o Radar guardou no navegador, e revela o link do mapa na hora — sem depender
 // de template aprovado nem da janela de 24h do WhatsApp.
