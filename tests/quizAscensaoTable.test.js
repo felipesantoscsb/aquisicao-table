@@ -389,7 +389,7 @@ test('a versao da pagina acompanha a arquitetura de identidades', () => {
   // O Codex instrumentou o funil carimbando `page_version` em cada evento. Se
   // a constante nao sobe junto com uma reescrita de copy, os dados de antes e
   // depois entram no mesmo balde e a mudanca vira immensuravel.
-  assert.match(html, /RADAR_PAGE_VERSION='radar-2026-10-20-identities-v1'/);
+  assert.match(html, /RADAR_PAGE_VERSION='radar-2026-10-22-hero-v2'/);
 });
 
 test('a pagina nao usa "Clinic" em texto nenhum', () => {

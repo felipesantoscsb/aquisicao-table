@@ -170,7 +170,7 @@ const $=id=>document.getElementById(id);
 function page(id){document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));$(id).classList.add('active');scrollTo(0,0)}
 function eventId(p){return p+'_'+crypto.randomUUID()}
 function trackCustom(name,data={}){if(PREVIEW_ROTA)return;try{fbq('trackCustom',name,Object.assign({funnel:'radar-table'},data))}catch(e){}}
-const RADAR_SESSION_KEY='table_radar_session',RADAR_STARTED_KEY='table_radar_started_at',RADAR_PAGE_VERSION='radar-2026-10-20-identities-v1';
+const RADAR_SESSION_KEY='table_radar_session',RADAR_STARTED_KEY='table_radar_started_at',RADAR_PAGE_VERSION='radar-2026-10-22-hero-v2';
 let radarSessionId='';try{radarSessionId=sessionStorage.getItem(RADAR_SESSION_KEY)||eventId('rs');sessionStorage.setItem(RADAR_SESSION_KEY,radarSessionId)}catch(e){radarSessionId=eventId('rs')}
 let radarStartedAt=Date.now();try{radarStartedAt=Number(sessionStorage.getItem(RADAR_STARTED_KEY))||Date.now();sessionStorage.setItem(RADAR_STARTED_KEY,String(radarStartedAt))}catch(e){}
 function radarDevice(){const w=innerWidth;return w<768?'mobile':w<1024?'tablet':'desktop'}
