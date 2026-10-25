@@ -261,9 +261,18 @@ app.get('/api/pr/mapa', async (req, res) => {
 // Telefone sempre mascarado: a pergunta e operacional e nao precisa do numero
 // inteiro para ser respondida.
 app.get('/api/pr/entregas', async (req, res) => {
-  const esperado = process.env.HUB_WEBHOOK_SECRET || process.env.INTERNAL_WEBHOOK_SECRET;
-  const recebido = req.headers['x-webhook-secret'] || req.query.secret;
-  if (!esperado || recebido !== esperado) return res.status(401).json({ ok: false, error: 'Nao autorizado' });
+  // Dois segredos aceitos, e a ordem importa.
+  //
+  // PR_DIAG_TOKEN existe para esta rota ser conferivel sem passar por aqui o
+  // segredo interno compartilhado, que tambem autentica /webhook/* e permite
+  // ESCRITA no Hub. Esta rota so le, e devolve telefone mascarado, entao ela
+  // nao precisa de uma chave com esse poder: quem so quer conferir entrega
+  // recebe um token descartavel e trocavel sozinho.
+  const diag = process.env.PR_DIAG_TOKEN || null;
+  const interno = process.env.HUB_WEBHOOK_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || null;
+  const recebido = req.headers['x-webhook-secret'] || req.query.secret || '';
+  const ok = (diag && recebido === diag) || (interno && recebido === interno);
+  if (!ok) return res.status(401).json({ ok: false, error: 'Nao autorizado' });
 
   res.set('Cache-Control', 'no-store');
   try {

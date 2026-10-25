@@ -344,7 +344,7 @@ test('o desfecho do envio fica gravado, nao so no log', () => {
 
 test('o diagnostico exige segredo e nao devolve telefone inteiro', () => {
   assert.match(server, /app\.get\('\/api\/pr\/entregas'/);
-  assert.match(server, /entregas'[\s\S]{0,400}status\(401\)/);
+  assert.match(server, /entregas'[\s\S]{0,1200}status\(401\)/);
   // Mesma regra do diagnostico do inbound: pergunta operacional nao precisa do
   // numero inteiro para ser respondida.
   assert.match(server, /telefone: d\.length > 4 \? `\*\*\*\*\$\{d\.slice\(-4\)\}`/);
@@ -362,4 +362,15 @@ test('a listagem nao confunde o indice reverso com os mapas', () => {
   // pr:mapa:lead:<radarId> tem o mesmo prefixo de pr:mapa:<token> e viraria
   // "mapa" fantasma na contagem.
   assert.match(server, /filter\(k => !k\.startsWith\('pr:mapa:lead:'\)\)/);
+});
+
+test('a conferencia aceita um token proprio, alem do segredo interno', () => {
+  // O segredo interno tambem autentica /webhook/* e permite ESCRITA no Hub.
+  // Esta rota so le e mascara telefone, entao nao exige uma chave desse porte:
+  // assim conferir entrega deixa de pedir a chave que move dado.
+  assert.match(server, /PR_DIAG_TOKEN/);
+  assert.match(server, /\(diag && recebido === diag\) \|\| \(interno && recebido === interno\)/);
+  // Variavel ausente nao pode virar porta aberta: sem nenhum dos dois, 401.
+  assert.match(server, /const diag = process\.env\.PR_DIAG_TOKEN \|\| null/);
+  assert.match(server, /const interno = process\.env\.HUB_WEBHOOK_SECRET \|\| process\.env\.INTERNAL_WEBHOOK_SECRET \|\| null/);
 });
