@@ -417,3 +417,15 @@ test('o reenvio exige segredo, mascara telefone e respeita ritmo', () => {
   // Compra sem telefone e pulada com motivo, nao estourada.
   assert.match(server, /motivo: 'compra sem telefone'/);
 });
+
+test('as rotas que varrem keys esperam o Redis ficar pronto', () => {
+  // lazyConnect + enableOfflineQueue:false: keys() com o client frio estoura
+  // com "Stream isn't writeable". Aconteceu em producao logo apos o deploy,
+  // porque a conexao so esquenta no primeiro uso.
+  const entregas = server.slice(server.indexOf("app.get('/api/pr/entregas'"));
+  assert.match(entregas.slice(0, 1500), /await ensureRedisReady\(\)/);
+  const reenviar = server.slice(server.indexOf("app.post('/api/pr/reenviar'"));
+  assert.match(reenviar.slice(0, 1500), /await ensureRedisReady\(\)/);
+  // E o helper tem de continuar existindo.
+  assert.match(server, /async function ensureRedisReady/);
+});

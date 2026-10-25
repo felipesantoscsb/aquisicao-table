@@ -284,7 +284,10 @@ app.get('/api/pr/entregas', async (req, res) => {
 
   res.set('Cache-Control', 'no-store');
   try {
-    const redis = getRedis();
+    // keys() cru precisa da conexao pronta: lazyConnect + enableOfflineQueue:false
+    // faz o comando estourar na hora quando o client ainda esta frio, que e o
+    // estado logo depois de um deploy.
+    const redis = await ensureRedisReady();
     const chaves = (await redis.keys('pr:mapa:*')).filter(k => !k.startsWith('pr:mapa:lead:'));
     const itens = [];
     for (const chave of chaves) {
@@ -359,7 +362,7 @@ app.post('/api/pr/reenviar', async (req, res) => {
   const pedidos   = Array.isArray(req.body?.tokens) ? req.body.tokens.map(String) : null;
 
   try {
-    const redis = getRedis();
+    const redis = await ensureRedisReady();  // mesmo motivo do /api/pr/entregas
     const chaves = pedidos
       ? pedidos.map(t => `pr:mapa:${t}`)
       : (await redis.keys('pr:mapa:*')).filter(k => !k.startsWith('pr:mapa:lead:'));
