@@ -339,6 +339,87 @@ app.get('/api/pr/entregas', async (req, res) => {
   }
 });
 
+// Reenvio do mapa. Existe porque as tres primeiras vendas sairam antes de o
+// desfecho do envio ser gravado, e nao da para saber se a mensagem chegou.
+//
+// DISPARA MENSAGEM PARA CLIENTE REAL, entao e seco por padrao: sem
+// `confirmar: true` ele devolve o que FARIA e nao envia nada. Endpoint que
+// manda WhatsApp a partir de um GET descuidado e acidente esperando acontecer.
+app.post('/api/pr/reenviar', async (req, res) => {
+  const diag    = process.env.PR_DIAG_TOKEN || null;
+  const interno = process.env.HUB_WEBHOOK_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || null;
+  const recebido = req.headers['x-webhook-secret'] || req.body?.secret || '';
+  if (!((diag && recebido === diag) || (interno && recebido === interno))) {
+    return res.status(401).json({ ok: false, error: 'Nao autorizado' });
+  }
+  res.set('Cache-Control', 'no-store');
+
+  const confirmar = req.body?.confirmar === true;
+  const forcar    = req.body?.forcar === true;
+  const pedidos   = Array.isArray(req.body?.tokens) ? req.body.tokens.map(String) : null;
+
+  try {
+    const redis = getRedis();
+    const chaves = pedidos
+      ? pedidos.map(t => `pr:mapa:${t}`)
+      : (await redis.keys('pr:mapa:*')).filter(k => !k.startsWith('pr:mapa:lead:'));
+
+    const plano = [];
+    for (const chave of chaves) {
+      const cru = await redisGet(chave);
+      if (!cru) { plano.push({ token: chave.slice('pr:mapa:'.length), acao: 'pular', motivo: 'token desconhecido' }); continue; }
+      let ref; try { ref = JSON.parse(cru); } catch { continue; }
+      const token = chave.slice('pr:mapa:'.length);
+      const d = String(ref.phone || '').replace(/\D/g, '');
+
+      if (!d) { plano.push({ token, acao: 'pular', motivo: 'compra sem telefone' }); continue; }
+      // Ja enviado nao e reenviado sem querer: so com `forcar`.
+      if (ref.envio === 'enviado' && !forcar) {
+        plano.push({ token, telefone: `****${d.slice(-4)}`, acao: 'pular', motivo: 'ja enviado em ' + (ref.envio_em || '?') });
+        continue;
+      }
+      plano.push({ token, telefone: `****${d.slice(-4)}`, acao: 'enviar', envio_atual: ref.envio || 'desconhecido', _ref: ref });
+    }
+
+    const vaoSair = plano.filter(p => p.acao === 'enviar');
+    if (!confirmar) {
+      return res.json({
+        ok: true, simulacao: true,
+        aviso: 'Nada foi enviado. Repita com "confirmar": true para disparar.',
+        enviaria: vaoSair.length,
+        plano: plano.map(({ _ref, ...p }) => p),
+      });
+    }
+
+    const base = 'https://www.evelynliu.com.br';
+    const urlObrig = `${base}/obrigado-primeira-ruptura`;
+    const resultado = [];
+    for (const item of vaoSair) {
+      const ref = item._ref;
+      const urlMapa = `${base}/mapa-primeira-ruptura?t=${item.token}`;
+      // O nome do quiz vence o do pagador, igual na pagina do mapa.
+      let nome = ref.nome || null;
+      if (ref.radar_id) {
+        const r = await redisGet(`radar:${ref.radar_id}`);
+        if (r) { try { nome = (JSON.parse(r) || {}).nome || nome; } catch {} }
+      }
+      try {
+        const r = await enviarMapaPorWhatsapp({ phone: ref.phone, nome, urlMapa, urlObrig });
+        await marcarEntrega(item.token, { envio: r?.shadow ? 'sombra' : 'enviado', faltando: r?.faltando || null, erro: null });
+        resultado.push({ token: item.token, telefone: item.telefone, status: r?.shadow ? 'sombra' : 'enviado', faltando: r?.faltando || null });
+      } catch (e) {
+        await marcarEntrega(item.token, { envio: 'erro', erro: e.message.slice(0, 300) });
+        resultado.push({ token: item.token, telefone: item.telefone, status: 'erro', erro: e.message.slice(0, 200) });
+      }
+      await sleep(1200); // nao despeja tudo de uma vez na instancia
+    }
+    res.json({ ok: true, simulacao: false, enviados: resultado.filter(r => r.status === 'enviado').length, resultado });
+  } catch (e) {
+    console.error('[pr-reenviar]', e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 app.get('/api/pr/meu-mapa', async (req, res) => {
   res.set('Cache-Control', 'no-store');
   const lid = String(req.query.lid || '').trim();

@@ -384,3 +384,36 @@ test('a primeira abertura do mapa fica registrada', () => {
   // Só a PRIMEIRA abertura: regravar a cada visita apagaria quando ela chegou.
   assert.doesNotMatch(server, /aberto_em: new Date\(\)\.toISOString\(\)[\s\S]{0,40}\}\),\s*'EX'[\s\S]{0,200}aberto_em: new Date/);
 });
+
+// ─── Reenvio ────────────────────────────────────────────────────────────────
+// Dispara WhatsApp para cliente real. As travas sao o produto aqui, nao detalhe.
+
+test('o reenvio e seco por padrao: so dispara com confirmacao explicita', () => {
+  assert.match(server, /app\.post\('\/api\/pr\/reenviar'/);
+  assert.match(server, /const confirmar = req\.body\?\.confirmar === true/);
+  // Sem confirmar, devolve o plano e NAO envia.
+  assert.match(server, /if \(!confirmar\)[\s\S]{0,300}simulacao: true/);
+  // E tem de ser POST: GET que manda WhatsApp dispara por link clicado sem querer.
+  assert.doesNotMatch(server, /app\.get\('\/api\/pr\/reenviar'/);
+});
+
+test('nao reenvia para quem ja recebeu, a nao ser que mande forcar', () => {
+  assert.match(server, /ref\.envio === 'enviado' && !forcar/);
+  assert.match(server, /const forcar\s+= req\.body\?\.forcar === true/);
+});
+
+test('o reenvio grava o desfecho e nao inventa sucesso', () => {
+  // Mesmo caminho do envio original: sombra continua sendo sombra.
+  assert.match(server, /marcarEntrega\(item\.token, \{ envio: r\?\.shadow \? 'sombra' : 'enviado'/);
+  assert.match(server, /marcarEntrega\(item\.token, \{ envio: 'erro'/);
+  // Erro de uma nao pode derrubar as outras: o laco continua.
+  assert.match(server, /resultado\.push\(\{ token: item\.token[\s\S]{0,120}status: 'erro'/);
+});
+
+test('o reenvio exige segredo, mascara telefone e respeita ritmo', () => {
+  assert.match(server, /reenviar'[\s\S]{0,700}status\(401\)/);
+  assert.match(server, /telefone: `\*\*\*\*\$\{d\.slice\(-4\)\}`/);
+  assert.match(server, /await sleep\(1200\)/);
+  // Compra sem telefone e pulada com motivo, nao estourada.
+  assert.match(server, /motivo: 'compra sem telefone'/);
+});
