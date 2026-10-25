@@ -374,3 +374,13 @@ test('a conferencia aceita um token proprio, alem do segredo interno', () => {
   assert.match(server, /const diag = process\.env\.PR_DIAG_TOKEN \|\| null/);
   assert.match(server, /const interno = process\.env\.HUB_WEBHOOK_SECRET \|\| process\.env\.INTERNAL_WEBHOOK_SECRET \|\| null/);
 });
+
+test('a primeira abertura do mapa fica registrada', () => {
+  // Zero pratica escrita era indistinguivel de zero entrega: escrever no dia 1
+  // da trabalho. Abrir e o sinal mais barato de que o link chegou.
+  assert.match(server, /if \(!ref\.aberto_em\)/);
+  assert.match(server, /aberto: Boolean\(ref\.aberto_em\)/);
+  assert.match(server, /nunca_abertos:/);
+  // Só a PRIMEIRA abertura: regravar a cada visita apagaria quando ela chegou.
+  assert.doesNotMatch(server, /aberto_em: new Date\(\)\.toISOString\(\)[\s\S]{0,40}\}\),\s*'EX'[\s\S]{0,200}aberto_em: new Date/);
+});

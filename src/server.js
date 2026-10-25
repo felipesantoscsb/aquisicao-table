@@ -234,6 +234,14 @@ app.get('/api/pr/mapa', async (req, res) => {
   }
   if (!scores) console.warn(`[pr-mapa] ${t}: sem notas do Radar (radar_id=${ref.radar_id || 'ausente'}), caindo no exemplo`);
 
+  // Primeira abertura fica registrada. Sem isto, "ela recebeu o mapa?" so tem
+  // resposta por pratica escrita — e escrever no dia 1 da trabalho, entao zero
+  // pratica era indistinguivel de zero entrega. Abrir e o sinal mais barato.
+  if (!ref.aberto_em) {
+    redisSet(`pr:mapa:${t}`, JSON.stringify({ ...ref, aberto_em: new Date().toISOString() }),
+      'EX', 60 * 60 * 24 * 365).catch(() => {});
+  }
+
   const mapa = primeiraRuptura.montarMapa({ nome: nomeRadar || ref.nome || null, scores: scores || primeiraRuptura.SCORES_DEMO });
 
   // Devolve o que ela ja escreveu, para o mapa nao parecer vazio num segundo
@@ -305,6 +313,8 @@ app.get('/api/pr/entregas', async (req, res) => {
         mapa_personalizado: temNotas,
         envio: ref.envio || 'desconhecido',   // anterior a 25/10 nao foi gravado
         envio_em: ref.envio_em || null,
+        aberto: Boolean(ref.aberto_em),
+        aberto_em: ref.aberto_em || null,
         faltando: ref.faltando || null,
         erro: ref.erro || null,
         praticas_escritas: praticas,
@@ -319,6 +329,8 @@ app.get('/api/pr/entregas', async (req, res) => {
       em_sombra: itens.filter(i => i.envio === 'sombra').length,
       com_erro: itens.filter(i => i.envio === 'erro').length,
       anteriores_ao_registro: itens.filter(i => i.envio === 'desconhecido').length,
+      abertos: itens.filter(i => i.aberto).length,
+      nunca_abertos: itens.filter(i => !i.aberto).length,
     };
     res.json({ ok: true, resumo, itens: itens.slice(0, 50) });
   } catch (e) {
