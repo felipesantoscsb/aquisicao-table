@@ -322,3 +322,44 @@ test('a pratica e dela, nao entrega para a sessao', () => {
   // que ela ESCREVE e a consulta, nao o convite para marcar.
   assert.ok((page.match(/\/obrigado-primeira-ruptura/g) || []).length >= 2);
 });
+
+// ─── Conferencia das entregas ───────────────────────────────────────────────
+// Nasceu de "sairam tres vendas, deu tudo certo?". Ate 25/10 a unica resposta
+// estava no log do Railway, que e justamente onde nao da para olhar quando a
+// pergunta aparece dias depois.
+
+test('o desfecho do envio fica gravado, nao so no log', () => {
+  assert.match(server, /async function marcarEntrega\(token, patch\)/);
+  // Os quatro desfechos precisam ser distinguiveis na conferencia. "sombra" e
+  // "enviado" saem de um ternario, por isso nao sao procurados como `envio: x`.
+  assert.match(server, /envio: r\?\.shadow \? 'sombra' : 'enviado'/);
+  assert.match(server, /envio: 'sem_telefone'/);
+  assert.match(server, /envio: 'erro'/);
+  // E o que nunca foi gravado tem de se declarar como tal, em vez de posar de
+  // entrega bem-sucedida.
+  assert.match(server, /envio: ref\.envio \|\| 'desconhecido'/);
+  // Erro gravado e RELANCADO: engolir aqui transformaria falha em silencio.
+  assert.match(server, /marcarEntrega\(token, \{ envio: 'erro'[\s\S]{0,80}throw e;/);
+});
+
+test('o diagnostico exige segredo e nao devolve telefone inteiro', () => {
+  assert.match(server, /app\.get\('\/api\/pr\/entregas'/);
+  assert.match(server, /entregas'[\s\S]{0,400}status\(401\)/);
+  // Mesma regra do diagnostico do inbound: pergunta operacional nao precisa do
+  // numero inteiro para ser respondida.
+  assert.match(server, /telefone: d\.length > 4 \? `\*\*\*\*\$\{d\.slice\(-4\)\}`/);
+  assert.doesNotMatch(server, /entregas'[\s\S]{0,2000}telefone: ref\.phone/);
+});
+
+test('o diagnostico separa mapa personalizado de mapa de exemplo', () => {
+  // Sem as notas do Radar o mapa ABRE, mas com notas de exemplo — e isso e
+  // invisivel para quem recebeu. Tem de aparecer na conferencia.
+  assert.match(server, /mapa_personalizado: temNotas/);
+  assert.match(server, /sem_notas_do_radar:/);
+});
+
+test('a listagem nao confunde o indice reverso com os mapas', () => {
+  // pr:mapa:lead:<radarId> tem o mesmo prefixo de pr:mapa:<token> e viraria
+  // "mapa" fantasma na contagem.
+  assert.match(server, /filter\(k => !k\.startsWith\('pr:mapa:lead:'\)\)/);
+});

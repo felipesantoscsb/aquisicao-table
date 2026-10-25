@@ -255,6 +255,69 @@ app.get('/api/pr/mapa', async (req, res) => {
 // Segunda via de entrega. A pagina de obrigado chama isto com o id da lead que
 // o Radar guardou no navegador, e revela o link do mapa na hora — sem depender
 // de template aprovado nem da janela de 24h do WhatsApp.
+// Conferencia das entregas do mapa. Nasceu da pergunta "sairam tres vendas,
+// deu tudo certo?", que ate entao so tinha resposta no log do Railway.
+//
+// Telefone sempre mascarado: a pergunta e operacional e nao precisa do numero
+// inteiro para ser respondida.
+app.get('/api/pr/entregas', async (req, res) => {
+  const esperado = process.env.HUB_WEBHOOK_SECRET || process.env.INTERNAL_WEBHOOK_SECRET;
+  const recebido = req.headers['x-webhook-secret'] || req.query.secret;
+  if (!esperado || recebido !== esperado) return res.status(401).json({ ok: false, error: 'Nao autorizado' });
+
+  res.set('Cache-Control', 'no-store');
+  try {
+    const redis = getRedis();
+    const chaves = (await redis.keys('pr:mapa:*')).filter(k => !k.startsWith('pr:mapa:lead:'));
+    const itens = [];
+    for (const chave of chaves) {
+      const cru = await redisGet(chave);
+      if (!cru) continue;
+      let ref; try { ref = JSON.parse(cru); } catch { continue; }
+      const token = chave.slice('pr:mapa:'.length);
+      const d = String(ref.phone || '').replace(/\D/g, '');
+
+      // O mapa so e personalizado se as notas do Radar existirem. Sem elas ele
+      // abre, mas com as de exemplo — e isso e invisivel para quem recebeu.
+      let temNotas = false;
+      if (ref.radar_id) {
+        const r = await redisGet(`radar:${ref.radar_id}`);
+        if (r) { try { temNotas = Boolean((JSON.parse(r) || {}).scores); } catch {} }
+      }
+
+      let praticas = 0;
+      for (let dia = 1; dia <= 7; dia++) if (await redisGet(`pr:pratica:${token}:${dia}`)) praticas++;
+
+      itens.push({
+        token,
+        criado_em: ref.at || null,
+        telefone: d.length > 4 ? `****${d.slice(-4)}` : '****',
+        tem_radar_id: Boolean(ref.radar_id),
+        mapa_personalizado: temNotas,
+        envio: ref.envio || 'desconhecido',   // anterior a 25/10 nao foi gravado
+        envio_em: ref.envio_em || null,
+        faltando: ref.faltando || null,
+        erro: ref.erro || null,
+        praticas_escritas: praticas,
+        url: `https://www.evelynliu.com.br/mapa-primeira-ruptura?t=${token}`,
+      });
+    }
+    itens.sort((a, b) => String(b.criado_em || '').localeCompare(String(a.criado_em || '')));
+    const resumo = {
+      mapas: itens.length,
+      sem_notas_do_radar: itens.filter(i => !i.mapa_personalizado).length,
+      enviados: itens.filter(i => i.envio === 'enviado').length,
+      em_sombra: itens.filter(i => i.envio === 'sombra').length,
+      com_erro: itens.filter(i => i.envio === 'erro').length,
+      anteriores_ao_registro: itens.filter(i => i.envio === 'desconhecido').length,
+    };
+    res.json({ ok: true, resumo, itens: itens.slice(0, 50) });
+  } catch (e) {
+    console.error('[pr-entregas]', e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 app.get('/api/pr/meu-mapa', async (req, res) => {
   res.set('Cache-Control', 'no-store');
   const lid = String(req.query.lid || '').trim();
@@ -3460,10 +3523,33 @@ async function entregarMapaPrimeiraRuptura(record, d = {}) {
 
   if (!record.phone) {
     console.warn('[pr-mapa] compra sem telefone — mapa existe, entrega por WhatsApp impossivel');
+    await marcarEntrega(token, { envio: 'sem_telefone' });
     return { token, urlMapa, sem_telefone: true };
   }
-  await enviarMapaPorWhatsapp({ phone: record.phone, nome, urlMapa, urlObrig });
+
+  // O resultado do envio fica GRAVADO no proprio registro. Antes ele so existia
+  // no log do Railway, que e onde a gente nao consegue olhar quando a pergunta
+  // aparece dias depois ("as tres vendas entregaram?"). Sem isto, falha de
+  // entrega e indistinguivel de entrega que ninguem conferiu.
+  try {
+    const r = await enviarMapaPorWhatsapp({ phone: record.phone, nome, urlMapa, urlObrig });
+    await marcarEntrega(token, { envio: r?.shadow ? 'sombra' : 'enviado', faltando: r?.faltando || null });
+  } catch (e) {
+    await marcarEntrega(token, { envio: 'erro', erro: e.message.slice(0, 300) });
+    throw e;
+  }
   return { token, urlMapa };
+}
+
+/** Anota o desfecho da entrega sem perder o resto do registro. */
+async function marcarEntrega(token, patch) {
+  try {
+    const cru = await redisGet(`pr:mapa:${token}`);
+    if (!cru) return;
+    const ref = JSON.parse(cru);
+    await redisSet(`pr:mapa:${token}`, JSON.stringify({ ...ref, ...patch, envio_em: new Date().toISOString() }),
+      'EX', 60 * 60 * 24 * 365);
+  } catch (e) { console.error('[pr-mapa] marcarEntrega:', e.message); }
 }
 
 /**
