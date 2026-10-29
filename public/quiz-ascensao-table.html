@@ -36,7 +36,16 @@ if(!PREVIEW_ROTA){
 button,input{font:inherit}.page{display:none;min-height:100svh}.page.active{display:flex}.shell{width:min(100%,760px);margin:auto;padding:36px 22px}.brand{font:600 20px 'Lora',serif;letter-spacing:.13em}.eyebrow{margin:0;color:var(--clay);font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase}h1,h2,h3{font-family:'Lora',serif;font-weight:500;line-height:1.12;margin:0;letter-spacing:-.025em}h1{font-size:clamp(30px,7.4vw,62px)}h2{font-size:clamp(28px,6vw,44px)}h3{font-size:clamp(21px,4vw,29px)}
 .hero{background:var(--sand);color:var(--ink);position:relative;overflow:hidden}.hero:after{content:'';position:absolute;width:600px;height:600px;border-radius:50%;right:-300px;top:-330px;background:radial-gradient(circle,rgba(38,54,45,.12),transparent 68%)}.hero .shell{position:relative;z-index:1}.top{display:flex;justify-content:center;gap:16px;align-items:center;margin-bottom:clamp(54px,11vh,100px)}.hero .eyebrow{color:var(--clay)}.hero h1 em{font-style:normal;color:var(--clay)}.hero-copy{max-width:650px;color:#4e5952;font-size:clamp(17px,3vw,20px);margin:24px 0 0}.promise{margin:30px 0 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.promise span{border:1px solid var(--line);background:var(--paper);border-radius:14px;padding:12px;color:var(--pine);font-size:13px}.prova{display:flex;align-items:flex-start;gap:16px;margin:36px auto 0;max-width:560px;padding:20px;border:1px solid var(--line);background:var(--paper);border-radius:22px;text-align:left}.prova img{width:68px;height:68px;border-radius:50%;object-fit:cover;border:1px solid var(--line);flex:none}.prova .citacao-evelyn{font:500 clamp(16px,3.2vw,19px)/1.4 'Lora',serif;color:var(--pine);margin:0}.hero .btn{margin-top:30px;display:flex;margin-left:auto;margin-right:auto}.hero .descobre{text-align:center}.hero .promise span{text-align:center}.custo{list-style:none;display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;padding:0;margin:16px 0 0;font-size:13px;color:#5d6a61;text-align:center}.custo li{display:flex;align-items:center;gap:7px}.custo li:before{content:'';width:5px;height:5px;border-radius:50%;background:var(--sage);flex:none}.descobre{font:600 13px 'DM Sans',sans-serif;letter-spacing:.04em;color:var(--pine);margin:30px 0 0}.hero .promise{margin:12px 0 22px}.prova .credencial{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:var(--muted)}@media(max-width:480px){.prova{flex-direction:column;align-items:center;text-align:center}.selo{justify-content:center}}.fine{font-size:12px;color:#91a397;margin:16px 0 0}.selo{margin:12px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:#5a655e;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.selo .estrelas{color:#c9922f;letter-spacing:.08em;font-size:14px;line-height:1}.selo b{color:var(--pine);font-weight:700}.hero .fine{color:#5a655e}.fine a,.privacy a,.footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 .btn{border:0;border-radius:999px;background:var(--gold);color:var(--pine);padding:17px 27px;font-weight:700;cursor:pointer;display:inline-flex;justify-content:center;align-items:center;text-decoration:none;transition:.2s}.btn:hover{transform:translateY(-2px);background:#c67a58}.btn:disabled{opacity:.6;cursor:wait;transform:none}.btn-wide{width:100%}
-#quiz .shell{display:flex;flex-direction:column;justify-content:center}.qhead{display:flex;align-items:center;gap:14px;margin-bottom:22px}.progress{height:5px;background:#ded7cb;border-radius:9px;flex:1;overflow:hidden}.progress i{display:block;height:100%;background:var(--clay);transition:width .25s}.counter{font-size:12px;color:var(--muted)}.card{background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:26px;padding:clamp(24px,6vw,43px);box-shadow:0 18px 54px rgba(38,54,45,.08)}.qtitle{font:500 clamp(24px,5vw,35px)/1.2 'Lora',serif;margin:10px 0 14px}.qnote{color:var(--muted);font-size:14px;margin:0 0 24px}.options{display:grid;gap:10px}.option{width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:16px;padding:16px 17px;color:var(--ink);cursor:pointer;display:flex;gap:13px;align-items:center;line-height:1.45}.option:hover{border-color:var(--sage);background:#f6f8f4}.option b{min-width:28px;height:28px;border-radius:50%;background:#edf1eb;display:grid;place-items:center;font-size:12px}.back{border:0;background:none;color:var(--muted);padding:14px 2px;cursor:pointer}
+#quiz .shell{display:flex;flex-direction:column;justify-content:center}.qhead{display:flex;align-items:center;gap:14px;margin-bottom:22px}.progress{height:5px;background:#ded7cb;border-radius:9px;flex:1;overflow:hidden}.progress i{display:block;height:100%;background:var(--clay);transition:width .25s}.counter{font-size:12px;color:var(--muted)}.card{background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:26px;padding:clamp(24px,6vw,43px);box-shadow:0 18px 54px rgba(38,54,45,.08)}.qtitle{font:500 clamp(24px,5vw,35px)/1.2 'Lora',serif;margin:10px 0 14px}.qnote{color:var(--muted);font-size:14px;margin:0 0 24px}.options{display:grid;gap:10px}/* A pergunta 1 vive na primeira tela. Nao e decoracao: tira da pessoa a
+   decisao de "entrar num quiz" e troca por responder uma pergunta facil.
+   Reaproveita .option para o botao ser igual ao do quiz, porque ela esta
+   literalmente respondendo a primeira pergunta. */
+.hero-q{margin:26px auto 0;max-width:620px;text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:22px}
+.hero-q-label{margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--clay)}
+.hero-q-title{margin:0 0 15px;font:500 clamp(17px,3vw,20px)/1.35 'Lora',Georgia,serif;color:var(--pine);text-wrap:balance}
+.hero-q-options{display:grid;gap:9px}
+@media(max-width:620px){.hero-q{padding:18px;margin-top:22px}}
+.option{width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:16px;padding:16px 17px;color:var(--ink);cursor:pointer;display:flex;gap:13px;align-items:center;line-height:1.45}.option:hover{border-color:var(--sage);background:#f6f8f4}.option b{min-width:28px;height:28px;border-radius:50%;background:#edf1eb;display:grid;place-items:center;font-size:12px}.back{border:0;background:none;color:var(--muted);padding:14px 2px;cursor:pointer}
 #capture .shell,#loading .shell{display:flex;align-items:center;justify-content:center}.capture{text-align:center;width:100%}.capture p{color:var(--muted);max-width:500px;margin:14px auto 0}.fields{display:grid;gap:10px;max-width:470px;margin:26px auto 0;text-align:left}.field{width:100%;padding:16px;border:1px solid var(--line);border-radius:14px;background:#fff}.field:focus{outline:3px solid rgba(146,166,147,.25);border-color:var(--sage)}.error{min-height:16px;color:var(--danger);font-size:12px;margin:-7px 3px 0}.privacy{font-size:12px!important}.loading{background:var(--pine);color:#fff;text-align:center}.spinner{width:76px;height:76px;border:2px solid rgba(255,255,255,.18);border-top-color:var(--gold);border-radius:50%;margin:28px auto;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
 .result{display:none;background:var(--cream)}.result.active{display:block}.respiro-wrap{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:48px 0}
 .respiro-title{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,5.6vw,42px);line-height:1.12;margin:14px 0 0;color:#fff}
@@ -80,13 +89,17 @@ button,input{font:inherit}.page{display:none;min-height:100svh}.page.active{disp
 <main>
 <section class="page hero active" id="intro"><div class="shell">
   <div class="top"><div class="brand">TABLE</div></div>
-  <h1>Perder peso é uma coisa.<br><em>Não voltar ao mesmo ciclo é outra.</em></h1>
-  <p class="hero-copy">O que nunca ficou claro é em que ponto a vida aperta e tudo volta. Aqui você encontra esse ponto, olhando corpo, comida e vida real.</p>
-  <button class="btn" id="start">Descobrir o que me puxa de volta →</button>
-  <ul class="custo"><li>gratuito</li><li>12 perguntas de múltipla escolha</li><li>3 minutos</li><li>sem cadastro</li></ul>
+  <h1>Você não perdeu a disciplina.<br><em>A vida saiu do plano.</em></h1>
+  <p class="hero-copy">O dia ia bem até não caber mais. Então vem a noite, a geladeira aberta, e a conta de recomeçar amanhã. O que nunca ficou claro é em que ponto exato isso começa.</p>
+  <ul class="custo"><li>gratuito</li><li>sem cadastro</li></ul>
+  <div class="hero-q">
+    <p class="hero-q-label">Comece por aqui</p>
+    <p class="hero-q-title" id="heroQTitle"></p>
+    <div class="hero-q-options" id="heroQOptions"></div>
+  </div>
+  <div class="prova"><img src="/images/evelyn-avatar.jpg" width="320" height="320" alt="Evelyn Liu"><div><p class="citacao-evelyn">“Cuidamos da fome que a comida não resolve.”</p><p class="credencial">Evelyn Liu, nutricionista comportamental (CRN-3 70082), autora de “Gordura Não Existe” e fundadora da Table.</p><p class="selo"><span class="estrelas">★★★★★</span> <b>5,0</b> no Google, de quem é cliente</p></div></div>
   <p class="descobre">Você descobre:</p>
   <div class="promise"><span>O ponto onde o seu ciclo recomeça. Quase nunca é onde você se cobra.</span><span>O que já está funcionando a seu favor hoje.</span><span>Um próximo passo para o seu momento, não o mesmo para todo mundo.</span></div>
-  <div class="prova"><img src="/images/evelyn-avatar.jpg" width="320" height="320" alt="Evelyn Liu"><div><p class="citacao-evelyn">“Cuidamos da fome que a comida não resolve.”</p><p class="credencial">Evelyn Liu, nutricionista comportamental (CRN-3 70082), autora de “Gordura Não Existe” e fundadora da Table.</p><p class="selo"><span class="estrelas">★★★★★</span> <b>5,0</b> no Google, de quem é cliente</p></div></div>
   <p class="fine">Instrumento educativo, não diagnóstico. Suas respostas não são usadas para personalizar anúncios. <a href="/legal" target="_blank" rel="noopener">Privacidade e termos</a>.</p>
 </div></section>
 
@@ -102,7 +115,7 @@ button,input{font:inherit}.page{display:none;min-height:100svh}.page.active{disp
   <p class="respiro-copy" id="respiroCopy"></p>
   <div class="respiro-ack" id="respiroAck"></div>
   <button class="btn" id="respiroGo">Ver o meu próximo passo →</button>
-  <p class="respiro-fine">Agora, três perguntas confirmam como esses pilares se relacionam. As seis finais apontam um próximo passo compatível com o seu momento — sem alterar o desenho do Radar.</p>
+  <p class="respiro-fine">Agora, três perguntas confirmam como esses pilares se relacionam. As três finais apontam um próximo passo compatível com o seu momento — sem alterar o desenho do Radar.</p>
 </div></section>
 <section class="page" id="capture"><div class="shell"><div class="card capture">
   <p class="eyebrow">Última etapa</p><h2>Veja onde o seu ciclo ganha força. Não é onde você costuma se cobrar.</h2>
@@ -186,7 +199,14 @@ function radarEvent(event_name,extra={}){
     fetch('/api/radar-event',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).catch(()=>{});
   }catch(e){}
 }
-function start(){trackCustom('QuizStart');radarEvent('quiz_started');page('quiz');render()}
+// QuizStart dispara UMA vez por sessao. Com a pergunta 1 no hero a pessoa pode
+// entrar, voltar para a intro pelo botao de voltar e responder de novo; sem a
+// trava, cada volta inflaria a metrica que estamos justamente tentando medir.
+let quizIniciado=false;
+function start(){if(!quizIniciado){quizIniciado=true;trackCustom('QuizStart');radarEvent('quiz_started')}page('quiz');render()}
+// Clique numa alternativa do hero JA e comecar: entra no quiz e grava a
+// resposta da pergunta 1, caindo direto na 2.
+function comecarCom(valor,texto){start();choose(valor,texto)}
 function render(){const q=QUESTIONS[current];$('qtag').textContent=q.tag;$('qtitle').textContent=q.text;$('qnote').textContent=q.note||'';$('qnote').hidden=!q.note;$('counter').textContent=`${current+1}/${QUESTIONS.length}`;$('progress').style.width=`${(current+1)/QUESTIONS.length*100}%`;$('back').style.visibility=current?'visible':'hidden';$('options').innerHTML='';q.options.forEach((o,i)=>{const b=document.createElement('button');b.className='option';b.innerHTML=`<b>${String.fromCharCode(65+i)}</b><span>${o[0]}</span>`;b.onclick=()=>choose(o[1],o[0]);$('options').appendChild(b)})}
 function choose(value,text){const q=QUESTIONS[current];answers[current]=value;answerTexts[current]=text;if(q.confirm)confirmations[q.confirm]=value;const answered=current+1;current++;
 const milestone=current===6?'radar_complete':current===9?'identity_confirmed':current===12?'qualification_complete':current===QUESTIONS.length?'quiz_complete':null;
@@ -284,7 +304,16 @@ function requestPreconsult(){
   location.href='/pre-consulta?lid='+encodeURIComponent(lead.id);
 }
 function checkout(cupom){const id=eventId('ic');if(!PREVIEW_ROTA){radarEvent('checkout_started',{lead_sck:lead.id,route});fbq('track','InitiateCheckout',{content_name:'A Primeira Ruptura',currency:'BRL',value:127},{eventID:id});fetch('/api/capi/initiate-checkout',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:lead.phone,em:lead.email,fbp:lead.fbp,fbc:lead.fbc,external_id:lead.external,content_name:'A Primeira Ruptura',value:127,perfil:'raiz',source:'raiz-radar',lid:lead.id,event_id:id,event_source_url:location.href,commercial_route:route})}).catch(()=>{})}const u=new URL('https://pay.cakto.com.br/3azm4o3_1219891');u.searchParams.set('email',lead.email);u.searchParams.set('phone','+'+lead.phone);u.searchParams.set('name',lead.name);u.searchParams.set('sck',lead.id);if(cupom)u.searchParams.set(CUPOM.param,CUPOM.codigo);location.href=u.toString()}
-$('start').onclick=start;$('respiroGo').onclick=()=>{page('quiz');render()};$('back').onclick=()=>{if(current){current--;const q=QUESTIONS[current];answers[current]=undefined;answerTexts[current]=undefined;if(q.confirm)delete confirmations[q.confirm];render()}else page('intro')};$('reveal').onclick=reveal;$('preconsult').onclick=requestPreconsult;$('checkout').onclick=()=>checkout(false);
+(function montarPerguntaNoHero(){
+  // Montada a partir de QUESTIONS[0], nunca copiada no HTML: texto duplicado
+  // divergiria em silencio na proxima vez que o quiz fosse reordenado.
+  const q=QUESTIONS[0],alvo=$('heroQOptions');
+  if(!q||!alvo)return;
+  $('heroQTitle').textContent=q.text;
+  q.options.forEach((o,i)=>{const b=document.createElement('button');b.className='option';
+    b.innerHTML=`<b>${String.fromCharCode(65+i)}</b><span>${o[0]}</span>`;
+    b.onclick=()=>comecarCom(o[1],o[0]);alvo.appendChild(b)});
+})();$('respiroGo').onclick=()=>{page('quiz');render()};$('back').onclick=()=>{if(current){current--;const q=QUESTIONS[current];answers[current]=undefined;answerTexts[current]=undefined;if(q.confirm)delete confirmations[q.confirm];render()}else page('intro')};$('reveal').onclick=reveal;$('preconsult').onclick=requestPreconsult;$('checkout').onclick=()=>checkout(false);
 
 /* Painel de resgate. Aparece quando a pessoa chegou na oferta e ficou ali sem
    clicar. Sem modal, sem escurecer a tela, sem travar rolagem e sem contagem

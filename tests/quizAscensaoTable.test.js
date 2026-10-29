@@ -85,7 +85,11 @@ test('rotas B e C oferecem A Primeira Ruptura por R$ 127', () => {
 });
 
 test('resultado sustenta promessa, autoridade e prova social visual', () => {
-  assert.match(html, /Não voltar ao mesmo ciclo é outra/);
+  // Checava o H1 do hero, que vive no mesmo arquivo e por isso passava sem
+  // dizer nada sobre o resultado. Agora checa a tese NA pagina de resultado, e
+  // que ela continua a do hero: nao e falta de disciplina nem de informacao.
+  assert.match(html, /Seu problema não é falta de informação/);
+  assert.match(html, /o ciclo sempre terá por onde voltar/);
   assert.match(html, /O desenho que sustenta esta leitura/);
   assert.match(html, /o nome não veio de uma nota isolada/);
   assert.match(html, /Evelyn Liu é nutricionista comportamental/);
@@ -291,50 +295,78 @@ test('video nao aparece como entregavel enquanto o banco nao tiver nenhum', () =
   assert.doesNotMatch(html, /<li>[^<]*[Vv]ídeo[^<]*<\/li>/);
 });
 
-test('a promessa do hero bate com o numero real de perguntas', () => {
-  // A estrutura real e 6 pilares + 3 confirmações + 6 perguntas comerciais.
+test('a primeira pergunta vive na primeira tela, montada a partir do quiz', () => {
+  // Gargalo de 20% de quizstart em 29/10/2026: a pessoa precisava decidir
+  // "entrar num quiz". Com a pergunta 1 no hero, clicar numa alternativa JA e
+  // comecar, e a decisao vira responder algo facil.
   assert.equal((html.match(/\{tag:'/g) || []).length, 12);
-  assert.match(html, /<ul class="custo"><li>gratuito<\/li><li>12 perguntas de múltipla escolha<\/li><li>3 minutos<\/li><li>sem cadastro<\/li><\/ul>/);
-  // Centralizado: com quatro itens a quebra a esquerda deixava a ultima linha
-  // solta e torta. Centralizado, a quebra vira simetria.
-  assert.match(html, /\.custo\{[^}]*justify-content:center/);
-  assert.doesNotMatch(html, /Seis perguntas sobre corpo/, 'o hero nao pode prometer seis');
-  // O numero aparece UMA vez na primeira tela, na linha de custo sob o botao,
-  // que e onde ele vira informacao em vez de aviso. Dize-lo tambem no
-  // subtitulo era redundancia na dobra, que e o espaco mais caro da pagina.
-  assert.doesNotMatch(html.slice(0, html.indexOf('id="quiz"')), /Doze perguntas/);
-  assert.equal((html.slice(0, html.indexOf('id="quiz"')).match(/12 perguntas/g) || []).length, 1);
-  // A marca aparece uma vez na primeira linha: o logo ancora, o eyebrow diz
-  // so o produto. "TABLE" ao lado de "Radar Table" era a mesma palavra duas
-  // vezes no mesmo olhar.
-  // Topo so com o logo, centralizado: era o unico elemento fora do eixo, com
-  // pilula, botao, bullets e cartoes todos centrados.
-  assert.match(html, /<div class="top"><div class="brand">TABLE<\/div><\/div>/);
-  assert.match(html, /\.top\{display:flex;justify-content:center/);
-  assert.doesNotMatch(html, /class="tagline"/);
-  // O slogan virou citacao assinada, dentro do bloco de prova.
-  assert.doesNotMatch(html, /Para a fome que a comida não resolve/);
-  assert.doesNotMatch(html, /Radar · gratuito/);
-  // Rosto, citacao, credencial e nota num bloco so: deixa de ser assinatura
-  // solta e vira prova social com quem assina, o que diz, e quem confirma.
-  assert.match(html, /<div class="prova"><img src="\/images\/evelyn-avatar\.jpg"/);
-  assert.match(html, /<p class="citacao-evelyn">“Cuidamos da fome que a comida não resolve\.”<\/p>/);
-  assert.match(html, /<p class="selo"><span class="estrelas">★★★★★<\/span> <b>5,0<\/b> no Google, de quem é cliente<\/p><\/div><\/div>/);
-  // A nota e a ultima linha do bloco, separada por um filete.
-  assert.match(html, /\.selo\{margin:12px 0 0;padding-top:12px;border-top:1px solid var\(--line\)/);
-  // Botao, custo, selo e bullets centralizados.
-  assert.match(html, /\.hero \.btn\{margin-top:30px;display:flex;margin-left:auto;margin-right:auto\}/);
-  assert.match(html, /\.hero \.descobre\{text-align:center\}/);
-  assert.match(html, /\.hero \.promise span\{text-align:center\}/);
+  assert.match(html, /<div class="hero-q">/);
+  assert.match(html, /id="heroQTitle"/);
+  assert.match(html, /function comecarCom\(valor,texto\)\{start\(\);choose\(valor,texto\)\}/);
+
+  // O texto NAO pode estar escrito no HTML: duplicado, divergiria em silencio
+  // na proxima vez que o quiz fosse reordenado.
+  assert.match(html, /\$\('heroQTitle'\)\.textContent=q\.text/);
+  assert.match(html, /const q=QUESTIONS\[0\]/);
+
+  // O botao antigo saiu, e o handler dele TEM de ter saido junto: $('start')
+  // devolvendo null mata o script inteiro a partir dali, que foi como a pagina
+  // ja ficou sem CTA nenhum uma vez.
+  assert.doesNotMatch(html, /id="start"/);
+  assert.doesNotMatch(html, /\$\('start'\)/);
 });
 
-test('o hero abre na frase que reconhece, nao no lugar-comum', () => {
-  // "Começar na segunda" e clichê de anuncio de dieta e gastava a primeira
-  // linha do subtitulo, que e a que mais custa atencao.
+test('QuizStart conta uma vez por sessao, mesmo voltando para a intro', () => {
+  // O botao de voltar na pergunta 1 devolve para a intro, onde a pergunta
+  // continua clicavel. Sem trava, cada volta inflaria justamente a metrica que
+  // estamos tentando mover.
+  assert.match(html, /let quizIniciado=false/);
+  assert.match(html, /if\(!quizIniciado\)\{quizIniciado=true;trackCustom\('QuizStart'\)/);
+});
+
+test('a linha de custo vem antes da interacao e so promete o que foi pedido', () => {
+  // Decisao do Felipe em 29/10: sem contagem de perguntas e sem minutos. O
+  // quiz ja mostra contador e barra de progresso depois que ela entra.
+  assert.match(html, /<ul class="custo"><li>gratuito<\/li><li>sem cadastro<\/li><\/ul>/);
+  const hero = html.slice(0, html.indexOf('id="quiz"'));
+  assert.doesNotMatch(hero, /12 perguntas/);
+  assert.doesNotMatch(hero, /3 minutos/);
+  // Antes do bloco de pergunta, nao depois: ela decide sabendo o custo.
+  assert.ok(hero.indexOf('class="custo"') < hero.indexOf('class="hero-q"'),
+    'a linha de custo caiu para depois da pergunta');
+  assert.match(html, /\.custo\{[^}]*justify-content:center/);
+});
+
+test('o hero nao abre falando de peso', () => {
+  // Os tres criativos que trazem o trafego dizem a mesma tese: nao e
+  // disciplina, e a vida. Abrir com "perder peso" remontava em cinco palavras
+  // a moldura que o anuncio acabou de derrubar, e contradizia o proprio rodape
+  // ("nao promete perda de peso").
+  const hero = html.slice(0, html.indexOf('id="quiz"'));
+  assert.doesNotMatch(hero, /<h1>[\s\S]*?[Pp]erder peso[\s\S]*?<\/h1>/);
+  assert.match(html, /<h1>Você não perdeu a disciplina\.<br><em>A vida saiu do plano\.<\/em><\/h1>/);
+});
+
+test('"Você descobre" ficou abaixo do bloco de interacao', () => {
+  // Era leitura entre ela e a acao, no espaco mais caro da pagina.
+  const hero = html.slice(0, html.indexOf('id="quiz"'));
+  assert.ok(hero.indexOf('class="hero-q"') < hero.indexOf('class="descobre"'),
+    '"Você descobre" voltou para cima da pergunta');
+});
+
+test('o hero abre numa cena, nao num conceito nem num lugar-comum', () => {
+  // "Começar na segunda" e clichê de anuncio de dieta. E o subtitulo anterior
+  // ("em que ponto a vida aperta") era uma ideia; reconhecimento acontece na
+  // cena, que e o que os tres criativos de maior trafego fazem.
   assert.doesNotMatch(html, /Começar na segunda você já sabe/);
-  assert.match(html, /<p class="hero-copy">O que nunca ficou claro é em que ponto a vida aperta/);
+  assert.match(html, /<p class="hero-copy">O dia ia bem até não caber mais/);
+  assert.match(html, /a geladeira aberta/);
   assert.match(html, /três perguntas confirmam como esses pilares se relacionam/);
-  assert.match(html, /As seis finais apontam um próximo passo/);
+  // Eram "seis finais" ate 29/10, numero que ficou para tras quando as
+  // comerciais cairam de seis para tres em 21/10. A pagina afirmava à cliente
+  // uma estrutura que o quiz nao tinha mais.
+  assert.match(html, /As três finais apontam um próximo passo/);
+  assert.doesNotMatch(html, /As seis finais/);
 });
 
 test('a rota C ganha uma ponte antes da oferta', () => {
