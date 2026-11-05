@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#F8F4EE">
+<title>Pesquisa Table Clinic</title>
+<meta name="description" content="Emagrecer é só uma parte da história. Uma pesquisa anônima da Table Clinic.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --moss:#3D4A35; --moss-mid:#4E5E42; --moss-lt:#6B7D5C; --moss-pale:#E8EDE4; --moss-deep:#2A3324;
+  --cream:#F8F4EE; --warm:#EDE5D8; --sand:#D8CCBA; --terra:#B97040; --terra-dk:#8A4F28; --terra-lt:#F5EAE0;
+  --brown:#2C2018; --muted:#6F645A; --soft:#A89E94; --line:#DDD4C4; --white:#FFFFFF;
+  --radius:16px; --ease:cubic-bezier(.2,.7,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--cream); color:var(--brown);
+  font-family:'Jost',system-ui,-apple-system,'Segoe UI',sans-serif; font-weight:400;
+  font-size:17px; line-height:1.55; -webkit-font-smoothing:antialiased; -webkit-text-size-adjust:100%;
+}
+button,input,textarea{font:inherit;color:inherit}
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+.app{
+  min-height:100vh; min-height:100dvh; display:flex; flex-direction:column;
+  max-width:600px; margin:0 auto;
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+
+/* topo */
+.top{position:sticky;top:0;z-index:5;background:var(--cream);padding:14px 20px 10px}
+.top-row{display:flex;align-items:center;justify-content:space-between;min-height:40px}
+.brand{font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:.38em;text-transform:uppercase;color:var(--moss);padding-left:.38em}
+.back{
+  display:inline-flex;align-items:center;gap:6px;background:none;border:0;cursor:pointer;
+  font-size:15px;color:var(--muted);padding:8px 10px 8px 0;min-height:44px;border-radius:10px;
+}
+.back:hover{color:var(--moss)}
+.back[hidden]{display:inline-flex;visibility:hidden}
+.back svg{width:18px;height:18px}
+.spacer{width:64px}
+.progress{height:3px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:8px}
+.progress-bar{height:100%;width:0;background:var(--terra);border-radius:3px;transition:width .5s var(--ease)}
+.progress[hidden]{visibility:hidden;display:block}
+
+/* palco */
+.stage{flex:1;display:flex;flex-direction:column;position:relative}
+.screen{flex:1;display:flex;flex-direction:column;padding:12px 20px 0}
+.screen.enter{animation:in .42s var(--ease) both}
+.screen.enter.back-dir{animation-name:in-back}
+.screen.leave{animation:out .2s ease-in both}
+.screen.leave.back-dir{animation-name:out-back}
+@keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes in-back{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+@keyframes out{to{opacity:0;transform:translateY(-10px)}}
+@keyframes out-back{to{opacity:0;transform:translateY(10px)}}
+@media (prefers-reduced-motion:reduce){
+  .screen.enter,.screen.leave{animation:none}
+  .progress-bar{transition:none}
+}
+
+/* abertura */
+.intro{padding-top:20px}
+.motif{width:72px;height:72px;margin:8px 0 26px;color:var(--terra)}
+.eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--moss-lt);margin-bottom:14px}
+h1.title{
+  font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(36px,10vw,50px);
+  line-height:1.06;color:var(--moss-deep);letter-spacing:-.01em;margin-bottom:22px;
+}
+h1.title em{font-style:italic;color:var(--terra-dk)}
+.lead p{color:var(--brown);font-weight:300;font-size:18px;margin-bottom:14px}
+.lead p.meta{font-size:15px;color:var(--muted);font-weight:400;display:flex;gap:8px;align-items:center}
+.lead p.meta::before{content:'';width:18px;height:1px;background:var(--terra)}
+
+.privacy{
+  margin:26px 0 8px;background:var(--white);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 18px 16px;
+}
+.privacy h2{font-size:15px;font-weight:500;color:var(--moss-deep);margin-bottom:8px}
+.privacy p{font-size:15px;color:var(--muted);line-height:1.55}
+.privacy details{margin-top:10px}
+.privacy summary{
+  cursor:pointer;font-size:15px;color:var(--moss);font-weight:500;list-style:none;
+  display:inline-flex;align-items:center;gap:6px;min-height:36px;
+}
+.privacy summary::-webkit-details-marker{display:none}
+.privacy summary::after{content:'+';font-size:18px;line-height:1;color:var(--terra)}
+.privacy details[open] summary::after{content:'−'}
+.privacy ul{margin:8px 0 2px 18px;color:var(--muted);font-size:15px}
+.privacy li{margin-bottom:6px}
+.privacy a{color:var(--moss)}
+.consent{
+  display:flex;gap:12px;align-items:flex-start;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);
+  cursor:pointer;font-size:15px;color:var(--brown);
+}
+.consent input{position:absolute;opacity:0;width:1px;height:1px}
+.box{
+  flex:0 0 24px;width:24px;height:24px;border-radius:7px;border:1.5px solid var(--sand);background:var(--cream);
+  display:grid;place-items:center;transition:background .15s,border-color .15s;margin-top:1px;
+}
+.box svg{width:14px;height:14px;opacity:0;transform:scale(.6);transition:.15s}
+.consent input:checked + .box{background:var(--moss);border-color:var(--moss)}
+.consent input:checked + .box svg{opacity:1;transform:none}
+.consent input:focus-visible + .box{outline:2px solid var(--terra);outline-offset:2px}
+
+/* pergunta */
+.q-head{padding-top:18px;margin-bottom:22px}
+.q-head h2{font-size:clamp(21px,5.6vw,25px);font-weight:400;line-height:1.35;color:var(--moss-deep);outline:none}
+.q-hint{margin-top:8px;font-size:15px;color:var(--muted)}
+.q-hint.flash{animation:flash .9s ease}
+@keyframes flash{0%,100%{color:var(--muted)}30%{color:var(--terra-dk)}}
+fieldset{border:0;min-width:0}
+.options{display:flex;flex-direction:column;gap:10px}
+.opt{position:relative;display:block}
+.opt input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.opt-body{
+  display:flex;align-items:center;gap:14px;min-height:58px;padding:14px 16px;
+  background:var(--white);border:1.5px solid var(--line);border-radius:14px;
+  transition:border-color .15s,background .15s,transform .1s;font-size:17px;line-height:1.35;
+}
+.opt:hover .opt-body{border-color:var(--sand)}
+.opt input:active + .opt-body{transform:scale(.99)}
+.mark{
+  flex:0 0 22px;width:22px;height:22px;border:1.5px solid var(--sand);display:grid;place-items:center;
+  transition:background .15s,border-color .15s;background:var(--cream);
+}
+.opt.radio .mark{border-radius:50%}
+.opt.check .mark{border-radius:7px}
+.mark svg{width:13px;height:13px;opacity:0;transform:scale(.5);transition:.15s}
+.opt input:checked + .opt-body{border-color:var(--moss);background:var(--moss-pale)}
+.opt input:checked + .opt-body .mark{background:var(--moss);border-color:var(--moss)}
+.opt input:checked + .opt-body .mark svg{opacity:1;transform:none}
+.opt input:focus-visible + .opt-body{outline:2px solid var(--terra);outline-offset:2px}
+.opt.is-blocked .opt-body{opacity:.45}
+.other-wrap{margin:8px 0 2px;display:none}
+.other-wrap.show{display:block;animation:in .3s var(--ease) both}
+.field{
+  width:100%;border:1.5px solid var(--line);background:var(--white);border-radius:14px;
+  padding:14px 16px;font-size:17px;line-height:1.5;resize:vertical;transition:border-color .15s;
+}
+.field:focus{outline:none;border-color:var(--moss)}
+.field::placeholder{color:var(--soft)}
+textarea.field{min-height:148px}
+.field:disabled{background:var(--warm);color:var(--soft)}
+.quick{margin-top:12px}
+.counter{font-size:13px;color:var(--soft);text-align:right;margin-top:6px}
+
+/* rodapé de ação */
+.actions{
+  position:sticky;bottom:0;margin-top:auto;padding:18px 0 calc(18px + env(safe-area-inset-bottom));
+  background:linear-gradient(to bottom,rgba(248,244,238,0),var(--cream) 30%);
+}
+.btn{
+  width:100%;min-height:56px;border:0;border-radius:999px;cursor:pointer;
+  background:var(--moss);color:var(--white);font-size:17px;font-weight:500;letter-spacing:.01em;
+  transition:background .15s,opacity .15s,transform .1s;
+}
+.btn:hover{background:var(--moss-mid)}
+.btn:active{transform:scale(.99)}
+.btn:disabled{background:var(--sand);color:var(--white);cursor:not-allowed}
+.btn:focus-visible{outline:2px solid var(--terra);outline-offset:3px}
+.btn.ghost{background:transparent;color:var(--moss);border:1.5px solid var(--sand)}
+.btn.ghost:hover{border-color:var(--moss)}
+.small-note{text-align:center;font-size:13px;color:var(--soft);margin-top:10px}
+
+/* encerramento */
+.final{justify-content:center;text-align:left;padding-bottom:40px}
+.final .motif{margin-bottom:30px}
+.final p{font-weight:300;font-size:18px;margin-bottom:14px;color:var(--brown)}
+.sign{margin-top:26px;font-family:'Cormorant Garamond',serif;font-size:15px;letter-spacing:.32em;text-transform:uppercase;color:var(--moss)}
+.sync{margin-top:34px;font-size:14px;color:var(--muted);display:flex;gap:10px;align-items:center}
+.sync[hidden]{display:none}
+.contact{margin-top:34px;padding-top:22px;border-top:1px solid var(--line)}
+.contact[hidden]{display:none}
+.contact p{font-size:16px;color:var(--muted);margin-bottom:14px}
+.btn-wa{display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none}
+.btn-wa svg{width:20px;height:20px;flex:0 0 20px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--terra);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+
+.noscript{padding:40px 20px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="top-row">
+      <button class="back" id="back" type="button" hidden aria-label="Voltar para a pergunta anterior">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        Voltar
+      </button>
+      <span class="brand" aria-label="Table Clinic">Table</span>
+      <span class="spacer" aria-hidden="true"></span>
+    </div>
+    <div class="progress" id="progress" hidden role="progressbar" aria-label="Progresso da pesquisa" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+  </header>
+  <main class="stage" id="stage" aria-live="polite">
+    <noscript><p class="noscript">Para responder à pesquisa, ative o JavaScript do navegador.</p></noscript>
+  </main>
+</div>
+
+<script src="/pesquisa/survey-def.js?v=2026-11-v1"></script>
+<script>
+(function () {
+  'use strict';
+  var S = window.TC_SURVEY;
+  var STORE_KEY = 'tc_pesquisa_' + S.SURVEY_VERSION;
+  var API = '/api/pesquisa';
+  var stage = document.getElementById('stage');
+  var backBtn = document.getElementById('back');
+  var progress = document.getElementById('progress');
+  var progressBar = document.getElementById('progress-bar');
+
+  var ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  // Mesmo número e frase do link da bio, trocando a origem. O SDR do inbound
+  // casa pelo núcleo "quero saber mais sobre o acompanhamento da Table Clinic":
+  // não encurtar, senão a conversa não entra no agente. Nada da pesquisa
+  // (respostas, código da participação) vai na mensagem.
+  var WHATSAPP_URL = 'https://wa.me/5511963934151?text=Oi!%20Vim%20pela%20pesquisa%20e%20quero%20saber%20mais%20sobre%20o%20acompanhamento%20da%20Table%20Clinic';
+  var ICON_WA = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></svg>';
+  var MOTIF = '<svg class="motif" viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">' +
+    '<circle cx="40" cy="40" r="30" opacity=".35"/><path d="M40 10c12 10 18 20 18 30S52 60 40 70C28 60 22 50 22 40s6-20 18-30z"/>' +
+    '<path d="M40 22v40" opacity=".6"/></svg>';
+
+  // ── estado (sessão do navegador) ─────────────────────────────────────────
+  function uuid() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    var b = new Uint8Array(16);
+    (window.crypto || window.msCrypto).getRandomValues(b);
+    b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+    var h = Array.prototype.map.call(b, function (x) { return (x + 256).toString(16).slice(1); }).join('');
+    return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' + h.slice(16, 20) + '-' + h.slice(20);
+  }
+  function readSource() {
+    try {
+      var p = new URLSearchParams(location.search);
+      return p.get('origem') || p.get('utm_source') || p.get('src') || p.get('ref') || null;
+    } catch (e) { return null; }
+  }
+  function load() {
+    try { var raw = sessionStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return null;
+  }
+  var state = load() || { rid: null, source: readSource(), answers: {}, current: null, done: false, outbox: [] };
+  function save() { try { sessionStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }
+
+  // ── envio com fila (sobrevive a rede ruim do navegador do Instagram) ─────
+  var sending = false, retryTimer = null, retryDelay = 1500;
+  function enqueue(type, body) { state.outbox.push({ type: type, body: body }); save(); flush(); }
+  function flush() {
+    if (sending || !state.outbox.length) { updateSync(); return; }
+    if (retryTimer) return; // já existe nova tentativa agendada
+    sending = true; updateSync();
+    var item = state.outbox[0];
+    var failed = false;
+    fetch(API + '/' + item.type, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(item.body), keepalive: true, credentials: 'omit',
+    }).then(function (r) {
+      // 5xx/429: tenta de novo depois. 4xx: resposta inválida, descarta para não travar a fila.
+      if (r.status >= 500 || r.status === 429) throw new Error('retry');
+      if (state.outbox[0] === item) state.outbox.shift();
+      save(); retryDelay = 1500;
+    }).catch(function () {
+      failed = true;
+      retryTimer = setTimeout(function () { retryTimer = null; flush(); }, retryDelay);
+      retryDelay = Math.min(retryDelay * 2, 20000);
+    }).then(function () {
+      sending = false;
+      if (!failed) flush(); else updateSync();
+    });
+  }
+  window.addEventListener('online', function () {
+    retryDelay = 1500;
+    if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+    flush();
+  });
+  window.addEventListener('pagehide', save);
+
+  // ── navegação ────────────────────────────────────────────────────────────
+  function path() { return S.computePath(state.answers); }
+  function indexOfCurrent() { return path().indexOf(state.current); }
+
+  function setProgress(ratio, show) {
+    progress.hidden = !show;
+    var v = Math.max(0, Math.min(100, Math.round(ratio * 100)));
+    progressBar.style.width = v + '%';
+    progress.setAttribute('aria-valuenow', String(v));
+  }
+
+  var transitioning = false;
+  function swap(render, dir) {
+    var old = stage.querySelector('.screen');
+    function mount() {
+      stage.innerHTML = '';
+      var el = render();
+      el.classList.add('enter');
+      if (dir === 'back') el.classList.add('back-dir');
+      stage.appendChild(el);
+      window.scrollTo(0, 0);
+      var focusEl = el.querySelector('[data-focus]');
+      if (focusEl) setTimeout(function () { try { focusEl.focus({ preventScroll: true }); } catch (e) { focusEl.focus(); } }, 60);
+      transitioning = false;
+    }
+    if (!old || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { mount(); return; }
+    transitioning = true;
+    old.classList.add('leave'); if (dir === 'back') old.classList.add('back-dir');
+    setTimeout(mount, 190);
+  }
+
+  function goTo(qid, dir) {
+    state.current = qid; save();
+    var p = path(); var i = p.indexOf(qid);
+    setProgress(i / p.length, true);
+    backBtn.hidden = false;
+    swap(function () { return renderQuestion(S.BY_ID[qid]); }, dir);
+  }
+
+  function next(fromQid) {
+    var p = path(); var i = p.indexOf(fromQid);
+    return i > -1 && i + 1 < p.length ? p[i + 1] : null;
+  }
+
+  function commit(q, answer) {
+    if (transitioning) return;
+    state.answers[q.id] = answer;
+    // poda local do que saiu do caminho (mesma regra do servidor)
+    var p = path();
+    Object.keys(state.answers).forEach(function (k) { if (p.indexOf(k) === -1) delete state.answers[k]; });
+    var nxt = next(q.id);
+    enqueue('answer', {
+      response_id: state.rid, question_id: q.id, source: state.source,
+      answer: { codes: answer.codes, text: answer.text || '' },
+      current_question_id: nxt,
+    });
+    if (nxt) goTo(nxt, 'fwd');
+    else finish();
+  }
+
+  function finish() {
+    state.done = true; state.current = null; save();
+    enqueue('complete', { response_id: state.rid });
+    showFinal();
+  }
+
+  backBtn.addEventListener('click', function () {
+    if (transitioning) return;
+    var i = indexOfCurrent();
+    if (i > 0) goTo(path()[i - 1], 'back');
+    else if (i === 0) showIntro('back');
+  });
+
+  // ── telas ────────────────────────────────────────────────────────────────
+  function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  function showIntro(dir) {
+    setProgress(0, false); backBtn.hidden = true;
+    swap(function () {
+      var s = el('section', 'screen intro');
+      s.innerHTML =
+        MOTIF +
+        '<p class="eyebrow">Pesquisa Table Clinic</p>' +
+        '<h1 class="title" tabindex="-1" data-focus>Emagrecer é só uma parte da <em>história.</em></h1>' +
+        '<div class="lead">' +
+          '<p>O Mounjaro mudou a conversa sobre emagrecimento. Mas queremos entender algo maior: o que realmente importa para você nessa jornada?</p>' +
+          '<p>Não existem respostas certas ou erradas. Queremos ouvir sua experiência, suas expectativas e suas dificuldades, sem julgamentos.</p>' +
+          '<p class="meta">A pesquisa é anônima e leva aproximadamente 5 minutos.</p>' +
+        '</div>' +
+        '<div class="privacy">' +
+          '<h2>Antes de começar</h2>' +
+          '<p>Não pedimos nome, telefone, e-mail ou qualquer dado que identifique você. Algumas perguntas tratam de saúde, peso e alimentação, por isso explicamos como suas respostas são tratadas.</p>' +
+          '<details><summary>Como cuidamos das suas respostas</summary><ul>' +
+            '<li>A pesquisa é anônima: cada participação recebe apenas um código aleatório. Não registramos seu IP e não usamos ferramentas de rastreamento publicitário nesta página.</li>' +
+            '<li>Informações sobre saúde são dados sensíveis pela LGPD. Elas são usadas somente para fins de pesquisa pela Table Clinic, analisadas de forma agregada, e não são usadas para contato comercial nem compartilhadas com terceiros.</li>' +
+            '<li>Cada resposta é salva quando você avança. Se você parar no meio, o que já respondeu fica registrado, sempre sem identificação.</li>' +
+            '<li>A participação é voluntária e você pode parar quando quiser. As perguntas abertas são opcionais.</li>' +
+            '<li>A pesquisa é destinada a pessoas com 18 anos ou mais.</li>' +
+            '<li>Mais detalhes na <a href="/legal" target="_blank" rel="noopener">política de privacidade</a>.</li>' +
+          '</ul></details>' +
+          '<label class="consent"><input type="checkbox" id="consent"><span class="box">' + ICON_CHECK + '</span>' +
+            '<span>Li o aviso e concordo em participar desta pesquisa de forma voluntária e anônima.</span></label>' +
+        '</div>' +
+        '<div class="actions"><button class="btn" id="start" type="button" disabled>Quero participar</button>' +
+        '<p class="small-note" id="start-note">Marque a caixa acima para começar.</p></div>';
+      var cb = s.querySelector('#consent'), btn = s.querySelector('#start'), note = s.querySelector('#start-note');
+      if (state.rid) { cb.checked = true; btn.disabled = false; note.hidden = true; }
+      cb.addEventListener('change', function () { btn.disabled = !cb.checked; note.hidden = cb.checked; });
+      btn.addEventListener('click', function () {
+        if (!cb.checked) return;
+        if (!state.rid) {
+          state.rid = uuid(); save();
+          enqueue('start', { response_id: state.rid, source: state.source, consent: true });
+        }
+        goTo(state.current && path().indexOf(state.current) > -1 ? state.current : 'Q01', 'fwd');
+      });
+      return s;
+    }, dir);
+  }
+
+  function renderQuestion(q) {
+    var s = el('section', 'screen question');
+    var prev = state.answers[q.id];
+    var head = el('div', 'q-head');
+    var hid = 'q-' + q.id;
+    head.innerHTML = '<h2 id="' + hid + '" tabindex="-1" data-focus>' + esc(q.text) + '</h2>' +
+      (q.hint ? '<p class="q-hint" id="' + hid + '-hint">' + esc(q.hint) + '</p>' :
+       q.type === 'open' ? '<p class="q-hint">Opcional.</p>' : '');
+    s.appendChild(head);
+    var actions = el('div', 'actions');
+    var btn = el('button', 'btn', 'Continuar'); btn.type = 'button';
+    actions.appendChild(btn);
+
+    if (q.type === 'open') renderOpen(q, s, btn, prev);
+    else renderChoice(q, s, btn, prev, hid);
+
+    s.appendChild(actions);
+    return s;
+  }
+
+  function renderChoice(q, s, btn, prev, hid) {
+    var multi = q.type === 'multi';
+    var selected = prev ? prev.codes.slice() : [];
+    var otherText = prev && prev.text ? prev.text : '';
+    var lastPointer = 0;
+    var fs = el('fieldset'); fs.setAttribute('aria-labelledby', hid + (q.hint ? ' ' + hid + '-hint' : ''));
+    var list = el('div', 'options');
+    var otherWrap = el('div', 'other-wrap');
+    otherWrap.innerHTML = '<label class="visually-hidden" for="other-' + q.id + '">Se quiser, conte qual</label>' +
+      '<input class="field" id="other-' + q.id + '" type="text" maxlength="400" placeholder="Se quiser, conte qual (opcional)" autocomplete="off">';
+    var otherInput = otherWrap.querySelector('input');
+    otherInput.value = otherText;
+
+    q.options.forEach(function (o) {
+      var lab = el('label', 'opt ' + (multi ? 'check' : 'radio'));
+      var input = document.createElement('input');
+      input.type = multi ? 'checkbox' : 'radio'; input.name = q.id; input.value = o.code;
+      input.checked = selected.indexOf(o.code) !== -1;
+      var body = el('span', 'opt-body', '<span class="mark">' + ICON_CHECK + '</span><span>' + esc(o.label) + '</span>');
+      lab.appendChild(input); lab.appendChild(body);
+      lab.addEventListener('pointerdown', function () { lastPointer = Date.now(); });
+      input.addEventListener('change', function () { onPick(o, input); });
+      list.appendChild(lab);
+      if (o.other) list.appendChild(otherWrap);
+    });
+    fs.appendChild(list); s.appendChild(fs);
+
+    var hintEl = s.querySelector('.q-hint');
+    function inputs() { return Array.prototype.slice.call(list.querySelectorAll('input[name="' + q.id + '"]')); }
+    function sync() {
+      selected = inputs().filter(function (i) { return i.checked; }).map(function (i) { return i.value; });
+      var otherOn = q.options.some(function (o) { return o.other && selected.indexOf(o.code) !== -1; });
+      otherWrap.classList.toggle('show', otherOn);
+      if (multi && q.max) {
+        var full = selected.length >= q.max;
+        inputs().forEach(function (i) {
+          var blocked = full && !i.checked;
+          i.parentNode.classList.toggle('is-blocked', blocked);
+          i.setAttribute('aria-disabled', blocked ? 'true' : 'false');
+        });
+      }
+      btn.disabled = selected.length === 0;
+    }
+    function onPick(o, input) {
+      if (multi) {
+        // `selected` ainda é o estado de antes deste toque
+        if (input.checked && q.max && selected.length >= q.max && !o.exclusive) {
+          input.checked = false;
+          if (hintEl) { hintEl.classList.remove('flash'); void hintEl.offsetWidth; hintEl.classList.add('flash'); }
+          return;
+        }
+        if (input.checked) {
+          inputs().forEach(function (i) {
+            if (i === input) return;
+            var opt = q.options.filter(function (x) { return x.code === i.value; })[0];
+            if (o.exclusive || (opt && opt.exclusive)) i.checked = false;
+          });
+        }
+        sync();
+        return;
+      }
+      sync();
+      if (o.other) { setTimeout(function () { otherInput.focus(); }, 80); return; }
+      // avanço automático só em toque/clique (navegação por setas não deve pular a pergunta)
+      if (Date.now() - lastPointer < 1200) setTimeout(submit, 260);
+    }
+    function submit() {
+      if (!selected.length) return;
+      var otherOn = q.options.some(function (o) { return o.other && selected.indexOf(o.code) !== -1; });
+      commit(q, { codes: selected.slice(), text: otherOn ? otherInput.value.trim() : '' });
+    }
+    otherInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
+    btn.addEventListener('click', submit);
+    sync();
+  }
+
+  function renderOpen(q, s, btn, prev) {
+    var wrap = el('div', 'open');
+    var id = 'open-' + q.id;
+    wrap.innerHTML = '<label class="visually-hidden" for="' + id + '">Sua resposta</label>' +
+      '<textarea class="field" id="' + id + '" maxlength="2000" placeholder="Escreva com suas palavras, se quiser."></textarea>' +
+      '<p class="counter" aria-hidden="true"><span>0</span>/2000</p>';
+    var ta = wrap.querySelector('textarea'), count = wrap.querySelector('.counter span');
+    var quick = null;
+    if (q.quickAnswer) {
+      quick = el('label', 'opt check quick');
+      quick.innerHTML = '<input type="checkbox" value="' + esc(q.quickAnswer.code) + '"><span class="opt-body"><span class="mark">' + ICON_CHECK + '</span><span>' + esc(q.quickAnswer.label) + '</span></span>';
+      wrap.appendChild(quick);
+    }
+    s.appendChild(wrap);
+    var quickInput = quick ? quick.querySelector('input') : null;
+    if (prev) {
+      ta.value = prev.text || '';
+      if (quickInput && prev.codes.indexOf(q.quickAnswer.code) !== -1) quickInput.checked = true;
+    }
+    function sync() {
+      var on = quickInput && quickInput.checked;
+      ta.disabled = !!on;
+      count.textContent = String(ta.value.length);
+      btn.textContent = on || ta.value.trim() ? 'Continuar' : 'Pular';
+      btn.classList.toggle('ghost', !(on || ta.value.trim()));
+    }
+    ta.addEventListener('input', sync);
+    if (quickInput) quickInput.addEventListener('change', function () { if (quickInput.checked) ta.value = ''; sync(); });
+    btn.addEventListener('click', function () {
+      var on = quickInput && quickInput.checked;
+      commit(q, { codes: on ? [q.quickAnswer.code] : [], text: on ? '' : ta.value.trim() });
+    });
+    sync();
+  }
+
+  function showFinal() {
+    setProgress(1, true); backBtn.hidden = true;
+    swap(function () {
+      var s = el('section', 'screen final');
+      s.innerHTML = MOTIF +
+        '<h1 class="title" tabindex="-1" data-focus>Obrigada por compartilhar sua <em>perspectiva.</em></h1>' +
+        '<p>Cada pessoa vive uma jornada diferente com o peso, a alimentação e o próprio corpo. Ouvir essas experiências nos ajuda a compreender melhor essa complexidade.</p>' +
+        '<p>Sua participação é muito importante para nós.</p>' +
+        '<p class="sign">Table Clinic</p>' +
+        '<div class="contact" id="contact" hidden>' +
+          '<p>Se quiser conversar com a nossa equipe sobre acompanhamento, é só chamar.</p>' +
+          '<a class="btn btn-wa" href="' + WHATSAPP_URL + '" rel="noopener">' + ICON_WA + 'Falar no WhatsApp</a>' +
+        '</div>' +
+        '<p class="sync" id="sync" hidden><span class="dot" aria-hidden="true"></span><span>Enviando suas respostas. Mantenha esta página aberta por alguns segundos.</span></p>';
+      return s;
+    }, 'fwd');
+    setTimeout(updateSync, 250);
+  }
+
+  // O botão do WhatsApp só aparece depois que tudo foi enviado: sair da página
+  // com a fila cheia deixaria respostas para trás.
+  function updateSync() {
+    var n = document.getElementById('sync');
+    if (n) n.hidden = !state.outbox.length;
+    var c = document.getElementById('contact');
+    if (c) c.hidden = !!state.outbox.length;
+  }
+
+  // ── início ───────────────────────────────────────────────────────────────
+  if (state.done) showFinal();
+  else if (state.rid && state.current && path().indexOf(state.current) > -1) goTo(state.current, 'fwd');
+  else showIntro('fwd');
+  flush();
+})();
+</script>
+</body>
+</html>

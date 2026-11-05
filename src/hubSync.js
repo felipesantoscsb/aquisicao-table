@@ -202,4 +202,23 @@ async function cancelarCadenciaQuiz(phone) {
   }
 }
 
-module.exports = { notificarCompra, enviarLeadV2, enviarRadarEvento, enviarOptOut, drenarRetry, backfillCompras, backfillOptOuts, purchasePayload, cancelarCadenciaQuiz };
+/**
+ * Repasse SÍNCRONO de um passo da pesquisa de mercado (/pesquisa) para o Hub,
+ * onde as respostas são gravadas. Diferente do resto do módulo: não vai para
+ * fila no Redis, porque a ordem das respostas importa e quem tenta de novo é o
+ * próprio navegador (a página guarda uma fila e reenvia em 5xx). Devolve o
+ * status e o corpo do Hub para o chamador repassar.
+ */
+async function encaminharPesquisa(etapa, body) {
+  const s = secret();
+  if (!s) return { status: 503, body: { ok: false, error: 'hub_nao_configurado' } };
+  const r = await fetch(`${base()}/webhook/pesquisa-mercado/${etapa}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-webhook-secret': s },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(10000),
+  });
+  return { status: r.status, body: await r.json().catch(() => ({})) };
+}
+
+module.exports = { encaminharPesquisa, notificarCompra, enviarLeadV2, enviarRadarEvento, enviarOptOut, drenarRetry, backfillCompras, backfillOptOuts, purchasePayload, cancelarCadenciaQuiz };

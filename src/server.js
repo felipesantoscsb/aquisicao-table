@@ -128,6 +128,11 @@ app.use(
   requireDashToken
 );
 
+// Pesquisa de mercado (/pesquisa). Respostas e relatório ficam no Hub
+// (/admin/pesquisa-mercado). Antes do static para /pesquisa cair na rota com
+// cabeçalhos no-store/noindex.
+app.use(require('./pesquisa/routes').createPesquisaRouter());
+
 // Serve os arquivos estáticos da pasta public/
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
