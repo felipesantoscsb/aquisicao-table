@@ -202,6 +202,23 @@
     .vagas span { display: inline-flex; align-items: center; gap: 6px; }
     .vagas span::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--terra); }
 
+    /* ── Avaliações (Google) ───────────────────────── */
+    .avaliacoes { background: var(--white); }
+    .reviews { display: grid; gap: 14px; margin-top: 4px; }
+    .review { background: var(--cream); border: 1px solid var(--line); border-radius: 8px; padding: 24px 22px 20px; }
+    .review__stars { color: var(--terra); letter-spacing: .18em; font-size: .9rem; margin-bottom: 10px; }
+    .review blockquote {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.32rem; line-height: 1.35;
+      font-weight: 500; color: var(--brown); margin-bottom: 14px;
+    }
+    .review__meta { font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0; }
+    .review__meta b { color: var(--moss); font-weight: 600; }
+    .review details, .review details:first-of-type { border: 0; margin-top: 12px; }
+    .review summary { font-family: 'Jost', sans-serif; font-size: .8rem; font-weight: 500; color: var(--terra); padding: 0 22px 0 0; display: inline-block; }
+    .review summary::after { top: -4px; font-size: 1.1rem; }
+    .review details p { font-size: .88rem; line-height: 1.75; padding: 10px 0 0; }
+    .reviews-link { display: inline-block; margin-top: 22px; font-size: .84rem; font-weight: 500; color: var(--moss); text-underline-offset: 3px; }
+
     /* ── FAQ ───────────────────────────────────────── */
     details { border-bottom: 1px solid var(--line); }
     details:first-of-type { border-top: 1px solid var(--line); }
@@ -228,6 +245,7 @@
     @media (prefers-reduced-motion: reduce) { .fade { opacity: 1; transform: none; transition: none; } .btn { transition: none; } }
 
     @media (min-width: 720px) {
+      .review { padding: 28px 30px 24px; }
       .inner { padding: 88px 40px; }
       .ticket { grid-template-columns: 1fr 1.1fr; }
       .ticket__foto { aspect-ratio: auto; }
@@ -347,6 +365,17 @@
   </div>
 </section>
 
+<!-- AVALIAÇÕES (Google) -->
+<section class="avaliacoes fade" id="avaliacoes">
+  <div class="inner">
+    <p class="label">Avaliações no Google</p>
+    <h2>Quem já caminha <em>com a gente</em></h2>
+    <p>Relatos públicos de pacientes da Table Clinic, publicados nas avaliações do Google.</p>
+    <div class="reviews" id="reviews"></div>
+    <a class="reviews-link" id="reviewsLink" href="https://www.google.com/maps/place/Table+Clinic" target="_blank" rel="noopener">Ver todas as avaliações no Google →</a>
+  </div>
+</section>
+
 <!-- INVESTIMENTO -->
 <section class="bg-cream fade" id="investimento">
   <div class="inner">
@@ -400,6 +429,27 @@
 
 <footer>Table Clinic &nbsp;·&nbsp; Moema, São Paulo &nbsp;·&nbsp; tableclinic.com.br</footer>
 
+<script src="https://tableclinic.com.br/js/google-reviews.v1.js"></script>
+<script>
+  // Avaliações reais do Google, da base curada em tableclinic.com.br
+  // (só as com approvedForMarketing). Se a base não carregar, a seção some
+  // em vez de aparecer vazia.
+  (function () {
+    const IDS = ['claudia-de-maria', 'fernanda-rodrigues-de-sa', 'gabriel-martins-de-oliveira', 'ana-souza'];
+    const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const base = (window.TABLE_GOOGLE_REVIEWS || []).filter(r => r.approvedForMarketing);
+    const lista = IDS.map(id => base.find(r => r.id === id)).filter(Boolean);
+    if (!lista.length) { document.getElementById('avaliacoes').hidden = true; return; }
+    document.getElementById('reviews').innerHTML = lista.map(r => `
+      <article class="review">
+        <p class="review__stars" aria-label="${r.rating} de 5 estrelas">${'★'.repeat(r.rating)}</p>
+        <blockquote>“${esc(r.featuredExcerpt)}”</blockquote>
+        <p class="review__meta"><b>${esc(r.author)}</b> · avaliação no Google</p>
+        <details><summary>Ler avaliação completa</summary><p>${esc(r.fullText)}</p></details>
+      </article>`).join('');
+    if (lista[0].businessProfileUrl) document.getElementById('reviewsLink').href = lista[0].businessProfileUrl;
+  })();
+</script>
 <script>
   // Valor da parcela: preencher quando o link da InfinitePay estiver
   // configurado (ex.: '12x de R$ 123,79'). Vazio mostra só "parcelado no cartão",
