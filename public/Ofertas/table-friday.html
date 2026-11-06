@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#2B3526" />
+  <title>Table Friday · Table Clinic</title>
+  <meta name="description" content="Table Premium em condição especial de novembro, com o Volta às Aulas da Table incluso. 15 vagas." />
+
+  <!-- Meta Pixel: igual às outras páginas de plano (PageView + ViewContent).
+       Sem InitiateCheckout/Purchase de propósito: o pixel hoje só recebe
+       compra do PR, e evento de plano já derrubou a qualidade do Purchase. -->
+  <script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window,document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init','989971718548782');
+    fbq('track','PageView');
+    fbq('track','ViewContent',{content_name:'Table Friday 2026'});
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=989971718548782&ev=PageView&noscript=1"/></noscript>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --night:     #2B3526;
+      --moss:      #3D4A35;
+      --moss-mid:  #4E5E42;
+      --moss-pale: #E8EDE4;
+      --cream:     #F8F4EE;
+      --warm:      #EDE5D8;
+      --sand:      #D8CCBA;
+      --terra:     #B97040;
+      --terra-dk:  #8A4F28;
+      --brown:     #2C2018;
+      --muted:     #7A6E64;
+      --white:     #FFFFFF;
+      --line:      #DDD4C4;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Jost', sans-serif; font-weight: 300; background: var(--cream); color: var(--brown); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; }
+    a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--terra); outline-offset: 3px; }
+
+    .serif { font-family: 'Cormorant Garamond', serif; }
+    /* Cormorant usa algarismos antigos por padrão: "29/11" vira "29/II". */
+    .facts b, .ticket__data b, .preco__por, .preco__de, .passo small { font-variant-numeric: lining-nums; font-feature-settings: 'lnum' 1; }
+    .inner { max-width: 640px; margin: 0 auto; padding: 72px 24px; }
+    .label {
+      font-size: .68rem; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--terra); font-weight: 600; margin-bottom: 12px;
+    }
+    h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.9rem, 6vw, 2.7rem); font-weight: 400; line-height: 1.12;
+      margin-bottom: 28px;
+    }
+    h2 em, h1 em { font-style: italic; color: var(--terra); }
+    p { font-size: 1rem; line-height: 1.85; color: var(--muted); margin-bottom: 16px; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--brown); font-weight: 500; }
+
+    /* ── Topo ──────────────────────────────────────── */
+    .top {
+      background: var(--night); color: var(--cream);
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 24px; font-size: .66rem; letter-spacing: .2em; text-transform: uppercase;
+    }
+    .top b { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 400; letter-spacing: .22em; opacity: .9; }
+    .top span { color: var(--sand); opacity: .8; }
+
+    /* ── Hero ──────────────────────────────────────── */
+    .hero {
+      background:
+        radial-gradient(120% 80% at 50% 0%, rgba(185,112,64,.22) 0%, rgba(185,112,64,0) 60%),
+        linear-gradient(180deg, var(--night) 0%, var(--moss) 100%);
+      color: var(--cream); text-align: center;
+      padding: 72px 24px 64px; position: relative; overflow: hidden;
+    }
+    .hero::after {
+      content: 'Friday'; position: absolute; left: 50%; bottom: -0.28em; transform: translateX(-50%);
+      font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 300;
+      font-size: clamp(7rem, 34vw, 15rem); line-height: 1; color: rgba(248,244,238,.05);
+      white-space: nowrap; pointer-events: none;
+    }
+    .tag {
+      display: inline-block; border: 1px solid rgba(216,204,186,.4); color: var(--sand);
+      font-size: .66rem; letter-spacing: .22em; text-transform: uppercase; font-weight: 500;
+      padding: 7px 14px; border-radius: 999px; margin-bottom: 28px;
+    }
+    .hero h1 {
+      font-family: 'Cormorant Garamond', serif; font-weight: 300;
+      font-size: clamp(3rem, 13vw, 5.6rem); line-height: .98; letter-spacing: -.01em;
+      margin-bottom: 24px;
+    }
+    .hero .lede { color: rgba(248,244,238,.78); max-width: 460px; margin: 0 auto 32px; font-size: 1.02rem; }
+    .hero .lede strong { color: var(--cream); }
+    .facts {
+      display: grid; grid-template-columns: repeat(3, 1fr); max-width: 460px; margin: 0 auto 36px;
+      border-top: 1px solid rgba(248,244,238,.14); border-bottom: 1px solid rgba(248,244,238,.14);
+    }
+    .facts div { padding: 14px 6px; }
+    .facts div + div { border-left: 1px solid rgba(248,244,238,.14); }
+    .facts b { display: block; font-family: 'Cormorant Garamond', serif; font-size: 1.7rem; font-weight: 500; color: var(--cream); line-height: 1.1; }
+    .facts small { font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; color: var(--sand); }
+
+    .btn {
+      display: inline-block; background: var(--terra); color: var(--white); text-decoration: none;
+      font-size: .82rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+      padding: 17px 34px; border-radius: 3px; transition: background .2s, transform .18s;
+    }
+    .btn:hover { background: var(--terra-dk); transform: translateY(-2px); }
+    .btn--moss { background: var(--moss); }
+    .btn--moss:hover { background: var(--moss-mid); }
+    .btn--block { display: block; text-align: center; max-width: 360px; margin: 0 auto; }
+    .hero .sub-cta { display: block; margin-top: 14px; font-size: .74rem; color: rgba(248,244,238,.55); }
+
+    /* ── Reencontro ────────────────────────────────── */
+    .reencontro { background: var(--white); }
+    .reencontro .inner { text-align: left; }
+
+    /* ── Incluso ───────────────────────────────────── */
+    .bg-cream { background: var(--cream); }
+    .bg-warm  { background: var(--warm); }
+    .rows { border-top: 1px solid var(--line); }
+    .row { display: grid; grid-template-columns: 34px 1fr; gap: 18px; padding: 22px 0; border-bottom: 1px solid var(--line); }
+    .row i {
+      width: 34px; height: 34px; border-radius: 50%; background: var(--moss-pale);
+      display: grid; place-items: center; font-style: normal; font-size: .9rem; margin-top: 2px;
+    }
+    .row h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.18rem; font-weight: 500; margin-bottom: 4px; }
+    .row p { font-size: .9rem; line-height: 1.7; }
+
+    /* ── Volta às Aulas (ingresso) ─────────────────── */
+    .evento { background: var(--night); color: var(--cream); }
+    .evento .label { color: var(--sand); }
+    .evento h2 { color: var(--cream); }
+    .evento p { color: rgba(248,244,238,.72); }
+    .ticket {
+      background: var(--cream); color: var(--brown); border-radius: 10px; overflow: hidden;
+      display: grid; grid-template-columns: 1fr; margin-top: 8px; position: relative;
+    }
+    .ticket__foto { aspect-ratio: 16 / 10; overflow: hidden; }
+    .ticket__foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+    .ticket__corpo { padding: 26px 24px 24px; position: relative; }
+    .ticket__corpo::before {
+      content: ''; position: absolute; left: 18px; right: 18px; top: 0;
+      border-top: 2px dashed var(--sand);
+    }
+    .ticket__data { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+    .ticket__data b { font-family: 'Cormorant Garamond', serif; font-size: 2.6rem; font-weight: 500; color: var(--terra); line-height: 1; }
+    .ticket__data span { font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+    .ticket h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 500; margin-bottom: 14px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chips span {
+      font-size: .74rem; padding: 6px 12px; border-radius: 999px;
+      background: var(--moss-pale); color: var(--moss); font-weight: 500;
+    }
+    .ticket__nota { font-size: .78rem; color: var(--muted); margin-top: 16px; line-height: 1.6; }
+
+    /* ── Calendário ────────────────────────────────── */
+    .linha { position: relative; padding-left: 30px; }
+    .linha::before { content: ''; position: absolute; left: 8px; top: 6px; bottom: 6px; width: 1px; background: linear-gradient(var(--terra), var(--moss-mid)); }
+    .passo { position: relative; padding-bottom: 28px; }
+    .passo:last-child { padding-bottom: 0; }
+    .passo::before {
+      content: ''; position: absolute; left: -30px; top: 4px; width: 17px; height: 17px; border-radius: 50%;
+      background: var(--terra); border: 3px solid var(--warm);
+    }
+    .passo.pausa::before { background: var(--warm); border: 2px dashed var(--muted); }
+    .passo small { font-size: .66rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--terra); }
+    .passo.pausa small { color: var(--muted); }
+    .passo h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 500; margin: 2px 0 2px; }
+    .passo p { font-size: .88rem; line-height: 1.7; }
+
+    /* ── Preço ─────────────────────────────────────── */
+    .preco { background: var(--white); border: 1px solid var(--line); border-radius: 8px; padding: 40px 24px 34px; text-align: center; }
+    .preco__de { font-size: .9rem; color: var(--muted); margin-bottom: 4px; }
+    .preco__de s { text-decoration-color: var(--terra); }
+    .preco__por { font-family: 'Cormorant Garamond', serif; font-size: clamp(3rem, 14vw, 4.4rem); font-weight: 600; color: var(--moss); line-height: 1; }
+    .preco__forma { font-size: .74rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 8px 0 4px; }
+    .preco__parc { font-size: .9rem; color: var(--muted); margin-bottom: 28px; }
+    .preco ul { list-style: none; text-align: left; max-width: 340px; margin: 0 auto 30px; }
+    .preco li { font-size: .88rem; color: var(--brown); padding: 8px 0 8px 26px; position: relative; border-bottom: 1px solid var(--line); }
+    .preco li::before { content: '✓'; position: absolute; left: 4px; color: var(--terra); font-weight: 600; }
+    .preco li:last-child { border-bottom: 0; }
+    .vagas {
+      display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
+      margin-top: 22px; font-size: .78rem; color: var(--muted);
+    }
+    .vagas span { display: inline-flex; align-items: center; gap: 6px; }
+    .vagas span::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--terra); }
+
+    /* ── FAQ ───────────────────────────────────────── */
+    details { border-bottom: 1px solid var(--line); }
+    details:first-of-type { border-top: 1px solid var(--line); }
+    summary {
+      list-style: none; cursor: pointer; padding: 18px 28px 18px 0; position: relative;
+      font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 500; color: var(--brown);
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: '+'; position: absolute; right: 2px; top: 14px; font-family: 'Jost'; font-size: 1.3rem; color: var(--terra); font-weight: 300; }
+    details[open] summary::after { content: '–'; }
+    details p { font-size: .92rem; padding: 0 0 18px; }
+
+    /* ── Fecho ─────────────────────────────────────── */
+    .fecho { background: var(--moss); color: var(--cream); text-align: center; }
+    .fecho h2 { color: var(--cream); }
+    .fecho p { color: rgba(248,244,238,.72); max-width: 460px; margin-left: auto; margin-right: auto; }
+    .fecho .assina { font-size: .74rem; letter-spacing: .16em; text-transform: uppercase; color: var(--sand); margin-top: 28px; }
+    .duvida { display: inline-block; margin-top: 18px; font-size: .82rem; color: var(--sand); }
+
+    footer { background: var(--brown); color: rgba(248,244,238,.38); text-align: center; padding: 24px; font-size: .7rem; letter-spacing: .1em; }
+
+    .fade { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+    .fade.visible { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { .fade { opacity: 1; transform: none; transition: none; } .btn { transition: none; } }
+
+    @media (min-width: 720px) {
+      .inner { padding: 88px 40px; }
+      .ticket { grid-template-columns: 1fr 1.1fr; }
+      .ticket__foto { aspect-ratio: auto; }
+      .ticket__corpo { padding: 32px 30px; }
+      .ticket__corpo::before { left: 0; right: auto; top: 18px; bottom: 18px; border-top: 0; border-left: 2px dashed var(--sand); }
+      .preco { padding: 52px 40px 40px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="top"><b>Table Clinic</b><span>Table Friday 2026</span></div>
+
+<!-- HERO -->
+<section class="hero">
+  <span class="tag">Table Friday · condição de novembro</span>
+  <h1>Sua virada<br><em>começa agora</em></h1>
+  <p class="lede">O <strong>Table Premium</strong>, os 3 meses de acompanhamento da Table Clinic, em uma condição que não costuma existir. É só para quem já conheceu o nosso trabalho.</p>
+  <div class="facts">
+    <div><b>3</b><small>meses</small></div>
+    <div><b>15</b><small>vagas</small></div>
+    <div><b>29/11</b><small>encerra</small></div>
+  </div>
+  <a class="btn" href="#investimento">Ver a condição</a>
+  <span class="sub-cta">Sem nova pré-consulta: você começa de onde parou</span>
+</section>
+
+<!-- REENCONTRO -->
+<section class="reencontro fade">
+  <div class="inner">
+    <p class="label">Por que você recebeu esta página</p>
+    <h2>Você já sentou <em>com a gente</em></h2>
+    <p>Na sua pré-consulta, você contou o que vinha pesando: a relação com a comida, a rotina, o corpo, as tentativas que não se sustentaram. Talvez aquele não fosse o momento de começar, e tudo bem.</p>
+    <p>A Table Friday existe para quem sente que <strong>agora é a hora</strong>. A sua nutricionista já conhece a sua história, então não é preciso começar do zero nem fazer uma nova pré-consulta.</p>
+  </div>
+</section>
+
+<!-- INCLUSO -->
+<section class="bg-cream fade">
+  <div class="inner">
+    <p class="label">O que está incluso</p>
+    <h2>Presença real, <em>em cada etapa</em></h2>
+    <div class="rows">
+      <div class="row"><i aria-hidden="true">🗓️</i><div>
+        <h3>1 encontro mensal, presencial ou online</h3>
+        <p>Uma sessão completa por mês com sua nutricionista, em Moema ou online: revisão dos padrões, ajustes no plano alimentar e trabalho psicoemocional sobre o que apareceu no mês.</p></div></div>
+      <div class="row"><i aria-hidden="true">📋</i><div>
+        <h3>Check-up semanal por WhatsApp</h3>
+        <p>Toda semana sua nutricionista entende o que funcionou e o que travou, ajusta o plano e dá o direcionamento da semana seguinte.</p></div></div>
+      <div class="row"><i aria-hidden="true">💬</i><div>
+        <h3>Suporte por WhatsApp durante o processo</h3>
+        <p>Para as dúvidas do dia a dia: uma refeição fora da rotina, uma situação que surgiu, uma insegurança rápida.</p></div></div>
+      <div class="row"><i aria-hidden="true">🥗</i><div>
+        <h3>Plano alimentar e trabalho psicoemocional</h3>
+        <p>O que você come e o que move você emocionalmente, juntos. Construído para a sua rotina e o seu histórico, com ajustes contínuos.</p></div></div>
+      <div class="row"><i aria-hidden="true">👥</i><div>
+        <h3>Comunidade Ativa com Evelyn Liu</h3>
+        <p>Grupo exclusivo com acesso direto à Evelyn, conteúdos aprofundados e encontros online periódicos.</p></div></div>
+      <div class="row"><i aria-hidden="true">📖</i><div>
+        <h3>Livro com dedicatória da Evelyn</h3>
+        <p>"Gordura Não Existe: O que Existe é Dor", entregue na sua casa ou retirado na clínica.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- VOLTA ÀS AULAS -->
+<section class="evento fade">
+  <div class="inner">
+    <p class="label">Incluso na Table Friday</p>
+    <h2>Volta às Aulas <em>da Table</em></h2>
+    <p>Um encontro presencial para começar 2027 junto com a Evelyn, a equipe e outras mulheres que estão no mesmo caminho que você.</p>
+    <div class="ticket">
+      <div class="ticket__foto"><img src="/img/evelyn-palco.jpg" alt="Evelyn Liu sorrindo com um microfone na mão, durante uma palestra" loading="lazy" width="960" height="1200"></div>
+      <div class="ticket__corpo">
+        <div class="ticket__data"><b>30/01</b><span>sábado · 2027</span></div>
+        <h3>Um reencontro presencial</h3>
+        <div class="chips">
+          <span>Workshop artesanal</span>
+          <span>Palestra</span>
+          <span>Bate-papo</span>
+          <span>Comida boa</span>
+          <span>Conexões</span>
+        </div>
+        <p class="ticket__nota">Sua participação já está garantida ao fechar a Table Friday.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CALENDÁRIO -->
+<section class="bg-warm fade">
+  <div class="inner">
+    <p class="label">Como fica o seu calendário</p>
+    <h2>Começa agora, <em>respeita as festas</em></h2>
+    <div class="linha">
+      <div class="passo">
+        <small>Novembro</small>
+        <h3>Você começa imediatamente</h3>
+        <p>O primeiro encontro é agendado com a equipe pelo WhatsApp, no horário que for melhor para você.</p>
+      </div>
+      <div class="passo pausa">
+        <small>Natal e Ano-Novo</small>
+        <h3>Pausa programada</h3>
+        <p>O acompanhamento pausa nas festas de fim de ano, e esses dias não contam: você não perde nenhum dia do período contratado.</p>
+      </div>
+      <div class="passo">
+        <small>Janeiro</small>
+        <h3>Retomada</h3>
+        <p>O processo volta de onde parou, com o plano ajustado para o novo ano.</p>
+      </div>
+      <div class="passo">
+        <small>30 de janeiro</small>
+        <h3>Volta às Aulas da Table</h3>
+        <p>O encontro presencial com a Evelyn e as outras pacientes da Table.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INVESTIMENTO -->
+<section class="bg-cream fade" id="investimento">
+  <div class="inner">
+    <p class="label" style="text-align:center">Investimento</p>
+    <h2 style="text-align:center">Table Premium, <em>3 meses</em></h2>
+    <div class="preco">
+      <p class="preco__de">De <s>R$ 1.498</s> por</p>
+      <div class="preco__por">R$ 1.197</div>
+      <p class="preco__forma">à vista</p>
+      <p class="preco__parc" id="parcelas">ou parcelado no cartão</p>
+      <ul>
+        <li>3 meses de acompanhamento Table Premium</li>
+        <li>Início imediato, com pausa nas festas</li>
+        <li>Volta às Aulas da Table em 30/01/2027</li>
+        <li>Sem nova pré-consulta</li>
+      </ul>
+      <a class="btn btn--moss btn--block" id="btnCheckout" href="https://checkout.infinitepay.io/tableclinic/GvxZtssSiE" target="_blank" rel="noopener">Quero começar agora</a>
+      <div class="vagas"><span>15 vagas no total</span><span>até 29/11 ou quando as vagas acabarem</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="bg-white fade" style="background:var(--white)">
+  <div class="inner">
+    <p class="label">Dúvidas</p>
+    <h2>Antes de <em>decidir</em></h2>
+    <details><summary>Preciso fazer outra pré-consulta?</summary>
+      <p>Não. Você já passou por ela, e a equipe tem o seu histórico. Depois do pagamento, é só agendar o primeiro encontro.</p></details>
+    <details><summary>Quando começa?</summary>
+      <p>Imediatamente. A equipe chama você pelo WhatsApp para marcar o primeiro encontro ainda em novembro.</p></details>
+    <details><summary>Como funciona a pausa de fim de ano?</summary>
+      <p>O acompanhamento pausa no Natal e no Ano-Novo, e o período da pausa é somado ao final. Os 3 meses contratados ficam inteiros.</p></details>
+    <details><summary>Na pré-consulta me indicaram outro plano. E agora?</summary>
+      <p>A Table Friday é uma condição do Premium. Se a indicação para você foi outra, fale com a Karina antes de fechar: ela confere com a sua nutricionista qual caminho faz sentido para o seu caso.</p></details>
+    <details><summary>Até quando vale?</summary>
+      <p>Até 29/11/2026 ou até as 15 vagas serem preenchidas, o que acontecer primeiro. Quando as vagas acabarem, a condição se encerra.</p></details>
+  </div>
+</section>
+
+<!-- FECHO -->
+<section class="fecho fade">
+  <div class="inner">
+    <h2>O problema nunca foi <em>a comida</em></h2>
+    <p>Foi sempre a dor que não encontrou outro lugar para existir. Se agora é o seu momento, estamos aqui para caminhar com você.</p>
+    <a class="btn" href="#investimento">Garantir minha vaga</a><br>
+    <a class="duvida" id="linkDuvida" href="https://wa.me/5511963934151?text=Oi%21%20Tenho%20uma%20d%C3%BAvida%20sobre%20a%20Table%20Friday" target="_blank" rel="noopener">Ficou alguma dúvida? Fale com a gente no WhatsApp</a>
+    <p class="assina">Com carinho, Evelyn e equipe Table Clinic</p>
+  </div>
+</section>
+
+<footer>Table Clinic &nbsp;·&nbsp; Moema, São Paulo &nbsp;·&nbsp; tableclinic.com.br</footer>
+
+<script>
+  // Valor da parcela: preencher quando o link da InfinitePay estiver
+  // configurado (ex.: '12x de R$ 123,79'). Vazio mostra só "parcelado no cartão",
+  // para a página nunca anunciar um número que o checkout não cobra.
+  const PARCELA = '';
+  if (PARCELA) document.getElementById('parcelas').textContent = 'ou ' + PARCELA + ' no cartão';
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, { threshold: 0.06 });
+  document.querySelectorAll('.fade').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

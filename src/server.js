@@ -479,6 +479,9 @@ app.get('/oferta-premium-isa',       (req, res) => res.sendFile(path.join(oferta
 app.get('/oferta-premium-pr-isa',    (req, res) => res.sendFile(path.join(ofertas, 'table-premium-pr-isa.html')));
 app.get('/oferta-elite-isa',         (req, res) => res.sendFile(path.join(ofertas, 'table-elite-isa.html')));
 app.get('/oferta-elite-pr-isa',      (req, res) => res.sendFile(path.join(ofertas, 'table-elite-pr-isa.html')));
+// Table Friday 2026: Premium R$ 1.197 + Volta às Aulas da Table (30/01/2027).
+// Link enviado pela Karina na conversa da Reativação do Hub; noindex.
+app.get('/table-friday',             (req, res) => res.sendFile(path.join(ofertas, 'table-friday.html')));
 app.get('/obrigado-premium-pr',   (req, res) => res.sendFile(path.join(funil, 'obrigado-premium-pr.html')));
 app.get('/obrigado-elite-pr',     (req, res) => res.sendFile(path.join(funil, 'obrigado-elite-pr.html')));
 app.get('/forms',      (req, res) => res.sendFile(path.join(funil, 'formulario-pre-sessao.html')));
