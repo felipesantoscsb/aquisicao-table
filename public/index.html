@@ -81,6 +81,8 @@
     .pods{margin-top:70px;padding-top:40px;border-top:1px solid rgba(233,201,174,.22)}.pods-head{display:flex;align-items:baseline;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:24px}.pods-head h3{font-size:32px}.pods-head p{font-size:14px;color:rgba(255,255,255,.65)}
     .pods-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}.pod{text-decoration:none;display:block}.pod img{display:block;width:100%;height:auto;transition:opacity .2s}.pod:hover img{opacity:.85}.pod span{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(233,201,174,.75);margin-top:9px}
     @media(max-width:960px){.pods-grid{grid-template-columns:repeat(2,1fr)}}
+    .stage-trio{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.stage-trio figure{margin:0}.stage-trio img{display:block;width:100%;height:auto}.stage-trio figcaption{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(233,201,174,.75);margin-top:9px}
+    @media(max-width:560px){.stage-trio{grid-template-columns:1fr 1fr}.stage-trio figure:first-child{grid-column:1/3}}
     .about-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:80px;align-items:center}
     .about-photo img{display:block;width:100%;height:auto}
     .about-copy p{font-size:16px;line-height:1.85;color:var(--body);margin-top:18px}
@@ -191,14 +193,15 @@
 
     <section class="section stage" id="palcos">
       <div class="shell stage-grid">
-        <div>
-          <div class="stage-photo"><img src="/images/palestras/palco.jpg" width="1800" height="1200" loading="lazy" alt="Evelyn Liu palestrando para estudantes na Universidade São Camilo"/></div>
-          <p class="stage-cap">Universidade São Camilo</p>
+        <div class="stage-trio">
+          <figure><img src="/images/palestras/palco-tedx.jpg" width="900" height="1125" loading="lazy" alt="Evelyn Liu no palco do TEDxGuarulhos"/><figcaption>TEDxGuarulhos</figcaption></figure>
+          <figure><img src="/images/palestras/palco-saoluiz.jpg" width="900" height="1125" loading="lazy" alt="Evelyn Liu palestrando no Hospital São Luiz Guarulhos"/><figcaption>Hospital São Luiz</figcaption></figure>
+          <figure><img src="/images/palestras/palco-saocamilo.jpg" width="900" height="1125" loading="lazy" alt="Evelyn Liu palestrando no Centro Universitário São Camilo"/><figcaption>São Camilo</figcaption></figure>
         </div>
         <div>
           <p class="eyebrow">No palco e nas conversas</p>
           <h2 class="section-title">Do consultório <em>para o palco.</em></h2>
-          <ul class="stage-list"><li>TEDx</li><li>Universidade São Camilo</li><li>Hospital São Luiz</li><li>Dezenas de podcasts</li></ul>
+          <ul class="stage-list"><li>TEDxGuarulhos</li><li>Universidade São Camilo</li><li>Hospital São Luiz</li><li>Dezenas de podcasts</li></ul>
           <div class="formats"><span>Palestras presenciais</span><span>Palestras online</span><span>Painéis e conversas</span><span>Workshops</span></div>
         </div>
       </div>
