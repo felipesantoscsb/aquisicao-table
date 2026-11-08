@@ -78,6 +78,9 @@
     .stage-list{list-style:none;margin-top:30px}
     .stage-list li{font-family:var(--serif);font-size:25px;padding:12px 0;border-bottom:1px solid rgba(233,201,174,.22)}
     .formats{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}.formats span{font-size:12px;border:1px solid rgba(233,201,174,.4);padding:7px 14px;border-radius:20px}
+    .pods{margin-top:70px;padding-top:40px;border-top:1px solid rgba(233,201,174,.22)}.pods-head{display:flex;align-items:baseline;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:24px}.pods-head h3{font-size:32px}.pods-head p{font-size:14px;color:rgba(255,255,255,.65)}
+    .pods-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}.pod{text-decoration:none;display:block}.pod img{display:block;width:100%;height:auto;transition:opacity .2s}.pod:hover img{opacity:.85}.pod span{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(233,201,174,.75);margin-top:9px}
+    @media(max-width:960px){.pods-grid{grid-template-columns:repeat(2,1fr)}}
     .about-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:80px;align-items:center}
     .about-photo img{display:block;width:100%;height:auto}
     .about-copy p{font-size:16px;line-height:1.85;color:var(--body);margin-top:18px}
@@ -198,6 +201,10 @@
           <ul class="stage-list"><li>TEDx</li><li>Universidade São Camilo</li><li>Hospital São Luiz</li><li>Dezenas de podcasts</li></ul>
           <div class="formats"><span>Palestras presenciais</span><span>Palestras online</span><span>Painéis e conversas</span><span>Workshops</span></div>
         </div>
+      </div>
+      <div class="shell pods">
+        <div class="pods-head"><h3>Dezenas de podcasts</h3><p>Conversas longas sobre corpo, comida e comportamento. Alguns episódios:</p></div>
+        <div class="pods-grid"><a class="pod" href="https://www.youtube.com/watch?v=J5xMLRKsvd0" target="_blank" rel="noopener"><img src="/images/palestras/pod-J5xMLRKsvd0.jpg" width="480" height="270" loading="lazy" alt="Evelyn Liu no Pod Ser Linda #24"/><span>Pod Ser Linda #24</span></a><a class="pod" href="https://www.youtube.com/watch?v=RpnqThvqQxU" target="_blank" rel="noopener"><img src="/images/palestras/pod-RpnqThvqQxU.jpg" width="480" height="270" loading="lazy" alt="Evelyn Liu no MulheresPod #115"/><span>MulheresPod #115</span></a><a class="pod" href="https://www.youtube.com/watch?v=bGiYe2TMieY" target="_blank" rel="noopener"><img src="/images/palestras/pod-bGiYe2TMieY.jpg" width="480" height="270" loading="lazy" alt="Evelyn Liu no POWERCAST #206"/><span>POWERCAST #206</span></a><a class="pod" href="https://www.youtube.com/watch?v=zMYUXUf9jj8" target="_blank" rel="noopener"><img src="/images/palestras/pod-zMYUXUf9jj8.jpg" width="480" height="270" loading="lazy" alt="Evelyn Liu no Vênus Day Talks #28"/><span>Vênus Day Talks #28</span></a><a class="pod" href="https://www.youtube.com/watch?v=LfvpKPDo5wI" target="_blank" rel="noopener"><img src="/images/palestras/pod-LfvpKPDo5wI.jpg" width="480" height="270" loading="lazy" alt="Evelyn Liu no TIKTAL #47"/><span>TIKTAL #47</span></a></div>
       </div>
     </section>
 
