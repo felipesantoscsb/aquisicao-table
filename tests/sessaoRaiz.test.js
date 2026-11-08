@@ -162,8 +162,11 @@ test('a home não é mais o placeholder do Express', () => {
 test('a home autoral tem canônica própria e entra no sitemap', () => {
   const home = readFileSync(join(root, 'public/index.html'), 'utf8');
   assert.match(home, /<link rel="canonical" href="https:\/\/www\.evelynliu\.com\.br\/"\/>/);
-  assert.match(home, /Nutricionista comportamental, educadora/);
-  assert.match(home, /A Table é o principal lugar/);
+  // Desde 08/11/2026 a home é a vitrine de palestras; a Table aparece como a
+  // prática clínica que sustenta a fala, não como o produto à venda.
+  assert.match(home, /Palestrante e nutricionista comportamental/);
+  assert.match(home, /A prática por trás da palestra/);
+  assert.match(home, /tableclinic\.com\.br/);
   const sitemap = readFileSync(join(root, 'public/sitemap.xml'), 'utf8');
   assert.match(sitemap, /<loc>https:\/\/www\.evelynliu\.com\.br\/<\/loc>/);
 });
@@ -186,7 +189,8 @@ test('/raiz-B é um protótipo isolado da etapa final', () => {
 
 test('a home usa os ativos em alta resolução com a proporção real', () => {
   const home = readFileSync(join(root, 'public/index.html'), 'utf8');
-  assert.match(home, /evelyn-liu\.png" width="1080" height="1350"/);
+  assert.match(home, /palestras\/hero\.jpg" width="1100" height="1375"/);
+  assert.doesNotMatch(home, /No Palco\.jpg/, 'a original de 20 MB não entra na home');
   assert.match(home, /Mockup 3\.jpg" width="2324" height="2205"/);
   assert.doesNotMatch(home, /Vestido Verde Olhar amistoso\.jpg/);
   assert.doesNotMatch(home, /Mockup 1\.png/);
