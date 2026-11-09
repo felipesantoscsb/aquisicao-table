@@ -11,6 +11,7 @@ const {
   sanitizeLogRecord,
 } = require('./conversaTracking');
 const primeiraRuptura = require('./primeiraRuptura');
+const dossieRuptura = require('./dossieRuptura');
 
 // Mesmo Pixel principal do /raiz. O token da CAPI continua exclusivamente no ambiente.
 const CONVERSA_PIXEL_ID = '989971718548782';
@@ -428,6 +429,56 @@ app.post('/api/pr/reenviar', async (req, res) => {
   }
 });
 
+// ───── Dossiê da Primeira Ruptura ───────────────────────────────────────────
+// Página do resultado do Radar, enviada por WhatsApp 15 min depois do quiz.
+// Token opaco (pr:dossie:<token> → radarId), mesmo raciocínio do mapa.
+const PREVIEW_PATH_RE = /\/raiz-radar-[abc]\/?(\?|#|$)/i;
+
+app.get('/dossie-ruptura/:token', (req, res) => {
+  res.set('X-Robots-Tag', 'noindex, nofollow');
+  res.sendFile(path.join(funil, 'dossie-ruptura.html'));
+});
+
+// Notas de revisão. Valores só em 1/2/4/5, que são os que o Radar produz —
+// com 3 o classificador de identidade recusa o desenho.
+const DOSSIE_DEMO = {
+  nome: 'Mariana', identity_key: 'bill', identity_confidence: 'clear',
+  scores: { body: 2, food: 1, resources: 4, knowledge: 4, awareness: 2, adaptability: 5 },
+};
+
+app.get('/api/pr/dossie', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.set('X-Robots-Tag', 'noindex, nofollow');
+  const t = String(req.query.t || '').trim();
+  if (!t) return res.status(400).json({ error: 'token ausente' });
+
+  // `t=demo&rota=A|B|C` revisa as três versões sem lead real.
+  if (t === 'demo') {
+    const rota = String(req.query.rota || 'B').toUpperCase();
+    return res.json(dossieRuptura.montarDossie({ registro: { ...DOSSIE_DEMO, route: rota }, radarId: null }));
+  }
+  if (!/^[0-9a-f]{32}$/.test(t)) return res.status(404).json({ error: 'token desconhecido' });
+
+  const cru = await redisGet(`pr:dossie:${t}`);
+  if (!cru) return res.status(404).json({ error: 'token desconhecido' });
+  let ref; try { ref = JSON.parse(cru); } catch { return res.status(500).json({ error: 'registro ilegivel' }); }
+
+  let registro = null, lead = null;
+  try { const r = await redisGet(`radar:${ref.radar_id}`); if (r) registro = JSON.parse(r); } catch {}
+  try { const l = await redisGet(`lead:${ref.radar_id}`); if (l) lead = JSON.parse(l); } catch {}
+  if (!registro || !registro.scores) {
+    console.warn(`[dossie-pr] ${t}: sem notas do Radar (radar_id=${ref.radar_id})`);
+    return res.status(404).json({ error: 'resultado expirado' });
+  }
+
+  // Primeira abertura: o sinal mais barato de que o dossiê chegou.
+  if (!ref.aberto_em) {
+    redisSet(`pr:dossie:${t}`, JSON.stringify({ ...ref, aberto_em: new Date().toISOString() }), 'KEEPTTL').catch(() => {});
+    redisIncrStats('dossie_ruptura_aberto');
+  }
+  res.json(dossieRuptura.montarDossie({ registro, lead, radarId: ref.radar_id }));
+});
+
 app.get('/api/pr/meu-mapa', async (req, res) => {
   res.set('Cache-Control', 'no-store');
   const lid = String(req.query.lid || '').trim();
@@ -767,6 +818,11 @@ app.post('/api/capi', async (req, res) => {
         readiness_score: Number(req.body.readiness_score) || 0,
         lowest_pillar:   req.body.lowest_pillar  || null,
         highest_pillar:  req.body.highest_pillar || null,
+        // A identidade que ela LEU no resultado. Calculada no front com as
+        // respostas de confirmação, que não chegam aqui: sem guardar a chave,
+        // o dossiê teria de recalcular e poderia mostrar outro nome.
+        identity_key:        req.body.identity_key || null,
+        identity_confidence: req.body.identity_confidence || null,
         nome:            req.body.nome || null,
         phone:           normalizePhone(req.body.whats) || null,
         at:              new Date().toISOString(),
@@ -777,6 +833,15 @@ app.post('/api/capi', async (req, res) => {
         'EX', 60 * 60 * 24 * 180 // 180 dias: cobre a distancia entre quiz e compra
       ).catch(e => console.error('[radar-persist] Redis:', e.message));
       console.log(`[radar-persist] ${radarId} rota=${registro.route} baixo=${registro.lowest_pillar}`);
+
+      // Dossiê de 15 min (src/dossieRuptura.js). Agenda sempre; quem decide se
+      // sai de verdade é o sweep, pela RADAR_DOSSIE_ENABLED.
+      if (!PREVIEW_PATH_RE.test(String(req.body.event_source_url || ''))) {
+        dossieRuptura.agendarDossie(getRedis(), {
+          radarId, phone: registro.phone, nome: registro.nome, route: registro.route,
+        }).then(r => console.log(`[dossie-pr] ${radarId}: ${r.agendado ? 'agendado' : 'nao agendado (' + r.motivo + ')'}`))
+          .catch(e => console.error('[dossie-pr] agendar:', e.message));
+      }
     }
   }
 
@@ -1281,6 +1346,9 @@ app.post('/api/pre-consulta/solicitar', async (req, res) => {
     ].join('\n'),
     created_at: new Date().toISOString(),
   };
+
+  // Pediu a conversa: a Karina assume, e o dossiê de 15 min viraria ruído.
+  dossieRuptura.cancelarDossie(getRedis(), telefone).catch(() => {});
 
   // Responde antes de falar com o Hub: a pessoa nao pode ficar olhando spinner
   // por causa da latencia de outro servico.
@@ -2133,15 +2201,22 @@ app.post('/api/capi/quiz-progress', async (req, res) => {
 // ─── CAPI Dossiê: InitiateCheckout ────────────────────────────────────────────
 
 app.post('/api/capi/initiate-checkout', async (req, res) => {
-  const { phone, content_name, perfil, source, event_source_url, event_id, em, fbp, fbc, fn, lid, channel } = req.body || {};
+  const { phone, content_name, perfil, source, event_source_url, event_id, em, fbp, fbc, fn, channel } = req.body || {};
+  let { lid } = req.body || {};
   res.json({ ok: true });
+
+  // O dossiê da Primeira Ruptura não conhece o id da lead, só o token opaco
+  // da URL. Resolve aqui, no servidor, para o enriquecimento (e a recuperação
+  // de checkout) funcionar sem expor o id no navegador.
+  if (!lid && /^[0-9a-f]{32}$/.test(String(req.body?.dossie_token || ''))) {
+    try { lid = (JSON.parse(await redisGet(`pr:dossie:${req.body.dossie_token}`) || '{}')).radar_id || null; } catch {}
+  }
 
   const enriched = await enrichFromLid(lid, { phone, em, fbc, fbp, fn });
   const src = String(source || '');
-  // 'raiz-cakto' e 'raiz-vi' redirecionam ambos pro checkout Cakto (recuperação
-  // Cakto), mas contam em métricas separadas: raiz-cakto = teste de checkout,
-  // raiz-vi = teste de VSL por perfil (mesma oferta Cakto).
-  const isCaktoCheckout = src === 'raiz-cakto' || src === 'raiz-vi';
+  // Qual checkout (e portanto qual modelo/link de recuperação) vale para esta
+  // origem: ver recoveryProviderDoIC. raiz-cakto e raiz-vi contam em métricas
+  // separadas logo abaixo, mas recuperam pelo mesmo canal Cakto.
 
   // Série diária p/ dashboard (fire-and-forget)
   metricsIncr('evt_InitiateCheckout').catch(() => {});
@@ -2164,6 +2239,10 @@ app.post('/api/capi/initiate-checkout', async (req, res) => {
   if (String(content_name || '') === 'InitiateCheckout_Dossie') {
     metricsIncrPerfil('evt_DossieCTA', perfil);
   }
+  // CTA do dossiê da Primeira Ruptura: contador próprio, fora do /raiz.
+  if (String(content_name || '') === 'InitiateCheckout_DossieRuptura') {
+    metricsIncr('evt_DossieRupturaCTA').catch(() => {});
+  }
 
   // Agenda recuperação de checkout: se o Purchase não chegar via webhook em
   // RECOVERY_DELAY_MIN, o sweep dispara o WhatsApp (authorized cancela).
@@ -2174,7 +2253,7 @@ app.post('/api/capi/initiate-checkout', async (req, res) => {
     name:  enriched.fn,
     lid,
     stage: 'ic',
-    provider: isCaktoCheckout ? 'cakto' : 'ticto',
+    provider: recoveryProviderDoIC(src),
   }).catch(() => {});
 
   // Isolamento Google/TikTok: métricas e recuperação de checkout acima rodam
@@ -2363,8 +2442,8 @@ function buildCheckoutSuffix({ email, phone, name, lid }) {
 // template recuperacao_checkout_cakto, URL dinâmica). Params confirmados no
 // /raiz-cakto: email, phone (E.164 com +55), name, e sck = join key para
 // atribuir a venda recuperada de volta ao lead.
-function buildCaktoCheckoutSuffix({ email, phone, name, lid }) {
-  const path = process.env.CAKTO_CHECKOUT_PATH || 'pjgpde8_1000061';
+function buildCaktoCheckoutSuffix({ email, phone, name, lid, path: pathOverride }) {
+  const path = pathOverride || process.env.CAKTO_CHECKOUT_PATH || 'pjgpde8_1000061';
   const params = new URLSearchParams();
   if (email) params.set('email', email);
   if (phone) {
@@ -2456,6 +2535,22 @@ const RECOVERY_CHANNELS = {
       return qs.includes('?') ? qs.replace('?', '/?') : qs;
     },
   },
+  // A Primeira Ruptura (/raiz-radar), R$ 127. Canal próprio desde 09/11/2026:
+  // antes o IC do Radar caía no default 'ticto' e a lead recebia o link Ticto
+  // do Protocolo Raiz de R$ 97 — outro produto, outro preço. Modelo e oferta
+  // próprios; nasce em SOMBRA (RADAR_RECOVERY_ENABLED=true liga).
+  radar: {
+    template: () => process.env.WHATSAPP_RECOVERY_TEMPLATE_RADAR || 'recuperacao_checkout_ruptura',
+    urlBase:  () => 'https://pay.cakto.com.br/',
+    suffix:   (rec) => {
+      const qs = buildCaktoCheckoutSuffix({
+        email: rec.email, phone: rec.phone, name: rec.name, lid: rec.lid,
+        path: RADAR_CAKTO_PATH,
+      });
+      // Mesma forma `path/?query` do modelo Cakto aprovado.
+      return qs.includes('?') ? qs.replace('?', '/?') : qs;
+    },
+  },
   ticto: {
     template: () => process.env.WHATSAPP_RECOVERY_TEMPLATE || 'recuperacao_checkout_raizv2',
     urlBase:  () => 'https://checkout.ticto.app/',
@@ -2464,6 +2559,21 @@ const RECOVERY_CHANNELS = {
     }),
   },
 };
+
+// Oferta do /raiz-radar na Cakto — a mesma do botão do quiz.
+const RADAR_CAKTO_PATH = '3azm4o3_1219891';
+
+function radarRecoveryEnabled() {
+  return process.env.RADAR_RECOVERY_ENABLED === 'true';
+}
+
+// Provider da recuperação a partir de onde o checkout nasceu.
+function recoveryProviderDoIC(source) {
+  const src = String(source || '');
+  if (src === 'raiz-radar' || src === 'dossie-ruptura') return 'radar';
+  if (src === 'raiz-cakto' || src === 'raiz-vi') return 'cakto';
+  return 'ticto';
+}
 
 function recoveryChannel(rec) {
   return RECOVERY_CHANNELS[rec.provider] || RECOVERY_CHANNELS.ticto;
@@ -2560,7 +2670,7 @@ async function sendRecoveryViaSdr(rec) {
 }
 
 async function sendRecoveryViaTemplate(rec) {
-  const ENABLED  = recoveryEnabled();
+  const ENABLED  = recoveryEnabled() && (rec.provider !== 'radar' || radarRecoveryEnabled());
   const TOKEN    = process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
   const PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
@@ -2733,6 +2843,60 @@ async function recoverySweep() {
       } catch {}
     }
   }
+}
+
+// ─── Dossiê da Primeira Ruptura: envio ───────────────────────────────────────
+// Lógica em src/dossieRuptura.js; aqui só as dependências reais. Mesmo número
+// e mesmo token da recuperação (Cloud API). Sombra até RADAR_DOSSIE_ENABLED=true.
+async function enviarTemplateCloud(payload) {
+  const TOKEN    = process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
+  const PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  if (!TOKEN || !PHONE_ID) throw new Error('WHATSAPP_ACCESS_TOKEN/WHATSAPP_PHONE_NUMBER_ID ausentes');
+  const resp = await fetch(`https://graph.facebook.com/v21.0/${PHONE_ID}/messages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
+    body: JSON.stringify(payload),
+  });
+  const json = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(`WhatsApp API ${resp.status}: ${JSON.stringify(json.error || json)}`);
+  return json;
+}
+
+// Registro no Hub de um template enviado daqui. O nome começa com dossie_, e o
+// infraHealth do Hub já agrupa isso no canal "Dossiê" sem mudança lá.
+async function registrarTemplateNoHub(payload) {
+  const HUB_URL = process.env.HUB_TEMPLATE_SENT_URL
+    || 'https://crm.tableclinic.com.br/webhook/whatsapp-template-sent';
+  const HUB_SECRET = process.env.HUB_WEBHOOK_SECRET || process.env.INTERNAL_WEBHOOK_SECRET;
+  if (!HUB_SECRET) return null;
+  try {
+    const r = await fetch(HUB_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-webhook-secret': HUB_SECRET },
+      body: JSON.stringify({ tier: null, ...payload }),
+    });
+    if (!r.ok) console.warn(`[dossie-pr] Hub registro falhou (${r.status})`);
+  } catch (e) {
+    console.warn('[dossie-pr] Hub registro falhou:', e.message);
+  }
+  return null;
+}
+
+async function dossieRupturaSweep() {
+  let redis;
+  try { redis = await ensureRedisReady(); } catch { return; }
+  const r = await dossieRuptura.varrerDossies({
+    redis,
+    enviar: enviarTemplateCloud,
+    registrarNoHub: registrarTemplateNoHub,
+    dentroDoHorario: dentroDoHorarioEnvio,
+    ativo: dossieRuptura.dossieAtivo(),
+    template: process.env.RADAR_DOSSIE_TEMPLATE || dossieRuptura.TEMPLATE_PADRAO,
+  });
+  // redisIncrStats soma 1 por chamada e nunca rejeita.
+  for (let i = 0; i < r.enviados; i++) await redisIncrStats('dossie_ruptura_sent');
+  for (let i = 0; i < r.sombra; i++)   await redisIncrStats('dossie_ruptura_shadow');
+  for (let i = 0; i < r.erros; i++)    await redisIncrStats('dossie_ruptura_errors');
 }
 
 // ─── Sequência pós-quiz (fase 1: mensagem de 4h) ─────────────────────────────
@@ -2996,6 +3160,7 @@ app.post('/api/webhooks/whatsapp', async (req, res) => {
             hubSync.enviarOptOut(getRedis, from); // vale também para os disparos do Hub
             await redisDel(`recovery:pending:${from}`);
             await redisDel(`seq:pending:${from}`);
+            await redisDel(`radar:dossie:pending:${from}`);
             await redisIncrStats('recovery_optout');
             console.log(`[WhatsApp] Opt-out registrado: ${from}`);
             await sendWhatsAppText(from,
@@ -3792,6 +3957,8 @@ app.post('/api/webhooks/cakto', async (req, res) => {
       if (record.phone) cancelCheckoutRecovery(record.phone, 'compra Cakto').catch(() => {});
       // ...e também a cadência pós-quiz no sdr-table (D+1/D+3/D+5).
       if (record.phone) hubSync.cancelarCadenciaQuiz(record.phone).catch(() => {});
+      // ...e o dossiê da Primeira Ruptura, se ainda não saiu.
+      if (record.phone) dossieRuptura.cancelarDossie(getRedis(), record.phone).catch(() => {});
 
       // Comprou A Primeira Ruptura → nasce o mapa dela.
       if (produtoDaCompra(d, record) === 'A Primeira Ruptura') {
@@ -3885,7 +4052,8 @@ app.post('/api/webhooks/cakto', async (req, res) => {
           name:  d.customer?.name  || null,
           lid:   srcLeadId,
           stage: 'waiting_payment',
-          provider: 'cakto',
+          // Pix do checkout do Radar recupera com o modelo da Primeira Ruptura.
+          provider: String(d.checkoutUrl || '').includes(RADAR_CAKTO_PATH.split('_')[0]) ? 'radar' : 'cakto',
           paymentMethod: 'pix',
           pixCode,
           pixUrl: d.checkoutUrl || null,
@@ -4614,6 +4782,9 @@ app.listen(PORT, () => {
   // Sequência pós-quiz: verifica pendências vencidas a cada 5 min.
   setInterval(() => { seqSweep().catch(() => {}); }, 5 * 60 * 1000);
   setTimeout(() => { seqSweep().catch(() => {}); }, 90 * 1000);
+  // Dossiê da Primeira Ruptura: pendências de 15 min do /raiz-radar.
+  setInterval(() => { dossieRupturaSweep().catch(() => {}); }, 60 * 1000);
+  setTimeout(() => { dossieRupturaSweep().catch(() => {}); }, 75 * 1000);
   // Hub: reenvio do que falhou e carga única das compras que estão no Redis.
   setInterval(() => { hubSync.drenarRetry(getRedis).catch(() => {}); }, 10 * 60 * 1000);
   setTimeout(() => { hubSync.backfillCompras(getRedis, { isEvelyn: isEvelynCheckoutProduct }).catch(() => {}); }, 2 * 60 * 1000);

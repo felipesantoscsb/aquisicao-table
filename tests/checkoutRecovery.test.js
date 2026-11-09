@@ -97,5 +97,6 @@ test('sem credencial cai em sombra em vez de estourar', () => {
 test('envio real é o padrão, mas RECOVERY_ENABLED=false ainda derruba', () => {
   assert.match(server, /function recoveryEnabled\(\) \{\s*return process\.env\.RECOVERY_ENABLED !== 'false';/);
   // nenhum ponto pode voltar a exigir a env ligada explicitamente
-  assert.doesNotMatch(server, /RECOVERY_ENABLED === 'true'/);
+  // (o canal da Primeira Ruptura é a exceção deliberada: nasce em sombra)
+  assert.doesNotMatch(server, /(?<!RADAR_)RECOVERY_ENABLED === 'true'/);
 });
