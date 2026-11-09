@@ -454,7 +454,7 @@
   // Valor da parcela: preencher quando o link da InfinitePay estiver
   // configurado (ex.: '12x de R$ 123,79'). Vazio mostra só "parcelado no cartão",
   // para a página nunca anunciar um número que o checkout não cobra.
-  const PARCELA = '';
+  const PARCELA = '12x de R$ 111,31';
   if (PARCELA) document.getElementById('parcelas').textContent = 'ou ' + PARCELA + ' no cartão';
 
   const obs = new IntersectionObserver(entries => {
