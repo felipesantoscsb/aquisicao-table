@@ -592,6 +592,22 @@ function normalizePhone(raw) {
   return digits;
 }
 
+// Chave canonica de telefone, IDENTICA ao pr_phone_key do Hub:
+// 55 + DDD + ultimos 8 digitos. Colapsa o 9o digito de proposito — a mesma
+// pessoa digita "(11) 98082-9196" no quiz e "11 8082-9196" no formulario, e com
+// comparacao exata a ponte entre os dois quebrava em silencio.
+//
+// Usada so pelo indice reverso do Radar. O `quiz:perfil:` continua indexado por
+// normalizePhone porque ja existem 180 dias de chaves gravadas assim; trocar a
+// regra la orfanaria todas elas de uma vez.
+function phoneKey(raw) {
+  const d = String(raw || '').replace(/\D/g, '');
+  if (!d) return null;
+  if (d.length === 10 || d.length === 11) return '55' + d.slice(0, 2) + d.slice(-8);
+  if (d.startsWith('55') && d.length >= 12) return d.slice(0, 4) + d.slice(-8);
+  return null;
+}
+
 /**
  * Extrai o primeiro nome de uma string "Nome Sobrenome".
  */
@@ -832,7 +848,21 @@ app.post('/api/capi', async (req, res) => {
         JSON.stringify(registro),
         'EX', 60 * 60 * 24 * 180 // 180 dias: cobre a distancia entre quiz e compra
       ).catch(e => console.error('[radar-persist] Redis:', e.message));
-      console.log(`[radar-persist] ${radarId} rota=${registro.route} baixo=${registro.lowest_pillar}`);
+
+      // Indice reverso por telefone. O /forms e preenchido depois da compra,
+      // nao conhece o radarId e nao recebe `lid` — sem esta chave o card da
+      // pre-consulta nasce sem as seis notas, e o formulario e obrigado a
+      // repetir perguntas que o Radar ja fez.
+      const chaveTel = phoneKey(registro.phone);
+      if (chaveTel) {
+        getRedis().set(
+          `radar:phone:${chaveTel}`,
+          radarId,
+          'EX', 60 * 60 * 24 * 180
+        ).catch(e => console.error('[radar-persist] indice por telefone:', e.message));
+      }
+
+      console.log(`[radar-persist] ${radarId} rota=${registro.route} baixo=${registro.lowest_pillar} tel=${chaveTel ? 'ok' : 'ausente'}`);
 
       // Dossiê de 15 min (src/dossieRuptura.js). Agenda sempre; quem decide se
       // sai de verdade é o sweep, pela RADAR_DOSSIE_ENABLED.
@@ -1458,6 +1488,10 @@ function normalizePreSessaoPayload(body = {}) {
     horario: body.horario || '',
     observacoes: body.observacoes || '',
     origem: body.origem || 'formulario_pre_sessao',
+    // Preservado para o reenvio do drain: um payload ja gravado em
+    // `pre_sessao:failed:*` chega aqui com o radar anexado, e normalizar sem
+    // esta linha o descartaria justamente na tentativa que deu certo.
+    radar: body.radar || null,
     event_id: body.event_id || crypto.randomUUID(),
     created_at: body.created_at || new Date().toISOString(),
   };
@@ -1517,6 +1551,39 @@ async function attachPerfilDoQuiz(payload) {
   return payload;
 }
 
+// Recupera o resultado do Radar (as seis notas, a rota e os pilares extremos)
+// pelo telefone, via indice reverso gravado no CompleteRegistration do quiz.
+//
+// E esta ponte que permite o formulario ser curto: `rotina`, `objetivo` e
+// `padrao_abandono` eram perguntas que o Radar JA faz (Q3/Q10, Q12 e Q6), e
+// so estavam sendo repetidas porque o resultado nao chegava ao card.
+//
+// Nunca bloqueia o envio. Sem Radar — lead que veio do quiz antigo, ou que
+// comprou por fora — o formulario segue exatamente como seguia antes.
+async function attachRadarDoQuiz(payload) {
+  try {
+    const chave = phoneKey(payload.telefone);
+    if (!chave) return payload;
+    const radarId = await redisGet(`radar:phone:${chave}`);
+    if (!radarId) return payload;
+    const raw = await redisGet(`radar:${radarId}`);
+    if (!raw) return payload;
+    const rec = JSON.parse(raw);
+    if (rec && rec.scores && typeof rec.scores === 'object') {
+      payload.radar = {
+        scores:         rec.scores,
+        route:          rec.route || null,
+        lowest_pillar:  rec.lowest_pillar || null,
+        highest_pillar: rec.highest_pillar || null,
+        at:             rec.at || null,
+      };
+    }
+  } catch (e) {
+    console.warn('[pre-sessao] radar do quiz indisponível:', e.message);
+  }
+  return payload;
+}
+
 // GET aqui só existe para não falhar em silêncio: um POST para o domínio sem
 // www vira 301, o navegador reenvia como GET e o formulário morria com 404
 // sem ninguém saber. Agora a resposta diz o que aconteceu.
@@ -1526,7 +1593,9 @@ app.get('/api/pre-sessao', (req, res) => res.status(405).json({
 }));
 
 app.post('/api/pre-sessao', async (req, res) => {
-  const payload = await attachPerfilDoQuiz(normalizePreSessaoPayload(req.body || {}));
+  const payload = await attachRadarDoQuiz(
+    await attachPerfilDoQuiz(normalizePreSessaoPayload(req.body || {}))
+  );
 
   if (!payload.nome || !payload.telefone) {
     console.warn('[pre-sessao] recusado sem nome/telefone:', JSON.stringify(req.body || {}).slice(0, 300));
