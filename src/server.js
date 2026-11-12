@@ -179,6 +179,8 @@ app.get('/raiz-google', (req, res) => res.sendFile(path.join(pub,   'quiz-google
 app.get('/raiz-tiktok', (req, res) => res.sendFile(path.join(pub,   'quiz-tiktok.html')));
 app.get('/legal',      (req, res) => res.sendFile(path.join(funil, 'privacidade_termos_evelynliu.html')));
 app.get('/mediakit',   (req, res) => res.sendFile(path.join(pub,   'mediakit.html')));
+// Apresentação de palestras (substitui o PDF enviado a agências de palestrantes).
+app.get('/palestras',  (req, res) => res.sendFile(path.join(pub,   'palestras.html')));
 app.get('/protocolo-raiz', (req, res) => res.sendFile(path.join(funil, 'protocolo_raiz_bio.html')));
 // Reativação PR via WhatsApp (Hub): mesma página da bio, checkout próprio (Cakto vuq4djv).
 app.get('/protocolo-raiz-r', (req, res) => res.sendFile(path.join(funil, 'protocolo_raiz_reativacao.html')));

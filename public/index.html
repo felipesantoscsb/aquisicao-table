@@ -20,6 +20,8 @@
   <meta name="twitter:image" content="https://www.evelynliu.com.br/images/palestras/og.jpg"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <script src="https://fast.wistia.com/player.js" async></script>
+  <script src="https://fast.wistia.com/embed/51gyss5o1s.js" async type="module"></script>
   <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Person","name":"Evelyn Liu","url":"https://www.evelynliu.com.br/","image":"https://www.evelynliu.com.br/images/palestras/hero.jpg","description":"Palestrante, nutricionista comportamental, autora do livro Gordura Não Existe e cofundadora da Table Clinic.","jobTitle":"Palestrante e nutricionista comportamental","identifier":"CRN-3 70082","founder":{"@type":"Organization","name":"Table Clinic","url":"https://tableclinic.com.br/"},"worksFor":{"@type":"Organization","name":"Table Clinic","url":"https://tableclinic.com.br/"},"knowsAbout":["Nutrição comportamental","Comportamento alimentar","Imagem corporal","Autocuidado","Palestras"],"sameAs":["https://www.instagram.com/evelynlwl","https://www.instagram.com/nutrievelynliu","https://www.instagram.com/tableclinic"]}
@@ -115,12 +117,18 @@
     footer{background:var(--cacau-dk);color:rgba(255,255,255,.5);padding:32px 5vw;display:flex;justify-content:space-between;gap:24px;font-size:11px;line-height:1.8}footer a{text-underline-offset:3px}
     @media(max-width:960px){.nav-links a:not(.nav-cta){display:none}.hero{grid-template-columns:1fr}.hero-copy{padding:8px 24px 56px}.hero-image{min-height:72svh;order:-1}.hero-image::after{background:linear-gradient(0deg,var(--cacau) 0%,transparent 35%)}.numbers-grid{grid-template-columns:1fr 1fr}.num:nth-child(3){border-left:0;padding-left:0}.talks-grid,.stage-grid,.about-grid,.roots-grid,.contact-grid{grid-template-columns:1fr;gap:44px}.about-photo,.contact-photo{max-width:420px}}
     @media(max-width:560px){nav{padding:0 20px}.brand{font-size:19px}.nav-cta{padding:9px 12px}.section{padding:80px 20px}.numbers{padding:56px 20px}.numbers-grid{grid-template-columns:1fr}.num,.num+.num{padding:22px 0;border-left:0;border-bottom:1px solid var(--line)}.talk{padding:28px 22px}.contact-list{grid-template-columns:1fr}.book-mini{grid-template-columns:1fr}.book-mini img{max-width:200px}footer{flex-direction:column;padding:28px 20px}}
+    .watch{background:var(--warm)}
+    .watch-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:80px;align-items:center}
+    .watch-copy p.txt{font-size:16px;line-height:1.85;color:var(--body);margin-top:18px;max-width:560px}
+    .watch-video{width:100%;max-width:340px;margin:0 auto;background:var(--cacau-dk);box-shadow:0 30px 60px -30px rgba(44,32,24,.5)}
+    wistia-player[media-id='51gyss5o1s']:not(:defined){background:center / contain no-repeat url('https://fast.wistia.com/embed/medias/51gyss5o1s/swatch');display:block;filter:blur(5px);padding-top:177.78%}
+    @media(max-width:960px){.watch-grid{grid-template-columns:1fr;gap:44px}}
     @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
   </style>
 </head>
 <body>
   <a class="skip" href="#conteudo">Ir para o conteúdo</a>
-  <nav aria-label="Navegação principal"><a class="brand" href="#inicio">Evelyn Liu</a><div class="nav-links"><a href="#palestras">Palestras</a><a href="#palcos">Palcos</a><a href="#sobre">Sobre</a><a href="#table">Table Clinic</a><a class="nav-cta" href="#contato">Contratar palestra</a></div></nav>
+  <nav aria-label="Navegação principal"><a class="brand" href="#inicio">Evelyn Liu</a><div class="nav-links"><a href="#palestras">Palestras</a><a href="#video">Vídeo</a><a href="#palcos">Palcos</a><a href="#sobre">Sobre</a><a href="#table">Table Clinic</a><a class="nav-cta" href="#contato">Contratar palestra</a></div></nav>
   <main id="conteudo">
 
     <section class="hero" id="inicio">
@@ -147,6 +155,18 @@
           <div class="num"><strong>Autora</strong><span>de <em>Gordura Não Existe</em> e cofundadora da Table Clinic</span></div>
         </div>
         <p class="numbers-note">Seguidores somados entre @evelynlwl (TikTok e Instagram) e @nutrievelynliu. Pacientes, participantes dos programas e leitoras são públicos que se sobrepõem e não foram somados.</p>
+      </div>
+    </section>
+
+    <section class="section watch" id="video">
+      <div class="shell watch-grid">
+        <div class="watch-copy">
+          <p class="eyebrow">Em vídeo</p>
+          <h2 class="section-title">Conheça a Evelyn <em>antes do palco.</em></h2>
+          <p class="txt">Em poucos minutos, Evelyn apresenta as palestras, o jeito como conduz a conversa com o público e o que cada evento leva para casa.</p>
+          <div class="hero-actions"><a class="button button-primary" href="/palestras">Ver a apresentação completa</a><a class="button button-line" href="#contato">Consultar disponibilidade</a></div>
+        </div>
+        <div class="watch-video"><wistia-player media-id="51gyss5o1s" aspect="0.5625"></wistia-player></div>
       </div>
     </section>
 
