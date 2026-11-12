@@ -463,6 +463,54 @@
   </div>
 </div>
 
+<!-- AVALIACOES_GOOGLE -->
+<style>
+  .gr{padding:72px 24px;background:var(--white);}
+  .gr__in{max-width:860px;margin:0 auto;text-align:center}
+  .gr__label{display:block;font-family:'Jost',sans-serif;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;font-weight:500;color:var(--terra);margin-bottom:12px}
+  .gr__title{font-family:'Cormorant Garamond',serif;font-size:clamp(1.8rem,5vw,2.4rem);font-weight:400;line-height:1.2;color:var(--brown);margin:0 0 24px}
+  .gr__list{display:grid;gap:14px}
+  .gr__card{background:var(--cream);border:1px solid var(--line);border-radius:8px;padding:24px 22px 20px;text-align:left;font-style:normal}
+  .gr__stars{color:var(--terra);letter-spacing:.18em;font-size:.9rem;margin:0 0 10px}
+  .gr__card blockquote{font-family:'Cormorant Garamond',serif;font-size:1.35rem;line-height:1.35;font-weight:500;color:var(--brown);margin:0 0 12px}
+  .gr__meta{font-family:'Jost',sans-serif;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0}
+  .gr__meta b{color:var(--moss);font-weight:600}
+  .gr__card details{margin-top:12px}
+  .gr__card summary{cursor:pointer;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:500;color:var(--terra)}
+  .gr__card details p{font-family:'Jost',sans-serif;font-size:.88rem;line-height:1.75;color:var(--muted);padding-top:10px;margin:0}
+  .gr__link{display:inline-block;margin-top:22px;font-family:'Jost',sans-serif;font-size:.84rem;font-weight:500;color:var(--moss);text-underline-offset:3px}
+  @media (min-width:720px){.gr__list{grid-template-columns:1fr 1fr}.gr__card{padding:28px 30px 24px}}
+</style>
+<section class="gr" id="avaliacoes" hidden>
+  <div class="gr__in">
+    <span class="gr__label">Avaliações no Google</span>
+    <h2 class="gr__title">Quem já caminha com a gente</h2>
+    <div class="gr__list" id="grLista"></div>
+    <a class="gr__link" id="grLink" href="https://www.google.com/maps/place/Table+Clinic" target="_blank" rel="noopener">Ver todas as avaliações no Google →</a>
+  </div>
+</section>
+<script src="https://tableclinic.com.br/js/google-reviews.v1.js"></script>
+<script>
+  // Mesmas avaliações da /table-friday, da base curada em tableclinic.com.br
+  // (só approvedForMarketing). Sem a base, a seção fica escondida.
+  (function () {
+    const IDS = ['claudia-de-maria', 'fernanda-rodrigues-de-sa', 'gabriel-martins-de-oliveira', 'ana-souza'];
+    const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const base = (window.TABLE_GOOGLE_REVIEWS || []).filter(r => r.approvedForMarketing);
+    const lista = IDS.map(id => base.find(r => r.id === id)).filter(Boolean);
+    if (!lista.length) return;
+    document.getElementById('grLista').innerHTML = lista.map(r => `
+      <article class="gr__card">
+        <p class="gr__stars" aria-label="${r.rating} de 5 estrelas">${'★'.repeat(r.rating)}</p>
+        <blockquote>“${esc(r.featuredExcerpt)}”</blockquote>
+        <p class="gr__meta"><b>${esc(r.author)}</b> · avaliação no Google</p>
+        <details><summary>Ler avaliação completa</summary><p>${esc(r.fullText)}</p></details>
+      </article>`).join('');
+    if (lista[0].businessProfileUrl) document.getElementById('grLink').href = lista[0].businessProfileUrl;
+    document.getElementById('avaliacoes').hidden = false;
+  })();
+</script>
+
 <!-- PRICING -->
 <div class="wrap-wide bg-warm fade">
   <div class="inner">
