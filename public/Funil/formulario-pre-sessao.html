@@ -101,7 +101,7 @@ footer{background:var(--moss);padding:28px 24px;text-align:center}
     <p class="hero-logo">Table</p>
     <p class="eyebrow hero-eyebrow">Sessão de Direcionamento Individual</p>
     <h1 class="hero-h1">Antes de nos encontrarmos,<br><em>deixa eu te conhecer.</em></h1>
-    <p class="hero-sub">Leva menos de 5 minutos. Suas respostas chegam para a equipe da Table antes da sessão — assim aproveitamos cada minuto do nosso tempo juntas.<br><strong>Não tem resposta certa ou errada.</strong></p>
+    <p class="hero-sub">Leva menos de 2 minutos. Suas respostas chegam para a equipe da Table antes da sessão — assim aproveitamos cada minuto do nosso tempo juntas.<br><strong>Não tem resposta certa ou errada.</strong></p>
   </div>
 </section>
 
@@ -143,19 +143,6 @@ footer{background:var(--moss);padding:28px 24px;text-align:center}
         <textarea class="form-textarea" name="dificuldade_hoje" placeholder="Ex: Não consigo parar de beliscar à noite, sempre que fico ansiosa como demais..." required></textarea>
       </div>
 
-      <div class="form-group reveal">
-        <label class="form-label">
-          Quando você pensa em mudar sua relação com a comida, qual sentimento aparece primeiro?
-        </label>
-        <div class="check-group">
-          <label class="check-item"><input type="radio" name="sentimento_inicial" value="cansaco"/><div><p class="check-item-text">Cansaço</p><p class="check-item-sub">Já tentei tantas vezes, não aguento mais começar do zero</p></div></label>
-          <label class="check-item"><input type="radio" name="sentimento_inicial" value="culpa"/><div><p class="check-item-text">Culpa</p><p class="check-item-sub">Sinto que não tenho força de vontade suficiente</p></div></label>
-          <label class="check-item"><input type="radio" name="sentimento_inicial" value="medo"/><div><p class="check-item-text">Medo</p><p class="check-item-sub">Tenho medo de começar e fracassar de novo</p></div></label>
-          <label class="check-item"><input type="radio" name="sentimento_inicial" value="esperanca"/><div><p class="check-item-text">Esperança</p><p class="check-item-sub">Sinto que dessa vez pode ser diferente</p></div></label>
-          <label class="check-item"><input type="radio" name="sentimento_inicial" value="indiferenca"/><div><p class="check-item-text">Indiferença</p><p class="check-item-sub">Estou no automático, não sei nem o que sinto</p></div></label>
-        </div>
-      </div>
-
       <hr class="form-divider"/>
 
       <!-- BLOCO 2: HISTÓRICO -->
@@ -176,14 +163,6 @@ footer{background:var(--moss);padding:28px 24px;text-align:center}
           <label class="check-item"><input type="checkbox" name="historico" value="cirurgia"/><p class="check-item-text">Cirurgia bariátrica</p></label>
           <label class="check-item"><input type="checkbox" name="historico" value="nenhum"/><p class="check-item-text">Nunca fiz acompanhamento profissional</p></label>
         </div>
-      </div>
-
-      <div class="form-group reveal">
-        <label class="form-label">
-          O que geralmente acontece quando você tenta mudar a alimentação?
-          <span>Seja honesta — isso é importante para a sessão.</span>
-        </label>
-        <textarea class="form-textarea" name="padrao_abandono" placeholder="Ex: Começo bem, mas na primeira semana difícil já abandono tudo..."></textarea>
       </div>
 
       <hr class="form-divider"/>
@@ -208,51 +187,13 @@ footer{background:var(--moss);padding:28px 24px;text-align:center}
         </div>
       </div>
 
-      <div class="form-group reveal">
-        <label class="form-label">Tem alguma outra condição de saúde relevante que queira mencionar?</label>
-        <input class="form-input" type="text" name="saude_outro" placeholder="Descreva brevemente se quiser"/>
-      </div>
-
       <hr class="form-divider"/>
 
-      <!-- BLOCO 4: OBJETIVO -->
-      <p class="form-section-title reveal">Seu <em>objetivo</em></p>
-
-      <div class="form-group reveal">
-        <label class="form-label">
-          O que você quer transformar com o acompanhamento da Table?
-          <span>Pode ser mais de uma coisa. Escolha o que for verdadeiro para você.</span>
-        </label>
-        <div class="check-group">
-          <label class="check-item"><input type="checkbox" name="objetivo" value="cuidar_corpo"/><p class="check-item-text">Cuidar do meu corpo de forma sustentável</p></label>
-          <label class="check-item"><input type="checkbox" name="objetivo" value="compulsao"/><p class="check-item-text">Parar com a compulsão alimentar</p></label>
-          <label class="check-item"><input type="checkbox" name="objetivo" value="culpa"/><p class="check-item-text">Me libertar da culpa depois de comer</p></label>
-          <label class="check-item"><input type="checkbox" name="objetivo" value="energia"/><p class="check-item-text">Ter mais energia e disposição no dia a dia</p></label>
-          <label class="check-item"><input type="checkbox" name="objetivo" value="autoestima"/><p class="check-item-text">Me reconectar com o meu corpo e melhorar minha autoestima</p></label>
-          <label class="check-item"><input type="checkbox" name="objetivo" value="saude"/><p class="check-item-text">Melhorar meus exames e saúde em geral</p></label>
-          <label class="check-item"><input type="checkbox" name="objetivo" value="consistencia"/><p class="check-item-text">Finalmente ter consistência — começar e não largar</p></label>
-        </div>
-      </div>
-
-      <div class="form-group reveal">
-        <label class="form-label">Se a sua sessão pudesse resolver UMA coisa, qual seria?</label>
-        <textarea class="form-textarea" name="uma_coisa" placeholder="Escreva livremente..." required></textarea>
-      </div>
-
-      <hr class="form-divider"/>
-
-      <!-- BLOCO 5: ROTINA -->
-      <p class="form-section-title reveal"><em>Rotina</em> e disponibilidade</p>
-
-      <div class="form-group reveal">
-        <label class="form-label">Como você descreveria sua rotina hoje?</label>
-        <div class="check-group">
-          <label class="check-item"><input type="radio" name="rotina" value="muito_corrida"/><div><p class="check-item-text">Muito corrida</p><p class="check-item-sub">Mal tenho tempo para mim, vivo no automático</p></div></label>
-          <label class="check-item"><input type="radio" name="rotina" value="corrida"/><div><p class="check-item-text">Corrida, mas com alguns espaços</p><p class="check-item-sub">Consigo me organizar quando me planejo</p></div></label>
-          <label class="check-item"><input type="radio" name="rotina" value="equilibrada"/><div><p class="check-item-text">Razoavelmente equilibrada</p><p class="check-item-sub">Tenho tempo para cuidar de mim quando priorizo</p></div></label>
-          <label class="check-item"><input type="radio" name="rotina" value="flexivel"/><div><p class="check-item-text">Bastante flexível</p><p class="check-item-sub">Tenho disponibilidade para me dedicar ao tratamento</p></div></label>
-        </div>
-      </div>
+      <!-- BLOCO 4: DISPONIBILIDADE
+           "Rotina" saiu junto com o campo: o Radar ja mede isso na Q3
+           (apoio numa semana dificil) e na Q10 (consegue comecar agora), e as
+           notas chegam ao card pelo indice de telefone. -->
+      <p class="form-section-title reveal"><em>Disponibilidade</em></p>
 
       <div class="form-group reveal">
         <label class="form-label">
@@ -321,14 +262,18 @@ async function submitForm(e){
     nome: data.get('nome'),
     telefone: data.get('telefone'),
     dificuldade_hoje: data.get('dificuldade_hoje'),
-    sentimento_inicial: data.get('sentimento_inicial'),
     historico: data.getAll('historico'),
-    padrao_abandono: data.get('padrao_abandono'),
     saude: data.getAll('saude'),
-    saude_outro: data.get('saude_outro'),
-    objetivo: data.getAll('objetivo'),
-    uma_coisa: data.get('uma_coisa'),
-    rotina: data.get('rotina'),
+    // `sentimento_inicial`, `padrao_abandono`, `objetivo`, `uma_coisa`,
+    // `rotina` e `saude_outro` sairam daqui em 09/11/2026. Nao eram campos
+    // mortos: eram perguntas que o quiz JA faz (sentimento = Q1 do /raiz;
+    // abandono = Q6 do Radar; objetivo = Q12; rotina = Q3+Q10) e que chegam ao
+    // card pelo indice `radar:phone:` no /api/pre-sessao.
+    //
+    // O servidor continua aceitando os seis: `normalizePreSessaoPayload` cai
+    // para '' ou [], e o `add()` do Hub pula valor vazio. Isso e proposital —
+    // ha payloads antigos guardados em `pre_sessao:failed:*` que o drain
+    // reenvia com os campos preenchidos, e eles tem de seguir funcionando.
     horario: data.get('horario'),
     observacoes: data.get('observacoes'),
     origem: 'formulario_pre_sessao',
@@ -353,7 +298,11 @@ async function submitForm(e){
       const resumo=encodeURIComponent(
         'Oi! Preenchi o formulário da pré-consulta e deu erro no envio.\n\n'+
         'Nome: '+(payload.nome||'')+'\nWhatsApp: '+(payload.telefone||'')+
-        '\nMelhor horário: '+(payload.horario||'')+'\nObjetivo: '+(payload.objetivo||[]).join(', ')
+        '\nMelhor horário: '+(payload.horario||'')+
+        // Era `objetivo`, que saiu do formulario. A dificuldade serve melhor
+        // aqui de qualquer forma: e o que a equipe precisa ler para continuar
+        // a conversa. Truncada porque URL longa demais e cortada no caminho.
+        '\nDificuldade: '+String(payload.dificuldade_hoje||'').slice(0,300)
       );
       errorEl.innerHTML='Não consegui enviar seu formulário agora. '+
         '<a href="https://wa.me/5511918253788?text='+resumo+'" target="_blank" rel="noopener" '+
