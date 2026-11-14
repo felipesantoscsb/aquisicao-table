@@ -327,7 +327,14 @@ test('QuizStart conta uma vez por sessao, mesmo voltando para a intro', () => {
 test('a linha de custo vem antes da interacao e so promete o que foi pedido', () => {
   // Decisao do Felipe em 29/10: sem contagem de perguntas e sem minutos. O
   // quiz ja mostra contador e barra de progresso depois que ela entra.
-  assert.match(html, /<ul class="custo"><li>gratuito<\/li><li>sem cadastro<\/li><\/ul>/);
+  //
+  // "sem cadastro" caiu em 14/11/2026: era falso. A captura exige nome, e-mail
+  // e WhatsApp pra liberar o resultado, entao a promessa quebrava no pior ponto
+  // possivel — depois de 12 perguntas de custo ja pagas. A decisao de 29/10
+  // seguia valendo e nao era sobre isso: o lugar continua sem contagem de
+  // perguntas e sem minutos.
+  assert.match(html, /<ul class="custo"><li>gratuito<\/li><li>sem spam<\/li><\/ul>/);
+  assert.doesNotMatch(html, /<li>sem cadastro<\/li>/);
   const hero = html.slice(0, html.indexOf('id="quiz"'));
   assert.doesNotMatch(hero, /12 perguntas/);
   assert.doesNotMatch(hero, /3 minutos/);
