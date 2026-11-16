@@ -341,7 +341,16 @@ test('a linha de custo vem antes da interacao e so promete o que foi pedido', ()
   // "5 minutos" e MEDIDO, nao inventado: median_ms_to_lead = 324s no painel do
   // Radar em 16/11. Nao usar o "3 minutos" do /raiz aqui — este quiz tem 12
   // perguntas, nao 7, e prometer 3 seria a mesma mentira do "sem cadastro".
-  assert.match(html, /<ul class="custo"><li>gratuito<\/li><li>12 perguntas<\/li><li>5 minutos<\/li><li>sem spam<\/li><\/ul>/);
+  // "gratuito" saiu da linha de custo em 16/11 e subiu para o eyebrow, junto do
+  // nome do entregavel, como no /raiz ("Mapeamento de raiz · gratuito"). Repetir
+  // nos dois lugares gastava uma das quatro vagas da linha sem dizer nada novo.
+  assert.match(html, /<p class="eyebrow">Radar de 6 pilares · gratuito<\/p>/);
+  assert.match(html, /<ul class="custo"><li>12 perguntas<\/li><li>5 minutos<\/li><li>sem spam<\/li><\/ul>/);
+  // Promessa e autoridade ACIMA do pedido, que era a lacuna contra o /raiz: quem
+  // decidia se respondia a pergunta 1 nao sabia o que ia receber nem de quem.
+  const heroAteOPedido = html.slice(0, html.indexOf('id="heroQOptions"'));
+  assert.match(heroAteOPedido, /o ponto onde o ciclo recomeça/);
+  assert.match(heroAteOPedido, /Evelyn Liu · nutricionista comportamental/);
   assert.doesNotMatch(html, /<li>sem cadastro<\/li>/);
   const hero = html.slice(0, html.indexOf('id="quiz"'));
   assert.doesNotMatch(hero, /3 minutos/, 'prometeu os 3 minutos do /raiz num quiz de 12 perguntas');
