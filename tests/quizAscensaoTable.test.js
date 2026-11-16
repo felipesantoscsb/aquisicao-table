@@ -330,14 +330,21 @@ test('a linha de custo vem antes da interacao e so promete o que foi pedido', ()
   //
   // "sem cadastro" caiu em 14/11/2026: era falso. A captura exige nome, e-mail
   // e WhatsApp pra liberar o resultado, entao a promessa quebrava no pior ponto
-  // possivel — depois de 12 perguntas de custo ja pagas. A decisao de 29/10
-  // seguia valendo e nao era sobre isso: o lugar continua sem contagem de
-  // perguntas e sem minutos.
-  assert.match(html, /<ul class="custo"><li>gratuito<\/li><li>sem spam<\/li><\/ul>/);
+  // possivel — depois de 12 perguntas de custo ja pagas.
+  //
+  // A decisao de 29/10 (sem contagem e sem minutos) foi REVOGADA pelo Felipe em
+  // 16/11/2026, com motivo: o custo declarado e a diferenca mais nitida entre
+  // este hero e o do /raiz, que anuncia "7 perguntas diretas" e "3 minutos" e
+  // converte melhor no funil inteiro. Os 25,2% de page_view -> quiz_started
+  // daqui sao o baseline; a leitura do efeito sai no /api/radar/corte.
+  //
+  // "5 minutos" e MEDIDO, nao inventado: median_ms_to_lead = 324s no painel do
+  // Radar em 16/11. Nao usar o "3 minutos" do /raiz aqui — este quiz tem 12
+  // perguntas, nao 7, e prometer 3 seria a mesma mentira do "sem cadastro".
+  assert.match(html, /<ul class="custo"><li>gratuito<\/li><li>12 perguntas<\/li><li>5 minutos<\/li><li>sem spam<\/li><\/ul>/);
   assert.doesNotMatch(html, /<li>sem cadastro<\/li>/);
   const hero = html.slice(0, html.indexOf('id="quiz"'));
-  assert.doesNotMatch(hero, /12 perguntas/);
-  assert.doesNotMatch(hero, /3 minutos/);
+  assert.doesNotMatch(hero, /3 minutos/, 'prometeu os 3 minutos do /raiz num quiz de 12 perguntas');
   // Antes do bloco de pergunta, nao depois: ela decide sabendo o custo.
   assert.ok(hero.indexOf('class="custo"') < hero.indexOf('class="hero-q"'),
     'a linha de custo caiu para depois da pergunta');
@@ -351,7 +358,13 @@ test('o hero nao abre falando de peso', () => {
   // ("nao promete perda de peso").
   const hero = html.slice(0, html.indexOf('id="quiz"'));
   assert.doesNotMatch(hero, /<h1>[\s\S]*?[Pp]erder peso[\s\S]*?<\/h1>/);
-  assert.match(html, /<h1>Você não perdeu a disciplina\.<br><em>A vida saiu do plano\.<\/em><\/h1>/);
+  // A PRIMEIRA linha e intocavel: e o message match com os tres criativos.
+  // A segunda virou pergunta em 16/11/2026, modelando o /raiz, cujo h1 e uma
+  // pergunta ("O que se repete na sua relacao com a comida?"). A tese dos
+  // anuncios continua sendo a primeira coisa que ela le; a pergunta e o que
+  // so o quiz responde, e e ela que puxa para a interacao logo abaixo.
+  assert.match(hero, /<h1>Você não perdeu a disciplina\.<br>/);
+  assert.match(hero, /<em>Então por que sempre recomeça\?<\/em><\/h1>/);
 });
 
 test('"Você descobre" ficou abaixo do bloco de interacao', () => {
