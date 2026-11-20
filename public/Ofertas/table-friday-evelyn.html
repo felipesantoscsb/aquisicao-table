@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#2B3526" />
+  <title>Table Friday com Evelyn Liu · Table Clinic</title>
+  <meta name="description" content="Acompanhamento com a Evelyn Liu em condição de Table Friday: semestral e trimestral, 3 vagas, até 29/11." />
+
+  <!-- Meta Pixel: igual à /table-friday (PageView + ViewContent).
+       Sem InitiateCheckout/Purchase de propósito: o pixel hoje só recebe
+       compra do PR, e evento de plano já derrubou a qualidade do Purchase. -->
+  <script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window,document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init','989971718548782');
+    fbq('track','PageView');
+    fbq('track','ViewContent',{content_name:'Table Friday com Evelyn Liu 2026'});
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=989971718548782&ev=PageView&noscript=1"/></noscript>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --night:     #2B3526;
+      --moss:      #3D4A35;
+      --moss-mid:  #4E5E42;
+      --moss-pale: #E8EDE4;
+      --cream:     #F8F4EE;
+      --warm:      #EDE5D8;
+      --sand:      #D8CCBA;
+      --terra:     #B97040;
+      --terra-dk:  #8A4F28;
+      --terra-pale:#F5E6DA;
+      --brown:     #2C2018;
+      --muted:     #7A6E64;
+      --white:     #FFFFFF;
+      --line:      #DDD4C4;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Jost', sans-serif; font-weight: 300; background: var(--cream); color: var(--brown); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; }
+    a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--terra); outline-offset: 3px; }
+
+    /* Cormorant usa algarismos antigos por padrão: "29/11" vira "29/II". */
+    .facts b, .ticket__data b, .preco__por, .preco__de, .passo small, .formas b, .economia { font-variant-numeric: lining-nums; font-feature-settings: 'lnum' 1; }
+    .inner { max-width: 640px; margin: 0 auto; padding: 72px 24px; }
+    .inner--wide { max-width: 860px; }
+    .label {
+      font-size: .68rem; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--terra); font-weight: 600; margin-bottom: 12px;
+    }
+    .center { text-align: center; }
+    h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.9rem, 6vw, 2.7rem); font-weight: 400; line-height: 1.12;
+      margin-bottom: 28px;
+    }
+    h2 em, h1 em { font-style: italic; color: var(--terra); }
+    p { font-size: 1rem; line-height: 1.85; color: var(--muted); margin-bottom: 16px; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--brown); font-weight: 500; }
+
+    /* ── Topo ──────────────────────────────────────── */
+    .top {
+      background: var(--night); color: var(--cream);
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 24px; font-size: .66rem; letter-spacing: .2em; text-transform: uppercase;
+    }
+    .top b { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 400; letter-spacing: .22em; opacity: .9; }
+    .top span { color: var(--sand); opacity: .8; }
+
+    /* ── Hero ──────────────────────────────────────── */
+    .hero {
+      background:
+        radial-gradient(120% 80% at 50% 0%, rgba(185,112,64,.24) 0%, rgba(185,112,64,0) 60%),
+        linear-gradient(180deg, var(--night) 0%, var(--moss) 100%);
+      color: var(--cream); text-align: center;
+      padding: 72px 24px 0; position: relative; overflow: hidden;
+    }
+    .hero::after {
+      content: 'Evelyn'; position: absolute; left: 50%; bottom: -0.22em; transform: translateX(-50%);
+      font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 300;
+      font-size: clamp(7rem, 34vw, 15rem); line-height: 1; color: rgba(248,244,238,.05);
+      white-space: nowrap; pointer-events: none;
+    }
+    .tag {
+      display: inline-block; border: 1px solid rgba(216,204,186,.4); color: var(--sand);
+      font-size: .66rem; letter-spacing: .22em; text-transform: uppercase; font-weight: 500;
+      padding: 7px 14px; border-radius: 999px; margin-bottom: 28px;
+    }
+    .hero h1 {
+      font-family: 'Cormorant Garamond', serif; font-weight: 300;
+      font-size: clamp(2.9rem, 12vw, 5.2rem); line-height: .98; letter-spacing: -.01em;
+      margin-bottom: 24px;
+    }
+    .hero .lede { color: rgba(248,244,238,.78); max-width: 470px; margin: 0 auto 32px; font-size: 1.02rem; }
+    .hero .lede strong { color: var(--cream); }
+    .facts {
+      display: grid; grid-template-columns: repeat(3, 1fr); max-width: 460px; margin: 0 auto 36px;
+      border-top: 1px solid rgba(248,244,238,.14); border-bottom: 1px solid rgba(248,244,238,.14);
+    }
+    .facts div { padding: 14px 6px; }
+    .facts div + div { border-left: 1px solid rgba(248,244,238,.14); }
+    .facts b { display: block; font-family: 'Cormorant Garamond', serif; font-size: 1.7rem; font-weight: 500; color: var(--cream); line-height: 1.1; }
+    .facts small { font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; color: var(--sand); }
+    .hero__foto {
+      width: min(300px, 72vw); aspect-ratio: 4 / 5; margin: 44px auto 0; border-radius: 160px 160px 0 0;
+      overflow: hidden; position: relative; z-index: 1;
+      border: 1px solid rgba(216,204,186,.28); border-bottom: 0;
+    }
+    .hero__foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%; }
+
+    .btn {
+      display: inline-block; background: var(--terra); color: var(--white); text-decoration: none;
+      font-size: .82rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+      padding: 17px 34px; border-radius: 3px; transition: background .2s, transform .18s; border: 0; cursor: pointer;
+    }
+    .btn:hover { background: var(--terra-dk); transform: translateY(-2px); }
+    .btn--moss { background: var(--moss); }
+    .btn--moss:hover { background: var(--moss-mid); }
+    .btn--line { background: transparent; color: var(--moss); border: 1px solid var(--moss); }
+    .btn--line:hover { background: var(--moss-pale); }
+    .btn--block { display: block; text-align: center; max-width: 360px; margin: 0 auto; }
+    .hero .sub-cta { display: block; margin-top: 14px; font-size: .74rem; color: rgba(248,244,238,.55); }
+
+    /* ── Carta ─────────────────────────────────────── */
+    .carta { background: var(--white); }
+    .carta .destaque {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; line-height: 1.38; color: var(--brown);
+      border-left: 2px solid var(--terra); padding-left: 18px; margin: 30px 0;
+    }
+    .carta .assina-carta { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.35rem; color: var(--terra); margin-top: 26px; }
+
+    /* ── Incluso ───────────────────────────────────── */
+    .bg-cream { background: var(--cream); }
+    .bg-warm  { background: var(--warm); }
+    .bg-white { background: var(--white); }
+    .rows { border-top: 1px solid var(--line); }
+    .row { display: grid; grid-template-columns: 34px 1fr; gap: 18px; padding: 22px 0; border-bottom: 1px solid var(--line); }
+    .row i {
+      width: 34px; height: 34px; border-radius: 50%; background: var(--moss-pale);
+      display: grid; place-items: center; font-style: normal; font-size: .9rem; margin-top: 2px;
+    }
+    .row h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.18rem; font-weight: 500; margin-bottom: 4px; }
+    .row p { font-size: .9rem; line-height: 1.7; }
+
+    /* ── Presentes (livro + Volta às Aulas) ────────── */
+    .evento { background: var(--night); color: var(--cream); }
+    .evento .label { color: var(--sand); }
+    .evento h2 { color: var(--cream); }
+    .evento p { color: rgba(248,244,238,.72); }
+    .livro { display: grid; grid-template-columns: 92px 1fr; gap: 20px; align-items: center; margin: 4px 0 34px; }
+    .livro img { width: 92px; height: auto; border-radius: 3px; box-shadow: 0 14px 28px -14px rgba(0,0,0,.7); }
+    .livro h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 500; color: var(--cream); margin-bottom: 4px; }
+    .livro p { font-size: .88rem; line-height: 1.65; margin: 0; }
+    .ticket {
+      background: var(--cream); color: var(--brown); border-radius: 10px; overflow: hidden;
+      display: grid; grid-template-columns: 1fr; position: relative;
+    }
+    .ticket__foto { aspect-ratio: 16 / 10; overflow: hidden; }
+    .ticket__foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+    .ticket__corpo { padding: 26px 24px 24px; position: relative; }
+    .ticket__corpo::before {
+      content: ''; position: absolute; left: 18px; right: 18px; top: 0;
+      border-top: 2px dashed var(--sand);
+    }
+    .ticket__data { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+    .ticket__data b { font-family: 'Cormorant Garamond', serif; font-size: 2.6rem; font-weight: 500; color: var(--terra); line-height: 1; }
+    .ticket__data span { font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+    .ticket h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 500; margin-bottom: 14px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chips span {
+      font-size: .74rem; padding: 6px 12px; border-radius: 999px;
+      background: var(--moss-pale); color: var(--moss); font-weight: 500;
+    }
+    .evento .ticket__nota { font-size: .78rem; color: var(--muted); margin-top: 16px; line-height: 1.6; }
+
+    /* ── Calendário ────────────────────────────────── */
+    .linha { position: relative; padding-left: 30px; }
+    .linha::before { content: ''; position: absolute; left: 8px; top: 6px; bottom: 6px; width: 1px; background: linear-gradient(var(--terra), var(--moss-mid)); }
+    .passo { position: relative; padding-bottom: 28px; }
+    .passo:last-child { padding-bottom: 0; }
+    .passo::before {
+      content: ''; position: absolute; left: -30px; top: 4px; width: 17px; height: 17px; border-radius: 50%;
+      background: var(--terra); border: 3px solid var(--warm);
+    }
+    .passo.pausa::before { background: var(--warm); border: 2px dashed var(--muted); }
+    .passo small { font-size: .66rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--terra); }
+    .passo.pausa small { color: var(--muted); }
+    .passo h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 500; margin: 2px 0 2px; }
+    .passo p { font-size: .88rem; line-height: 1.7; }
+
+    /* ── Planos ────────────────────────────────────── */
+    .planos { display: grid; gap: 22px; }
+    .plano { background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 34px 24px 28px; text-align: center; position: relative; }
+    .plano--top { border: 2px solid var(--terra); box-shadow: 0 22px 44px -26px rgba(44,32,24,.4); padding-top: 46px; }
+    .plano__selo {
+      position: absolute; top: -13px; left: 50%; transform: translateX(-50%); white-space: nowrap;
+      background: var(--terra); color: var(--white); font-size: .64rem; font-weight: 600; letter-spacing: .18em;
+      text-transform: uppercase; padding: 6px 14px; border-radius: 999px;
+    }
+    .plano__nome { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 500; line-height: 1.1; margin-bottom: 4px; }
+    .plano__dur { font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin-bottom: 22px; }
+    .preco__de { font-size: .9rem; color: var(--muted); margin-bottom: 4px; }
+    .preco__de s { text-decoration-color: var(--terra); }
+    .preco__por { font-family: 'Cormorant Garamond', serif; font-size: clamp(3rem, 13vw, 4rem); font-weight: 600; color: var(--moss); line-height: 1; }
+    .plano--alt .preco__por { font-size: clamp(2.5rem, 10vw, 3.1rem); color: var(--brown); }
+    .economia { display: inline-block; margin-top: 12px; font-size: .74rem; font-weight: 600; color: var(--terra-dk); background: var(--terra-pale); padding: 5px 12px; border-radius: 999px; }
+    .formas { list-style: none; max-width: 320px; margin: 22px auto 22px; text-align: left; border-top: 1px solid var(--line); }
+    .formas li { display: flex; justify-content: space-between; gap: 12px; font-size: .88rem; padding: 10px 2px; border-bottom: 1px solid var(--line); color: var(--muted); }
+    .formas li b { color: var(--brown); font-weight: 500; text-align: right; }
+    .inclui { list-style: none; text-align: left; max-width: 320px; margin: 0 auto 26px; }
+    .inclui li { font-size: .88rem; color: var(--brown); padding: 7px 0 7px 26px; position: relative; line-height: 1.5; }
+    .inclui li::before { content: '✓'; position: absolute; left: 4px; color: var(--terra); font-weight: 600; }
+    .inclui li.bonus::before { content: '🎁'; left: 0; font-size: .78rem; top: 8px; }
+    .inclui li.nao { color: var(--muted); }
+    .inclui li.nao::before { content: '–'; color: var(--sand); }
+    .plano__obs { display: block; margin-top: 12px; font-size: .76rem; color: var(--muted); line-height: 1.5; }
+    .vagas {
+      display: flex; justify-content: center; gap: 10px 16px; flex-wrap: wrap;
+      margin-top: 28px; font-size: .8rem; color: var(--muted);
+    }
+    .vagas span { display: inline-flex; align-items: center; gap: 6px; }
+    .vagas span::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--terra); }
+
+    .garantia { display: grid; grid-template-columns: 44px 1fr; gap: 16px; align-items: start; margin: 34px auto 0; max-width: 640px; background: var(--moss-pale); border-radius: 8px; padding: 22px 20px; text-align: left; }
+    .garantia i { width: 44px; height: 44px; border-radius: 50%; background: var(--moss); color: var(--cream); display: grid; place-items: center; font-style: normal; font-size: 1.05rem; }
+    .garantia h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.22rem; font-weight: 500; margin-bottom: 4px; }
+    .garantia p { font-size: .88rem; line-height: 1.7; margin: 0; }
+
+    /* ── Avaliações (Google) ───────────────────────── */
+    .reviews { display: grid; gap: 14px; margin-top: 4px; }
+    .review { background: var(--cream); border: 1px solid var(--line); border-radius: 8px; padding: 24px 22px 20px; }
+    .review__stars { color: var(--terra); letter-spacing: .18em; font-size: .9rem; margin-bottom: 10px; }
+    .review blockquote {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.32rem; line-height: 1.35;
+      font-weight: 500; color: var(--brown); margin-bottom: 14px;
+    }
+    .review__meta { font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0; }
+    .review__meta b { color: var(--moss); font-weight: 600; }
+    .review details, .review details:first-of-type { border: 0; margin-top: 12px; }
+    .review summary { font-family: 'Jost', sans-serif; font-size: .8rem; font-weight: 500; color: var(--terra); padding: 0 22px 0 0; display: inline-block; }
+    .review summary::after { top: -4px; font-size: 1.1rem; }
+    .review details p { font-size: .88rem; line-height: 1.75; padding: 10px 0 0; }
+    .reviews-link { display: inline-block; margin-top: 22px; font-size: .84rem; font-weight: 500; color: var(--moss); text-underline-offset: 3px; }
+
+    /* ── FAQ ───────────────────────────────────────── */
+    details { border-bottom: 1px solid var(--line); }
+    details:first-of-type { border-top: 1px solid var(--line); }
+    summary {
+      list-style: none; cursor: pointer; padding: 18px 28px 18px 0; position: relative;
+      font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 500; color: var(--brown);
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: '+'; position: absolute; right: 2px; top: 14px; font-family: 'Jost'; font-size: 1.3rem; color: var(--terra); font-weight: 300; }
+    details[open] summary::after { content: '–'; }
+    details p { font-size: .92rem; padding: 0 0 18px; }
+
+    /* ── Fecho ─────────────────────────────────────── */
+    .fecho { background: var(--moss); color: var(--cream); text-align: center; }
+    .fecho h2 { color: var(--cream); }
+    .fecho p { color: rgba(248,244,238,.72); max-width: 460px; margin-left: auto; margin-right: auto; }
+    .fecho .assina { font-size: .74rem; letter-spacing: .16em; text-transform: uppercase; color: var(--sand); margin-top: 28px; }
+    .duvida { display: inline-block; margin-top: 18px; font-size: .82rem; color: var(--sand); }
+
+    footer { background: var(--brown); color: rgba(248,244,238,.38); text-align: center; padding: 24px; font-size: .7rem; letter-spacing: .1em; }
+
+    .fade { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+    .fade.visible { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { .fade { opacity: 1; transform: none; transition: none; } .btn { transition: none; } }
+
+    @media (min-width: 720px) {
+      .inner { padding: 88px 40px; }
+      .review { padding: 28px 30px 24px; }
+      .ticket { grid-template-columns: 1fr 1.1fr; }
+      .ticket__foto { aspect-ratio: auto; }
+      .ticket__corpo { padding: 32px 30px; }
+      .ticket__corpo::before { left: 0; right: auto; top: 18px; bottom: 18px; border-top: 0; border-left: 2px dashed var(--sand); }
+      .planos { grid-template-columns: 1.12fr 1fr; align-items: start; }
+      .plano--alt { margin-top: 28px; }
+      .plano { padding-left: 32px; padding-right: 32px; }
+      .hero__foto { width: 320px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="top"><b>Table Clinic</b><span>Table Friday · Evelyn Liu</span></div>
+
+<!-- HERO -->
+<section class="hero">
+  <span class="tag">Table Friday · só 3 vagas</span>
+  <h1>Seis meses<br><em>com a Evelyn</em></h1>
+  <p class="lede">Acompanhamento direto com a <strong>Evelyn Liu</strong>, em uma condição que só existe na Table Friday. Abrimos primeiro para quem já faz parte da nossa história.</p>
+  <div class="facts">
+    <div><b>3</b><small>vagas</small></div>
+    <div><b>6</b><small>meses</small></div>
+    <div><b>29/11</b><small>encerra</small></div>
+  </div>
+  <a class="btn" href="#investimento">Ver as condições</a>
+  <span class="sub-cta">Também com opção de 3 meses</span>
+  <div class="hero__foto"><img src="/img/evelyn-hero.jpg" alt="Evelyn Liu, nutricionista e fundadora da Table Clinic" width="557" height="1100" fetchpriority="high"></div>
+</section>
+
+<!-- CARTA -->
+<section class="carta fade">
+  <div class="inner">
+    <p class="label">Por que essas vagas existem</p>
+    <h2>Um ano pesado <em>pede companhia</em></h2>
+    <p>Não sei você, mas eu sinto que esse ano está pesado de um jeito diferente. A energia do mundo anda esquisita, todo mundo cansado, ansioso, meio no automático. E é justamente nesses momentos que a gente mais se afasta do próprio cuidado.</p>
+    <p>Acabei de dar alta para três pacientes. Antes de abrir essas vagas para quem nunca passou por aqui, quis chamar primeiro quem já fez esse caminho comigo.</p>
+    <p class="destaque">Tudo o que você construiu continua sendo seu. Mas tem fase da vida em que ter alguém do lado faz toda a diferença.</p>
+    <p>São só três lugares, para a gente atravessar esse período juntas e chegar em 2027 mais inteiras.</p>
+    <p class="assina-carta">Evelyn</p>
+  </div>
+</section>
+
+<!-- INCLUSO -->
+<section class="bg-cream fade">
+  <div class="inner">
+    <p class="label">O que está incluso</p>
+    <h2>A Evelyn <em>do seu lado</em></h2>
+    <div class="rows">
+      <div class="row"><i aria-hidden="true">🗓️</i><div>
+        <h3>Encontros semanais com a Evelyn</h3>
+        <p>Presenciais, em Moema, ou online. Uma sessão por semana com ela, durante todo o período contratado.</p></div></div>
+      <div class="row"><i aria-hidden="true">🥗</i><div>
+        <h3>Plano alimentar e trabalho psicoemocional</h3>
+        <p>O que você come e o que move você emocionalmente, juntos. Construído para a sua rotina e o seu momento, com ajustes ao longo de todo o processo.</p></div></div>
+      <div class="row"><i aria-hidden="true">💬</i><div>
+        <h3>Suporte por WhatsApp durante todo o processo</h3>
+        <p>Para as dúvidas do dia a dia: uma refeição fora da rotina, uma situação que surgiu, uma insegurança rápida. Você não fica sozinha entre as sessões.</p></div></div>
+      <div class="row"><i aria-hidden="true">👥</i><div>
+        <h3>Comunidade Ativa com Evelyn Liu</h3>
+        <p>Grupo exclusivo com acesso direto à Evelyn, conteúdos aprofundados e encontros online periódicos.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRESENTES -->
+<section class="evento fade">
+  <div class="inner">
+    <p class="label">Presentes do semestral</p>
+    <h2>Dois presentes <em>para quem fica seis meses</em></h2>
+    <div class="livro">
+      <img src="/img/livro-gne.jpg" alt="Capa do livro Gordura Não Existe: O que Existe é Dor" width="1000" height="948" loading="lazy">
+      <div>
+        <h3>O livro da Evelyn, com dedicatória</h3>
+        <p>"Gordura Não Existe: O que Existe é Dor", entregue na sua casa ou retirado na clínica.</p>
+      </div>
+    </div>
+    <div class="ticket">
+      <div class="ticket__foto"><img src="/img/evelyn-palco.jpg" alt="Evelyn Liu sorrindo com um microfone na mão, durante uma palestra" loading="lazy" width="960" height="1200"></div>
+      <div class="ticket__corpo">
+        <div class="ticket__data"><b>30/01</b><span>sábado · 2027</span></div>
+        <h3>Volta às Aulas da Table</h3>
+        <div class="chips">
+          <span>Workshop artesanal</span>
+          <span>Palestra</span>
+          <span>Bate-papo</span>
+          <span>Comida boa</span>
+          <span>Conexões</span>
+        </div>
+        <p class="ticket__nota">Um dia presencial em São Paulo para começar 2027 com a Evelyn, a equipe e outras mulheres no mesmo caminho. Seu convite já fica garantido ao fechar o semestral.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CALENDÁRIO -->
+<section class="bg-warm fade">
+  <div class="inner">
+    <p class="label">Como fica o seu calendário</p>
+    <h2>Começa agora, <em>respeita as festas</em></h2>
+    <div class="linha">
+      <div class="passo">
+        <small>Novembro</small>
+        <h3>Você começa imediatamente</h3>
+        <p>A Karina agenda o seu primeiro encontro com a Evelyn pelo WhatsApp, no horário que for melhor para você.</p>
+      </div>
+      <div class="passo pausa">
+        <small>Natal e Ano-Novo</small>
+        <h3>Pausa programada</h3>
+        <p>O acompanhamento pausa nas festas, e esses dias não contam: você não perde nada do período contratado.</p>
+      </div>
+      <div class="passo">
+        <small>Janeiro</small>
+        <h3>Retomada</h3>
+        <p>O processo volta de onde parou, com o plano ajustado para o novo ano.</p>
+      </div>
+      <div class="passo">
+        <small>30 de janeiro</small>
+        <h3>Volta às Aulas da Table</h3>
+        <p>Para quem fechou o semestral: o encontro presencial com a Evelyn e as outras pacientes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INVESTIMENTO -->
+<section class="bg-cream fade" id="investimento">
+  <div class="inner inner--wide">
+    <p class="label center">Investimento</p>
+    <h2 class="center">Escolha o seu <em>caminho</em></h2>
+
+    <div class="planos">
+      <!-- SEMESTRAL -->
+      <article class="plano plano--top">
+        <span class="plano__selo">Recomendado pela Evelyn</span>
+        <h3 class="plano__nome">Semestral</h3>
+        <p class="plano__dur">6 meses com a Evelyn</p>
+        <p class="preco__de">De <s>R$ 7.200</s> por</p>
+        <div class="preco__por">R$ 6.000</div>
+        <span class="economia">Você economiza R$ 1.200</span>
+        <ul class="formas">
+          <li>Pix <b>R$ 5.760</b></li>
+          <li>Cartão sem juros <b>3x de R$ 2.000</b></li>
+          <li>Cartão <b id="parcSem">em até 12x</b></li>
+        </ul>
+        <ul class="inclui">
+          <li>6 meses de encontros semanais com a Evelyn</li>
+          <li>Plano alimentar e trabalho psicoemocional</li>
+          <li>Suporte por WhatsApp e Comunidade Ativa</li>
+          <li class="bonus">Livro com dedicatória</li>
+          <li class="bonus">Convite para o Volta às Aulas (30/01)</li>
+        </ul>
+        <a class="btn btn--block" id="ctaSem" href="#" target="_blank" rel="noopener">Quero o semestral</a>
+        <span class="plano__obs">Uma das 3 vagas fica reservada para você</span>
+      </article>
+
+      <!-- TRIMESTRAL -->
+      <article class="plano plano--alt">
+        <h3 class="plano__nome">Trimestral</h3>
+        <p class="plano__dur">3 meses com a Evelyn</p>
+        <p class="preco__de">De <s>R$ 4.200</s> por</p>
+        <div class="preco__por">R$ 3.600</div>
+        <span class="economia">Você economiza R$ 600</span>
+        <ul class="formas">
+          <li>Pix ou cartão <b id="parcTri">em até 12x</b></li>
+        </ul>
+        <ul class="inclui">
+          <li>3 meses de encontros semanais com a Evelyn</li>
+          <li>Plano alimentar e trabalho psicoemocional</li>
+          <li>Suporte por WhatsApp e Comunidade Ativa</li>
+          <li class="nao">Sem os presentes do semestral</li>
+        </ul>
+        <a class="btn btn--line btn--block" id="ctaTri" href="#" target="_blank" rel="noopener">Quero o trimestral</a>
+      </article>
+    </div>
+
+    <div class="garantia">
+      <i aria-hidden="true">♡</i>
+      <div>
+        <h3>Fica tranquila</h3>
+        <p>Se por algum motivo você precisar parar no meio do caminho, a gente devolve o saldo.</p>
+      </div>
+    </div>
+
+    <div class="vagas"><span>3 vagas no total</span><span>até 29/11 ou quando as vagas acabarem</span></div>
+  </div>
+</section>
+
+<!-- AVALIAÇÕES (Google) -->
+<section class="bg-white fade" id="avaliacoes">
+  <div class="inner">
+    <p class="label">Avaliações no Google</p>
+    <h2>Quem já caminhou <em>com a gente</em></h2>
+    <p>Relatos públicos de pacientes da Table Clinic, publicados nas avaliações do Google.</p>
+    <div class="reviews" id="reviews"></div>
+    <a class="reviews-link" id="reviewsLink" href="https://www.google.com/maps/place/Table+Clinic" target="_blank" rel="noopener">Ver todas as avaliações no Google →</a>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="bg-cream fade">
+  <div class="inner">
+    <p class="label">Dúvidas</p>
+    <h2>Antes de <em>decidir</em></h2>
+    <details><summary>O acompanhamento é com a própria Evelyn?</summary>
+      <p>Sim. Todos os encontros são com a Evelyn, com o apoio da equipe da Table Clinic para agenda e suporte.</p></details>
+    <details><summary>Qual a diferença entre o semestral e o trimestral?</summary>
+      <p>O acompanhamento é o mesmo. O semestral dá tempo para a mudança se firmar de verdade, sai mais em conta por mês e vem com o livro e o convite para o Volta às Aulas.</p></details>
+    <details><summary>Quando começa?</summary>
+      <p>Imediatamente. A Karina chama você pelo WhatsApp para marcar o primeiro encontro ainda em novembro.</p></details>
+    <details><summary>Como funciona a pausa de fim de ano?</summary>
+      <p>O acompanhamento pausa no Natal e no Ano-Novo, e o período da pausa é somado ao final. Os meses contratados ficam inteiros.</p></details>
+    <details><summary>Não moro em São Paulo. Faz sentido?</summary>
+      <p>Faz. Os encontros podem ser todos online. O Volta às Aulas é presencial, em São Paulo, e fica como convite para quando você puder vir.</p></details>
+    <details><summary>E se eu precisar parar?</summary>
+      <p>A gente devolve o saldo. Fala com a Karina que ela resolve com você.</p></details>
+    <details><summary>Até quando vale?</summary>
+      <p>Até 29/11/2026 ou até as 3 vagas serem preenchidas, o que acontecer primeiro.</p></details>
+  </div>
+</section>
+
+<!-- FECHO -->
+<section class="fecho fade">
+  <div class="inner">
+    <h2>O problema nunca foi <em>a comida</em></h2>
+    <p>Foi sempre a dor que não encontrou outro lugar para existir. Se agora é o seu momento, eu quero caminhar com você.</p>
+    <a class="btn" href="#investimento">Garantir minha vaga</a><br>
+    <a class="duvida" id="linkDuvida" href="#" target="_blank" rel="noopener">Ficou alguma dúvida? Fale com a Karina no WhatsApp</a>
+    <p class="assina">Com carinho, Evelyn e equipe Table Clinic</p>
+  </div>
+</section>
+
+<footer>Table Clinic &nbsp;·&nbsp; Moema, São Paulo &nbsp;·&nbsp; tableclinic.com.br</footer>
+
+<script src="https://tableclinic.com.br/js/google-reviews.v1.js"></script>
+<script>
+  // Avaliações reais do Google, da base curada em tableclinic.com.br
+  // (só as com approvedForMarketing). Se a base não carregar, a seção some.
+  (function () {
+    const IDS = ['claudia-de-maria', 'fernanda-rodrigues-de-sa', 'gabriel-martins-de-oliveira', 'ana-souza'];
+    const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const base = (window.TABLE_GOOGLE_REVIEWS || []).filter(r => r.approvedForMarketing);
+    const lista = IDS.map(id => base.find(r => r.id === id)).filter(Boolean);
+    if (!lista.length) { document.getElementById('avaliacoes').hidden = true; return; }
+    document.getElementById('reviews').innerHTML = lista.map(r => `
+      <article class="review">
+        <p class="review__stars" aria-label="${r.rating} de 5 estrelas">${'★'.repeat(r.rating)}</p>
+        <blockquote>“${esc(r.featuredExcerpt)}”</blockquote>
+        <p class="review__meta"><b>${esc(r.author)}</b> · avaliação no Google</p>
+        <details><summary>Ler avaliação completa</summary><p>${esc(r.fullText)}</p></details>
+      </article>`).join('');
+    if (lista[0].businessProfileUrl) document.getElementById('reviewsLink').href = lista[0].businessProfileUrl;
+  })();
+</script>
+<script>
+  // ── CONFIG ─────────────────────────────────────────────────────────
+  // Links de pagamento (InfinitePay). Enquanto vazios, o botão abre o
+  // WhatsApp da Karina com a mensagem do plano: a venda fecha na conversa.
+  // Pix (R$ 5.760) é sempre pela Karina: o checkout cobra o valor cheio.
+  // Parcela em 12x: preencher só com o valor que o checkout cobra de fato.
+  const CONFIG = {
+    WHATSAPP: '5511963934151',
+    CHECKOUT_SEMESTRAL: '',
+    CHECKOUT_TRIMESTRAL: '',
+    PARCELA_SEMESTRAL_12X: '',   // ex.: '12x de R$ 589,90'
+    PARCELA_TRIMESTRAL_12X: '',  // ex.: '12x de R$ 353,94'
+  };
+  // ───────────────────────────────────────────────────────────────────
+
+  const wa = txt => 'https://wa.me/' + CONFIG.WHATSAPP + '?text=' + encodeURIComponent(txt);
+  document.getElementById('ctaSem').href = CONFIG.CHECKOUT_SEMESTRAL ||
+    wa('Oi, Karina! Quero garantir minha vaga no semestral com a Evelyn (Table Friday).');
+  document.getElementById('ctaTri').href = CONFIG.CHECKOUT_TRIMESTRAL ||
+    wa('Oi, Karina! Quero garantir minha vaga no trimestral com a Evelyn (Table Friday).');
+  document.getElementById('linkDuvida').href = wa('Oi, Karina! Tenho uma dúvida sobre a Table Friday com a Evelyn.');
+  if (CONFIG.PARCELA_SEMESTRAL_12X) document.getElementById('parcSem').textContent = CONFIG.PARCELA_SEMESTRAL_12X;
+  if (CONFIG.PARCELA_TRIMESTRAL_12X) document.getElementById('parcTri').textContent = CONFIG.PARCELA_TRIMESTRAL_12X;
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, { threshold: 0.06 });
+  document.querySelectorAll('.fade').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

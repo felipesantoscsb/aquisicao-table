@@ -535,6 +535,9 @@ app.get('/oferta-elite-pr-isa',      (req, res) => res.sendFile(path.join(oferta
 // Table Friday 2026: Premium R$ 1.197 + Volta às Aulas da Table (30/01/2027).
 // Link enviado pela Karina na conversa da Reativação do Hub; noindex.
 app.get('/table-friday',             (req, res) => res.sendFile(path.join(ofertas, 'table-friday.html')));
+// Table Friday com a Evelyn: semestral R$ 6.000 / trimestral R$ 3.600, 3 vagas.
+// Usada na venda para ex-pacientes da Evelyn (link da Karina); noindex.
+app.get('/table-friday-com-evelyn-liu', (req, res) => res.sendFile(path.join(ofertas, 'table-friday-evelyn.html')));
 app.get('/obrigado-premium-pr',   (req, res) => res.sendFile(path.join(funil, 'obrigado-premium-pr.html')));
 app.get('/obrigado-elite-pr',     (req, res) => res.sendFile(path.join(funil, 'obrigado-elite-pr.html')));
 app.get('/forms',      (req, res) => res.sendFile(path.join(funil, 'formulario-pre-sessao.html')));
