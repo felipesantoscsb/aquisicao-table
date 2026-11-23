@@ -537,6 +537,9 @@ app.get('/oferta-elite-pr-isa',      (req, res) => res.sendFile(path.join(oferta
 app.get('/table-friday',             (req, res) => res.sendFile(path.join(ofertas, 'table-friday.html')));
 // Table Friday com a Evelyn: semestral R$ 6.000 / trimestral R$ 3.600, 3 vagas.
 // Usada na venda para ex-pacientes da Evelyn (link da Karina); noindex.
+// Table Friday com a equipe inteira (Evelyn + nutris clínicas): para as leads
+// da Elena, que só vende e não acompanha. Mesma oferta e checkout do /table-friday.
+app.get('/table-friday-equipe',      (req, res) => res.sendFile(path.join(ofertas, 'table-friday-equipe.html')));
 app.get('/table-friday-com-evelyn-liu', (req, res) => res.sendFile(path.join(ofertas, 'table-friday-evelyn.html')));
 app.get('/obrigado-premium-pr',   (req, res) => res.sendFile(path.join(funil, 'obrigado-premium-pr.html')));
 app.get('/obrigado-elite-pr',     (req, res) => res.sendFile(path.join(funil, 'obrigado-elite-pr.html')));
